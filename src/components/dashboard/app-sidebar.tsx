@@ -3,7 +3,7 @@
 import { Home, Settings, User, LogOut, ChevronUp, Rss, BookOpen, ChevronDown, School } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useSession, signOut } from '@/lib/auth/auth-client'
+import { useSession } from '@/lib/auth/auth-client'
 import {
   Sidebar,
   SidebarContent,
@@ -25,37 +25,67 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
-// Menu items
+// Menu items com controle de permissão
 const items = [
   {
     title: 'Home',
     url: '/dashboard',
     icon: Home,
+    requiresAdmin: false, // Todos os usuários podem acessar
   },
   {
     title: 'Feed',
     url: '/dashboard/feed',
     icon: Rss,
+    requiresAdmin: false, // Todos os usuários podem acessar
   },
   {
     title: 'Perfil',
     url: '/dashboard/profile',
     icon: User,
+    requiresAdmin: false, // Todos os usuários podem acessar
   },
   {
     title: 'Configurações',
     url: '/dashboard/settings',
     icon: Settings,
+    requiresAdmin: true, // Apenas administradores podem acessar
     children: [
+      {
+        title: 'Geral',
+        url: '/dashboard/settings',
+        icon: Settings,
+        requiresAdmin: true, // Apenas administradores podem acessar
+      },
       {
         title: 'Disciplinas',
         url: '/dashboard/settings/subjects',
         icon: BookOpen,
+        requiresAdmin: true, // Apenas administradores podem acessar
       },
       {
         title: 'Níveis de Ensino',
         url: '/dashboard/settings/education-levels',
         icon: School,
+        requiresAdmin: true, // Apenas administradores podem acessar
+      },
+            {
+        title: 'Usuários',
+        url: '/dashboard/settings/users',
+        icon: User,
+        requiresAdmin: true, // Apenas administradores podem acessar
+      },
+      {
+        title: 'Codigos BNCC',
+        url: '/dashboard/settings/bncc-codes',
+        icon: BookOpen,
+        requiresAdmin: true, // Apenas administradores podem acessar
+      },
+      {
+        title: 'Mapeamento de Produtos',
+        url: '/dashboard/settings/product-mapping',
+        icon: BookOpen,
+        requiresAdmin: true, // Apenas administradores podem acessar
       },
     ],
   },
@@ -65,18 +95,42 @@ export function AppSidebar() {
   const pathname = usePathname()
   const { data: session } = useSession()
   const user = session?.user
+  const isAdmin = user?.role === 'admin'
   const { setOpenMobile } = useSidebar()
+  
+  // Filtrar itens de menu com base na role do usuário
+  const filteredItems = items.filter(item => {
+    // Se o item requer role admin e o usuário não é admin, ocultar
+    if (item.requiresAdmin && !isAdmin) {
+      return false
+    }
+    return true
+  })
 
   const handleLogout = async () => {
-    await signOut({
-      fetchOptions: {
-        onSuccess: () => {          
-          localStorage.clear()
-          sessionStorage.clear()
-          window.location.replace('/')
+    try {
+      // Tentar fazer logout pela API diretamente
+      await fetch('/api/auth/sign-out', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      },
-    })
+        credentials: 'include', // Importante para incluir cookies
+      })
+      
+      // Independentemente do resultado da API, limpar dados locais
+      localStorage.clear()
+      sessionStorage.clear()
+      
+      // Redirecionar para a página de login
+      window.location.href = '/login'
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error)
+      // Forçar redirecionamento mesmo em caso de erro
+      localStorage.clear()
+      sessionStorage.clear()
+      window.location.href = '/login'
+    }
   }
 
   const handleLinkClick = () => {    
@@ -112,9 +166,18 @@ export function AppSidebar() {
           <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">Menu Principal</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => {
-                const isActive = pathname === item.url || (item.children?.some(child => pathname === child.url) ?? false)
+              {filteredItems.map((item) => {
+                // Verificar se o item está ativo (exatamente igual ao pathname atual)
+                const isActive = pathname === item.url
                 const hasChildren = item.children && item.children.length > 0
+                
+                // Filtrar os filhos do item com base na role do usuário
+                const filteredChildren = item.children
+                  ? item.children.filter(child => !child.requiresAdmin || isAdmin)
+                  : []
+                
+                // Se não há filhos após a filtragem, não mostrar o menu dropdown
+               // const effectiveHasChildren = filteredChildren.length > 0
                 
                 return (
                   <SidebarMenuItem key={item.title}>
@@ -127,7 +190,7 @@ export function AppSidebar() {
                         </SidebarMenuButton>
                         <SidebarGroup>
                           <SidebarGroupContent className="pl-6">
-                            {item.children.map((child) => {
+                            {filteredChildren.map((child) => {
                               const isChildActive = pathname === child.url
                               return (
                                 <SidebarMenuItem asChild key={child.title}>

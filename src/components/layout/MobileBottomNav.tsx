@@ -2,35 +2,56 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, User, BookOpen } from 'lucide-react'
+import { Home, User, BookOpen, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useSession } from '@/lib/auth/auth-client'
 
 export function MobileBottomNav() {
   const pathname = usePathname()
+  const { data: session } = useSession()
+  const isAdmin = session?.user?.role === 'admin'
 
   const navItems = [
     {
       label: 'Home',
       href: '/dashboard',
       icon: Home,
+      requiresAdmin: false,
     },
     {
       label: 'Recursos',
       href: '/dashboard/resources',
       icon: BookOpen,
       isMain: true, // Botão central destacado
+      requiresAdmin: false,
     },
     {
       label: 'Perfil',
       href: '/dashboard/profile',
       icon: User,
+      requiresAdmin: false,
+    },
+    {
+      label: 'Admin',
+      href: '/dashboard/settings',
+      icon: Settings,
+      requiresAdmin: true, // Apenas administradores podem ver
     },
   ]
+  
+  // Filtrar itens de menu com base na role do usuário
+  const filteredNavItems = navItems.filter(item => {
+    // Se o item requer role admin e o usuário não é admin, ocultar
+    if (item.requiresAdmin && !isAdmin) {
+      return false
+    }
+    return true
+  })
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden">
       <div className="flex h-16 items-center justify-around px-4">
-        {navItems.map((item) => {
+        {filteredNavItems.map((item) => {
           const isActive = pathname === item.href
           const Icon = item.icon
 

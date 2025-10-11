@@ -1,91 +1,6 @@
-import { PrismaClient } from '@prisma/client';
-
-type BNCCSeed = { code: string; description: string };
-
-// Mapas para inferir disciplina pelos componentes dos códigos
-// EI: ET, EF, EO, TS, CG
-// EF: MA, LP, CI, HI, GE, AR, EF, ER
-const COMPONENT_TO_SUBJECT: Record<string, string> = {
-  // Educação Infantil
-  ET: 'matematica',
-  EF: 'portugues',          // no EI é "Escuta, fala, pensamento e imaginação"
-  EO: 'socioemocional',
-  TS: 'artes',
-  CG: 'educacao-fisica',
-  // Fundamental
-  MA: 'matematica',
-  LP: 'portugues',
-  CI: 'ciencias',
-  HI: 'historia',
-  GE: 'geografia',
-  AR: 'artes',
-  EF_FUND: 'educacao-fisica'
-};
-
-function inferEducationLevelSlug(code: string): 'educacao-infantil' | 'fundamental-i' | 'fundamental-ii' {
-  if (code.startsWith('EI')) return 'educacao-infantil';
-  if (code.startsWith('EF')) {
-    const year = parseInt(code.slice(2, 4), 10); // EF01..EF09
-    return year <= 5 ? 'fundamental-i' : 'fundamental-ii';
-  }
-  // fallback
-  return 'fundamental-i';
-}
-
-function inferSubjectSlug(code: string): string {
-  if (code.startsWith('EI')) {
-    // EI03ET03 → componente = ET
-    const comp = code.slice(4, 6);
-    const slug = COMPONENT_TO_SUBJECT[comp];
-    if (!slug) throw new Error(`Componente EI desconhecido no código ${code}`);
-    return slug;
-  }
-  if (code.startsWith('EF')) {
-    // EF01MA01 → componente = MA; EF01EF01 → EF do Fundamental
-    const comp = code.slice(4, 6);
-    if (comp === 'EF') return COMPONENT_TO_SUBJECT['EF_FUND'];
-    const slug = COMPONENT_TO_SUBJECT[comp];
-    if (!slug) throw new Error(`Componente EF desconhecido no código ${code}`);
-    return slug;
-  }
-  throw new Error(`Prefixo de código BNCC desconhecido em ${code}`);
-}
-
-async function upsertBnccWithRefs(prisma: PrismaClient, items: BNCCSeed[]) {
-  console.log('Criando códigos BNCC com referências...');
-  for (const item of items) {
-    const educationLevelSlug = inferEducationLevelSlug(item.code);
-    const subjectSlug = inferSubjectSlug(item.code);
-
-    const [level, subject] = await Promise.all([
-      prisma.educationLevel.findUnique({ where: { slug: educationLevelSlug } }),
-      prisma.subject.findUnique({ where: { slug: subjectSlug } })
-    ]);
-
-    if (!level) throw new Error(`Nível não encontrado para ${educationLevelSlug}`);
-    if (!subject) throw new Error(`Disciplina não encontrada para ${subjectSlug}`);
-
-    await (prisma as any)['BNCCCode'].upsert({
-      where: { code: item.code },
-      update: {
-        description: item.description,
-        subjectId: subject.id,
-        educationLevelId: level.id
-      },
-      create: {
-        code: item.code,
-        description: item.description,
-        subjectId: subject.id,
-        educationLevelId: level.id
-      }
-    });
-    console.log(`Código BNCC criado/atualizado: ${item.code}`);
-  }
-}
-
 // Lista de códigos BNCC
-const bnccSeed: BNCCSeed[] = [
-    { code: 'EI01EO01', description: 'Interagir com crianças e adultos, demonstrando interesse, respeito e empatia.' },
+export const bnccSeed = [ 
+      { code: 'EI01EO01', description: 'Interagir com crianças e adultos, demonstrando interesse, respeito e empatia.' },
       { code: 'EI01EO02', description: 'Reconhecer e respeitar diferenças entre as pessoas.' },
       { code: 'EI02EO01', description: 'Demonstrar atitudes de cuidado, empatia e cooperação no convívio com os outros.' },
       { code: 'EI02EO02', description: 'Expressar sentimentos e emoções, respeitando o outro.' },
@@ -339,11 +254,3 @@ const bnccSeed: BNCCSeed[] = [
       { code: 'EF05AR03', description: 'Participar de apresentações artísticas, valorizando a cooperação e o respeito entre os participantes.' },
       { code: 'EF05AR04', description: 'Explorar elementos visuais, sonoros e corporais na criação e interpretação de produções artísticas.' }
   ];
-
-export async function seedBNCC(prisma: PrismaClient) {
-  console.log('🌱 Populando códigos BNCC...');
-  
-  await upsertBnccWithRefs(prisma, bnccSeed);
-  
-  console.log('✅ Códigos BNCC populados com sucesso!');
-}

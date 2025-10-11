@@ -5,9 +5,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User, Mail, Calendar, Shield } from 'lucide-react';
+import { User, Mail, Calendar, Shield, Bell, Palette } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { useTheme } from 'next-themes';
 
 import { useSession } from '@/lib/auth/auth-client';
 import { ChangePasswordForm } from './ChangePasswordForm';
@@ -16,8 +17,10 @@ export function ProfileClient() {
   // Middleware já garantiu que há sessão
   const { data: session } = useSession();
   const user = session?.user;
+  const { theme, setTheme } = useTheme();
   
   const [isEditing, setIsEditing] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -187,6 +190,72 @@ export function ProfileClient() {
             </div>
           </div>
           
+          {/* Preferências do Usuário */}
+          <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+            <div className="border-b p-6">
+              <h3 className="text-lg font-semibold">Preferências</h3>
+              <p className="text-sm text-muted-foreground">
+                Personalize sua experiência no sistema
+              </p>
+            </div>
+
+            <div className="p-6">
+              <div className="space-y-6">
+                {/* Aparência */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Palette className="h-4 w-4" />
+                    <Label>Tema</Label>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant={theme === 'light' ? 'default' : 'outline'}
+                      onClick={() => setTheme('light')}
+                      className="flex-1"
+                    >
+                      Claro
+                    </Button>
+                    <Button
+                      variant={theme === 'dark' ? 'default' : 'outline'}
+                      onClick={() => setTheme('dark')}
+                      className="flex-1"
+                    >
+                      Escuro
+                    </Button>
+                    <Button
+                      variant={theme === 'system' ? 'default' : 'outline'}
+                      onClick={() => setTheme('system')}
+                      className="flex-1"
+                    >
+                      Sistema
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Notificações */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Bell className="h-4 w-4" />
+                      <div>
+                        <Label>Notificações Push</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Receba notificações no navegador
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant={notificationsEnabled ? 'default' : 'outline'}
+                      onClick={() => setNotificationsEnabled(!notificationsEnabled)}
+                    >
+                      {notificationsEnabled ? 'Ativado' : 'Desativado'}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Formulário de Alteração de Senha */}
           <ChangePasswordForm />
         </div>

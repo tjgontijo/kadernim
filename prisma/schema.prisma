@@ -293,21 +293,15 @@ model Subscription {
   @@map("subscription")
 }
 
-// Mapeamento de produtos externos (Yampi, Hotmart, etc) para recursos internos
 model ExternalProductMapping {
-  id         String   @id @default(cuid())
-  externalId String // SKU ou ID do produto na plataforma externa
-  productId  String? // ID do produto na plataforma externa
-  platform   String // Nome da plataforma (yampi, hotmart, etc)
-  storeId    String? // ID da loja (para plataformas que suportam múltiplas lojas)
-  resourceId String
-  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id          String   @id @default(cuid())  
+  productId   String? // ID do produto na plataforma externa  
+  store       String? // Nome da Loja
+  resourceId  String
+  resource    Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  @@unique([externalId, platform, storeId])
-  @@index([externalId])
-  @@index([platform])
   @@index([resourceId])
   @@map("external_product_mapping")
 }
