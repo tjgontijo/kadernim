@@ -43,7 +43,9 @@ echo "==> Resetando o repositório para o estado remoto (origin/$DEFAULT_BRANCH)
 git reset --hard origin/$DEFAULT_BRANCH || { echo "Erro ao resetar para origin/$DEFAULT_BRANCH"; exit 1; }
 
 echo "==> Instalando dependências..."
-npm install
+# Usando npm install com --no-package-lock para evitar problemas de incompatibilidade
+# entre package.json e package-lock.json
+npm install --no-package-lock
 
 echo "==> Ajustando permissões gerais..."
 chown -R www-data:www-data "$PROJECT_DIR"
