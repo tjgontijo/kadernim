@@ -15,6 +15,7 @@ if [ ! -d ".git" ]; then
   git init || { echo "Erro ao inicializar repositório Git"; exit 1; }
 fi
 
+
 echo "==> Removendo build anterior (.next)..."
 rm -rf .next 
 
