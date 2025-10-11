@@ -43,7 +43,7 @@ echo "==> Resetando o repositório para o estado remoto (origin/$DEFAULT_BRANCH)
 git reset --hard origin/$DEFAULT_BRANCH || { echo "Erro ao resetar para origin/$DEFAULT_BRANCH"; exit 1; }
 
 echo "==> Instalando dependências..."
-npm ci
+npm install
 
 echo "==> Ajustando permissões gerais..."
 chown -R www-data:www-data "$PROJECT_DIR"
@@ -59,16 +59,28 @@ if [ "$ENABLE_OPTIMIZATION" = true ]; then
 
       case "$mime_type" in
         image/jpeg)
-          echo "📷 Otimizando JPEG: $file"
-          jpegoptim --strip-all --max=80 --all-progressive --force "$file"
+          if command -v jpegoptim &> /dev/null; then
+            echo "📷 Otimizando JPEG: $file"
+            jpegoptim --strip-all --max=80 --all-progressive --force "$file"
+          else
+            echo "⚠️ Pulando otimização de JPEG (jpegoptim não instalado): $file"
+          fi
           ;;
         image/png)
-          echo "🖼️  Otimizando PNG: $file"
-          pngquant --force --verbose --quality=80-90 --skip-if-larger --ext .png "$file"
+          if command -v pngquant &> /dev/null; then
+            echo "💾️  Otimizando PNG: $file"
+            pngquant --force --verbose --quality=80-90 --skip-if-larger --ext .png "$file"
+          else
+            echo "⚠️ Pulando otimização de PNG (pngquant não instalado): $file"
+          fi
           ;;
         image/webp)
-          echo "🕸️  Otimizando WebP: $file"
-          cwebp -quiet -mt -q 80 "$file" -o "$file"
+          if command -v cwebp &> /dev/null; then
+            echo "🕸️  Otimizando WebP: $file"
+            cwebp -quiet -mt -q 80 "$file" -o "$file"
+          else
+            echo "⚠️ Pulando otimização de WebP (cwebp não instalado): $file"
+          fi
           ;;
         *)
           echo "⚠️  Ignorado (formato não suportado): $file ($mime_type)"
