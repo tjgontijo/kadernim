@@ -9,17 +9,37 @@ ENABLE_OPTIMIZATION=true
 echo "==> Entrando no diretório do projeto: $PROJECT_DIR"
 cd "$PROJECT_DIR" || { echo "Erro: diretório do projeto não encontrado!"; exit 1; }
 
+# Verificar se o diretório é um repositório Git
+if [ ! -d ".git" ]; then
+  echo "==> Diretório não é um repositório Git. Inicializando..."
+  git init || { echo "Erro ao inicializar repositório Git"; exit 1; }
+fi
+
 echo "==> Removendo build anterior (.next)..."
 rm -rf .next 
 
 echo "==> Limpando cache do npm..."
 npm cache clean --force
 
+# Verificar se o remote origin está configurado
+if ! git remote | grep -q "^origin$"; then
+  echo "==> Remote 'origin' não encontrado. Configurando..."
+  echo "Por favor, informe a URL do repositório Git:"
+  read -r REPO_URL
+  git remote add origin "$REPO_URL" || { echo "Erro ao adicionar remote origin"; exit 1; }
+fi
+
 echo "==> Buscando atualizações do repositório (git fetch)..."
 git fetch || { echo "Erro ao fazer fetch do repositório"; exit 1; }
 
-echo "==> Resetando o repositório para o estado remoto (origin/master)..."
-git reset --hard origin/master || { echo "Erro ao resetar para origin/master"; exit 1; }
+# Verificar qual é a branch padrão (master ou main)
+DEFAULT_BRANCH="master"
+if git show-ref --verify --quiet refs/remotes/origin/main; then
+  DEFAULT_BRANCH="main"
+fi
+
+echo "==> Resetando o repositório para o estado remoto (origin/$DEFAULT_BRANCH)..."
+git reset --hard origin/$DEFAULT_BRANCH || { echo "Erro ao resetar para origin/$DEFAULT_BRANCH"; exit 1; }
 
 echo "==> Instalando dependências..."
 npm ci
