@@ -18,21 +18,18 @@ git stash
 git pull
 git stash pop || true
 
-print_box "🗑️ Limpando cache..."
-rm -rf .next node_modules/.cache || true
+print_box "🗑️ Limpando cache e dependências..."
+rm -rf .next node_modules package-lock.json || true
 npm cache clean --force
 
-print_box "📦 Instalando dependências..."
-npm ci --omit=dev
+print_box "📦 Instalando dependências (fresh install)..."
+npm install --omit=dev
 
 print_box "📌 Aplicando migrações do Prisma..."
 npx prisma migrate deploy
 
 print_box "⚙️ Gerando cliente do Prisma..."
 npx prisma generate
-
-print_box "🌱 Populando banco de dados..."
-npx prisma db seed
 
 print_box "🚀 Criando build da aplicação..."
 npm run build
