@@ -14,14 +14,16 @@ print_box() {
 }
 
 print_box "🔄 Atualizando código do repositório..."
+git stash
 git pull
+git stash pop || true
 
 print_box "🗑️ Limpando cache..."
 rm -rf .next node_modules/.cache || true
 npm cache clean --force
 
 print_box "📦 Instalando dependências..."
-npm ci --only=production
+npm ci --omit=dev
 
 print_box "📌 Aplicando migrações do Prisma..."
 npx prisma migrate deploy
@@ -36,5 +38,3 @@ print_box "🚀 Criando build da aplicação..."
 npm run build
 
 print_box "✅ Deploy concluído com sucesso!"
-echo ""
-echo "🚀 Reinicie o servidor: pm2 restart kadernim"

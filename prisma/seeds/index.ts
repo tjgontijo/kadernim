@@ -8,26 +8,37 @@ import { plansData } from './data-plans';
 
 const prisma = new PrismaClient();
 
-async function cleanDatabase() {  
-  await prisma.resourceBNCCCode.deleteMany();
-  await prisma.resourceFile.deleteMany();
-  await prisma.externalProductMapping.deleteMany();
-  await prisma.userResourceAccess.deleteMany();
-  await prisma.resource.deleteMany();
-  await prisma.bNCCCode.deleteMany();
-  await prisma.subject.deleteMany();
-  await prisma.educationLevel.deleteMany();
-  await prisma.pushSubscription.deleteMany();
-  await prisma.notification.deleteMany();
-  await prisma.invitation.deleteMany();
-  await prisma.member.deleteMany();
-  await prisma.organization.deleteMany();
-  await prisma.subscription.deleteMany();
-  await prisma.plan.deleteMany();
-  await prisma.session.deleteMany();
-  await prisma.account.deleteMany();
-  await prisma.verification.deleteMany();
-  await prisma.user.deleteMany();
+async function cleanDatabase() {
+  // Usar TRUNCATE CASCADE para limpar todas as tabelas de uma vez
+  // Ignora erros se as tabelas não existirem ainda
+  try {
+    await prisma.$executeRaw`
+      TRUNCATE TABLE 
+        "resource_bncc_code",
+        "resource_file",
+        "external_product_mapping",
+        "user_resource_access",
+        "resource",
+        "bncc_code",
+        "subject",
+        "education_level",
+        "push_subscription",
+        "notification",
+        "invitation",
+        "member",
+        "organization",
+        "subscription",
+        "plan",
+        "session",
+        "account",
+        "verification",
+        "user"
+      CASCADE;
+    `;
+  } catch (error) {
+    // Se as tabelas não existirem ainda, ignora o erro
+    console.log('⚠️  Algumas tabelas ainda não existem (primeira execução)');
+  }
 }
 
 async function createInitialData() {
