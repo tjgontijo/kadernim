@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, CheckCircle, Zap, Shield, Users } from 'lucide-react'
+import { PricingSection } from '@/components/home/PricingSection'
 
 export default function HomePage() {
   return (
@@ -95,6 +96,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Pricing Section */}
+      <PricingSection />
 
       {/* Footer */}
       <footer className="border-t py-8">

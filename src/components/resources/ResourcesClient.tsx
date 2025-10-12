@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ResourceGrid } from './resource-grid'
 import { FilterBar } from './filter-bar'
-import { PremiumBanner } from './premium-banner'
 import { Spinner } from '@/components/ui/spinner'
 
 // Tipos
@@ -104,9 +103,7 @@ export function ResourcesClient() {
   })
 
   return (
-    <div className="py-6">
-     
-      <PremiumBanner />
+    <div className="py-6"> 
       
       <Tabs defaultValue="all" className="mt-6" onValueChange={setActiveTab}>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

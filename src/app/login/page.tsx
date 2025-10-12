@@ -47,7 +47,7 @@ function SignInForm() {
         toast.success("Login realizado com sucesso")
         // Pequeno delay para garantir que o cookie foi setado
         setTimeout(() => {
-          window.location.href = '/dashboard'
+          window.location.href = '/resources'
         }, 100)
       },
       onError: () => {

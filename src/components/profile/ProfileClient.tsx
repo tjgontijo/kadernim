@@ -1,6 +1,4 @@
 'use client';
-
-import { PageHeader } from '@/components/layout/PageHeader';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -53,8 +51,6 @@ export function ProfileClient() {
 
   return (
     <div className="flex flex-col">
-      <PageHeader title="Meu Perfil" icon={<User className="h-5 w-5" />} />
-
       <div className="flex-1 p-4 md:p-6 lg:p-8">
         <div className="mx-auto max-w-4xl space-y-6">
           {/* Card de Avatar e Info Básica */}

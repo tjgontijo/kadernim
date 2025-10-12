@@ -10,23 +10,13 @@ export const plansData = [
     isActive: true
   },
   {
-    name: "Plano Premium - 3 Meses",
-    slug: "premium-3-meses",
-    description: "Acesso completo a todos os recursos pedagógicos por 3 meses",
-    productId: "42643860",
-    store: "prof-didatica",
-    durationDays: 90,
-    price: 97.00,
-    isActive: true
-  },
-  {
     name: "Plano Premium - 6 Meses",
     slug: "premium-6-meses",
     description: "Acesso completo a todos os recursos pedagógicos por 6 meses",
     productId: "42643883",
     store: "prof-didatica",
     durationDays: 180,
-    price: 147.00,
+    price: 127.00,
     isActive: true
   },
   {
@@ -36,7 +26,7 @@ export const plansData = [
     productId: "42643885",
     store: "prof-didatica",
     durationDays: 365,
-    price: 197.00,
+    price: 147.00,
     isActive: true
   }
 ];

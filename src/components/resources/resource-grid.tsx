@@ -4,6 +4,7 @@ import { ResourceCard } from './resource-card'
 import { Resource } from './ResourcesClient'
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { FileSearch } from 'lucide-react'
+import { AdInjector } from '@/components/ads'
 
 interface ResourceGridProps {
   resources: Resource[]
@@ -32,24 +33,27 @@ export function ResourceGrid({ resources }: ResourceGridProps) {
 
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {resources.map((resource) => (
-        <ResourceCard
-          key={resource.id}
-          id={resource.id}
-          title={resource.title}
-          description={resource.description}
-          imageUrl={resource.imageUrl}
-          subject={resource.subjectName}
-          educationLevel={resource.educationLevelName}
-          isFree={resource.isFree}
-          hasAccess={resource.hasAccess}
-          fileCount={resource.fileCount}
-          onClick={(id: string) => {
-            // Aqui implementaremos a navegação para a página de detalhes do recurso
-            console.log(`Navegando para o recurso ${id}`)
-          }}
-        />
-      ))}
+      {/* AdInjector injeta banners automaticamente a cada 4 recursos */}
+      <AdInjector injectAfter={4} variant="compact">
+        {resources.map((resource) => (
+          <ResourceCard
+            key={resource.id}
+            id={resource.id}
+            title={resource.title}
+            description={resource.description}
+            imageUrl={resource.imageUrl}
+            subject={resource.subjectName}
+            educationLevel={resource.educationLevelName}
+            isFree={resource.isFree}
+            hasAccess={resource.hasAccess}
+            fileCount={resource.fileCount}
+            onClick={(id: string) => {
+              // Aqui implementaremos a navegação para a página de detalhes do recurso
+              console.log(`Navegando para o recurso ${id}`)
+            }}
+          />
+        ))}
+      </AdInjector>
     </div>
   )
 }

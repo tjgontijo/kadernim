@@ -1,8 +1,8 @@
 export const usersData = [
     {
         name: "Thiago Gontijo",
-        email: "thiago.gontijo@kadernim.com",
-        password: "123senha@",
+        email: "tjgontijo@gmail.com",
+        password: "Thi##123",
         role: "admin"
     },
     {

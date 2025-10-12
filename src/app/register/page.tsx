@@ -67,7 +67,7 @@ export default function SignUpPage() {
         email,
         password,
         name,
-        callbackURL: '/dashboard'
+        callbackURL: '/resources'
       }, {
         onSuccess: async () => {
           // Se whatsapp foi fornecido, fazer login automático e atualizar

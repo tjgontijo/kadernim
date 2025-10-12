@@ -33,10 +33,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
   
-  // Se está em rota de auth e está logado, redireciona para dashboard
+  // Se está em rota de auth e está logado, redireciona para resources
   if (isAuthRoute) {
     if (isLoggedIn) {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
+      return NextResponse.redirect(new URL('/resources', request.url))
     }
     return NextResponse.next()
   }

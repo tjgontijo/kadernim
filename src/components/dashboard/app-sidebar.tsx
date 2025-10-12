@@ -131,13 +131,13 @@ export function AppSidebar() {
       sessionStorage.clear()
       
       // Redirecionar para a página de login
-      window.location.href = '/login'
+      window.location.href = '/'
     } catch (error) {
       console.error('Erro ao fazer logout:', error)
       // Forçar redirecionamento mesmo em caso de erro
       localStorage.clear()
       sessionStorage.clear()
-      window.location.href = '/login'
+      window.location.href = '/'
     }
   }
 

@@ -8,12 +8,16 @@ export const revalidate = 0
 
 export default function SubjectsPage() {
   return (
-    <div className="flex flex-col gap-6">
+    <>
       <PageHeader 
         title="Disciplinas" 
         icon={<BookOpen className="h-5 w-5" />}
+        showAd={false}
       />
-      <SubjectsTable />
-    </div>
+      
+      <div className="container mx-auto px-4 py-4">
+        <SubjectsTable />
+      </div>
+    </>
   )
 }

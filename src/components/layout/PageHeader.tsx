@@ -17,6 +17,7 @@ interface PageHeaderProps {
   icon?: React.ReactNode;
   description?: string;
   backHref?: string;
+  showAd?: boolean; // Controla se mostra banner premium
 }
 
 export function PageHeader({ title, icon, description, backHref }: PageHeaderProps) {
@@ -40,8 +41,8 @@ export function PageHeader({ title, icon, description, backHref }: PageHeaderPro
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
-    <header className="flex flex-col shrink-0 border-b px-4 py-3">
-      <div className="flex items-center justify-between">
+    <header className="flex flex-col shrink-0 border-b">
+      <div className="flex items-center justify-between px-4 py-3">
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
             {backHref && (
@@ -132,6 +133,6 @@ export function PageHeader({ title, icon, description, backHref }: PageHeaderPro
           </DropdownMenu>
         </div>
       </div>
-    </header>
+    </header>    
   );
 }
