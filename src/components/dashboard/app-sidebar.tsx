@@ -1,6 +1,6 @@
 'use client'
 
-import { Home, Settings, User, LogOut, ChevronUp, Rss, BookOpen, ChevronDown, School } from 'lucide-react'
+import { Settings, User, LogOut, ChevronUp, BookOpen, ChevronDown, School } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession } from '@/lib/auth/auth-client'
@@ -28,62 +28,62 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 // Menu items com controle de permissão
 const items = [
   {
-    title: 'Home',
-    url: '/dashboard',
-    icon: Home,
+    title: 'Meus Recursos',
+    url: '/resources',
+    icon: BookOpen,
     requiresAdmin: false, // Todos os usuários podem acessar
   },
-  {
-    title: 'Feed',
-    url: '/dashboard/feed',
-    icon: Rss,
-    requiresAdmin: false, // Todos os usuários podem acessar
-  },
+  // {
+  //   title: 'Feed',
+  //   url: '/feed',
+  //   icon: Rss,
+  //   requiresAdmin: false, // Todos os usuários podem acessar
+  // },
   {
     title: 'Perfil',
-    url: '/dashboard/profile',
+    url: '/profile',
     icon: User,
     requiresAdmin: false, // Todos os usuários podem acessar
   },
   {
     title: 'Configurações',
-    url: '/dashboard/settings',
+    url: '/settings',
     icon: Settings,
     requiresAdmin: true, // Apenas administradores podem acessar
     children: [
       {
         title: 'Geral',
-        url: '/dashboard/settings',
+        url: '/settings',
         icon: Settings,
         requiresAdmin: true, // Apenas administradores podem acessar
       },
       {
         title: 'Disciplinas',
-        url: '/dashboard/settings/subjects',
+        url: '/settings/subjects',
         icon: BookOpen,
         requiresAdmin: true, // Apenas administradores podem acessar
       },
       {
         title: 'Níveis de Ensino',
-        url: '/dashboard/settings/education-levels',
+        url: '/settings/education-levels',
         icon: School,
         requiresAdmin: true, // Apenas administradores podem acessar
       },
             {
         title: 'Usuários',
-        url: '/dashboard/settings/users',
+        url: '/settings/users',
         icon: User,
         requiresAdmin: true, // Apenas administradores podem acessar
       },
       {
         title: 'Codigos BNCC',
-        url: '/dashboard/settings/bncc-codes',
+        url: '/settings/bncc-codes',
         icon: BookOpen,
         requiresAdmin: true, // Apenas administradores podem acessar
       },
       {
         title: 'Mapeamento de Produtos',
-        url: '/dashboard/settings/product-mapping',
+        url: '/settings/product-mapping',
         icon: BookOpen,
         requiresAdmin: true, // Apenas administradores podem acessar
       },
@@ -91,10 +91,18 @@ const items = [
   },
 ]
 
+type UserWithSubscription = {
+  subscriptionTier?: string | null;
+  role?: string | null;
+  name?: string;
+  email?: string;
+  image?: string | null;
+}
+
 export function AppSidebar() {
   const pathname = usePathname()
   const { data: session } = useSession()
-  const user = session?.user
+  const user = session?.user as UserWithSubscription
   const isAdmin = user?.role === 'admin'
   const { setOpenMobile } = useSidebar()
   
@@ -141,7 +149,7 @@ export function AppSidebar() {
     if (!user?.name) return 'U'
     return user.name
       .split(' ')
-      .map((n) => n[0])
+      .map((n: string) => n[0])
       .join('')
       .toUpperCase()
       .slice(0, 2)
@@ -156,7 +164,9 @@ export function AppSidebar() {
           </div>
           <div className="flex flex-col group-data-[collapsible=icon]:hidden">
             <span className="text-sm font-semibold">Kadernim</span>
-            <span className="text-xs text-muted-foreground">Dashboard</span>
+            <span className="text-xs text-muted-foreground">
+              {user?.subscriptionTier === 'premium' ? 'Plano Premium' : 'Plano Gratuito'}
+            </span>
           </div>
         </div>
       </SidebarHeader>

@@ -26,8 +26,7 @@ model User {
   whatsapp String? @unique // ex: 556182493200 (sem + e sem espaços e sem o nono digito)
 
   // Campos adicionais para integração Yampi
-  temporaryPassword String? // Senha temporária para primeiro acesso
-  phone             String? // Número de telefone completo
+  temporaryPassword String? // Senha temporária para primeiro acesso  
   cpf               String? // CPF do usuário
 
   // Recursos pedagógicos
@@ -184,17 +183,27 @@ model PushSubscription {
 // Modelos para Recursos Pedagógicos
 // =========================================
 
+// Enum para tipos de armazenamento de arquivos
+enum StorageType {
+  GOOGLE_DRIVE
+  S3
+  VIMEO
+  YOUTUBE
+  EXTERNAL
+}
+
 // Modelo de Recurso Educacional
 model Resource {
   id          String   @id @default(cuid())
   title       String
+  slug      String     @unique
   description String   @db.Text
   imageUrl    String
   featured    Boolean  @default(false)
+  isFree      Boolean  @default(false) // true = gratuito, false = requer compra individual OU assinatura premium
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  isFree      Boolean  @default(false)
-
+  
   // Relacionamentos
   subjectId String
   subject   Subject @relation(fields: [subjectId], references: [id])
@@ -215,20 +224,28 @@ model Resource {
 
 // Arquivos de recursos (múltiplos arquivos por recurso)
 model ResourceFile {
-  id          String   @id @default(cuid())
-  fileName    String
-  fileType    String
-  // Para links do Google Drive inicialmente
-  externalUrl String?
-  // Para futura integração com S3/Supabase storage
-  storageKey  String?
-  createdAt   DateTime @default(now())
+  id           String      @id @default(cuid())
+  fileName     String?     // Opcional: nome do arquivo (usado principalmente para S3)
+  fileType     String?     // Opcional: MIME type (application/pdf, video/mp4, etc)
+  storageType  StorageType // Obrigatório: tipo de armazenamento
+  
+  // Para links externos (Google Drive, Vimeo, YouTube, etc)
+  externalUrl  String?
+  
+  // Para storage próprio (S3/Supabase)
+  storageKey   String?
+  
+  // Metadados adicionais (tamanho, duração de vídeo, etc)
+  metadata     Json?
+  
+  createdAt    DateTime @default(now())
 
   // Relacionamento
   resourceId String
   resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
 
   @@index([resourceId])
+  @@index([storageType])
   @@map("resource_file")
 }
 
@@ -280,16 +297,61 @@ model UserResourceAccess {
   @@map("user_resource_access")
 }
 
-// Assinatura premium
+// Planos premium disponíveis (configuração dos produtos que liberam acesso total)
+model Plan {
+  id            String   @id @default(cuid())
+  name          String   // Ex: "Plano Premium 3 Meses", "Plano Anual"
+  slug          String   @unique // Ex: "premium-3m", "premium-anual"
+  description   String?  @db.Text
+  
+  // IDs dos produtos nas plataformas externas
+  productId     String?  @unique // ID do produto na loja (null para plano free)
+  store         String   // "yampi", "hotmart", etc
+  
+  // Duração do plano
+  durationDays  Int?     // null = vitalício, número = dias de acesso
+  
+  // Preço
+  price         Float    // Preço em reais (ex: 97.00)
+  
+  // Controle
+  isActive      Boolean  @default(true) // Se o plano está disponível para venda
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relacionamento
+  subscriptions Subscription[]
+
+  @@index([productId])
+  @@index([isActive])
+  @@map("plan")
+}
+
+// Assinatura premium do usuário (libera TODOS os recursos)
 model Subscription {
   id            String   @id @default(cuid())
   userId        String   @unique
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Referência ao plano premium
+  planId        String?
+  plan          Plan? @relation(fields: [planId], references: [id])
+  
   isActive      Boolean  @default(true)
   purchaseDate  DateTime @default(now())
-  // Acesso vitalício, sem data de expiração
-  transactionId String? // Para referência de pagamento
+  expiresAt     DateTime? // Calculado automaticamente baseado no plan.durationDays
+  
+  // Dados da transação
+  transactionId String? // ID da transação de pagamento
+  productId     String? // ID do produto comprado (redundante para histórico)
+  
+  // Metadados da compra
+  metadata      Json? // Dados adicionais (valor pago, cupom, etc)
 
+  @@index([userId])
+  @@index([planId])
+  @@index([isActive])
+  @@index([expiresAt])
   @@map("subscription")
 }
 

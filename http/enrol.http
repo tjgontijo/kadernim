@@ -1,0 +1,27 @@
+### Testar com recursos individuais
+POST http://localhost:3000/api/enroll
+x-api-key: kadernim_webhook_secret_key
+Content-Type: application/json
+
+{
+  "store": "prof-didatica",
+  "name": "Adriana Re Sinhoratti",
+  "email": "adrianasinhoratti692@gmail.com",
+  "cpf": "80851444172",
+  "whatsapp": "65996242844",
+  "product_ids": [42643860]
+}
+
+### Testar com plano premium
+POST http://localhost:3000/api/enroll
+x-api-key: kadernim_webhook_secret_key
+Content-Type: application/json
+
+{
+  "store": "prof-didatica",
+  "name": "João Silva",
+  "email": "joao@email.com",
+  "cpf": "12345678900",
+  "whatsapp": "61982482101",
+  "product_ids": ["42643885"]
+}

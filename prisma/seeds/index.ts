@@ -3,6 +3,8 @@ import { subjects } from './seed-subjects';
 import { educationLevels } from './seed-education-levels';
 import { seedBNCC } from './seed-bncc';
 import { seedUsers } from './seed-users';
+import { seedResources } from './seed-resources';
+import { plansData } from './data-plans';
 
 const prisma = new PrismaClient();
 
@@ -21,6 +23,7 @@ async function cleanDatabase() {
   await prisma.member.deleteMany();
   await prisma.organization.deleteMany();
   await prisma.subscription.deleteMany();
+  await prisma.plan.deleteMany();
   await prisma.session.deleteMany();
   await prisma.account.deleteMany();
   await prisma.verification.deleteMany();
@@ -43,13 +46,18 @@ async function createInitialData() {
     await prisma.subject.createMany({
       data: subjects
     });
-    console.log('✅ Disciplinas criadas');
+    console.log('✅ Disciplinas criadas');    
+
+    await prisma.plan.createMany({
+      data: plansData
+    });
+    console.log('✅ Planos criados');
     
-    // Inserir códigos BNCC usando a função otimizada
     await seedBNCC(prisma);
     
-    // Inserir usuários
     await seedUsers(prisma);
+    
+    await seedResources(prisma);
     
     console.log('✅ População do banco de dados concluída com sucesso!');
   } catch (error) {
