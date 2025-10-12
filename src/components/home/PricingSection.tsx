@@ -14,6 +14,7 @@ interface Plan {
   price: number
   priceMonthly: number | null
   durationDays: number | null
+  linkCheckout: string | null
   isActive: boolean
 }
 
@@ -175,18 +176,33 @@ export function PricingSection() {
                   </li>
                 </ul>
 
-                <Link href="/register" className="w-full">
-                  <Button 
-                    className={`w-full ${
-                      isAnnual 
-                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg' 
-                        : ''
-                    }`}
-                    size="lg"
-                  >
-                    Assinar Agora
-                  </Button>
-                </Link>
+                {plan.linkCheckout ? (
+                  <Link href={plan.linkCheckout} target="_blank" rel="noopener noreferrer" className="w-full">
+                    <Button 
+                      className={`w-full ${
+                        isAnnual 
+                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg' 
+                          : ''
+                      }`}
+                      size="lg"
+                    >
+                      Assinar Agora
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link href="/register" className="w-full">
+                    <Button 
+                      className={`w-full ${
+                        isAnnual 
+                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg' 
+                          : ''
+                      }`}
+                      size="lg"
+                    >
+                      Assinar Agora
+                    </Button>
+                  </Link>
+                )}
               </Card>
             )
           })}

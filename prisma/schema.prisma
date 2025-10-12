@@ -312,7 +312,11 @@ model Plan {
   durationDays  Int?     // null = vitalício, número = dias de acesso
   
   // Preço
-  price         Float    // Preço em reais (ex: 97.00)
+  price         Float    // Preço total em reais (ex: 97.00)
+  priceMonthly  Float?   // Preço mensal equivalente (ex: 8.08)
+  
+  // Checkout
+  linkCheckout  String?  @db.Text // URL do checkout (ex: https://seguro.profdidatica.com.br/r/...)
   
   // Controle
   isActive      Boolean  @default(true) // Se o plano está disponível para venda

@@ -7,6 +7,7 @@ export const plansData = [
     store: "prof-didatica",
     durationDays: null,
     price: 0,
+    linkCheckout: null,
     isActive: true
   },
   {
@@ -17,6 +18,7 @@ export const plansData = [
     store: "prof-didatica",
     durationDays: 180,
     price: 127.00,
+    linkCheckout: "https://seguro.profdidatica.com.br/r/27XMKLAI8X",
     isActive: true
   },
   {
@@ -27,6 +29,7 @@ export const plansData = [
     store: "prof-didatica",
     durationDays: 365,
     price: 147.00,
+    linkCheckout: "https://seguro.profdidatica.com.br/r/TMNDJH4WEN",
     isActive: true
   }
 ];
