@@ -1,5 +1,9 @@
 import { defineConfig } from "prisma/config";
 import path from "path";
+import dotenv from "dotenv";
+
+// Carregar variáveis de ambiente do .env
+dotenv.config();
 
 export default defineConfig({
   

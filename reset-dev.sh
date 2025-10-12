@@ -22,6 +22,9 @@ npm cache clean --force
 print_box "📦 Instalando dependências..."
 npm install
 
+print_box "🔄 Resetando migrações do Prisma..."
+npx prisma migrate reset --force
+
 print_box "📌 Executando migrações do Prisma..."
 npx prisma migrate dev --name init || { echo "❌ Erro ao rodar as migrações"; exit 1; }
 
