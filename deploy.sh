@@ -14,12 +14,12 @@ print_box() {
 }
 
 print_box "🔄 Atualizando código do repositório..."
-git stash
-git pull
-git stash pop || true
+git fetch origin
+git reset --hard origin/main
+git clean -fd
 
 print_box "🗑️ Limpando cache e dependências..."
-rm -rf .next node_modules package-lock.json || true
+rm -rf .next node_modules/.cache package-lock.json || true
 npm cache clean --force
 
 print_box "📦 Instalando dependências (fresh install)..."
