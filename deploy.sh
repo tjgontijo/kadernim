@@ -25,8 +25,8 @@ npm cache clean --force
 print_box "📦 Instalando dependências (fresh install)..."
 npm install --omit=dev
 
-print_box "📌 Aplicando migrações do Prisma..."
-npx prisma migrate deploy
+print_box "🔄 Sincronizando schema com o banco..."
+npx prisma db push --skip-generate
 
 print_box "⚙️ Gerando cliente do Prisma..."
 npx prisma generate
