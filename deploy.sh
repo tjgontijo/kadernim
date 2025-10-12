@@ -34,4 +34,10 @@ npx prisma generate
 print_box "🚀 Criando build da aplicação..."
 npm run build
 
+print_box "Reiniciando servidor..."
+pm2 restart kadernim
+
+print_box "Restaurando nginx"
+systemctl restart nginx
+
 print_box "✅ Deploy concluído com sucesso!"
