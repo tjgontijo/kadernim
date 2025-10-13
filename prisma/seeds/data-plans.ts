@@ -17,7 +17,7 @@ export const plansData = [
     productId: "42643883",
     store: "prof-didatica",
     durationDays: 180,
-    price: 127.00,
+    price: 97,
     linkCheckout: "https://seguro.profdidatica.com.br/r/27XMKLAI8X",
     isActive: true
   },
@@ -28,7 +28,7 @@ export const plansData = [
     productId: "42643885",
     store: "prof-didatica",
     durationDays: 365,
-    price: 147.00,
+    price: 127,
     linkCheckout: "https://seguro.profdidatica.com.br/r/TMNDJH4WEN",
     isActive: true
   }

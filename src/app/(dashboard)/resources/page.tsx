@@ -13,8 +13,7 @@ export default function Dashboard() {
       <PageHeader 
         title="Meus Recursos"
         icon={<BookOpen className="h-5 w-5" />}
-      />
-      
+      />     
       
       <div className="container mx-auto px-4 py-4">
         <AdSlot slot="header" variant="compact" />
