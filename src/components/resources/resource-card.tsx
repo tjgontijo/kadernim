@@ -76,7 +76,7 @@ export function ResourceCard({
           className="cursor-pointer"
         >
           {!hasAccess && <Lock className="mr-1 h-3 w-3" />}
-          {hasAccess ? 'Acessar' : 'Desbloquear'}
+          Saiba Mais
         </Button>
       </CardFooter>
     </Card>

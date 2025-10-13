@@ -12,18 +12,24 @@ export async function GET() {
 
     // Verificar se o usuário tem plano ativo
     let hasActivePlan = false;
+    
     if (userId) {
       const subscription = await prisma.subscription.findUnique({
         where: { userId },
         select: {
           isActive: true,
           expiresAt: true,
+          plan: {
+            select: {
+              slug: true
+            }
+          }
         },
       });
       
       // Verifica se tem assinatura ativa e não expirada
-      hasActivePlan = !!(subscription?.isActive && 
-        (!subscription.expiresAt || subscription.expiresAt > new Date()));
+      const notExpired = !subscription?.expiresAt || subscription.expiresAt > new Date();
+      hasActivePlan = !!(subscription?.isActive && notExpired && subscription.plan?.slug !== 'free');
     }
 
     // Buscar todos os recursos com suas relações
@@ -58,11 +64,20 @@ export async function GET() {
         accesses: userId ? {
           where: {
             userId: userId,
+            isActive: true,
           },
           select: {
             id: true,
+            isActive: true,
+            expiresAt: true,
           },
         } : undefined,
+        externalMappings: {
+          select: {
+            productId: true,
+            store: true
+          }
+        }
       },
       orderBy: {
         createdAt: 'desc',
@@ -71,9 +86,13 @@ export async function GET() {
 
     // Transformar os dados para o formato esperado pelo cliente
     const formattedResources = resources.map(resource => {
+      // Verificar acesso individual (compra específica)
+      const hasIndividualAccess = resource.accesses?.some(
+        access => access.isActive && (!access.expiresAt || access.expiresAt > new Date())
+      ) || false;
+      
       // Se tem plano ativo, tem acesso a tudo
       // Se não tem plano, só tem acesso aos gratuitos ou comprados individualmente
-      const hasIndividualAccess = resource.accesses && resource.accesses.length > 0;
       const hasAccess = hasActivePlan || resource.isFree || hasIndividualAccess;
       
       return {
@@ -88,6 +107,7 @@ export async function GET() {
         isFree: resource.isFree,
         hasAccess,
         hasActivePlan,
+        hasIndividualAccess,
         fileCount: resource.files.length,
       };
     });

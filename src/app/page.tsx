@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, CheckCircle, Zap, Shield, Users } from 'lucide-react'
-import { PricingSection } from '@/components/home/PricingSection'
 
 export default function HomePage() {
   return (

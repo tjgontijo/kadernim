@@ -90,6 +90,8 @@ export const bnccSeed = [
       { code: 'EF02LP06', description: 'Participar de situações de comunicação oral, respeitando turnos de fala e adequando a linguagem ao contexto.' },
       { code: 'EF02LP07', description: 'Reconhecer o uso da pontuação e dos sinais gráficos para expressar sentido nos textos.' },
       { code: 'EF02LP08', description: 'Apreciar e comentar textos literários, demonstrando compreensão e envolvimento com a leitura.' },
+      { code: 'EF02LP13', description: 'Ler e compreender, em colaboração com os colegas e com a ajuda do professor, textos narrativos de diferentes gêneros e extensões, identificando personagens, enredo, tempo e espaço.' },
+
     
       // MATEMÁTICA (MA)
       { code: 'EF02MA01', description: 'Contar, ler, escrever e ordenar números naturais até 1000, compreendendo o valor posicional.' },

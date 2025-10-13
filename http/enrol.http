@@ -1,4 +1,4 @@
-### Testar com recursos individuais
+### Testar com plano premium
 POST http://localhost:3000/api/enroll
 x-api-key: kadernim_webhook_secret_key
 Content-Type: application/json
@@ -12,7 +12,7 @@ Content-Type: application/json
   "product_ids": [42643860]
 }
 
-### Testar com plano premium
+### Testar com recurso único
 POST http://localhost:3000/api/enroll
 x-api-key: kadernim_webhook_secret_key
 Content-Type: application/json
@@ -20,7 +20,7 @@ Content-Type: application/json
 {
   "store": "prof-didatica",
   "name": "João Silva",
-  "email": "joao@email.com",
+  "email": "joao@gmail.com",
   "cpf": "12345678900",
   "whatsapp": "61982482101",
   "product_ids": ["42643885"]

@@ -5,12 +5,15 @@ import { Resource } from './ResourcesClient'
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { FileSearch } from 'lucide-react'
 import { AdInjector } from '@/components/ads'
+import { useRouter } from 'next/navigation'
 
 interface ResourceGridProps {
   resources: Resource[]
 }
 
 export function ResourceGrid({ resources }: ResourceGridProps) {
+  const router = useRouter()
+  
   // Se não houver recursos, mostrar estado vazio
   if (resources.length === 0) {
     return (
@@ -48,8 +51,7 @@ export function ResourceGrid({ resources }: ResourceGridProps) {
             hasAccess={resource.hasAccess}
             fileCount={resource.fileCount}
             onClick={(id: string) => {
-              // Aqui implementaremos a navegação para a página de detalhes do recurso
-              console.log(`Navegando para o recurso ${id}`)
+              router.push(`/resources/${id}`)
             }}
           />
         ))}

@@ -18,6 +18,7 @@ export interface Resource {
   isFree: boolean
   hasAccess: boolean
   hasActivePlan?: boolean
+  hasIndividualAccess?: boolean
   fileCount: number
 }
 
@@ -97,6 +98,22 @@ export function ResourcesClient() {
     return true
   })
 
+  // Verificar se o usuário tem plano premium
+  const hasPremiumPlan = filteredResources.some(resource => resource.hasActivePlan)
+
+  // Separar recursos em "Meus Materiais" e "Biblioteca"
+  const myMaterials = filteredResources.filter(resource => 
+    // Para usuários premium, mostrar todos os recursos que eles têm acesso
+    // Para usuários sem premium, mostrar apenas os comprados individualmente
+    hasPremiumPlan ? resource.hasAccess : resource.hasIndividualAccess === true
+  )
+  
+  const otherMaterials = filteredResources.filter(resource => 
+    // Para usuários premium, não mostrar nada aqui (tudo já está em "Meus Materiais")
+    // Para usuários sem premium, mostrar recursos que não foram comprados individualmente
+    hasPremiumPlan ? false : resource.hasIndividualAccess !== true
+  )
+
   return (
     <div className="py-6">
       <FilterBar 
@@ -116,7 +133,23 @@ export function ResourcesClient() {
             <Spinner className="h-8 w-8 text-primary" />
           </div>
         ) : (
-          <ResourceGrid resources={filteredResources} />
+          <div className="space-y-12">
+            {/* Seção de Meus Materiais */}
+            {myMaterials.length > 0 && (
+              <section>
+                <h2 className="text-2xl font-bold mb-6">Meus Recursos</h2>
+                <ResourceGrid resources={myMaterials} />
+              </section>
+            )}
+            
+            {/* Seção de Biblioteca - só mostrar se não for premium ou se tiver conteúdo */}
+            {(!hasPremiumPlan && otherMaterials.length > 0) && (
+              <section>
+                <h2 className="text-2xl font-bold mb-6">Biblioteca Completa</h2>
+                <ResourceGrid resources={otherMaterials} />
+              </section>
+            )}
+          </div>
         )}
       </div>
     </div>
