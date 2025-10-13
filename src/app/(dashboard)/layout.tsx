@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import { SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/dashboard/app-sidebar'
-import { FloatingToggleButton } from '@/components/layout/FloatingToggleButton'
+import { MobileBottomNav } from '@/components/layout/MobileBottomNav'
 
 // Desabilitar cache para rotas protegidas
 export const dynamic = 'force-dynamic'
@@ -25,12 +25,9 @@ export default function ProtectedLayout({
       <div className="flex min-h-screen w-full">
         <AppSidebar />
         <main className="flex-1 pb-20 md:pb-0 relative">
-          <FloatingToggleButton />
           {children}
         </main>
-        <div className="fixed bottom-4 left-4 z-50 md:hidden">
-          <SidebarTrigger className="bg-primary text-primary-foreground shadow-lg rounded-full h-12 w-12 flex items-center justify-center cursor-pointer" />
-        </div>
+        <MobileBottomNav />
       </div>
     </SidebarProvider>
   )

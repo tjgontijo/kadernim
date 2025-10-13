@@ -1,7 +1,8 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Bell } from 'lucide-react';
+import { Bell, ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +22,7 @@ interface PageHeaderProps {
 }
 
 export function PageHeader({ title, icon, description, backHref }: PageHeaderProps) {
+  const router = useRouter()
   const [notifications] = useState([
     {
       id: 1,
@@ -40,38 +42,38 @@ export function PageHeader({ title, icon, description, backHref }: PageHeaderPro
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
+  const handleBack = () => {
+    if (backHref) {
+      router.push(backHref)
+    } else {
+      router.back()
+    }
+  }
+
   return (
-    <header className="flex flex-col shrink-0 border-b">
+    <header className="flex flex-col shrink-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex items-center justify-between px-4 py-3">
-        <div className="flex flex-col">
-          <div className="flex items-center gap-2">
-            {backHref && (
-              <Button variant="ghost" size="icon" asChild className="mr-2 cursor-pointer">
-                <a href={backHref}>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-4 w-4"
-                  >
-                    <path d="m15 18-6-6 6-6" />
-                  </svg>
-                  <span className="sr-only">Voltar</span>
-                </a>
-              </Button>
-            )}
-            {icon && <span className="text-muted-foreground">{icon}</span>}
-            <h1 className="text-lg font-semibold">{title}</h1>
-          </div>
-          {description && (
-            <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          {(backHref !== undefined || backHref === '') && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={handleBack}
+              className="h-9 w-9 rounded-full hover:bg-muted flex-shrink-0"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="sr-only">Voltar</span>
+            </Button>
           )}
+          <div className="flex flex-col min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              {icon && <span className="text-muted-foreground flex-shrink-0">{icon}</span>}
+              <h1 className="text-lg font-semibold truncate">{title}</h1>
+            </div>
+            {description && (
+              <p className="mt-0.5 text-xs text-muted-foreground truncate">{description}</p>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-2">

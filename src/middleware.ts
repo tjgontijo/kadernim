@@ -23,12 +23,10 @@ export async function middleware(request: NextRequest) {
   const isAuthRoute = pathname.startsWith('/login') || 
                      pathname.startsWith('/register')
   
-  // Rotas públicas (página institucional)
+  // Rotas públicas explícitas
   const isPublicRoute = pathname === '/'
   
-  // Rotas protegidas (dashboard e subpáginas)
-  const isProtectedRoute = pathname.startsWith('/dashboard')
-  
+  // Não precisa validação: API, static, PWA, auth e home
   if (isApiOrStaticRoute || isPWAFile) {
     return NextResponse.next()
   }
@@ -41,17 +39,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
   
-  // Se está em rota protegida e NÃO está logado, redireciona para login
-  if (isProtectedRoute) {
-    if (!isLoggedIn) {
-      return NextResponse.redirect(new URL('/login', request.url))
-    }
+  // Home é pública
+  if (isPublicRoute) {
     return NextResponse.next()
   }
   
-  // Rotas públicas sempre passam
-  if (isPublicRoute) {
-    return NextResponse.next()
+  // Qualquer outra rota é protegida por padrão
+  if (!isLoggedIn) {
+    return NextResponse.redirect(new URL('/login', request.url))
   }
   
   return NextResponse.next()

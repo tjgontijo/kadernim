@@ -11,8 +11,9 @@ export default function EducationLevelsPage() {
   return (
     <>
       <PageHeader 
-      title="Disciplinas" 
-      icon={<School className="h-5 w-5" />} 
+      title="Níveis de Ensino" 
+      icon={<School className="h-5 w-5" />}
+      backHref="/settings" 
       />      
       <div className="px-4 pb-3 pt-0">
         <AdSlot slot="header" variant="compact" />

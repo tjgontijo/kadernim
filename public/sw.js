@@ -2,8 +2,7 @@
 const CACHE_NAME = 'kadernim-v1';
 const urlsToCache = [
   '/',
-  '/login'  
-  // Adicione outras rotas importantes aqui
+  '/login'    
 ];
 
 // Instalação do Service Worker

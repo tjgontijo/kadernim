@@ -34,7 +34,7 @@ export function ResourceGrid({ resources }: ResourceGridProps) {
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {/* AdInjector injeta banners automaticamente a cada 4 recursos */}
-      <AdInjector injectAfter={4} variant="compact">
+      <AdInjector injectAfter={8} variant="compact">
         {resources.map((resource) => (
           <ResourceCard
             key={resource.id}

@@ -19,8 +19,8 @@ const COMPONENT_TO_SUBJECT: Record<string, string> = {
   EF_FUND: 'educacao-fisica'
 };
 
-function inferEducationLevelSlug(code: string): 'educacao-infantil' | 'fundamental-i' | 'fundamental-ii' {
-  if (code.startsWith('EI')) return 'educacao-infantil';
+function inferEducationLevelSlug(code: string): 'infantil' | 'fundamental-i' | 'fundamental-ii' {
+  if (code.startsWith('EI')) return 'infantil';
   if (code.startsWith('EF')) {
     const year = parseInt(code.slice(2, 4), 10); // EF01..EF09
     return year <= 5 ? 'fundamental-i' : 'fundamental-ii';

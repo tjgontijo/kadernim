@@ -1,4 +1,3 @@
-import { AdSlot } from '@/components/ads';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { ProfileClient } from '@/components/profile/ProfileClient';
 import { User } from 'lucide-react';
@@ -11,13 +10,9 @@ export default function ProfilePage() {
   return (
     <>  
       <PageHeader 
-      title="Perfil" 
-      icon={<User className="h-5 w-5" />} 
-      />      
-      <div className="px-4 pb-3 pt-0">
-        <AdSlot slot="header" variant="compact" />
-      </div>
-    
+        title="Perfil" 
+        icon={<User className="h-5 w-5" />}        
+      />
       <div className="container mx-auto px-4 py-4">
         <ProfileClient />
       </div>

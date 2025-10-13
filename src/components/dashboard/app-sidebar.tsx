@@ -1,9 +1,25 @@
 'use client'
 
-import { Settings, User, LogOut, ChevronUp, BookOpen, ChevronDown, School } from 'lucide-react'
+import { 
+  Settings, 
+  User, 
+  LogOut, 
+  ChevronUp, 
+  BookOpen, 
+  ChevronDown, 
+  FolderOpen,
+  Rss,
+  MessageSquarePlus,
+  ShieldCheck,
+  Users,
+  GraduationCap,
+  FileText,
+  Package
+} from 'lucide-react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { useSession } from '@/lib/auth/auth-client'
+import { usePathname, useRouter } from 'next/navigation'
+import { useSession, signOut } from '@/lib/auth/auth-client'
+import { useState } from 'react'
 import {
   Sidebar,
   SidebarContent,
@@ -24,67 +40,72 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
 
 // Menu items com controle de permissão
 const items = [
   {
     title: 'Meus Recursos',
     url: '/resources',
-    icon: BookOpen,
-    requiresAdmin: false, // Todos os usuários podem acessar
-  },
-  // {
-  //   title: 'Feed',
-  //   url: '/feed',
-  //   icon: Rss,
-  //   requiresAdmin: false, // Todos os usuários podem acessar
-  // },
-  {
-    title: 'Perfil',
-    url: '/profile',
-    icon: User,
+    icon: FolderOpen,
     requiresAdmin: false, // Todos os usuários podem acessar
   },
   {
-    title: 'Configurações',
-    url: '/settings',
-    icon: Settings,
+    title: 'Feed',
+    url: '/feed',
+    icon: Rss,
+    requiresAdmin: false, // Todos os usuários podem acessar
+  },
+  {
+    title: 'Solicitação de Recursos',
+    url: '/requests',
+    icon: MessageSquarePlus,
+    requiresAdmin: false, // Todos os usuários podem acessar
+  },
+  {
+    title: 'Administração',
+    url: '/admin',
+    icon: ShieldCheck,
     requiresAdmin: true, // Apenas administradores podem acessar
     children: [
       {
         title: 'Geral',
-        url: '/settings',
+        url: '/admin/settings',
         icon: Settings,
         requiresAdmin: true, // Apenas administradores podem acessar
       },
       {
         title: 'Disciplinas',
-        url: '/settings/subjects',
+        url: '/admin/subjects',
         icon: BookOpen,
         requiresAdmin: true, // Apenas administradores podem acessar
       },
       {
         title: 'Níveis de Ensino',
-        url: '/settings/education-levels',
-        icon: School,
+        url: '/admin/education-levels',
+        icon: GraduationCap,
         requiresAdmin: true, // Apenas administradores podem acessar
       },
-            {
+      {
         title: 'Usuários',
-        url: '/settings/users',
-        icon: User,
+        url: '/admin/users',
+        icon: Users,
         requiresAdmin: true, // Apenas administradores podem acessar
       },
       {
         title: 'Codigos BNCC',
-        url: '/settings/bncc-codes',
-        icon: BookOpen,
+        url: '/admin/bncc-codes',
+        icon: FileText,
         requiresAdmin: true, // Apenas administradores podem acessar
       },
       {
         title: 'Mapeamento de Produtos',
-        url: '/settings/product-mapping',
-        icon: BookOpen,
+        url: '/admin/product-mapping',
+        icon: Package,
         requiresAdmin: true, // Apenas administradores podem acessar
       },
     ],
@@ -101,10 +122,14 @@ type UserWithSubscription = {
 
 export function AppSidebar() {
   const pathname = usePathname()
+  const router = useRouter()
   const { data: session } = useSession()
   const user = session?.user as UserWithSubscription
   const isAdmin = user?.role === 'admin'
   const { setOpenMobile } = useSidebar()
+  const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({
+    'Administração': true, // Aberto por padrão
+  })
   
   // Filtrar itens de menu com base na role do usuário
   const filteredItems = items.filter(item => {
@@ -117,27 +142,25 @@ export function AppSidebar() {
 
   const handleLogout = async () => {
     try {
-      // Tentar fazer logout pela API diretamente
-      await fetch('/api/auth/sign-out', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // Importante para incluir cookies
+      await signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            try {
+              localStorage.clear()
+              sessionStorage.clear()
+            } catch {}
+            router.push('/')
+          }
+        }
       })
-      
-      // Independentemente do resultado da API, limpar dados locais
-      localStorage.clear()
-      sessionStorage.clear()
-      
-      // Redirecionar para a página de login
-      window.location.href = '/'
     } catch (error) {
       console.error('Erro ao fazer logout:', error)
-      // Forçar redirecionamento mesmo em caso de erro
-      localStorage.clear()
-      sessionStorage.clear()
-      window.location.href = '/'
+      // Fallback: limpar e redirecionar
+      try {
+        localStorage.clear()
+        sessionStorage.clear()
+      } catch {}
+      router.push('/')
     }
   }
 
@@ -192,30 +215,39 @@ export function AppSidebar() {
                 return (
                   <SidebarMenuItem key={item.title}>
                     {hasChildren ? (
-                      <>
-                        <SidebarMenuButton isActive={isActive} className="group-data-[collapsible=icon]:justify-center cursor-pointer">
-                          <item.icon className="h-4 w-4" />
-                          <span className="group-data-[collapsible=icon]:hidden flex-1">{item.title}</span>
-                          <ChevronDown className="h-4 w-4 group-data-[collapsible=icon]:hidden transition-transform duration-200" />
-                        </SidebarMenuButton>
-                        <SidebarGroup>
-                          <SidebarGroupContent className="pl-6">
-                            {filteredChildren.map((child) => {
-                              const isChildActive = pathname === child.url
-                              return (
-                                <SidebarMenuItem asChild key={child.title}>
-                                  <SidebarMenuButton asChild isActive={isChildActive} className="group-data-[collapsible=icon]:justify-center cursor-pointer">
-                                    <Link href={child.url} onClick={handleLinkClick}>
-                                      <child.icon className="h-4 w-4" />
-                                      <span className="group-data-[collapsible=icon]:hidden">{child.title}</span>
-                                    </Link>
-                                  </SidebarMenuButton>
-                                </SidebarMenuItem>
-                              )
-                            })}
-                          </SidebarGroupContent>
-                        </SidebarGroup>
-                      </>
+                      <Collapsible
+                        open={openMenus[item.title]}
+                        onOpenChange={(open) => setOpenMenus({ ...openMenus, [item.title]: open })}
+                      >
+                        <CollapsibleTrigger asChild>
+                          <SidebarMenuButton isActive={isActive} className="group-data-[collapsible=icon]:justify-center cursor-pointer">
+                            <item.icon className="h-4 w-4" />
+                            <span className="group-data-[collapsible=icon]:hidden flex-1">{item.title}</span>
+                            <ChevronDown className={`h-4 w-4 group-data-[collapsible=icon]:hidden transition-transform duration-200 ${
+                              openMenus[item.title] ? 'rotate-180' : ''
+                            }`} />
+                          </SidebarMenuButton>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <SidebarGroup>
+                            <SidebarGroupContent className="pl-6">
+                              {filteredChildren.map((child) => {
+                                const isChildActive = pathname === child.url
+                                return (
+                                  <SidebarMenuItem asChild key={child.title}>
+                                    <SidebarMenuButton asChild isActive={isChildActive} className="group-data-[collapsible=icon]:justify-center cursor-pointer">
+                                      <Link href={child.url} onClick={handleLinkClick}>
+                                        <child.icon className="h-4 w-4" />
+                                        <span className="group-data-[collapsible=icon]:hidden">{child.title}</span>
+                                      </Link>
+                                    </SidebarMenuButton>
+                                  </SidebarMenuItem>
+                                )
+                              })}
+                            </SidebarGroupContent>
+                          </SidebarGroup>
+                        </CollapsibleContent>
+                      </Collapsible>
                     ) : (
                       <SidebarMenuButton asChild isActive={isActive} className="group-data-[collapsible=icon]:justify-center cursor-pointer">
                         <Link href={item.url} onClick={handleLinkClick}>

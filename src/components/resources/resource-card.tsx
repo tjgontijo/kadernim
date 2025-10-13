@@ -23,7 +23,6 @@ interface ResourceCardProps {
 export function ResourceCard({
   id,
   title,
-  description,
   imageUrl,
   subject,
   educationLevel,
@@ -33,7 +32,7 @@ export function ResourceCard({
   onClick
 }: ResourceCardProps) {
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-md cursor-pointer" onClick={() => onClick(id)}>
+    <Card className={`overflow-hidden transition-all hover:shadow-md cursor-pointer ${!hasAccess ? 'opacity-70' : ''}`} onClick={() => onClick(id)}>
       <div className="relative">
         <AspectRatio ratio={16/9}>
           <Image
@@ -44,22 +43,25 @@ export function ResourceCard({
             className="object-cover"
           />
         </AspectRatio>
-        <Badge 
-          className="absolute top-2 right-2" 
-          variant={isFree ? "secondary" : "default"}
-        >
-          {isFree ? 'Gratuito' : 'Premium'}
-        </Badge>
+        {!hasAccess && (
+          <Badge 
+            className="absolute top-2 right-2 bg-black/70 text-white hover:bg-black/80" 
+            variant="secondary"
+          >
+            <Lock className="mr-1 h-3 w-3" />
+            Bloqueado
+          </Badge>
+        )}
       </div>
-      <CardContent className="p-4">
-        <h3 className="font-semibold text-lg mb-1 line-clamp-1">{title}</h3>
-        <p className="text-muted-foreground text-sm mb-2 line-clamp-2">{description}</p>
+      <CardContent className="py-0 px-4">
+        <h3 className="font-semibold text-lg mb-3 line-clamp-2">{title}</h3>
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           <Badge variant="outline">{subject}</Badge>
           <Badge variant="outline">{educationLevel}</Badge>
+          {isFree && <Badge variant="secondary" className="text-xs">Gratuito</Badge>}
         </div>
       </CardContent>
-      <CardFooter className="p-4 pt-0 flex justify-between items-center">
+      <CardFooter className="py-4 pt-0 flex justify-between items-center">
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <FileText className="h-3 w-3" />
           <span>{fileCount} {fileCount === 1 ? 'arquivo' : 'arquivos'}</span>
@@ -73,8 +75,8 @@ export function ResourceCard({
           size="sm"
           className="cursor-pointer"
         >
-          {!hasAccess && !isFree && <Lock className="mr-1 h-3 w-3" />}
-          {hasAccess ? 'Acessar' : (isFree ? 'Ver' : 'Comprar')}
+          {!hasAccess && <Lock className="mr-1 h-3 w-3" />}
+          {hasAccess ? 'Acessar' : 'Desbloquear'}
         </Button>
       </CardFooter>
     </Card>

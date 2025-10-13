@@ -7,54 +7,101 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import {
   Settings as SettingsIcon,
-  Shield,
   Bell,
   Palette,
-  Database,
-  Users,
+  User,
   Lock,
   Globe,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
 import { useSession } from '@/lib/auth/auth-client';
+
+type UserWithSubscription = {
+  subscriptionTier?: string | null;
+  role?: string | null;
+  name?: string;
+  email?: string;
+  image?: string | null;
+}
 
 export function SettingsClient() {
   // Middleware já garantiu que há sessão
   const { data: session } = useSession();
+  const user = session?.user as UserWithSubscription;
   const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [emailNotifications, setEmailNotifications] = useState(true);
+
+  // Evitar hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSaveSettings = () => {
     // TODO: Implementar salvamento de configurações
   };
 
-  const isAdmin = session?.user?.role === 'admin';
-
-  if (!isAdmin) {
-    return (
-      <div className="flex flex-col">
-        <PageHeader title="Configurações" icon={<SettingsIcon className="h-5 w-5" />} />
-
-        <div className="flex flex-1 items-center justify-center p-4">
-          <div className="text-center">
-            <Shield className="mx-auto h-12 w-12 text-muted-foreground" />
-            <h2 className="mt-4 text-xl font-semibold">Acesso Restrito</h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Você não tem permissão para acessar esta página.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col">
-      <PageHeader title="Configurações do Sistema" icon={<SettingsIcon className="h-5 w-5" />} />
+      <PageHeader 
+        title="Configurações" 
+        icon={<SettingsIcon className="h-5 w-5" />}
+        backHref="/resources"
+        description="Personalize sua experiência no app"
+      />
 
       <div className="flex-1 p-4 md:p-6 lg:p-8">
         <div className="mx-auto max-w-4xl space-y-6">
+          {/* Perfil do Usuário */}
+          <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+            <div className="border-b p-6">
+              <div className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                <h3 className="text-lg font-semibold">Perfil</h3>
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Informações da sua conta
+              </p>
+            </div>
+
+            <div className="p-6">
+              <div className="space-y-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="name">Nome completo</Label>
+                  <Input id="name" defaultValue={user?.name || ''} />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    defaultValue={user?.email || ''} 
+                    disabled
+                    className="bg-muted"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    O email não pode ser alterado
+                  </p>
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="whatsapp">WhatsApp</Label>
+                  <Input 
+                    id="whatsapp" 
+                    type="tel" 
+                    placeholder="(00) 00000-0000"
+                  />
+                </div>
+
+                <Button onClick={handleSaveSettings} className="w-full">
+                  Salvar Alterações
+                </Button>
+              </div>
+            </div>
+          </div>
           {/* Aparência */}
           <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
             <div className="border-b p-6">
@@ -71,29 +118,43 @@ export function SettingsClient() {
               <div className="space-y-4">
                 <div>
                   <Label>Tema</Label>
-                  <div className="mt-2 flex gap-2">
-                    <Button
-                      variant={theme === 'light' ? 'default' : 'outline'}
-                      onClick={() => setTheme('light')}
-                      className="flex-1"
-                    >
-                      Claro
-                    </Button>
-                    <Button
-                      variant={theme === 'dark' ? 'default' : 'outline'}
-                      onClick={() => setTheme('dark')}
-                      className="flex-1"
-                    >
-                      Escuro
-                    </Button>
-                    <Button
-                      variant={theme === 'system' ? 'default' : 'outline'}
-                      onClick={() => setTheme('system')}
-                      className="flex-1"
-                    >
-                      Sistema
-                    </Button>
-                  </div>
+                  {!mounted ? (
+                    <div className="mt-2 flex gap-2">
+                      <Button variant="outline" className="flex-1" disabled>
+                        Claro
+                      </Button>
+                      <Button variant="outline" className="flex-1" disabled>
+                        Escuro
+                      </Button>
+                      <Button variant="outline" className="flex-1" disabled>
+                        Sistema
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="mt-2 flex gap-2">
+                      <Button
+                        variant={theme === 'light' ? 'default' : 'outline'}
+                        onClick={() => setTheme('light')}
+                        className="flex-1"
+                      >
+                        Claro
+                      </Button>
+                      <Button
+                        variant={theme === 'dark' ? 'default' : 'outline'}
+                        onClick={() => setTheme('dark')}
+                        className="flex-1"
+                      >
+                        Escuro
+                      </Button>
+                      <Button
+                        variant={theme === 'system' ? 'default' : 'outline'}
+                        onClick={() => setTheme('system')}
+                        className="flex-1"
+                      >
+                        Sistema
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -107,7 +168,7 @@ export function SettingsClient() {
                 <h3 className="text-lg font-semibold">Notificações</h3>
               </div>
               <p className="mt-1 text-sm text-muted-foreground">
-                Gerencie as notificações do sistema
+                Gerencie como você recebe notificações
               </p>
             </div>
 
@@ -123,55 +184,42 @@ export function SettingsClient() {
                   <Button
                     variant={notificationsEnabled ? 'default' : 'outline'}
                     onClick={() => setNotificationsEnabled(!notificationsEnabled)}
+                    size="sm"
                   >
                     {notificationsEnabled ? 'Ativado' : 'Desativado'}
+                  </Button>
+                </div>
+
+                <Separator />
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Notificações por Email</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Receba atualizações por email
+                    </p>
+                  </div>
+                  <Button
+                    variant={emailNotifications ? 'default' : 'outline'}
+                    onClick={() => setEmailNotifications(!emailNotifications)}
+                    size="sm"
+                  >
+                    {emailNotifications ? 'Ativado' : 'Desativado'}
                   </Button>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Gerenciamento de Usuários */}
-          <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-            <div className="border-b p-6">
-              <div className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                <h3 className="text-lg font-semibold">Gerenciamento de Usuários</h3>
-              </div>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Configurações relacionadas aos usuários
-              </p>
-            </div>
-
-            <div className="p-6">
-              <div className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label>Total de usuários</Label>
-                    <p className="text-2xl font-bold">0</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Usuários ativos</Label>
-                    <p className="text-2xl font-bold">0</p>
-                  </div>
-                </div>
-                <Button className="w-full" variant="outline">
-                  <Users className="mr-2 h-4 w-4" />
-                  Gerenciar Usuários
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Segurança */}
+          {/* Segurança e Privacidade */}
           <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
             <div className="border-b p-6">
               <div className="flex items-center gap-2">
                 <Lock className="h-5 w-5" />
-                <h3 className="text-lg font-semibold">Segurança</h3>
+                <h3 className="text-lg font-semibold">Segurança e Privacidade</h3>
               </div>
               <p className="mt-1 text-sm text-muted-foreground">
-                Configurações de segurança do sistema
+                Proteja sua conta e dados pessoais
               </p>
             </div>
 
@@ -179,12 +227,12 @@ export function SettingsClient() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label>Autenticação de dois fatores</Label>
+                    <Label>Alterar senha</Label>
                     <p className="text-sm text-muted-foreground">
-                      Adicione uma camada extra de segurança
+                      Atualize sua senha regularmente
                     </p>
                   </div>
-                  <Button variant="outline">Configurar</Button>
+                  <Button variant="outline" size="sm">Alterar</Button>
                 </div>
 
                 <Separator />
@@ -193,88 +241,49 @@ export function SettingsClient() {
                   <div>
                     <Label>Sessões ativas</Label>
                     <p className="text-sm text-muted-foreground">
-                      Gerencie dispositivos conectados
+                      Dispositivos conectados à sua conta
                     </p>
                   </div>
-                  <Button variant="outline">Ver sessões</Button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Configurações Gerais */}
-          <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-            <div className="border-b p-6">
-              <div className="flex items-center gap-2">
-                <Globe className="h-5 w-5" />
-                <h3 className="text-lg font-semibold">Configurações Gerais</h3>
-              </div>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Configurações gerais do sistema
-              </p>
-            </div>
-
-            <div className="p-6">
-              <div className="space-y-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="app-name">Nome do aplicativo</Label>
-                  <Input id="app-name" defaultValue="Kadernim" />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="support-email">Email de suporte</Label>
-                  <Input
-                    id="support-email"
-                    type="email"
-                    placeholder="suporte@kadernim.com"
-                  />
-                </div>
-
-                <Button onClick={handleSaveSettings} className="w-full">
-                  Salvar Configurações
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Banco de Dados */}
-          <div className="rounded-lg border border-destructive/50 bg-card text-card-foreground shadow-sm">
-            <div className="border-b border-destructive/50 p-6">
-              <div className="flex items-center gap-2">
-                <Database className="h-5 w-5 text-destructive" />
-                <h3 className="text-lg font-semibold">Zona de Perigo</h3>
-              </div>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Ações irreversíveis do sistema
-              </p>
-            </div>
-
-            <div className="p-6">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-destructive">Limpar cache</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Remove todos os dados em cache
-                    </p>
-                  </div>
-                  <Button variant="destructive" size="sm">
-                    Limpar
-                  </Button>
+                  <Button variant="outline" size="sm">Ver sessões</Button>
                 </div>
 
                 <Separator />
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label className="text-destructive">Backup do banco de dados</Label>
+                    <Label>Privacidade de dados</Label>
                     <p className="text-sm text-muted-foreground">
-                      Faça backup dos dados do sistema
+                      Gerencie suas preferências de privacidade
                     </p>
                   </div>
-                  <Button variant="outline" size="sm">
-                    Fazer Backup
-                  </Button>
+                  <Button variant="outline" size="sm">Configurar</Button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Preferências */}
+          <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+            <div className="border-b p-6">
+              <div className="flex items-center gap-2">
+                <Globe className="h-5 w-5" />
+                <h3 className="text-lg font-semibold">Preferências</h3>
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Personalize como você usa o app
+              </p>
+            </div>
+
+            <div className="p-6">
+              <div className="space-y-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="language">Idioma</Label>
+                  <Input id="language" defaultValue="Português (Brasil)" disabled className="bg-muted" />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="timezone">Fuso horário</Label>
+                  <Input id="timezone" defaultValue="America/Sao_Paulo" disabled className="bg-muted" />
                 </div>
               </div>
             </div>

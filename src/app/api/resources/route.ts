@@ -10,6 +10,22 @@ export async function GET() {
     });
     const userId = session?.user?.id;
 
+    // Verificar se o usuário tem plano ativo
+    let hasActivePlan = false;
+    if (userId) {
+      const subscription = await prisma.subscription.findUnique({
+        where: { userId },
+        select: {
+          isActive: true,
+          expiresAt: true,
+        },
+      });
+      
+      // Verifica se tem assinatura ativa e não expirada
+      hasActivePlan = !!(subscription?.isActive && 
+        (!subscription.expiresAt || subscription.expiresAt > new Date()));
+    }
+
     // Buscar todos os recursos com suas relações
     const resources = await prisma.resource.findMany({
       select: {
@@ -54,19 +70,27 @@ export async function GET() {
     });
 
     // Transformar os dados para o formato esperado pelo cliente
-    const formattedResources = resources.map(resource => ({
-      id: resource.id,
-      title: resource.title,
-      description: resource.description,
-      imageUrl: resource.imageUrl,
-      subjectId: resource.subjectId,
-      subjectName: resource.subject.name,
-      educationLevelId: resource.educationLevelId,
-      educationLevelName: resource.educationLevel.name,
-      isFree: resource.isFree,
-      hasAccess: resource.isFree || (resource.accesses && resource.accesses.length > 0) || false,
-      fileCount: resource.files.length,
-    }));
+    const formattedResources = resources.map(resource => {
+      // Se tem plano ativo, tem acesso a tudo
+      // Se não tem plano, só tem acesso aos gratuitos ou comprados individualmente
+      const hasIndividualAccess = resource.accesses && resource.accesses.length > 0;
+      const hasAccess = hasActivePlan || resource.isFree || hasIndividualAccess;
+      
+      return {
+        id: resource.id,
+        title: resource.title,
+        description: resource.description,
+        imageUrl: resource.imageUrl,
+        subjectId: resource.subjectId,
+        subjectName: resource.subject.name,
+        educationLevelId: resource.educationLevelId,
+        educationLevelName: resource.educationLevel.name,
+        isFree: resource.isFree,
+        hasAccess,
+        hasActivePlan,
+        fileCount: resource.files.length,
+      };
+    });
 
     return NextResponse.json(formattedResources);
   } catch (error) {

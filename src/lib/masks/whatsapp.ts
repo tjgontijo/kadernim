@@ -80,3 +80,22 @@ export function normalizeWhatsApp(value: string): string {
   // Caso contrário, adiciona 55 no que vier
   return '55' + numbers;
 }
+
+/**
+ * Converte o WhatsApp do formato do banco (556182493200) para formato de exibição
+ * @param value - Valor do banco (com 55 no início e sem o nono dígito)
+ * @returns Formato para exibição sem máscara: 6182493200 (DDD + número)
+ */
+export function denormalizeWhatsApp(value: string): string {
+  if (!value) return '';
+  
+  // Remove tudo que não é número
+  const numbers = value.replace(/\D/g, '');
+  
+  // Se começar com 55, remove
+  if (numbers.startsWith('55') && numbers.length === 12) {
+    return numbers.slice(2); // Remove o 55 do início
+  }
+  
+  return numbers;
+}

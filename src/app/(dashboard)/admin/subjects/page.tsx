@@ -12,7 +12,7 @@ export default function SubjectsPage() {
       <PageHeader 
         title="Disciplinas" 
         icon={<BookOpen className="h-5 w-5" />}
-        showAd={false}
+        backHref="/settings"
       />
       
       <div className="container mx-auto px-4 py-4">

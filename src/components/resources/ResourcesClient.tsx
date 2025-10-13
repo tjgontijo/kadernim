@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ResourceGrid } from './resource-grid'
 import { FilterBar } from './filter-bar'
 import { Spinner } from '@/components/ui/spinner'
@@ -18,6 +17,7 @@ export interface Resource {
   educationLevelName: string
   isFree: boolean
   hasAccess: boolean
+  hasActivePlan?: boolean
   fileCount: number
 }
 
@@ -41,7 +41,6 @@ export function ResourcesClient() {
   const [selectedLevel, setSelectedLevel] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [isLoading, setIsLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('all')
 
   // Buscar dados do banco de dados
   useEffect(() => {
@@ -86,10 +85,6 @@ export function ResourcesClient() {
 
   // Filtragem de recursos
   const filteredResources = resources.filter(resource => {
-    // Filtro por abas (todos, gratuitos, premium)
-    if (activeTab === 'free' && !resource.isFree) return false
-    if (activeTab === 'premium' && resource.isFree) return false
-    
     // Filtro por disciplina
     if (selectedSubject !== 'all' && resource.subjectId !== selectedSubject) return false
     
@@ -103,58 +98,27 @@ export function ResourcesClient() {
   })
 
   return (
-    <div className="py-6"> 
+    <div className="py-6">
+      <FilterBar 
+        subjects={subjects}
+        educationLevels={educationLevels}
+        selectedSubject={selectedSubject}
+        selectedLevel={selectedLevel}
+        searchQuery={searchQuery}
+        onSubjectChange={setSelectedSubject}
+        onLevelChange={setSelectedLevel}
+        onSearchChange={setSearchQuery}
+      />
       
-      <Tabs defaultValue="all" className="mt-6" onValueChange={setActiveTab}>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <TabsList>
-            <TabsTrigger value="all" className="cursor-pointer">Todos</TabsTrigger>
-            <TabsTrigger value="free" className="cursor-pointer">Gratuitos</TabsTrigger>
-            <TabsTrigger value="premium" className="cursor-pointer">Premium</TabsTrigger>
-          </TabsList>
-          
-          <FilterBar 
-            subjects={subjects}
-            educationLevels={educationLevels}
-            selectedSubject={selectedSubject}
-            selectedLevel={selectedLevel}
-            searchQuery={searchQuery}
-            onSubjectChange={setSelectedSubject}
-            onLevelChange={setSelectedLevel}
-            onSearchChange={setSearchQuery}
-          />
-        </div>
-        
-        <TabsContent value="all" className="mt-6">
-          {isLoading ? (
-            <div className="flex h-60 items-center justify-center">
-              <Spinner className="h-8 w-8 text-primary" />
-            </div>
-          ) : (
-            <ResourceGrid resources={filteredResources} />
-          )}
-        </TabsContent>
-        
-        <TabsContent value="free" className="mt-6">
-          {isLoading ? (
-            <div className="flex h-60 items-center justify-center">
-              <Spinner className="h-8 w-8 text-primary" />
-            </div>
-          ) : (
-            <ResourceGrid resources={filteredResources} />
-          )}
-        </TabsContent>
-        
-        <TabsContent value="premium" className="mt-6">
-          {isLoading ? (
-            <div className="flex h-60 items-center justify-center">
-              <Spinner className="h-8 w-8 text-primary" />
-            </div>
-          ) : (
-            <ResourceGrid resources={filteredResources} />
-          )}
-        </TabsContent>
-      </Tabs>
+      <div className="mt-6">
+        {isLoading ? (
+          <div className="flex h-60 items-center justify-center">
+            <Spinner className="h-8 w-8 text-primary" />
+          </div>
+        ) : (
+          <ResourceGrid resources={filteredResources} />
+        )}
+      </div>
     </div>
   )
 }

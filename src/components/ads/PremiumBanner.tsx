@@ -15,30 +15,30 @@ interface PremiumBannerProps {
 const bannerContent = {
   header: {
     icon: Crown,
-    title: '🎓 Desbloqueie Todo o Potencial da Plataforma',
-    description: 'Acesse +200 recursos pedagógicos, materiais exclusivos e muito mais com o Plano Premium.',
-    cta: 'Ver Planos Premium',
-    ctaSecondary: 'Saiba Mais'
+    title: '🎓 Desbloqueie Todos os Recursos Pedagógicos',
+    description: 'Acesse +200 materiais exclusivos, planejamentos prontos e recursos ilimitados com o Premium.',
+    cta: 'Desbloquear Agora',
+    ctaSecondary: 'Ver Planos'
   },
   inline: {
     icon: Sparkles,
-    title: '✨ Quer Acesso Ilimitado?',
-    description: 'Faça upgrade e tenha acesso a todos os recursos pedagógicos.',
-    cta: 'Fazer Upgrade',
+    title: '✨ Desbloqueie Este e Todos os Recursos',
+    description: 'Tenha acesso ilimitado a todos os materiais pedagógicos da plataforma.',
+    cta: 'Desbloquear Tudo',
     ctaSecondary: null
   },
   sidebar: {
     icon: Zap,
-    title: '⚡ Premium',
+    title: '⚡ Acesso Total',
     description: 'Desbloqueie tudo por apenas R$ 197/ano',
-    cta: 'Upgrade',
+    cta: 'Assinar Premium',
     ctaSecondary: null
   },
   footer: {
     icon: Crown,
-    title: 'Aproveite ao Máximo a Plataforma',
-    description: 'Upgrade para Premium e acesse recursos ilimitados',
-    cta: 'Ver Planos',
+    title: 'Desbloqueie Todo o Potencial da Plataforma',
+    description: 'Assine o Premium e tenha acesso ilimitado a todos os recursos pedagógicos',
+    cta: 'Conhecer Planos',
     ctaSecondary: null
   }
 }
@@ -67,7 +67,7 @@ export function PremiumBanner({ slot, variant = 'default', dismissible = true }:
           {content.title}
         </span>
         <Button asChild size="sm" variant="default" className="ml-auto">
-          <Link href="/#pricing">{content.cta}</Link>
+          <Link href="/plans">{content.cta}</Link>
         </Button>
       </div>
     )
@@ -80,33 +80,38 @@ export function PremiumBanner({ slot, variant = 'default', dismissible = true }:
         {dismissible && (
           <button
             onClick={handleDismiss}
-            className="absolute top-2 right-2 p-1 rounded-full hover:bg-purple-100 dark:hover:bg-purple-900 transition-colors"
+            className="absolute top-2 right-2 p-1 rounded-full hover:bg-purple-100 dark:hover:bg-purple-900 transition-colors z-10"
             aria-label="Fechar"
           >
             <X className="h-4 w-4 text-purple-600" />
           </button>
         )}
         
-        <div className="p-4 flex items-center gap-4">
-          <div className="flex-shrink-0">
-            <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
-              <Icon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+        <div className="p-4">
+          {/* Layout mobile: empilhado verticalmente */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+            <div className="flex items-center gap-3 flex-1">
+              <div className="flex-shrink-0">
+                <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
+                  <Icon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                </div>
+              </div>
+              
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-semibold text-purple-900 dark:text-purple-100">
+                  {content.title}
+                </h3>
+                <p className="text-xs text-purple-700 dark:text-purple-300 mt-1">
+                  {content.description}
+                </p>
+              </div>
             </div>
-          </div>
-          
-          <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold text-purple-900 dark:text-purple-100">
-              {content.title}
-            </h3>
-            <p className="text-xs text-purple-700 dark:text-purple-300 mt-1">
-              {content.description}
-            </p>
-          </div>
-          
-          <div className="flex-shrink-0">
-            <Button asChild size="sm" className="bg-purple-600 hover:bg-purple-700">
-              <Link href="/#pricing">{content.cta}</Link>
-            </Button>
+            
+            <div className="flex-shrink-0 w-full sm:w-auto">
+              <Button asChild size="sm" className="bg-purple-600 hover:bg-purple-700 w-full sm:w-auto">
+                <Link href="/plans">{content.cta}</Link>
+              </Button>
+            </div>
           </div>
         </div>
       </Card>
@@ -148,12 +153,12 @@ export function PremiumBanner({ slot, variant = 'default', dismissible = true }:
             
             <div className="flex flex-wrap gap-3">
               <Button asChild className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
-                <Link href="/#pricing">{content.cta}</Link>
+                <Link href="/plans">{content.cta}</Link>
               </Button>
               
               {content.ctaSecondary && (
                 <Button asChild variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50">
-                  <Link href="/#pricing">{content.ctaSecondary}</Link>
+                  <Link href="/plans">{content.ctaSecondary}</Link>
                 </Button>
               )}
             </div>
