@@ -6,6 +6,9 @@ import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTi
 import { FileSearch } from 'lucide-react'
 import { AdInjector } from '@/components/ads'
 import { useRouter } from 'next/navigation'
+import { usePreloadResource } from '@/hooks/use-preload-resource'
+import { useEffect } from 'react'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 interface ResourceGridProps {
   resources: Resource[]
@@ -13,6 +16,15 @@ interface ResourceGridProps {
 
 export function ResourceGrid({ resources }: ResourceGridProps) {
   const router = useRouter()
+  const { preloadResource, preloadVisibleResources } = usePreloadResource()
+  const isMobile = useIsMobile()
+  
+  // Pré-carrega os recursos visíveis inicialmente
+  useEffect(() => {
+    if (resources.length > 0) {
+      preloadVisibleResources(resources.map(r => r.id))
+    }
+  }, [resources, preloadVisibleResources])
   
   // Se não houver recursos, mostrar estado vazio
   if (resources.length === 0) {
@@ -53,6 +65,8 @@ export function ResourceGrid({ resources }: ResourceGridProps) {
             onClick={(id: string) => {
               router.push(`/resources/${id}`)
             }}
+            onMouseEnter={!isMobile ? () => preloadResource(resource.id) : undefined}
+            onTouchStart={isMobile ? () => preloadResource(resource.id) : undefined}
           />
         ))}
       </AdInjector>
