@@ -23,7 +23,7 @@ rm -rf .next node_modules/.cache package-lock.json || true
 npm cache clean --force
 
 print_box "📦 Instalando dependências (fresh install)..."
-npm install --omit=dev
+npm install
 
 print_box "🔄 Sincronizando schema com o banco..."
 npx prisma db push --skip-generate
