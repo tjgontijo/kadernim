@@ -1,5 +1,6 @@
 // Service Worker para Kadernim PWA
-const CACHE_NAME = 'kadernim-v1';
+const CACHE_VERSION = '1';
+const CACHE_NAME = `kadernim-v${CACHE_VERSION}`;
 const urlsToCache = [
   '/',
   '/login'    
@@ -39,6 +40,31 @@ self.addEventListener('activate', (event) => {
 
 // Interceptar requisições
 self.addEventListener('fetch', (event) => {
+  // Para rotas críticas, sempre verificar no servidor primeiro
+  if (event.request.url.match(/\.(html|js)$/) || 
+      event.request.url.endsWith('/') ||
+      event.request.url.includes('/resources') ||
+      event.request.url.includes('/login')) {
+    
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          // Atualizar o cache com a nova resposta
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseToCache);
+          });
+          return response;
+        })
+        .catch(() => {
+          // Se falhar, tentar do cache
+          return caches.match(event.request);
+        })
+    );
+    return;
+  }
+
+  // Para outros recursos, usar a estratégia padrão
   event.respondWith(
     caches.match(event.request).then((response) => {
       // Cache hit - retorna a resposta do cache
