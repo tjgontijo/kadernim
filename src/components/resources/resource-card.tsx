@@ -18,6 +18,8 @@ interface ResourceCardProps {
   hasAccess: boolean
   fileCount: number
   onClick: (id: string) => void
+  onMouseEnter?: () => void
+  onTouchStart?: () => void
 }
 
 export function ResourceCard({
@@ -29,17 +31,27 @@ export function ResourceCard({
   isFree,
   hasAccess,
   fileCount,
-  onClick
+  onClick,
+  onMouseEnter,
+  onTouchStart
 }: ResourceCardProps) {
   return (
-    <Card className={`overflow-hidden transition-all hover:shadow-md cursor-pointer ${!hasAccess ? 'opacity-70' : ''}`} onClick={() => onClick(id)}>
+    <Card 
+      className={`overflow-hidden transition-all hover:shadow-md cursor-pointer ${!hasAccess ? 'opacity-70' : ''}`} 
+      onClick={() => onClick(id)}
+      onMouseEnter={onMouseEnter}
+      onTouchStart={onTouchStart}
+    >
       <div className="relative">
         <AspectRatio ratio={16/9}>
           <Image
             src={imageUrl}
             alt={title}
             fill
-            unoptimized
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            loading="lazy"
+            placeholder="blur"
+            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjFmMWYxIi8+PC9zdmc+"
             className="object-cover"
           />
         </AspectRatio>
