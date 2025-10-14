@@ -31,6 +31,9 @@ npx prisma db push --skip-generate
 print_box "⚙️ Gerando cliente do Prisma..."
 npx prisma generate
 
+print_box "🔄 Atualizando versão do Service Worker..."
+node scripts/update-sw-version.js
+
 print_box "🚀 Criando build da aplicação..."
 npm run build
 
