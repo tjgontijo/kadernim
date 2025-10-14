@@ -44,7 +44,7 @@ export function MobileBottomNav() {
   })
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t bg-background/98 backdrop-blur-md supports-[backdrop-filter]:bg-background/95 md:hidden shadow-lg">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t bg-background/98 backdrop-blur-md supports-[backdrop-filter]:bg-background/95 md:hidden shadow-lg pb-2">
       <div className="flex h-16 items-center justify-around px-2 safe-area-pb">
         {filteredNavItems.map((item) => {
           const isActive = pathname === item.href
@@ -54,11 +54,11 @@ export function MobileBottomNav() {
             <Link
               key={item.href}
               href={item.href}
-              className="flex flex-1 flex-col items-center justify-center gap-1 py-2 transition-all active:scale-95"
+              className="flex flex-1 flex-col items-center justify-center gap-1 py-1 transition-all active:scale-95"
             >
               <div
                 className={cn(
-                  'flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-200',
+                  'flex h-8 w-8 items-center justify-center rounded-xl transition-all duration-200',
                   isActive
                     ? 'bg-primary text-primary-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
@@ -68,7 +68,7 @@ export function MobileBottomNav() {
               </div>
               <span
                 className={cn(
-                  'text-[10px] font-medium transition-colors duration-200',
+                  'text-[10px] font-medium transition-colors duration-200 mt-1',
                   isActive ? 'text-primary' : 'text-muted-foreground'
                 )}
               >
@@ -81,12 +81,12 @@ export function MobileBottomNav() {
         {/* Botão de Menu */}
         <button
           onClick={toggleSidebar}
-          className="flex flex-1 flex-col items-center justify-center gap-1 py-2 transition-all active:scale-95"
+          className="flex flex-1 flex-col items-center justify-center gap-1 py-1 transition-all active:scale-95"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200">
             <Menu className="h-5 w-5" />
           </div>
-          <span className="text-[10px] font-medium text-muted-foreground">
+          <span className="text-[10px] font-medium text-muted-foreground mt-1">
             Menu
           </span>
         </button>
