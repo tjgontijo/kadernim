@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { FiMail, FiLock, FiAlertCircle } from 'react-icons/fi'
@@ -11,6 +11,7 @@ import { InstallPWA } from '@/components/pwa/InstallPWA'
 
 function SignInForm() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const registered = searchParams?.get('registered')
   const email = searchParams?.get('email')
 
@@ -43,12 +44,14 @@ function SignInForm() {
       onRequest: () => {
         setIsLoading(true)
       },
-      onSuccess: () => {
+      onSuccess: async () => {
         toast.success("Login realizado com sucesso")
-        // Pequeno delay para garantir que o cookie foi setado
-        setTimeout(() => {
-          window.location.href = '/resources'
-        }, 100)
+        try {
+          await authClient.getSession()
+        } catch (error) {
+          console.error('Não foi possível atualizar a sessão após o login:', error)
+        }
+        router.replace('/resources')
       },
       onError: () => {
         setIsLoading(false)

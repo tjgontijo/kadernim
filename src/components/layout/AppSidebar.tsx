@@ -1,4 +1,6 @@
 // src/components/layout/AppSidebar.tsx
+
+// https://www.better-auth.com/docs/concepts/session-management
 'use client'
 
 import { useMemo, useReducer, useCallback } from 'react'
@@ -62,11 +64,15 @@ type UserWithSubscription = {
   image?: string | null
 }
 
-export function AppSidebar() {
+type AppSidebarProps = {
+  initialUser: UserWithSubscription | null
+}
+
+export function AppSidebar({ initialUser }: AppSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const { setOpenMobile } = useSidebar()
-  const { data: session, isPending } = useSession()
+  const { data: session, isPending, error } = useSession()
 
   const [openMenus, toggleMenu] = useReducer(
     (state: Record<string, boolean>, { title, open }: { title: string; open: boolean }) => ({
@@ -76,7 +82,7 @@ export function AppSidebar() {
     { Administração: true }
   )
 
-  const user = session?.user as UserWithSubscription | undefined
+  const user = (session?.user as UserWithSubscription | undefined) ?? initialUser ?? undefined
   const isAdmin = user?.role === 'admin'
 
   const filteredItems = useMemo(
@@ -120,7 +126,23 @@ export function AppSidebar() {
     setOpenMobile(false)
   }, [setOpenMobile])
 
-  if (isPending || !session?.user) {
+  if (error) {
+    return (
+      <div className="flex h-screen items-center justify-center text-muted-foreground">
+        <div className="text-center space-y-2">
+          <p className="text-sm font-medium">Não foi possível carregar sua sessão.</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="text-xs font-semibold text-primary hover:underline"
+          >
+            Recarregar página
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (isPending && !session?.user) {
     return (
       <div className="flex h-screen items-center justify-center text-muted-foreground">
         <Spinner className="h-6 w-6" />
@@ -128,8 +150,15 @@ export function AppSidebar() {
     )
   }
 
-  // Garante que user existe após a verificação de sessão
-  const currentUser = user!
+  if (!user) {
+    return (
+      <div className="flex h-screen items-center justify-center text-muted-foreground">
+        <Spinner className="h-6 w-6" />
+      </div>
+    )
+  }
+
+  const currentUser = user
   const userEmail = currentUser.email || ''
 
   return (
@@ -138,12 +167,6 @@ export function AppSidebar() {
         <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
           <div className="flex h-8 w-8 min-w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
             K
-          </div>
-          <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-            <span className="text-sm font-semibold">Kadernim</span>
-            <span className="text-xs text-muted-foreground">
-              {currentUser.subscriptionTier === 'premium' ? 'Plano Premium' : 'Plano Gratuito'}
-            </span>
           </div>
         </div>
       </SidebarHeader>

@@ -12,17 +12,19 @@ export const ResourcesQueryDTO = z.object({
   )
 })
 
-// 🔹 RESPOSTA SIMPLIFICADA
+const ResourceSummaryDTO = z.object({
+  id: z.string(),
+  title: z.string(),
+  imageUrl: z.string(),
+  isFree: z.boolean(),
+  subjectId: z.string(),
+  educationLevelId: z.string(),
+  hasAccess: z.boolean()
+})
+
 export const ResourcesResponseDTO = z.object({
-  resources: z.array(z.object({
-    id: z.string(),
-    title: z.string(),
-    imageUrl: z.string(),
-    isFree: z.boolean(),
-    subjectId: z.string(),
-    educationLevelId: z.string(),
-    hasAccess: z.boolean()
-  })),
+  accessibleResources: z.array(ResourceSummaryDTO),
+  restrictedResources: z.array(ResourceSummaryDTO),
   pagination: z.object({
     total: z.number().int().nonnegative(),
     page: z.number().int().positive(),

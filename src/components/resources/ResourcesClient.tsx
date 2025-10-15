@@ -11,7 +11,8 @@ type Subject = { id: string; name: string; slug: string }
 type EducationLevel = { id: string; name: string; slug: string }
 
 interface ApiResponse {
-  resources: Resource[]
+  accessibleResources: Resource[]
+  restrictedResources: Resource[]
   pagination: { total: number; page: number; limit: number; hasMore: boolean }
 }
 
@@ -24,7 +25,8 @@ export function ResourcesClient() {
   const [searchQuery, setSearchQuery] = useState('')
 
   // dados
-  const [resources, setResources] = useState<Resource[]>([])
+  const [accessibleResources, setAccessibleResources] = useState<Resource[]>([])
+  const [restrictedResources, setRestrictedResources] = useState<Resource[]>([])
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [educationLevels, setEducationLevels] = useState<EducationLevel[]>([])
   const [page, setPage] = useState(1)
@@ -87,7 +89,8 @@ export function ResourcesClient() {
 
   // reset ao mudar filtros
   useEffect(() => {
-    setResources([])
+    setAccessibleResources([])
+    setRestrictedResources([])
     setPage(1)
     setHasMore(true)
     setError(null)
@@ -115,7 +118,12 @@ export function ResourcesClient() {
         const data: ApiResponse = await res.json()
         if (cancelled) return
 
-        setResources(prev => (page === 1 ? data.resources : [...prev, ...data.resources]))
+        setAccessibleResources(prev =>
+          page === 1 ? data.accessibleResources : [...prev, ...data.accessibleResources]
+        )
+        setRestrictedResources(prev =>
+          page === 1 ? data.restrictedResources : [...prev, ...data.restrictedResources]
+        )
         setHasMore(data.pagination.hasMore)
         setError(null)
       } catch (e) {
@@ -155,8 +163,7 @@ export function ResourcesClient() {
     return () => observerRef.current?.disconnect()
   }, [isLoading, isLoadingMore, hasMore])
 
-  const accessibleResources = resources.filter(r => r.hasAccess)
-  const restrictedResources = resources.filter(r => !r.hasAccess)
+  const hasAnyResource = accessibleResources.length > 0 || restrictedResources.length > 0
 
   return (
     <div className="py-6">
@@ -172,7 +179,7 @@ export function ResourcesClient() {
       />
 
       <div className="mt-6">
-        {isLoading && resources.length === 0 ? (
+        {isLoading && !hasAnyResource ? (
           <div className="flex h-60 items-center justify-center">
             <Spinner className="h-8 w-8 text-primary" />
           </div>

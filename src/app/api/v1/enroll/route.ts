@@ -1,7 +1,7 @@
 // src/app/api/v1/enroll/route.ts
 import { NextResponse } from 'next/server'
 import { EnrollmentInput } from '@/lib/schemas/enrollment'
-import { enrollUser } from '@/domain/enrollment/enrollment.service'
+import { EnrollmentError, enrollUser } from '@/domain/enrollment/enrollment.service'
 
 const API_KEY = process.env.WEBHOOK_API_KEY || ''
 
@@ -41,6 +41,10 @@ export async function POST(request: Request) {
       })
     }
   } catch (e) {
+    if (e instanceof EnrollmentError) {
+      return NextResponse.json({ error: e.message, code: e.code }, { status: e.status })
+    }
+
     console.error('Erro ao processar matrícula', e)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }

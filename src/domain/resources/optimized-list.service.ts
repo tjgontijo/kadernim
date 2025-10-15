@@ -115,21 +115,73 @@ export async function listOptimizedResources(
   try {
     // Carrega os recursos com cache
     const { resources, pagination } = await getCachedResources(query)
-    
-    // Se não há usuário ou recursos premium na página, retorna direto
-    const hasPremiumContent = resources.some(r => !r.isFree)
-    if (!userId || !hasPremiumContent) {
+
+    const premiumResourceIds = resources.filter(r => !r.isFree).map(r => r.id)
+
+    const baseAccessible = resources
+      .filter(r => r.isFree)
+      .map(r => ({ ...r, hasAccess: true }))
+
+    const baseRestricted = resources
+      .filter(r => !r.isFree)
+      .map(r => ({ ...r, hasAccess: false }))
+
+    if (!userId) {
       return {
-        resources: resources.map(r => ({
-          ...r,
-          hasAccess: r.isFree
-        })),
+        accessibleResources: baseAccessible,
+        restrictedResources: baseRestricted,
         pagination
       }
     }
 
-    // Se tem recursos premium, verifica acesso
-    const premiumResourceIds = resources.filter(r => !r.isFree).map(r => r.id)
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        role: true,
+        subscriptionTier: true,
+        subscription: {
+          select: {
+            isActive: true,
+            expiresAt: true,
+            plan: { select: { slug: true } }
+          }
+        }
+      }
+    })
+
+    if (user?.role === 'admin') {
+      return {
+        accessibleResources: resources.map(r => ({ ...r, hasAccess: true })),
+        restrictedResources: [],
+        pagination
+      }
+    }
+
+    const subscription = user?.subscription
+    const isPremium = Boolean(
+      user?.subscriptionTier === 'premium' ||
+      (subscription?.isActive &&
+        (subscription.expiresAt === null || subscription.expiresAt >= new Date()) &&
+        subscription.plan?.slug &&
+        subscription.plan.slug !== 'free')
+    )
+
+    if (isPremium) {
+      return {
+        accessibleResources: resources.map(r => ({ ...r, hasAccess: true })),
+        restrictedResources: [],
+        pagination
+      }
+    }
+
+    if (!premiumResourceIds.length) {
+      return {
+        accessibleResources: baseAccessible,
+        restrictedResources: [],
+        pagination
+      }
+    }
+
     const userAccess = await prisma.userResourceAccess.findMany({
       where: {
         userId,
@@ -143,18 +195,19 @@ export async function listOptimizedResources(
       select: { resourceId: true }
     })
 
-    const accessibleResourceIds = new Set(
-      userAccess.map(access => access.resourceId)
-    )
+    const accessibleResourceIds = new Set(userAccess.map(access => access.resourceId))
 
-    // Mapeia os recursos com informações de acesso
-    const resourcesWithAccess = resources.map(resource => ({
-      ...resource,
-      hasAccess: resource.isFree || accessibleResourceIds.has(resource.id)
-    }))
+    const accessibleResources = resources
+      .filter(resource => resource.isFree || accessibleResourceIds.has(resource.id))
+      .map(resource => ({ ...resource, hasAccess: true }))
+
+    const restrictedResources = resources
+      .filter(resource => !resource.isFree && !accessibleResourceIds.has(resource.id))
+      .map(resource => ({ ...resource, hasAccess: false }))
 
     return {
-      resources: resourcesWithAccess,
+      accessibleResources,
+      restrictedResources,
       pagination
     }
   } catch (error) {

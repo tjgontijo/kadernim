@@ -23,6 +23,12 @@ const nextConfig: NextConfig = {
         hostname: 'images.yampi.me',
         port: '',
         pathname: '/assets/stores/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'king-assets.yampi.me',
+        port: '',
+        pathname: '/**',
       }
     ],
   }
