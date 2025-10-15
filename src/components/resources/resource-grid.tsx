@@ -75,9 +75,6 @@ function ResourceGridComponent({ resources }: ResourceGridProps) {
             id={resource.id}
             title={resource.title}            
             imageUrl={resource.imageUrl}
-            subject={resource.subjectName}
-            educationLevel={resource.educationLevelName}
-            isFree={resource.isFree}
             hasAccess={resource.hasAccess}            
             onClick={() => router.push(`/resources/${resource.id}`)}
             onMouseEnter={
