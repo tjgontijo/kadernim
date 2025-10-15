@@ -113,8 +113,16 @@ export async function listOptimizedResources(
   query: ResourcesQuery
 ) {
   try {
-    // Carrega os recursos com cache
-    const { resources, pagination } = await getCachedResources(query)
+    const shouldUseCache =
+      !query.subjectId &&
+      !query.educationLevelId &&
+      !query.q &&
+      (!query.bnccCodes || query.bnccCodes.length === 0) &&
+      query.page === 1
+
+    const { resources, pagination } = shouldUseCache
+      ? await getCachedResources(query)
+      : await fetchResourcesPage(query)
 
     const premiumResourceIds = resources.filter(r => !r.isFree).map(r => r.id)
 
