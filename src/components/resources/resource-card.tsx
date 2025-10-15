@@ -6,7 +6,7 @@ import { memo, useCallback } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { AspectRatio } from '@/components/ui/aspect-ratio'
-import { Lock } from 'lucide-react'
+import { Loader2, Lock } from 'lucide-react'
 
 interface ResourceCardProps {
   id: string
@@ -16,6 +16,7 @@ interface ResourceCardProps {
   onClick: (id: string) => void
   onMouseEnter?: () => void
   onTouchStart?: () => void
+  isLoading?: boolean
 }
 
 function ResourceCardComponent({
@@ -25,25 +26,35 @@ function ResourceCardComponent({
   hasAccess,
   onClick,
   onMouseEnter,
-  onTouchStart
+  onTouchStart,
+  isLoading
 }: ResourceCardProps) {
   const handleClick = useCallback(
     (e?: React.MouseEvent) => {
       e?.stopPropagation()
+      if (isLoading) return
       onClick(id)
     },
-    [id, onClick]
+    [id, onClick, isLoading]
   )
 
   return (
     <Card
-      className={`overflow-hidden border transition-all hover:shadow-lg cursor-pointer ${
+      className={`relative overflow-hidden border transition-all hover:shadow-lg cursor-pointer ${
         !hasAccess ? 'opacity-60 hover:opacity-100' : ''
+      } ${
+        isLoading ? 'pointer-events-none ring-2 ring-primary/40 ring-offset-2 opacity-80' : ''
       }`}
       onClick={handleClick}
       onMouseEnter={onMouseEnter}
       onTouchStart={onTouchStart}
+      data-loading={isLoading ? 'true' : undefined}
     >
+      {isLoading && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/70">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </div>
+      )}
       <div className="relative">
         <AspectRatio ratio={16/9}>
           <Image
