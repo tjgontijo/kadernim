@@ -1,13 +1,3 @@
-/**
- * KADERNIN Icon Configuration
- * Based on the brand guidelines:
- * - Line icons minimalistas
- * - 1.5px stroke thickness
- * - 2px corner radius
- * - 24x24px grid base
- * - SVG format for scalability
- */
-
 import { LucideProps } from 'lucide-react';
 
 // Default icon configuration based on KADERNIN brand guidelines

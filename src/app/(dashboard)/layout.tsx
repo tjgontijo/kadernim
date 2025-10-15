@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { SidebarProvider } from '@/components/ui/sidebar'
-import { AppSidebar } from '@/components/dashboard/app-sidebar'
+import { AppSidebar } from '@/components/layout/AppSidebar'
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav'
 
 // Desabilitar cache para rotas protegidas

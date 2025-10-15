@@ -5,7 +5,7 @@ export async function seedResources(prisma: PrismaClient) {
   console.log('🌱 Populando recursos...');
   
   for (const resourceData of resourcesData) {
-    const { subjectSlug, educationLevelSlug, files, externalMappings, bnccCodes, ...resourceFields } = resourceData;
+    const { subjectSlug, educationLevelSlug, files, externalMappings, ...resourceFields } = resourceData;
     
     // Buscar subject e educationLevel
     const subject = await prisma.subject.findUnique({ where: { slug: subjectSlug } });
@@ -46,20 +46,6 @@ export async function seedResources(prisma: PrismaClient) {
         data: externalMappings.map(mapping => ({
           resourceId: resource.id,
           ...mapping
-        }))
-      });
-    }
-    
-    // Criar relações com BNCC
-    if (bnccCodes && bnccCodes.length > 0) {
-      const bnccRecords = await prisma.bNCCCode.findMany({
-        where: { code: { in: bnccCodes } }
-      });
-      
-      await prisma.resourceBNCCCode.createMany({
-        data: bnccRecords.map((bncc: { id: string }) => ({
-          resourceId: resource.id,
-          bnccCodeId: bncc.id
         }))
       });
     }

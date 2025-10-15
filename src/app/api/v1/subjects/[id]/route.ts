@@ -1,16 +1,16 @@
-// src/app/api/subjects/[id]/route.ts
+// src/app/api/v1/subjects/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth/auth'
+import { revalidateTag } from 'next/cache'
+import { SubjectUpdateInput, SubjectDTO } from '@/lib/schemas/subject'
 
 export const dynamic = 'force-dynamic'
 
-type RouteParams = Promise<{ id: string }>
-
-// GET /api/subjects/[id]
+// GET /api/v1/subjects/[id]
 export async function GET(
   req: NextRequest,
-  { params }: { params: RouteParams }
+  ctx: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth.api.getSession({ headers: req.headers })
@@ -18,24 +18,29 @@ export async function GET(
       return NextResponse.json({ message: 'Não autorizado' }, { status: 403 })
     }
 
-    const { id } = await params
+    const { id } = await ctx.params
+    if (!id) return NextResponse.json({ message: 'ID inválido' }, { status: 400 })
 
-    const subject = await prisma.subject.findUnique({ where: { id } })
-    if (!subject) {
-      return NextResponse.json({ message: 'Disciplina não encontrada' }, { status: 404 })
+    const row = await prisma.subject.findUnique({ where: { id } })
+    if (!row) return NextResponse.json({ message: 'Disciplina não encontrada' }, { status: 404 })
+
+    // valida saída em dev
+    if (process.env.NODE_ENV !== 'production') {
+      const parsed = SubjectDTO.safeParse({ id: row.id, name: row.name, slug: row.slug })
+      if (!parsed.success) console.error('SubjectDTO inválido', parsed.error.format())
     }
 
-    return NextResponse.json(subject)
+    return NextResponse.json(row, { headers: { 'Cache-Control': 'no-store' } })
   } catch (error) {
-    console.error('Erro ao obter disciplina:', error)
+    console.error('Erro ao obter disciplina', error)
     return NextResponse.json({ message: 'Erro ao obter disciplina' }, { status: 500 })
   }
 }
 
-// PUT /api/subjects/[id]
+// PUT /api/v1/subjects/[id]
 export async function PUT(
   req: NextRequest,
-  { params }: { params: RouteParams }
+  ctx: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth.api.getSession({ headers: req.headers })
@@ -43,14 +48,17 @@ export async function PUT(
       return NextResponse.json({ message: 'Não autorizado' }, { status: 403 })
     }
 
-    const { id } = await params
-    const { name, slug } = await req.json()
+    const { id } = await ctx.params
+    if (!id) return NextResponse.json({ message: 'ID inválido' }, { status: 400 })
 
-    if (!name) {
-      return NextResponse.json({ message: 'Nome é obrigatório' }, { status: 400 })
+    const body = await req.json()
+    const parsed = SubjectUpdateInput.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ message: 'Entrada inválida', issues: parsed.error.format() }, { status: 400 })
     }
 
-    const finalSlug = (slug || name)
+    const name = parsed.data.name
+    const finalSlug = (parsed.data.slug ?? name)
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
@@ -58,12 +66,10 @@ export async function PUT(
       .replace(/\s+/g, '-')
 
     const existing = await prisma.subject.findUnique({ where: { id } })
-    if (!existing) {
-      return NextResponse.json({ message: 'Disciplina não encontrada' }, { status: 404 })
-    }
+    if (!existing) return NextResponse.json({ message: 'Disciplina não encontrada' }, { status: 404 })
 
     const duplicate = await prisma.subject.findFirst({
-      where: { slug: finalSlug, NOT: { id } },
+      where: { slug: finalSlug, NOT: { id } }
     })
     if (duplicate) {
       return NextResponse.json({ message: 'Já existe outra disciplina com este slug' }, { status: 400 })
@@ -71,20 +77,23 @@ export async function PUT(
 
     const updated = await prisma.subject.update({
       where: { id },
-      data: { name, slug: finalSlug },
+      data: { name, slug: finalSlug }
     })
+
+    revalidateTag('subjects')
+    revalidateTag(`resources:subject:${id}`)
 
     return NextResponse.json(updated)
   } catch (error) {
-    console.error('Erro ao atualizar disciplina:', error)
+    console.error('Erro ao atualizar disciplina', error)
     return NextResponse.json({ message: 'Erro ao atualizar disciplina' }, { status: 500 })
   }
 }
 
-// DELETE /api/subjects/[id]
+// DELETE /api/v1/subjects/[id]
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: RouteParams }
+  ctx: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth.api.getSession({ headers: req.headers })
@@ -92,15 +101,14 @@ export async function DELETE(
       return NextResponse.json({ message: 'Não autorizado' }, { status: 403 })
     }
 
-    const { id } = await params
+    const { id } = await ctx.params
+    if (!id) return NextResponse.json({ message: 'ID inválido' }, { status: 400 })
 
     const existing = await prisma.subject.findUnique({
       where: { id },
-      include: { resources: { select: { id: true }, take: 1 } },
+      include: { resources: { select: { id: true }, take: 1 } }
     })
-    if (!existing) {
-      return NextResponse.json({ message: 'Disciplina não encontrada' }, { status: 404 })
-    }
+    if (!existing) return NextResponse.json({ message: 'Disciplina não encontrada' }, { status: 404 })
 
     if (existing.resources.length > 0) {
       return NextResponse.json(
@@ -110,9 +118,13 @@ export async function DELETE(
     }
 
     await prisma.subject.delete({ where: { id } })
+
+    revalidateTag('subjects')
+    revalidateTag(`resources:subject:${id}`)
+
     return NextResponse.json({ message: 'Disciplina excluída com sucesso' }, { status: 200 })
   } catch (error) {
-    console.error('Erro ao excluir disciplina:', error)
+    console.error('Erro ao excluir disciplina', error)
     return NextResponse.json({ message: 'Erro ao excluir disciplina' }, { status: 500 })
   }
 }

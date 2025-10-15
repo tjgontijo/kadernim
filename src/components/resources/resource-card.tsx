@@ -1,44 +1,46 @@
+// src/components/resources/resource-card.tsx
 'use client'
 
 import Image from 'next/image'
-import { Card, CardContent, CardFooter } from '@/components/ui/card'
+import { memo, useCallback } from 'react'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { AspectRatio } from '@/components/ui/aspect-ratio'
-import { FileText, Lock } from 'lucide-react'
+import { Lock } from 'lucide-react'
 
 interface ResourceCardProps {
   id: string
   title: string
-  description: string
   imageUrl: string
-  subject: string
-  educationLevel: string
-  isFree: boolean
   hasAccess: boolean
-  fileCount: number
   onClick: (id: string) => void
   onMouseEnter?: () => void
   onTouchStart?: () => void
 }
 
-export function ResourceCard({
+function ResourceCardComponent({
   id,
   title,
   imageUrl,
-  subject,
-  educationLevel,
-  isFree,
   hasAccess,
-  fileCount,
   onClick,
   onMouseEnter,
   onTouchStart
 }: ResourceCardProps) {
+  const handleClick = useCallback(
+    (e?: React.MouseEvent) => {
+      e?.stopPropagation()
+      onClick(id)
+    },
+    [id, onClick]
+  )
+
   return (
-    <Card 
-      className={`overflow-hidden transition-all hover:shadow-md cursor-pointer ${!hasAccess ? 'opacity-70' : ''}`} 
-      onClick={() => onClick(id)}
+    <Card
+      className={`overflow-hidden border transition-all hover:shadow-lg cursor-pointer ${
+        !hasAccess ? 'opacity-60 hover:opacity-100' : ''
+      }`}
+      onClick={handleClick}
       onMouseEnter={onMouseEnter}
       onTouchStart={onTouchStart}
     >
@@ -50,47 +52,30 @@ export function ResourceCard({
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             loading="lazy"
+            className={`object-cover ${
+              !hasAccess ? 'opacity-60' : ''
+            }`}
             placeholder="blur"
             blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjFmMWYxIi8+PC9zdmc+"
-            className="object-cover"
           />
         </AspectRatio>
+
         {!hasAccess && (
-          <Badge 
-            className="absolute top-2 right-2 bg-black/70 text-white hover:bg-black/80" 
-            variant="secondary"
-          >
-            <Lock className="mr-1 h-3 w-3" />
-            Bloqueado
-          </Badge>
+          <div className="absolute top-2 right-2">
+            <Badge className="h-7 w-7 p-0 rounded-full flex items-center justify-center bg-black/70 hover:bg-black/80 border-0" variant="secondary">
+              <Lock className="h-5 w-5" />
+            </Badge>
+          </div>
         )}
       </div>
-      <CardContent className="py-0 px-4">
-        <h3 className="font-semibold text-lg mb-3 line-clamp-2">{title}</h3>
-        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          <Badge variant="outline">{subject}</Badge>
-          <Badge variant="outline">{educationLevel}</Badge>
-          {isFree && <Badge variant="secondary" className="text-xs">Gratuito</Badge>}
-        </div>
+
+      <CardContent className="space-y-3 p-4">
+        <h3 className="font-semibold text-base text-center leading-tight line-clamp-2">
+          {title}
+        </h3>
       </CardContent>
-      <CardFooter className="py-4 pt-0 flex justify-between items-center">
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <FileText className="h-3 w-3" />
-          <span>{fileCount} {fileCount === 1 ? 'arquivo' : 'arquivos'}</span>
-        </div>
-        <Button 
-          onClick={(e) => {
-            e.stopPropagation();
-            onClick(id);
-          }} 
-          variant={hasAccess ? "default" : "outline"}
-          size="sm"
-          className="cursor-pointer"
-        >
-          {!hasAccess && <Lock className="mr-1 h-3 w-3" />}
-          Saiba Mais
-        </Button>
-      </CardFooter>
     </Card>
   )
 }
+
+export const ResourceCard = memo(ResourceCardComponent)

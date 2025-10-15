@@ -1,122 +1,166 @@
+// src/components/resources/ResourcesClient.tsx
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ResourceGrid } from './resource-grid'
 import { FilterBar } from './filter-bar'
 import { Spinner } from '@/components/ui/spinner'
+import type { Resource } from '@/domain/resources/optimized-list.service'
 
-// Tipos
-export interface Resource {
-  id: string
-  title: string
-  description: string
-  imageUrl: string
-  subjectId: string
-  subjectName: string
-  educationLevelId: string
-  educationLevelName: string
-  isFree: boolean
-  hasAccess: boolean
-  hasActivePlan?: boolean
-  hasIndividualAccess?: boolean
-  fileCount: number
+type Subject = { id: string; name: string; slug: string }
+type EducationLevel = { id: string; name: string; slug: string }
+
+interface ApiResponse {
+  resources: Resource[]
+  pagination: { total: number; page: number; limit: number; hasMore: boolean }
 }
 
-export interface Subject {
-  id: string
-  name: string
-  slug: string
-}
-
-export interface EducationLevel {
-  id: string
-  name: string
-  slug: string
-}
+const PAGE_SIZE = 12
 
 export function ResourcesClient() {
-  const [resources, setResources] = useState<Resource[]>([])
-  const [subjects, setSubjects] = useState<Subject[]>([])
-  const [educationLevels, setEducationLevels] = useState<EducationLevel[]>([])
+  // filtros
   const [selectedSubject, setSelectedSubject] = useState<string>('all')
   const [selectedLevel, setSelectedLevel] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
-  const [isLoading, setIsLoading] = useState(true)
 
-  // Buscar dados do banco de dados
+  // dados
+  const [resources, setResources] = useState<Resource[]>([])
+  const [subjects, setSubjects] = useState<Subject[]>([])
+  const [educationLevels, setEducationLevels] = useState<EducationLevel[]>([])
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+
+  // estados
+  const [isLoading, setIsLoading] = useState(true)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  // debounce da busca
+  const [debouncedQuery, setDebouncedQuery] = useState(searchQuery)
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true)
-      
+    const t = setTimeout(() => setDebouncedQuery(searchQuery.trim()), 350)
+    return () => clearTimeout(t)
+  }, [searchQuery])
+
+  // sentinel para scroll infinito
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+  const observerRef = useRef<IntersectionObserver | null>(null)
+
+  // abort de requests concorrentes
+  const fetchCtrlRef = useRef<AbortController | null>(null)
+
+  // monta querystring da API
+  const queryString = useMemo(() => {
+    const sp = new URLSearchParams()
+    sp.set('page', String(page))
+    sp.set('limit', String(PAGE_SIZE))
+    if (selectedSubject !== 'all') sp.set('subjectId', selectedSubject)
+    if (selectedLevel !== 'all') sp.set('educationLevelId', selectedLevel)
+    if (debouncedQuery) sp.set('q', debouncedQuery)
+    return sp.toString()
+  }, [page, selectedSubject, selectedLevel, debouncedQuery])
+
+  // metadados cacheados
+  useEffect(() => {
+    let cancelled = false
+    async function bootstrap() {
       try {
-        // Buscar recursos
-        const resourcesResponse = await fetch('/api/resources')
-        if (!resourcesResponse.ok) {
-          throw new Error('Erro ao buscar recursos')
+        const [sRes, eRes] = await Promise.all([
+          fetch('/api/v1/subjects/public', { cache: 'force-cache' }),
+          fetch('/api/v1/education-levels/public', { cache: 'force-cache' })
+        ])
+        if (!sRes.ok || !eRes.ok) throw new Error('Falha nos metadados')
+        const [sData, eData] = await Promise.all([sRes.json(), eRes.json()])
+        if (!cancelled) {
+          setSubjects(sData)
+          setEducationLevels(eData)
         }
-        const resourcesData = await resourcesResponse.json()
-        
-        // Buscar disciplinas
-        const subjectsResponse = await fetch('/api/subjects/public')
-        if (!subjectsResponse.ok) {
-          throw new Error('Erro ao buscar disciplinas')
-        }
-        const subjectsData = await subjectsResponse.json()
-        
-        // Buscar níveis de ensino
-        const levelsResponse = await fetch('/api/education-levels/public')
-        if (!levelsResponse.ok) {
-          throw new Error('Erro ao buscar níveis de ensino')
-        }
-        const levelsData = await levelsResponse.json()
-        
-        // Atualizar estado com os dados do banco
-        setResources(resourcesData)
-        setSubjects(subjectsData)
-        setEducationLevels(levelsData)
-      } catch (error) {
-        console.error('Erro ao carregar dados:', error)
-      } finally {
-        setIsLoading(false)
+      } catch (e) {
+        if (!cancelled) console.error('Erro metadados:', e)
       }
     }
-    
-    fetchData()
+    bootstrap()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
-  // Filtragem de recursos
-  const filteredResources = resources.filter(resource => {
-    // Filtro por disciplina
-    if (selectedSubject !== 'all' && resource.subjectId !== selectedSubject) return false
-    
-    // Filtro por nível educacional
-    if (selectedLevel !== 'all' && resource.educationLevelId !== selectedLevel) return false
-    
-    // Filtro por busca
-    if (searchQuery && !resource.title.toLowerCase().includes(searchQuery.toLowerCase())) return false
-    
-    return true
-  })
+  // reset ao mudar filtros
+  useEffect(() => {
+    setResources([])
+    setPage(1)
+    setHasMore(true)
+    setError(null)
+  }, [selectedSubject, selectedLevel, debouncedQuery])
 
-  // Verificar se o usuário tem plano premium
-  const hasPremiumPlan = filteredResources.some(resource => resource.hasActivePlan)
+  // carregar página
+  useEffect(() => {
+    let cancelled = false
+    async function loadPage() {
+      if (!hasMore && page > 1) return
+      if (page === 1) setIsLoading(true)
+      else setIsLoadingMore(true)
 
-  // Separar recursos em "Meus Materiais" e "Biblioteca"
-  const myMaterials = filteredResources.filter(resource => 
-    // Para usuários premium, mostrar todos os recursos que eles têm acesso
-    // Para usuários sem premium, mostrar apenas os comprados individualmente
-    hasPremiumPlan ? resource.hasAccess : resource.hasIndividualAccess === true
-  )
-  
-  const otherMaterials = filteredResources.filter(resource => 
-    // Para usuários premium, não mostrar nada aqui (tudo já está em "Meus Materiais")
-    // Para usuários sem premium, mostrar recursos que não foram comprados individualmente
-    hasPremiumPlan ? false : resource.hasIndividualAccess !== true
-  )
+      if (fetchCtrlRef.current) fetchCtrlRef.current.abort()
+      const ctrl = new AbortController()
+      fetchCtrlRef.current = ctrl
+
+      try {
+        const res = await fetch(`/api/v1/resources?${queryString}`, {
+          signal: ctrl.signal,
+          // 🚀 REMOVER no-store para usar cache HTTP
+          cache: 'default'
+        })
+        if (!res.ok) throw new Error('Falha ao buscar recursos')
+        const data: ApiResponse = await res.json()
+        if (cancelled) return
+
+        setResources(prev => (page === 1 ? data.resources : [...prev, ...data.resources]))
+        setHasMore(data.pagination.hasMore)
+        setError(null)
+      } catch (e) {
+        if (e instanceof DOMException && e.name === 'AbortError') return
+        if (!cancelled) {
+          console.error(e)
+          setError('Erro ao carregar recursos')
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false)
+          setIsLoadingMore(false)
+        }
+      }
+    }
+    loadPage()
+    return () => {
+      cancelled = true
+      if (fetchCtrlRef.current) fetchCtrlRef.current.abort()
+    }
+  }, [queryString, page, hasMore])
+
+  // scroll infinito
+  useEffect(() => {
+    const node = sentinelRef.current
+    if (!node) return
+    if (observerRef.current) observerRef.current.disconnect()
+
+    observerRef.current = new IntersectionObserver((entries: IntersectionObserverEntry[]) => {
+      const first = entries[0]
+      if (first.isIntersecting && !isLoading && !isLoadingMore && hasMore) {
+        setPage(p => p + 1)
+      }
+    })
+
+    observerRef.current.observe(node)
+    return () => observerRef.current?.disconnect()
+  }, [isLoading, isLoadingMore, hasMore])
+
+  const accessibleResources = resources.filter(r => r.hasAccess)
+  const restrictedResources = resources.filter(r => !r.hasAccess)
 
   return (
     <div className="py-6">
-      <FilterBar 
+      <FilterBar
         subjects={subjects}
         educationLevels={educationLevels}
         selectedSubject={selectedSubject}
@@ -126,28 +170,36 @@ export function ResourcesClient() {
         onLevelChange={setSelectedLevel}
         onSearchChange={setSearchQuery}
       />
-      
+
       <div className="mt-6">
-        {isLoading ? (
+        {isLoading && resources.length === 0 ? (
           <div className="flex h-60 items-center justify-center">
             <Spinner className="h-8 w-8 text-primary" />
           </div>
+        ) : error ? (
+          <div className="rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+            {error}
+          </div>
         ) : (
           <div className="space-y-12">
-            {/* Seção de Meus Materiais */}
-            {myMaterials.length > 0 && (
+            {accessibleResources.length > 0 && (
               <section>
-                <h2 className="text-2xl font-bold mb-6">Meus Recursos</h2>
-                <ResourceGrid resources={myMaterials} />
+                <h2 className="mb-6 text-2xl font-bold">Meus Recursos</h2>
+                <ResourceGrid resources={accessibleResources} />
               </section>
             )}
-            
-            {/* Seção de Biblioteca - só mostrar se não for premium ou se tiver conteúdo */}
-            {(!hasPremiumPlan && otherMaterials.length > 0) && (
+
+            {restrictedResources.length > 0 && (
               <section>
-                <h2 className="text-2xl font-bold mb-6">Biblioteca Completa</h2>
-                <ResourceGrid resources={otherMaterials} />
+                <h2 className="mb-6 text-2xl font-bold">Biblioteca Completa</h2>
+                <ResourceGrid resources={restrictedResources} />
               </section>
+            )}
+
+            {hasMore && (
+              <div ref={sentinelRef} className="flex justify-center py-8">
+                {isLoadingMore && <Spinner className="h-8 w-8 text-primary" />}
+              </div>
             )}
           </div>
         )}

@@ -2,38 +2,43 @@
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { prisma } from '../prisma'
-import { admin, organization } from "better-auth/plugins";
+import { admin, organization } from 'better-auth/plugins'
 
-
-export const auth = betterAuth({  
+export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET,
-  baseURL: process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_BASE_URL,  
-  database: prismaAdapter(prisma, {
-    provider: 'postgresql',
-  }),
+
+  basePath: '/api/v1/auth',
+  baseURL: process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_BASE_URL,
+
+  database: prismaAdapter(prisma, { provider: 'postgresql' }),
+
+  session: { 
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60,
+    }
+  },
+
   emailAndPassword: {
     enabled: true,
   },
-  
-  plugins: [
-    admin(), 
-    organization()
-  ],    
-  
+
+  plugins: [admin(), organization()],
+
   user: {
     additionalFields: {
       role: {
-        type: "string",
+        type: 'string',
         required: false,
-        defaultValue: "user",
-        input: false,
+        defaultValue: 'user',
+        input: false
       },
       subscriptionTier: {
-        type: "string",
-        required: false,
+        type: 'string',
+        required: false
       }
-    },
-  },
-});
+    }
+  }
+})
 
-export type Auth = typeof auth;
+export type Auth = typeof auth

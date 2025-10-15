@@ -1,11 +1,12 @@
+// src/app/(dashboard)/resources/page.tsx
 import { ResourcesClient } from '@/components/resources/ResourcesClient';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { BookOpen } from 'lucide-react';
 import { AdSlot } from '@/components/ads';
 
-// Desabilitar cache para garantir dados atualizados
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
+// 🚀 HABILITAR CACHE para melhor performance
+export const dynamic = 'auto'
+export const revalidate = 300 // 5 minutos
 
 export default function Dashboard() {
   return (

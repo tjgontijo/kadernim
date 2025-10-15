@@ -1,3 +1,4 @@
+// src/components/ads/AdSlot.tsx
 'use client'
 
 import { usePremiumStatus } from '@/hooks/use-premium-status'
@@ -11,10 +12,6 @@ interface AdSlotProps {
   position?: number // Para inline ads (ex: após 3 itens)
 }
 
-/**
- * AdSlot - Sistema de injeção de banners premium
- * Funciona como AdSense: só aparece para usuários free
- */
 export function AdSlot({ slot, className, variant = 'default', position }: AdSlotProps) {
   const { showAds } = usePremiumStatus()
   
