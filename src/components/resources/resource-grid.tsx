@@ -1,7 +1,7 @@
 // src/components/resources/resource-grid.tsx
 'use client'
 
-import { memo } from 'react'
+import { memo, useCallback, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { FileSearch } from 'lucide-react'
 import { ResourceCard } from './resource-card'
@@ -33,6 +33,22 @@ interface ResourceGridProps {
 
 function ResourceGridComponent({ resources }: ResourceGridProps) {
   const router = useRouter()
+  const [loadingId, setLoadingId] = useState<string | null>(null)
+
+  const handleCardClick = useCallback(
+    (id: string) => {
+      setLoadingId(id)
+      router.push(`/resources/${id}`)
+    },
+    [router]
+  )
+
+  const handlePrefetch = useCallback(
+    (id: string) => {
+      router.prefetch(`/resources/${id}`)
+    },
+    [router]
+  )
 
   if (!resources || resources.length === 0) {
     return (
@@ -61,10 +77,13 @@ function ResourceGridComponent({ resources }: ResourceGridProps) {
           <ResourceCard
             key={resource.id}
             id={resource.id}
-            title={resource.title}            
+            title={resource.title}
             imageUrl={resource.imageUrl}
-            hasAccess={resource.hasAccess}            
-            onClick={() => router.push(`/resources/${resource.id}`)}
+            hasAccess={resource.hasAccess}
+            onClick={handleCardClick}
+            onMouseEnter={() => handlePrefetch(resource.id)}
+            onTouchStart={() => handlePrefetch(resource.id)}
+            isLoading={loadingId === resource.id}
           />
         ))}
       </AdInjector>
