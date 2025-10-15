@@ -68,8 +68,8 @@ export function ResourcesClient() {
     async function bootstrap() {
       try {
         const [sRes, eRes] = await Promise.all([
-          fetch('/api/v1/subjects/public', { cache: 'force-cache' }),
-          fetch('/api/v1/education-levels/public', { cache: 'force-cache' })
+          fetch('/api/v1/subjects/public', { cache: 'no-store' }),
+          fetch('/api/v1/education-levels/public', { cache: 'no-store' })
         ])
         if (!sRes.ok || !eRes.ok) throw new Error('Falha nos metadados')
         const [sData, eData] = await Promise.all([sRes.json(), eRes.json()])
@@ -108,11 +108,16 @@ export function ResourcesClient() {
       const ctrl = new AbortController()
       fetchCtrlRef.current = ctrl
 
+      const useCache =
+        selectedSubject === 'all' &&
+        selectedLevel === 'all' &&
+        !debouncedQuery &&
+        page === 1
+
       try {
         const res = await fetch(`/api/v1/resources?${queryString}`, {
           signal: ctrl.signal,
-          // 🚀 REMOVER no-store para usar cache HTTP
-          cache: 'default'
+          cache: useCache ? 'default' : 'no-store'
         })
         if (!res.ok) throw new Error('Falha ao buscar recursos')
         const data: ApiResponse = await res.json()
