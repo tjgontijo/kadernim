@@ -22,24 +22,35 @@ export async function GET(req: NextRequest) {
     const session = await auth.api.getSession({ headers: req.headers })
     const userId = session?.user?.id
     
-    // 🔹 Buscar recursos otimizados
-    const data = await listOptimizedResources(userId, {
+    const normalizedQuery = {
       ...parsed.data,
-      // Garantir limites razoáveis
       limit: Math.min(parsed.data.limit || 12, 50),
       page: Math.max(1, parsed.data.page || 1)
-    })
-    
-    // 🚀 Cache otimizado com stale-while-revalidate
-    return NextResponse.json(data, {
-      headers: {
-        'Cache-Control': userId 
-          ? 'private, max-age=60, stale-while-revalidate=300' 
-          : 'public, max-age=3600, stale-while-revalidate=7200',
-        'CDN-Cache-Control': 'public, max-age=60',
-        'Vercel-CDN-Cache-Control': 'public, max-age=60'
-      }
-    })
+    }
+
+    const hasFilters = Boolean(
+      normalizedQuery.subjectId ||
+      normalizedQuery.educationLevelId ||
+      normalizedQuery.q ||
+      (normalizedQuery.bnccCodes && normalizedQuery.bnccCodes.length > 0) ||
+      normalizedQuery.page > 1
+    )
+
+    const data = await listOptimizedResources(userId, normalizedQuery)
+
+    const headers: Record<string, string> = hasFilters
+      ? {
+          'Cache-Control': 'no-store'
+        }
+      : {
+          'Cache-Control': userId
+            ? 'private, max-age=60, stale-while-revalidate=300'
+            : 'public, max-age=3600, stale-while-revalidate=7200',
+          'CDN-Cache-Control': 'public, max-age=60',
+          'Vercel-CDN-Cache-Control': 'public, max-age=60'
+        }
+
+    return NextResponse.json(data, { headers })
     
   } catch (e) {
     console.error('Erro ao buscar recursos otimizados:', e)
