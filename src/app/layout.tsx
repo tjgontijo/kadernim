@@ -52,7 +52,7 @@ export const metadata: Metadata = {
   description: appDescription,
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: appName,
   },
 };
@@ -61,7 +61,10 @@ export const viewport: Viewport = {
   width: "device-width",
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#2E5BBA", // Atualizado para o Azul Principal da KADERNIN
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#09090b" }
+  ],
 };
 
 export default function RootLayout({
