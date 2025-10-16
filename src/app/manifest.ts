@@ -18,8 +18,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: appDescription,
     start_url: '/',
     display: 'standalone',
-    background_color: '#FFFFFF', // Branco da paleta KADERNIN
-    theme_color: '#2E5BBA', // Azul Principal da paleta KADERNIN
+    background_color: '#09090b', // Cor do background (tema escuro)
+    theme_color: '#09090b', // Cor do background (tema escuro) - status bar
     icons: [
       {
         src: '/icon.png',
