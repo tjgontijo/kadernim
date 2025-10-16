@@ -34,11 +34,29 @@ export function IOSNotificationHandler() {
       );
     };
 
+    // Verificar se usuário está autenticado
+    const checkAuthentication = async () => {
+      try {
+        const response = await fetch('/api/v1/user/profile');
+        return response.ok;
+      } catch {
+        return false;
+      }
+    };
+
     // Verificar se é iOS e está em modo standalone
-    const checkIOSStandalone = () => {
+    const checkIOSStandalone = async () => {
       if (isIOS() && isInStandaloneMode()) {
         console.log('📱 Aplicativo sendo executado como PWA no iOS');
         setIsIOSStandalone(true);
+        
+        // Verificar se está autenticado antes de pedir permissão
+        const isAuthenticated = await checkAuthentication();
+        
+        if (!isAuthenticated) {
+          console.log('⏸️ Usuário não autenticado, aguardando login...');
+          return;
+        }
         
         // No iOS, esperamos um pouco para mostrar o diálogo após o app ser carregado como PWA
         setTimeout(() => {
@@ -120,12 +138,16 @@ export function IOSNotificationHandler() {
       
       // Se não existe, criar uma nova
       if (!subscription) {
+        // NEXT_PUBLIC_ vars são injetadas em build time
         const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
         
         if (!vapidPublicKey) {
-          console.error('VAPID public key não configurada');
+          console.error('❌ VAPID public key não configurada no .env');
+          console.error('Adicione: NEXT_PUBLIC_VAPID_PUBLIC_KEY="sua_chave"');
           return;
         }
+        
+        console.log('📱 Criando push subscription...');
         
         // Converter VAPID key para Uint8Array
         const urlBase64ToUint8Array = (base64String: string) => {
@@ -168,6 +190,12 @@ export function IOSNotificationHandler() {
         deviceName = 'Windows';
       }
       
+      console.log('📤 Enviando subscription para API...', {
+        endpoint: subscriptionJSON.endpoint?.substring(0, 50) + '...',
+        hasKeys: !!subscriptionJSON.keys,
+        deviceName
+      });
+      
       const response = await fetch('/api/v1/notifications/subscribe', {
         method: 'POST',
         headers: {
@@ -182,10 +210,12 @@ export function IOSNotificationHandler() {
       });
       
       if (response.ok) {
-        console.log('✅ Push subscription registrada com sucesso');
+        const result = await response.json();
+        console.log('✅ Push subscription registrada com sucesso!', result);
       } else {
         const error = await response.json();
         console.error('❌ Erro ao registrar subscription:', error);
+        console.error('Status:', response.status);
       }
     } catch (error) {
       console.error('❌ Erro ao registrar para notificações push:', error);
