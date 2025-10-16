@@ -4,136 +4,81 @@ import { useState, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { Button } from '@/components/ui/button';
-import { Bell, BellOff } from 'lucide-react';
-import { toast } from 'sonner';
+import { Bell, Check, X, AlertCircle } from 'lucide-react';
 
 interface NotificationsCardProps {
-  pushEnabled?: boolean;
   emailEnabled?: boolean;
-  onUpdate?: (data: { pushEnabled: boolean; emailEnabled: boolean }) => void;
+  onUpdate?: (data: { emailEnabled: boolean }) => void;
 }
 
+/**
+ * NotificationsCard - Versão Simplificada
+ * 
+ * Push notifications são gerenciadas automaticamente pelo PushNotificationSetup
+ * Aqui apenas mostramos o status e permitimos configurar email
+ */
 export function NotificationsCard({ 
-  pushEnabled = true, 
   emailEnabled = true,
   onUpdate 
 }: NotificationsCardProps) {
-  const [notificationsEnabled, setNotificationsEnabled] = useState(pushEnabled);
   const [emailNotifications, setEmailNotifications] = useState(emailEnabled);
   const [pushPermission, setPushPermission] = useState<NotificationPermission>('default');
-  const [isEnabling, setIsEnabling] = useState(false);
+  const [hasSubscription, setHasSubscription] = useState(false);
 
   useEffect(() => {
-    // Verificar permissão atual
-    if ('Notification' in window) {
-      setPushPermission(Notification.permission);
-    }
-  }, []);
-
-  const handlePushToggle = (checked: boolean) => {
-    setNotificationsEnabled(checked);
-    if (onUpdate) {
-      onUpdate({ pushEnabled: checked, emailEnabled: emailNotifications });
-    }
-  };
-
-  const handleEnablePushNotifications = async () => {
-    if (!('Notification' in window)) {
-      toast.error('Seu navegador não suporta notificações');
-      return;
-    }
-
-    if (Notification.permission === 'denied') {
-      toast.error('Permissão negada. Habilite nas configurações do navegador.');
-      return;
-    }
-
-    setIsEnabling(true);
-
-    try {
-      const permission = await Notification.requestPermission();
-      setPushPermission(permission);
-
-      if (permission === 'granted') {
-        // Registrar subscription
-        await registerPushSubscription();
-        toast.success('Notificações habilitadas com sucesso!');
-      } else {
-        toast.error('Permissão de notificações negada');
+    async function checkPushStatus() {
+      // Verificar permissão do navegador
+      if ('Notification' in window) {
+        setPushPermission(Notification.permission);
       }
-    } catch (error) {
-      console.error('Erro ao solicitar permissão:', error);
-      toast.error('Erro ao habilitar notificações');
-    } finally {
-      setIsEnabling(false);
-    }
-  };
 
-  const registerPushSubscription = async () => {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-      return;
-    }
-
-    try {
-      const registration = await navigator.serviceWorker.ready;
-      let subscription = await registration.pushManager.getSubscription();
-
-      if (!subscription) {
-        const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-        if (!vapidPublicKey) {
-          console.error('VAPID key não configurada');
-          return;
+      // Verificar se tem subscription ativa
+      if (
+        'serviceWorker' in navigator && 
+        'PushManager' in window &&
+        Notification.permission === 'granted'
+      ) {
+        try {
+          const registration = await navigator.serviceWorker.ready;
+          const subscription = await registration.pushManager.getSubscription();
+          setHasSubscription(!!subscription);
+        } catch (error) {
+          console.error('Erro ao verificar subscription:', error);
         }
-
-        const urlBase64ToUint8Array = (base64String: string) => {
-          const padding = '='.repeat((4 - base64String.length % 4) % 4);
-          const base64 = (base64String + padding)
-            .replace(/-/g, '+')
-            .replace(/_/g, '/');
-          const rawData = window.atob(base64);
-          const outputArray = new Uint8Array(rawData.length);
-          for (let i = 0; i < rawData.length; ++i) {
-            outputArray[i] = rawData.charCodeAt(i);
-          }
-          return outputArray;
-        };
-
-        subscription = await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
-        });
       }
-
-      const subscriptionJSON = subscription.toJSON();
-      const userAgent = navigator.userAgent;
-      let deviceName = 'Dispositivo';
-      
-      if (/iPhone/.test(userAgent)) deviceName = 'iPhone';
-      else if (/iPad/.test(userAgent)) deviceName = 'iPad';
-      else if (/Android/.test(userAgent)) deviceName = 'Android';
-
-      await fetch('/api/v1/notifications/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          endpoint: subscriptionJSON.endpoint,
-          keys: subscriptionJSON.keys,
-          userAgent,
-          deviceName
-        })
-      });
-    } catch (error) {
-      console.error('Erro ao registrar subscription:', error);
-      throw error;
     }
-  };
+
+    checkPushStatus();
+  }, []);
 
   const handleEmailToggle = (checked: boolean) => {
     setEmailNotifications(checked);
     if (onUpdate) {
-      onUpdate({ pushEnabled: notificationsEnabled, emailEnabled: checked });
+      onUpdate({ emailEnabled: checked });
     }
+  };
+
+  const getPushStatusIcon = () => {
+    if (pushPermission === 'granted' && hasSubscription) {
+      return <Check className="h-4 w-4 text-green-500" />;
+    }
+    if (pushPermission === 'denied') {
+      return <X className="h-4 w-4 text-red-500" />;
+    }
+    return <AlertCircle className="h-4 w-4 text-yellow-500" />;
+  };
+
+  const getPushStatusText = () => {
+    if (pushPermission === 'granted' && hasSubscription) {
+      return 'Ativadas';
+    }
+    if (pushPermission === 'denied') {
+      return 'Bloqueadas';
+    }
+    if (pushPermission === 'default') {
+      return 'Não configuradas';
+    }
+    return 'Permitidas (não registradas)';
   };
 
   return (
@@ -150,53 +95,42 @@ export function NotificationsCard({
 
       <div className="p-6">
         <div className="space-y-6">
+          {/* Status de Push Notifications (somente leitura) */}
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="push-notifications">Notificações Push</Label>
+              <Label>Notificações Push</Label>
               <p className="text-sm text-muted-foreground">
-                Receba notificações no navegador
+                Configuradas automaticamente ao instalar o app
               </p>
             </div>
-            <Switch
-              className='cursor-pointer'
-              id="push-notifications"
-              checked={notificationsEnabled}
-              onCheckedChange={handlePushToggle}
-            />
+            <div className="flex items-center gap-2">
+              {getPushStatusIcon()}
+              <span className="text-sm font-medium">
+                {getPushStatusText()}
+              </span>
+            </div>
           </div>
 
-          {/* Botão para habilitar permissão de push */}
+          {/* Mensagem informativa se push não estiver configurado */}
           {pushPermission !== 'granted' && (
-            <div className="rounded-lg border border-dashed p-4">
-              <div className="flex items-start gap-3">
-                <BellOff className="h-5 w-5 text-muted-foreground mt-0.5" />
-                <div className="flex-1 space-y-2">
-                  <p className="text-sm font-medium">
-                    {pushPermission === 'denied' 
-                      ? 'Notificações bloqueadas' 
-                      : 'Habilite as notificações push'}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {pushPermission === 'denied'
-                      ? 'Você bloqueou as notificações. Habilite nas configurações do navegador.'
-                      : 'Permita notificações para receber atualizações importantes.'}
-                  </p>
-                  {pushPermission !== 'denied' && (
-                    <Button 
-                      size="sm" 
-                      onClick={handleEnablePushNotifications}
-                      disabled={isEnabling}
-                    >
-                      {isEnabling ? 'Habilitando...' : 'Habilitar Notificações'}
-                    </Button>
-                  )}
-                </div>
-              </div>
+            <div className="rounded-lg bg-muted p-3 text-sm text-muted-foreground">
+              {pushPermission === 'denied' ? (
+                <>
+                  <strong>Notificações bloqueadas.</strong> Para habilitar, acesse as 
+                  configurações do seu navegador.
+                </>
+              ) : (
+                <>
+                  <strong>Instale o app</strong> para receber notificações push. 
+                  A permissão será solicitada automaticamente.
+                </>
+              )}
             </div>
           )}
 
           <Separator />
 
+          {/* Notificações por Email (controlável) */}
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label htmlFor="email-notifications">Notificações por Email</Label>

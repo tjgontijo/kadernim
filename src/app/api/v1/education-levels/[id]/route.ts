@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth/auth'
 import { revalidateTag } from 'next/cache'
 import { EducationLevelUpdateInput } from '@/lib/schemas/education-level'
-import { slugify } from '@/lib/slug'
+import { slugify } from '@/lib/helpers/slug'
 
 type Ctx = { params: Promise<{ id: string }> }
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth/auth';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
+import { UnsubscribePushSchema } from '@/lib/schemas/push-notification';
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,21 +15,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    const userId = session.user.id;
     const body = await req.json();
+    const validation = UnsubscribePushSchema.safeParse(body);
 
-    // Validar o corpo da requisição
-    if (!body.endpoint) {
+    if (!validation.success) {
       return NextResponse.json(
-        { error: 'Endpoint ausente' },
+        {
+          error: 'Dados inválidos',
+          details: validation.error.flatten().fieldErrors,
+        },
         { status: 400 }
       );
     }
 
+    const { endpoint } = validation.data;
+
     // Encontrar a inscrição
     const subscription = await prisma.pushSubscription.findUnique({
       where: {
-        endpoint: body.endpoint,
+        endpoint,
       },
     });
 
@@ -37,13 +42,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: 'Inscrição não encontrada' },
         { status: 404 }
-      );
-    }
-
-    if (subscription.userId !== userId) {
-      return NextResponse.json(
-        { error: 'Não autorizado' },
-        { status: 403 }
       );
     }
 

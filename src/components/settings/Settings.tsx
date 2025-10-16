@@ -105,10 +105,8 @@ export function Settings() {
 
       <Suspense fallback={<CardSkeleton />}>
         <NotificationsCard 
-          pushEnabled={preferences?.pushNotifications}
           emailEnabled={preferences?.emailNotifications}
           onUpdate={(data) => updatePreferences({
-            pushNotifications: data.pushEnabled,
             emailNotifications: data.emailEnabled,
           })}
         />

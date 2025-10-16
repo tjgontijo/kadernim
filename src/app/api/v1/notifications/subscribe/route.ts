@@ -1,48 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth/auth';
-import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
+import { PushSubscriptionCreateSchema } from '@/lib/schemas/push-notification';
 
 export async function POST(req: NextRequest) {
   try {
-    // Obter o usuário autenticado usando Better Auth
-    const session = await auth.api.getSession({
-      headers: await headers()
-    });
-    
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
-    }
-
-    const userId = session.user.id;
     const body = await req.json();
 
-    // Validar o corpo da requisição
-    if (!body.endpoint || !body.keys?.p256dh || !body.keys?.auth) {
+    // Validar com Zod
+    const validation = PushSubscriptionCreateSchema.safeParse(body);
+    
+    if (!validation.success) {
       return NextResponse.json(
-        { error: 'Campos obrigatórios ausentes' },
+        { 
+          error: 'Dados inválidos', 
+          details: validation.error.flatten().fieldErrors 
+        },
         { status: 400 }
       );
     }
 
+    const { endpoint, keys } = validation.data;
+
     // Criar ou atualizar a inscrição
     const subscription = await prisma.pushSubscription.upsert({
       where: {
-        endpoint: body.endpoint,
+        endpoint,
       },
       update: {
         active: true,
-        lastUsedAt: new Date(),
-        userAgent: body.userAgent,
-        deviceName: body.deviceName,
       },
       create: {
-        userId,
-        endpoint: body.endpoint,
-        p256dh: body.keys.p256dh,
-        auth: body.keys.auth,
-        userAgent: body.userAgent,
-        deviceName: body.deviceName,
+        endpoint,
+        p256dh: keys.p256dh,
+        auth: keys.auth,
         active: true,
       },
     });

@@ -38,12 +38,11 @@ model User {
   resourceAccess UserResourceAccess[]
   subscription   Subscription?
 
-  accounts          Account[]
-  invitations       Invitation[]       @relation("UserInvitations")
-  members           Member[]
-  notifications     Notification[]
-  pushSubscriptions PushSubscription[]
-  sessions          Session[]
+  accounts      Account[]
+  invitations   Invitation[] @relation("UserInvitations")
+  members       Member[]
+  notifications Notification[]
+  sessions      Session[]
 
   @@map("user")
 }
@@ -166,20 +165,13 @@ model Notification {
 }
 
 model PushSubscription {
-  id         String   @id @default(cuid())
-  userId     String
-  endpoint   String   @unique
-  p256dh     String
-  auth       String
-  userAgent  String?
-  deviceName String?
-  active     Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  lastUsedAt DateTime @default(now())
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
 
-  @@unique([userId, p256dh]) // evita duplicidade do mesmo device por usuário
-  @@index([userId])
   @@index([active])
   @@map("push_subscription")
 }

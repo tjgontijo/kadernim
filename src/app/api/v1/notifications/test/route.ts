@@ -4,6 +4,12 @@ import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import webpush from 'web-push';
 
+type PushSendResult = {
+  success: boolean;
+  subscriptionId: string;
+  error?: string;
+};
+
 // Configure web-push with VAPID keys
 webpush.setVapidDetails(
   process.env.VAPID_SUBJECT || 'mailto:contato@kadernim.com',
@@ -49,7 +55,6 @@ export async function POST(req: NextRequest) {
     // Obter todas as inscrições ativas do usuário
     const subscriptions = await prisma.pushSubscription.findMany({
       where: {
-        userId,
         active: true,
       },
     });
@@ -63,7 +68,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Enviar notificação push para cada inscrição
-    const results = await Promise.all(
+    const results: PushSendResult[] = [];
+    await Promise.all(
       subscriptions.map(async (subscription) => {
         try {
           await webpush.sendNotification(
@@ -85,13 +91,10 @@ export async function POST(req: NextRequest) {
             })
           );
 
-          // Atualizar timestamp lastUsedAt
-          await prisma.pushSubscription.update({
-            where: { id: subscription.id },
-            data: { lastUsedAt: new Date() },
+          results.push({
+            success: true,
+            subscriptionId: subscription.id,
           });
-
-          return { success: true, subscriptionId: subscription.id };
         } catch (error) {
           // Verificar se a inscrição não é mais válida
           const statusCode = (error as { statusCode?: number }).statusCode;
@@ -103,11 +106,11 @@ export async function POST(req: NextRequest) {
             });
           }
           
-          return { 
-            success: false, 
+          results.push({
+            success: false,
             subscriptionId: subscription.id,
             error: error instanceof Error ? error.message : 'Erro desconhecido'
-          };
+          });
         }
       })
     );

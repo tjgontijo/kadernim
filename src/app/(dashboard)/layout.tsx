@@ -3,6 +3,7 @@ import { Suspense } from 'react'
 import { headers } from 'next/headers'
 import { Header } from '@/components/layout/Header'
 import { BottomNav } from '@/components/layout/BottomNav'
+import { PushNotificationSetup } from '@/components/pwa/PushNotificationSetup'
 import { auth } from '@/lib/auth/auth'
 import { Spinner } from '@/components/ui/spinner'
 
@@ -35,14 +36,17 @@ export default async function ProtectedLayout({
   await auth.api.getSession({ headers: await headers() })
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-background">
-      <Header />
-      <main className="flex-1 pb-20 px-4 md:px-6 lg:px-8">
-        <Suspense fallback={<PageLoader />}>
-          {children}
-        </Suspense>
-      </main>
-      <BottomNav />
-    </div>
+    <>
+      <PushNotificationSetup />
+      <div className="flex min-h-screen w-full flex-col bg-background">
+        <Header />
+        <main className="flex-1 pb-20 px-4 md:px-6 lg:px-8">
+          <Suspense fallback={<PageLoader />}>
+            {children}
+          </Suspense>
+        </main>
+        <BottomNav />
+      </div>
+    </>
   )
 }

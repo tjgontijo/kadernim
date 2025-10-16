@@ -27,10 +27,9 @@ export async function POST() {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    // Buscar inscrições ativas do usuário
+    // Buscar inscrições ativas (modelo simplificado por dispositivo)
     const subscriptions = await prisma.pushSubscription.findMany({
       where: {
-        userId: session.user.id,
         active: true,
       },
     });
@@ -87,12 +86,6 @@ export async function POST() {
             vibrate: [200, 100, 200],
           })
         );
-
-        // Atualizar timestamp
-        await prisma.pushSubscription.update({
-          where: { id: subscription.id },
-          data: { lastUsedAt: new Date() },
-        });
 
         results.push({ 
           success: true, 

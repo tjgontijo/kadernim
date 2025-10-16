@@ -4,7 +4,7 @@ import { auth } from '@/lib/auth/auth'
 import { headers } from 'next/headers'
 import { revalidateTag } from 'next/cache'
 import { SubjectCreateInput, SubjectDTO } from '@/lib/schemas/subject'
-import { slugify } from '@/lib/slug'
+import { slugify } from '@/lib/helpers/slug'
 import { z } from 'zod'
 
 export async function GET() {

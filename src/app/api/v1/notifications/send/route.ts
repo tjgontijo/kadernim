@@ -96,10 +96,11 @@ export async function POST(req: NextRequest) {
       });
       notificationIds.push(notification.id);
 
-      // Enviar notificação push se não estiver agendada para o futuro
-      if (shouldSendNow) {
-        await sendPushNotification(userId, notificationData);
-      }
+    }
+
+    // Enviar notificações push para todos os dispositivos ativos quando não estiver agendado
+    if (shouldSendNow) {
+      await sendPushNotification(notificationData);
     }
 
     return NextResponse.json(
@@ -121,7 +122,6 @@ export async function POST(req: NextRequest) {
 
 // Função auxiliar para enviar notificações push para os dispositivos de um usuário
 async function sendPushNotification(
-  userId: string,
   notification: {
     title: string;
     body: string;
@@ -133,10 +133,9 @@ async function sendPushNotification(
   }
 ) {
   try {
-    // Obter todas as inscrições ativas do usuário
+    // Obter todas as inscrições ativas
     const subscriptions = await prisma.pushSubscription.findMany({
       where: {
-        userId,
         active: true,
       },
     });
@@ -164,13 +163,6 @@ async function sendPushNotification(
             vibrate: [200, 100, 200],
           })
         );
-
-        // Atualizar timestamp lastUsedAt
-        await prisma.pushSubscription.update({
-          where: { id: subscription.id },
-          data: { lastUsedAt: new Date() },
-        });
-
         return { success: true, subscriptionId: subscription.id };
       } catch (error) {
         // Verificar se a inscrição não é mais válida

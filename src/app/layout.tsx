@@ -5,7 +5,6 @@ import "./mobile.css"; // Importando estilos específicos para mobile
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { Toaster } from "sonner";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
-import { IOSNotificationHandler } from "@/components/pwa/IOSNotificationHandler";
 
 // Fonte Principal: Inter (para títulos e logos)
 const inter = Inter({
@@ -84,7 +83,6 @@ export default function RootLayout({
       >
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <ServiceWorkerRegister />
-          <IOSNotificationHandler />
           {children}
           <Toaster position="top-right" richColors closeButton />
         </ThemeProvider>
