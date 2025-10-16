@@ -5,8 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { PageHeader } from '@/components/layout/PageHeader'
-import { Check, Sparkles, Crown, Zap, Lock, Unlock } from 'lucide-react'
+import { Check, Sparkles, Zap, Lock, Unlock } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
 
 interface Plan {
@@ -52,18 +51,11 @@ export default function PlansPage() {
 
   if (isLoading) {
     return (
-      <>
-        <PageHeader 
-          title="Planos Premium"
-          icon={<Crown className="h-5 w-5" />}
-          backHref="/resources"
-        />
         <div className="container mx-auto px-4 py-12">
           <div className="flex h-60 items-center justify-center">
             <Spinner className="h-8 w-8 text-primary" />
           </div>
         </div>
-      </>
     )
   }
 
@@ -72,12 +64,6 @@ export default function PlansPage() {
   const paidPlans = plans.filter(p => p.price > 0).sort((a, b) => a.price - b.price)
 
   return (
-    <>
-      <PageHeader 
-        title="Planos Premium"
-        icon={<Crown className="h-5 w-5" />}
-        backHref="/resources"
-      />
       
       <div className="container mx-auto px-4 py-8">
         {/* Hero Section */}
@@ -337,6 +323,5 @@ export default function PlansPage() {
           </div>
         </div>
       </div>
-    </>
   )
 }

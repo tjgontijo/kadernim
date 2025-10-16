@@ -1,10 +1,10 @@
-// src/components/layout/PageHeader.tsx
+// src/components/layout/Header.tsx
 
 'use client';
 
 import { Button } from '@/components/ui/button';
 import { Bell, ArrowLeft } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,17 +14,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
+import { getPageConfig } from '@/lib/page-config';
 
-interface PageHeaderProps {
-  title: string;
-  icon?: React.ReactNode;
-  description?: string;
-  backHref?: string;
-  showAd?: boolean; // Controla se mostra banner premium
-}
-
-export function PageHeader({ title, icon, description, backHref }: PageHeaderProps) {
+export function Header() {
   const router = useRouter()
+  const pathname = usePathname()
+  const config = getPageConfig(pathname)
   const [notifications] = useState([
     {
       id: 1,
@@ -45,18 +40,18 @@ export function PageHeader({ title, icon, description, backHref }: PageHeaderPro
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const handleBack = () => {
-    if (backHref) {
-      router.push(backHref)
+    if (config.backHref) {
+      router.push(config.backHref)
     } else {
       router.back()
     }
   }
 
   return (
-    <header className="flex flex-col shrink-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 flex flex-col shrink-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 mb-4">
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          {(backHref !== undefined || backHref === '') && (
+          {config.showBack && (
             <Button 
               variant="ghost" 
               size="icon" 
@@ -67,15 +62,7 @@ export function PageHeader({ title, icon, description, backHref }: PageHeaderPro
               <span className="sr-only">Voltar</span>
             </Button>
           )}
-          <div className="flex flex-col min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              {icon && <span className="text-muted-foreground flex-shrink-0">{icon}</span>}
-              <h1 className="text-lg font-semibold truncate">{title}</h1>
-            </div>
-            {description && (
-              <p className="mt-0.5 text-xs text-muted-foreground truncate">{description}</p>
-            )}
-          </div>
+          <h1 className="text-lg font-semibold truncate">{config.title}</h1>
         </div>
 
         <div className="flex items-center gap-2">

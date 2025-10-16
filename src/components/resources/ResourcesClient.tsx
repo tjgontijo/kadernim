@@ -149,6 +149,7 @@ export function ResourcesClient() {
       cancelled = true
       if (fetchCtrlRef.current) fetchCtrlRef.current.abort()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryString, page, hasMore])
 
   // scroll infinito

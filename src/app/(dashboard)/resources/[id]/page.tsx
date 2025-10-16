@@ -7,8 +7,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { PageHeader } from '@/components/layout/PageHeader';
-import { BookOpen, Download, ExternalLink, FileText, Lock } from 'lucide-react';
+import { Download, ExternalLink, FileText, Lock } from 'lucide-react';
 
 type PageParams = {
   params: Promise<{ id: string }>;
@@ -161,13 +160,7 @@ export default async function ResourcePage({ params }: PageParams) {
   };
 
   return (
-    <>
-      <PageHeader
-        title={resource.title}
-        icon={<BookOpen className="h-5 w-5" />}
-      />
-
-      <main className="container mx-auto max-w-4xl space-y-10 px-4 py-10">
+    <main className="container mx-auto max-w-4xl space-y-10 px-4 py-10">
         <article className="space-y-8">
           <div className="overflow-hidden rounded-3xl border bg-muted/40 shadow-sm">
             {hasImage ? (
@@ -324,6 +317,5 @@ export default async function ResourcePage({ params }: PageParams) {
           )}
         </article>
       </main>
-    </>
   );
 }

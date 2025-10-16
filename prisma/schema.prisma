@@ -26,6 +26,10 @@ model User {
   // WhatsApp
   whatsapp String? @unique // ex: 556182493200 (sem + e sem espaços e sem o nono digito)
 
+  // Preferências do usuário (JSON)
+  // Exemplo: { "theme": "dark", "pushNotifications": true, "emailNotifications": true }
+  preferences Json? @default("{}")
+
   // Campos adicionais para integração Yampi
   temporaryPassword String? // Senha temporária para primeiro acesso  
   cpf               String? // CPF do usuário

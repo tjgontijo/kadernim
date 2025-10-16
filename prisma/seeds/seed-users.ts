@@ -7,6 +7,7 @@ interface UserData {
   name: string;
   email: string;
   password: string;
+  whatsapp: string;
   role: string;
 }
 
@@ -33,7 +34,8 @@ export async function seedUsers(prisma: PrismaClient) {
           body: {
             name: userData.name,
             email: userData.email,
-            password: userData.password
+            password: userData.password,
+            whatsapp: userData.whatsapp
           }
         });
         
@@ -41,6 +43,7 @@ export async function seedUsers(prisma: PrismaClient) {
           where: { email: userData.email },
           data: { 
             role: userData.role,
+            whatsapp: userData.whatsapp, // Garantir que whatsapp seja salvo
             emailVerified: true // Marcar como verificado
           }
         });

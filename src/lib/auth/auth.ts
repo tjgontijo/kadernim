@@ -36,6 +36,11 @@ export const auth = betterAuth({
       subscriptionTier: {
         type: 'string',
         required: false
+      },
+      whatsapp: {
+        type: 'string',
+        required: false,
+        input: true // Permite receber no signup
       }
     }
   }
