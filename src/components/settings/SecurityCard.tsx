@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Lock, Eye, EyeOff, LogOut } from 'lucide-react';
-import { signOut } from '@/lib/auth/auth-client';
+import { authClient } from '@/lib/auth/auth-client';
 import {
   Dialog,
   DialogContent,
@@ -15,6 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useRouter } from 'next/navigation';
 
 export function SecurityCard() {
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
@@ -32,28 +33,20 @@ export function SecurityCard() {
     newPassword: '',
     confirmPassword: '',
   });
+  const router = useRouter();
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
-      await signOut({
+      await authClient.signOut({
         fetchOptions: {
           onSuccess: () => {
-            // Limpar todos os dados armazenados
-            localStorage.clear();
-            sessionStorage.clear();
-            
-            // Redirecionar com replace para evitar voltar
-            window.location.replace('/login');
+          router.push('/');
           },
         },
       });
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
-      // Forçar logout mesmo com erro
-      localStorage.clear();
-      sessionStorage.clear();
-      window.location.replace('/login');
     }
   };
 
