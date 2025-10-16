@@ -10,6 +10,7 @@ export const PlanPublicDTO = z.object({
   durationDays: z.number().nullable().optional(),
   productId: z.string().nullable().optional(),
   store: z.string(),
+  linkCheckout: z.string().nullable().optional(),
   isActive: z.boolean()
 })
 

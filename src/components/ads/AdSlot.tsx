@@ -9,10 +9,11 @@ interface AdSlotProps {
   slot: 'header' | 'inline' | 'sidebar' | 'footer'
   className?: string
   variant?: 'default' | 'compact' | 'minimal'
+  creative?: 'conversion' | 'testimonial' | 'urgency'
   position?: number // Para inline ads (ex: após 3 itens)
 }
 
-export function AdSlot({ slot, className, variant = 'default', position }: AdSlotProps) {
+export function AdSlot({ slot, className, variant = 'default', creative = 'conversion', position }: AdSlotProps) {
   const { showAds } = usePremiumStatus()
   
   // Não renderiza nada se o usuário é premium
@@ -26,7 +27,7 @@ export function AdSlot({ slot, className, variant = 'default', position }: AdSlo
       data-ad-slot={slot}
       data-ad-position={position}
     >
-      <PremiumBanner slot={slot} variant={variant} />
+      <PremiumBanner slot={slot} variant={variant} creative={creative} />
     </div>
   )
 }

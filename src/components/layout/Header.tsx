@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { getPageConfig } from '@/lib/page-config';
+import Image from 'next/image';
 
 export function Header() {
   const router = useRouter()
@@ -35,7 +36,8 @@ export function Header() {
               <span className="sr-only">Voltar</span>
             </Button>
           )}
-          <h1 className="text-lg font-semibold truncate">{config.title}</h1>
+           <Image src="/images/system/logo_transparent.png" alt="Logo" width={40} height={40} />
+          <h1 className="text-lg font-semibold truncate">{config.title}</h1>         
         </div>
       </div>
     </header>    

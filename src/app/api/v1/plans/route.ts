@@ -19,6 +19,7 @@ const getActivePlans = unstable_cache(
         durationDays: true,
         productId: true,
         store: true,
+        linkCheckout: true,
         isActive: true
       }
     })
