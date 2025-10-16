@@ -10,13 +10,6 @@ export function ServiceWorkerRegister() {
       return;
     }
 
-    // Só registrar em produção
-    const isProduction = process.env.NODE_ENV === 'production';
-    if (!isProduction) {
-      console.log('Service Worker desabilitado em ambiente de desenvolvimento');
-      return;
-    }
-
     navigator.serviceWorker
       .register('/sw.js')
       .then((registration) => {

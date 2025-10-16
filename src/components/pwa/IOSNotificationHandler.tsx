@@ -107,27 +107,88 @@ export function IOSNotificationHandler() {
 
   // Registrar para notificações push
   const registerForPushNotifications = async () => {
-    if ('serviceWorker' in navigator && 'PushManager' in window) {
-      try {
-        // Removida a atribuição à variável registration que não era utilizada
-        await navigator.serviceWorker.ready;
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      console.log('Push notifications não suportadas');
+      return;
+    }
+
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      
+      // Verificar se já existe uma subscription
+      let subscription = await registration.pushManager.getSubscription();
+      
+      // Se não existe, criar uma nova
+      if (!subscription) {
+        const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
         
-        // Aqui você pode implementar a lógica para registrar o dispositivo no seu backend
-        // para receber notificações push
-        console.log('✅ Pronto para receber notificações push no iOS');
+        if (!vapidPublicKey) {
+          console.error('VAPID public key não configurada');
+          return;
+        }
         
-        // Exemplo de como registrar no backend (implementar conforme necessário)
-        // const swRegistration = await navigator.serviceWorker.ready;
-        // await fetch('/api/notifications/register-device', {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify({ 
-        //     token: await swRegistration.pushManager.getSubscription() 
-        //   }),
-        // });
-      } catch (error) {
-        console.error('❌ Erro ao registrar para notificações push:', error);
+        // Converter VAPID key para Uint8Array
+        const urlBase64ToUint8Array = (base64String: string) => {
+          const padding = '='.repeat((4 - base64String.length % 4) % 4);
+          const base64 = (base64String + padding)
+            .replace(/-/g, '+')
+            .replace(/_/g, '/');
+          
+          const rawData = window.atob(base64);
+          const outputArray = new Uint8Array(rawData.length);
+          
+          for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+          }
+          return outputArray;
+        };
+        
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+        });
       }
+      
+      // Enviar subscription para o backend
+      const subscriptionJSON = subscription.toJSON();
+      
+      // Detectar informações do dispositivo
+      const userAgent = navigator.userAgent;
+      let deviceName = 'Dispositivo Desconhecido';
+      
+      if (/iPhone/.test(userAgent)) {
+        deviceName = 'iPhone';
+      } else if (/iPad/.test(userAgent)) {
+        deviceName = 'iPad';
+      } else if (/Android/.test(userAgent)) {
+        deviceName = 'Android';
+      } else if (/Mac/.test(userAgent)) {
+        deviceName = 'Mac';
+      } else if (/Windows/.test(userAgent)) {
+        deviceName = 'Windows';
+      }
+      
+      const response = await fetch('/api/v1/notifications/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          endpoint: subscriptionJSON.endpoint,
+          keys: subscriptionJSON.keys,
+          userAgent,
+          deviceName
+        }),
+      });
+      
+      if (response.ok) {
+        console.log('✅ Push subscription registrada com sucesso');
+      } else {
+        const error = await response.json();
+        console.error('❌ Erro ao registrar subscription:', error);
+      }
+    } catch (error) {
+      console.error('❌ Erro ao registrar para notificações push:', error);
     }
   };
 
