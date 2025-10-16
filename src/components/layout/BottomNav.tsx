@@ -33,7 +33,7 @@ export function BottomNav() {
   ]
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 shadow-lg pb-2">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t bg-background shadow-lg pb-2">
       <div className="flex h-16 items-center justify-around px-2 safe-area-pb">
         {navItems.map((item) => {
           const isActive = pathname === item.href
@@ -43,6 +43,7 @@ export function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
+              prefetch={true}
               className="flex flex-1 flex-col items-center justify-center gap-1 py-1 transition-all active:scale-95"
             >
               <Icon 

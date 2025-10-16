@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -18,7 +17,6 @@ import {
 } from '@/components/ui/dialog';
 
 export function SecurityCard() {
-  const router = useRouter();
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const [isChanging, setIsChanging] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -41,13 +39,21 @@ export function SecurityCard() {
       await signOut({
         fetchOptions: {
           onSuccess: () => {
-            router.push('/login');
+            // Limpar todos os dados armazenados
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            // Redirecionar com replace para evitar voltar
+            window.location.replace('/login');
           },
         },
       });
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
-      setIsLoggingOut(false);
+      // Forçar logout mesmo com erro
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.replace('/login');
     }
   };
 

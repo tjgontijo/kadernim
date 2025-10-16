@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import { headers } from 'next/headers'
 import { Header } from '@/components/layout/Header'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { auth } from '@/lib/auth/auth'
+import { Spinner } from '@/components/ui/spinner'
 
 // Desabilitar cache para rotas protegidas
 export const dynamic = 'force-dynamic'
@@ -14,6 +16,14 @@ export const metadata: Metadata = {
     default: 'Dashboard | Kadernim',
   },
   description: 'Área protegida do Kadernim',
+}
+
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center min-h-[50vh]">
+      <Spinner className="h-8 w-8" />
+    </div>
+  )
 }
 
 export default async function ProtectedLayout({
@@ -28,7 +38,9 @@ export default async function ProtectedLayout({
     <div className="flex min-h-screen w-full flex-col bg-background">
       <Header />
       <main className="flex-1 pb-20 px-4 md:px-6 lg:px-8">
-        {children}
+        <Suspense fallback={<PageLoader />}>
+          {children}
+        </Suspense>
       </main>
       <BottomNav />
     </div>

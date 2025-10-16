@@ -56,6 +56,7 @@ export function NotificationsCard({
               </p>
             </div>
             <Switch
+              className='cursor-pointer'
               id="push-notifications"
               checked={notificationsEnabled}
               onCheckedChange={handlePushToggle}
@@ -72,6 +73,7 @@ export function NotificationsCard({
               </p>
             </div>
             <Switch
+              className='cursor-pointer'
               id="email-notifications"
               checked={emailNotifications}
               onCheckedChange={handleEmailToggle}

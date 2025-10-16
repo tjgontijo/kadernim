@@ -68,8 +68,12 @@ export function ResourcesClient() {
     async function bootstrap() {
       try {
         const [sRes, eRes] = await Promise.all([
-          fetch('/api/v1/subjects/public', { cache: 'no-store' }),
-          fetch('/api/v1/education-levels/public', { cache: 'no-store' })
+          fetch('/api/v1/subjects/public', { 
+            next: { revalidate: 300 } // Cache por 5 minutos
+          }),
+          fetch('/api/v1/education-levels/public', { 
+            next: { revalidate: 300 } // Cache por 5 minutos
+          })
         ])
         if (!sRes.ok || !eRes.ok) throw new Error('Falha nos metadados')
         const [sData, eData] = await Promise.all([sRes.json(), eRes.json()])
