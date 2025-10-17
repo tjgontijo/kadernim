@@ -15,7 +15,7 @@ export function FeedClient() {
           <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
             <div className="flex flex-col space-y-1.5 p-6">
               <h2 className="text-2xl font-semibold leading-none tracking-tight">
-                Seu Feed de Atividades
+                Seu Feed de Atualizações
               </h2>
               <p className="text-sm text-muted-foreground">
                 Acompanhe as últimas atualizações e novidades
@@ -31,7 +31,7 @@ export function FeedClient() {
                   <div className="flex-1">
                     <p className="font-medium">Bem-vindo ao Feed!</p>
                     <p className="text-sm text-muted-foreground">
-                      Aqui você verá todas as atualizações importantes do sistema.
+                      Aqui você verá todas as atualizações importantes do Kadernim.
                     </p>
                     <p className="mt-2 text-xs text-muted-foreground">Agora mesmo</p>
                   </div>

@@ -3,11 +3,11 @@ export const plansData = [
     name: "Plano Trimestral",
     slug: "trimestral",
     description: "Plano de entrada ideal para testar a plataforma",
-    productId: "42643882",
+    productId: "42643860",
     store: "prof-didatica",
     durationDays: 90,
     price: 97,
-    linkCheckout: "https://seguro.profdidatica.com.br/r/27XMKLAI8s",
+    linkCheckout: "https://seguro.profdidatica.com.br/r/DT66WHZ6DD",
     isActive: true
   },
   {

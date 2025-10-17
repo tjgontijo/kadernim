@@ -4,19 +4,17 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Check, Sparkles, Zap, Unlock, TrendingUp, Users, Award, Clock, Download, Star, ArrowRight } from 'lucide-react'
+import { Check, Sparkles, Users, Award, Download, Star, ArrowRight } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
-import { usePremiumStatus } from '@/hooks/use-premium-status'
 import { useResourceStats } from '@/hooks/use-resource-stats'
 import { usePlanOffers } from '@/hooks/use-plan-offers'
 
 export default function PlansPage() {
-  const { isPremium } = usePremiumStatus()
   const { stats, isLoading: statsLoading } = useResourceStats()
   const { plans, isLoading: plansLoading } = usePlanOffers()
 
   const totalResources = stats?.total ?? 0
-  const premiumResources = stats?.premium ?? 0
+  const totalSubjects = stats?.bySubject?.length ?? 0
 
   if (plansLoading || statsLoading) {
     return (
@@ -32,137 +30,103 @@ export default function PlansPage() {
   const sortedPlans = [...plans].sort((a, b) => a.price - b.price)
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      {/* Hero Section */}
-      <div className="text-center mb-16">
-        {isPremium ? (
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-2 border-green-300 dark:border-green-700 rounded-full mb-6 shadow-sm">
-            <Unlock className="h-5 w-5 text-green-600" />
-            <span className="text-sm font-semibold text-green-900 dark:text-green-100">
-              ✨ Você já tem acesso Premium ativo!
+    <div className="container mx-auto px-4 max-w-7xl">
+      {/* Hero Section - Primeira Dobra */}
+      <div className="min-h-[85vh] flex flex-col justify-center py-6 md:py-12">
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 border-2 border-indigo-300 dark:border-indigo-700 rounded-full mb-8 shadow-sm">
+             <span className="text-xs text-indigo-900 dark:text-indigo-100">
+              Desbloqueie Todos os Recursos da Plataforma
             </span>
           </div>
-        ) : (
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 border-2 border-indigo-300 dark:border-indigo-700 rounded-full mb-6 shadow-sm">
-            <Sparkles className="h-5 w-5 text-indigo-600" />
-            <span className="text-sm font-semibold text-indigo-900 dark:text-indigo-100">
-              🎓 Desbloqueie Todo o Potencial da Plataforma
-            </span>
+          
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent leading-tight uppercase">
+            Economize horas de preparo e tenha aulas prontas na palma da sua mão
+          </h1>
+          
+          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-12">
+            Acesse imediatamente mais de {totalResources} recursos pedagógicos do infantil até o fundamental II, usados e aprovados por mais de 8 mil professoras.
+          </p>
+
+          {/* Social Proof Bar */}
+          <div className="max-w-3xl mx-auto mb-8 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-950/20 dark:via-purple-950/20 dark:to-pink-950/20 rounded-xl p-4 md:p-6 border border-indigo-200 dark:border-indigo-800 shadow-lg">
+            <div className="grid grid-cols-3 gap-4 md:gap-6 text-center">
+              <div className="space-y-1">
+                <div className="flex items-center justify-center gap-1.5">
+                  <Users className="h-4 w-4 md:h-5 md:w-5 text-indigo-600" />
+                  <span className="text-2xl md:text-3xl font-bold text-indigo-600">+8k</span>
+                </div>
+                <p className="text-xs text-gray-600 dark:text-gray-300">Professoras</p>
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center justify-center gap-1.5">
+                  <Download className="h-4 w-4 md:h-5 md:w-5 text-purple-600" />
+                  <span className="text-2xl md:text-3xl font-bold text-purple-600">{totalResources}+</span>
+                </div>
+                <p className="text-xs text-gray-600 dark:text-gray-300">Recursos</p>
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center justify-center gap-1.5">
+                  <Star className="h-4 w-4 md:h-5 md:w-5 text-pink-600" />
+                  <span className="text-2xl md:text-3xl font-bold text-pink-600">4.8</span>
+                </div>
+                <p className="text-xs text-gray-600 dark:text-gray-300">Avaliação</p>
+              </div>
+            </div>
           </div>
-        )}
-        
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-          {isPremium 
-            ? 'Aproveite Seu Acesso Premium' 
-            : 'Transforme Suas Aulas com Materiais Exclusivos'
-          }
-        </h1>
-        <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-          {isPremium
-            ? `Você tem acesso ilimitado a ${totalResources}+ recursos pedagógicos. Continue criando aulas incríveis!`
-            : `Acesse ${premiumResources}+ recursos pedagógicos profissionais, planejamentos prontos e atividades diferenciadas. Economize horas de trabalho toda semana!`
-          }
-        </p>
+
+          {/* CTA Principal */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Button 
+              asChild
+              size="lg" 
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 font-bold text-lg px-8 py-6 shadow-xl"
+            >
+              <Link href="#planos">
+                Conhecer Planos                
+              </Link>
+            </Button>
+          </div>
+        </div>
       </div>
 
-      {/* Social Proof Bar */}
-      {!isPremium && (
-        <div className="mb-16 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-950/20 dark:via-purple-950/20 dark:to-pink-950/20 rounded-2xl p-8 border-2 border-indigo-200 dark:border-indigo-800 shadow-xl">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            <div className="space-y-2">
-              <div className="flex items-center justify-center gap-2">
-                <Users className="h-6 w-6 text-indigo-600" />
-                <span className="text-3xl font-bold text-indigo-600">+2.500</span>
-              </div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Professoras Ativas</p>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-center gap-2">
-                <Download className="h-6 w-6 text-purple-600" />
-                <span className="text-3xl font-bold text-purple-600">{totalResources}+</span>
-              </div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Recursos Disponíveis</p>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-center gap-2">
-                <Star className="h-6 w-6 text-pink-600" />
-                <span className="text-3xl font-bold text-pink-600">4.9/5.0</span>
-              </div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Avaliação Média</p>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Benefícios do Premium */}
-      {!isPremium && (
-        <div className="mb-16">
-          <h2 className="text-3xl font-bold text-center mb-8">
-            ✨ Por Que Escolher o Premium?
+      <div className="mb-16 py-8">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-8">
+            O jeito mais fácil de ter aulas incríveis toda semana
           </h2>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <Card className="p-6 text-center hover:shadow-lg transition-shadow">
-              <div className="flex justify-center mb-4">
-                <div className="h-14 w-14 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
-                  <Unlock className="h-7 w-7 text-white" />
-                </div>
-              </div>
-              <h3 className="font-bold text-lg mb-2">Acesso Ilimitado</h3>
-              <p className="text-sm text-muted-foreground">
-                {premiumResources}+ recursos pedagógicos sempre disponíveis
-              </p>
-            </Card>
-
-            <Card className="p-6 text-center hover:shadow-lg transition-shadow">
-              <div className="flex justify-center mb-4">
-                <div className="h-14 w-14 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                  <TrendingUp className="h-7 w-7 text-white" />
-                </div>
-              </div>
-              <h3 className="font-bold text-lg mb-2">Novos Materiais</h3>
-              <p className="text-sm text-muted-foreground">
-                Recursos novos adicionados toda semana
-              </p>
-            </Card>
-
-            <Card className="p-6 text-center hover:shadow-lg transition-shadow">
-              <div className="flex justify-center mb-4">
-                <div className="h-14 w-14 rounded-full bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
-                  <Clock className="h-7 w-7 text-white" />
-                </div>
-              </div>
-              <h3 className="font-bold text-lg mb-2">Economize Tempo</h3>
-              <p className="text-sm text-muted-foreground">
-                Planejamentos prontos para usar imediatamente
-              </p>
-            </Card>
-
-            <Card className="p-6 text-center hover:shadow-lg transition-shadow">
-              <div className="flex justify-center mb-4">
-                <div className="h-14 w-14 rounded-full bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center">
-                  <Zap className="h-7 w-7 text-white" />
-                </div>
-              </div>
-              <h3 className="font-bold text-lg mb-2">Sem Anúncios</h3>
-              <p className="text-sm text-muted-foreground">
-                Experiência limpa e focada no que importa
-              </p>
-            </Card>
+          
+          <div className="prose prose-lg max-w-none text-left">
+            <p className="text-base md:text-lg text-muted-foreground leading-relaxed mb-4">
+              Você não precisa mais passar horas procurando ideias ou adaptando atividades. No Kadernim, tudo já está pronto e pensado por quem vive a mesma rotina que você. São recursos criativos, alinhados à BNCC e testados por milhares de professoras que também buscam aulas leves, bonitas e eficazes.
+            </p>
+            
+            <p className="text-base md:text-lg text-muted-foreground leading-relaxed mb-4">
+              Toda semana, novos materiais chegam para deixar suas aulas sempre diferentes e cheias de novidades. Tudo pronto para usar, sem complicação.
+            </p>
+            
+            <p className="text-base md:text-lg text-muted-foreground leading-relaxed mb-4">
+              E o melhor: dentro do Kadernim, você pode pedir o material que quiser. As sugestões são votadas por outras professoras, e os mais votados viram os próximos lançamentos. É a comunidade decidindo juntas o que vai facilitar o trabalho de todo mundo.
+            </p>
+            
+            <p className="text-base md:text-lg font-medium text-foreground leading-relaxed">
+              O Kadernim é o apoio que toda professora precisa para ensinar com mais leveza, criatividade e tempo livre.
+            </p>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Planos */}
-      <div className="mb-16">
+      <div id="planos" className="mb-16 scroll-mt-8">
         <h2 className="text-3xl font-bold text-center mb-4">
-          Escolha Seu Plano Ideal
+          Escolha o plano que combina com sua rotina
         </h2>
         <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-          Todos os planos incluem acesso completo a {premiumResources}+ recursos. 
-          Escolha o período que melhor se encaixa no seu orçamento.
+          Todos os planos incluem acesso completo a {totalResources}+ recursos de {totalSubjects}+ categorias distintas.
         </p>
 
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
+        <div className="grid gap-16 md:gap-14 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
           {sortedPlans.map((plan, index) => {
             const isPopular = index === 1 // Plano do meio é o mais popular
             const isBestValue = index === 2 // Plano anual é melhor valor
@@ -198,21 +162,26 @@ export default function PlansPage() {
                 )}
 
                 {/* Cabeçalho do Plano */}
-                <div className="mb-6">
-                  <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
+                <div className="mb-2">
+                  <h3 className="text-2xl font-bold mb-4">{plan.name}</h3>
                   <div className="flex items-baseline gap-2 mb-2">
                     <span className="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                       {plan.priceFormatted}
                     </span>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Apenas <strong className="text-indigo-600">
+                  <p className="text-sm text-muted-foreground mb-4">
+                    (Apenas <strong className="text-indigo-600">
                       {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(monthlyPrice)}
-                    </strong> por mês
+                    </strong> por mês)
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {months} meses de acesso completo
+                  
+                  {/* Descrição do plano */}
+                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                    {index === 0 && 'Ideal para quem quer conhecer o Kadernim e testar todos os recursos.'}
+                    {index === 1 && 'Feito para quem quer transformar a rotina de aulas e fazer parte da comunidade ativa de professoras.'}
+                    {index === 2 && 'Para quem quer ter o Kadernim como aliado o ano inteiro.'}
                   </p>
+                  
                   {isBestValue && savings > 0 && (
                     <Badge variant="secondary" className="mt-2">
                       💰 Economize {savings}%
@@ -221,74 +190,79 @@ export default function PlansPage() {
                 </div>
 
                 {/* Benefícios */}
-                <ul className="space-y-3 mb-8 flex-1">
+                <ul className="space-y-3 mb-6 flex-1">
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-sm font-medium">
-                      Acesso ilimitado a {premiumResources}+ recursos
+                    <span className="text-sm">
+                      Acesso completo por {months} {months === 1 ? 'mês' : 'meses'}
                     </span>
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-sm">Planejamentos prontos para todas as disciplinas</span>
+                    <span className="text-sm">
+                      Mais de {totalResources}+ materiais prontos para usar
+                    </span>
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-sm">Atividades diferenciadas e exclusivas</span>
+                    <span className="text-sm">Novos conteúdos adicionados toda semana</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-sm">Novos materiais toda semana</span>
+                    <span className="text-sm">Experiência sem anúncios</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-sm font-medium">Sem anúncios</span>
+                    <span className="text-sm">
+                      {index === 0 ? 'Suporte por e-mail' : 'Suporte via WhatsApp'}
+                    </span>
                   </li>
-                  {isBestValue && (
-                    <>
-                      <li className="flex items-start gap-3">
-                        <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                        <span className="text-sm font-medium">Suporte prioritário via WhatsApp</span>
-                      </li>
-                      <li className="flex items-start gap-3">
-                        <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                        <span className="text-sm font-medium">Acesso antecipado a novos recursos</span>
-                      </li>
-                    </>
+                  {(index === 1 || index === 2) && (
+                    <li className="flex items-start gap-3">
+                      <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <span className="text-sm">Pode solicitar novos materiais e votar nas próximas criações</span>
+                    </li>
+                  )}
+                  {index === 2 && (
+                    <li className="flex items-start gap-3">
+                      <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <span className="text-sm font-medium">Conteúdos exclusivos para assinantes anuais</span>
+                    </li>
                   )}
                 </ul>
+                
+                {/* Texto de fechamento */}
+                <p className="text-xs text-muted-foreground italic mb-6 text-center">
+                  {index === 0 && 'Perfeito para experimentar o Kadernim e entender como ele facilita sua rotina.'}
+                  {index === 1 && 'A escolha inteligente para quem quer praticidade e voz dentro do Kadernim.'}
+                  {index === 2 && 'Para quem já sabe o valor de ter tudo pronto o ano inteiro.'}
+                </p>
 
                 {/* CTA */}
-                {isPremium ? (
-                  <Badge variant="secondary" className="w-full justify-center py-3 text-sm">
-                    ✅ Você já tem acesso Premium
-                  </Badge>
-                ) : (
-                  plan.linkCheckout ? (
-                    <Link href={plan.linkCheckout} target="_blank" rel="noopener noreferrer" className="w-full">
-                      <Button 
-                        className={`w-full py-6 text-base font-bold ${
-                          isPopular 
-                            ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg' 
-                            : isBestValue
-                            ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'
-                            : 'bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-800 hover:to-gray-900'
-                        }`}
-                        size="lg"
-                      >
-                        Desbloquear Agora
-                        <ArrowRight className="ml-2 h-5 w-5" />
-                      </Button>
-                    </Link>
-                  ) : (
+                {plan.linkCheckout ? (
+                  <Link href={plan.linkCheckout} target="_blank" rel="noopener noreferrer" className="w-full">
                     <Button 
-                      className="w-full py-6 text-base font-bold"
+                      className={`w-full py-6 text-base font-bold ${
+                        isPopular 
+                          ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg' 
+                          : isBestValue
+                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'
+                          : 'bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-800 hover:to-gray-900'
+                      }`}
                       size="lg"
-                      disabled
                     >
-                      Em Breve
+                      Desbloquear Agora
+                      <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>
-                  )
+                  </Link>
+                ) : (
+                  <Button 
+                    className="w-full py-6 text-base font-bold"
+                    size="lg"
+                    disabled
+                  >
+                    Em Breve
+                  </Button>
                 )}
               </Card>
             )
@@ -396,29 +370,27 @@ export default function PlansPage() {
       </div>
 
       {/* CTA Final */}
-      {!isPremium && (
-        <div className="mt-16 text-center">
-          <Card className="p-12 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 border-0 shadow-2xl">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              🚀 Pronta Para Transformar Suas Aulas?
-            </h2>
-            <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
-              Junte-se a +2.500 professoras que já estão economizando tempo e 
-              criando aulas incríveis com nossos materiais exclusivos.
-            </p>
-            <Button 
-              asChild
-              size="lg" 
-              className="bg-white text-indigo-600 hover:bg-gray-50 font-bold text-lg px-12 py-6 shadow-xl"
-            >
-              <Link href="#planos">
-                Escolher Meu Plano Agora
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-          </Card>
-        </div>
-      )}
+      <div className="mt-16 mb-8 text-center">
+        <Card className="p-12 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 border-0 shadow-2xl">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            🚀 Pronta Para Transformar Suas Aulas?
+          </h2>
+          <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
+            Junte-se a +8.000 professoras que já estão economizando tempo e 
+            criando aulas incríveis com nossos materiais exclusivos.
+          </p>
+          <Button 
+            asChild
+            size="lg" 
+            className="bg-white text-indigo-600 hover:bg-gray-50 font-bold text-lg px-12 py-6 shadow-xl"
+          >
+            <Link href="#planos">
+              Escolher Meu Plano Agora
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
+          </Button>
+        </Card>
+      </div>
     </div>
   )
 }

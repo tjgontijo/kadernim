@@ -37,7 +37,7 @@ export function PremiumBanner({
   imageSrc
 }: PremiumBannerProps) {
   const [isDismissed, setIsDismissed] = useState(false)
-  const { primaryPlan, isLoading: _plansLoading } = usePlanOffers()
+  const { primaryPlan } = usePlanOffers()
   const { stats, isLoading: statsLoading } = useResourceStats()
 
   if (isDismissed) return null
