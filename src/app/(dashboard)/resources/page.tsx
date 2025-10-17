@@ -9,6 +9,7 @@ import { useResourcesMetadata } from '@/hooks/use-resources-metadata'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
+import { AdSlot } from '@/components/ads'
 
 export default function ResourcesPage() {
   const [filters, setFilters] = useState({
@@ -82,6 +83,15 @@ export default function ResourcesPage() {
 
   return (
     <div className="container py-4 px-4 md:px-6 max-w-7xl">
+      {/* Banner Premium - Topo */}
+      <div className="mb-6">
+        <AdSlot 
+          slot="header" 
+          variant="compact" 
+          creative="conversion"
+        />
+      </div>
+
       {/* Filtros */}
       <ResourcesFilters
         subjects={subjects}
