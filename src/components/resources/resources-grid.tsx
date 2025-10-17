@@ -9,6 +9,7 @@ import { Lock, FileText, Loader2 } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
+import { AdInjector } from '@/components/ads'
 
 interface Resource {
   id: string
@@ -163,7 +164,9 @@ export function ResourcesGrid({ resources, isLoading }: ResourcesGridProps) {
       {/* Recursos com acesso */}
       {accessibleResources.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {accessibleResources.map(renderCard)}
+          <AdInjector injectAfter={10} variant="compact">
+            {accessibleResources.map(renderCard)}
+          </AdInjector>
         </div>
       )}
 
@@ -181,7 +184,9 @@ export function ResourcesGrid({ resources, isLoading }: ResourcesGridProps) {
       {/* Recursos bloqueados */}
       {lockedResources.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {lockedResources.map(renderCard)}
+          <AdInjector injectAfter={10} variant="compact">
+            {lockedResources.map(renderCard)}
+          </AdInjector>
         </div>
       )}
     </div>
