@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth/auth'
 import { getFilterMetadata, getLibraryStats } from '@/services/resources.service'
 import { unstable_cache } from 'next/cache'
+import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,19 +13,39 @@ export async function GET(req: NextRequest) {
     const session = await auth.api.getSession({ headers: req.headers })
     const userId = session?.user?.id
 
-    // Buscar metadados de filtros (cache longo - 1 hora)
+    // Buscar metadados de filtros (cache longo - 6 horas)
     const getCachedMetadata = unstable_cache(
       async () => {
         return await getFilterMetadata()
       },
       ['filter-metadata'],
       {
-        revalidate: 3600, // 1 hora
+        revalidate: 21600, // 6 horas (mudam raramente)
         tags: ['subjects', 'education-levels']
       }
     )
 
-    const metadata = await getCachedMetadata()
+    // Buscar stats gerais de recursos (cache 6 horas)
+    const getCachedResourceStats = unstable_cache(
+      async () => {
+        const [total, free, premium] = await Promise.all([
+          prisma.resource.count(),
+          prisma.resource.count({ where: { isFree: true } }),
+          prisma.resource.count({ where: { isFree: false } }),
+        ])
+        return { total, free, premium }
+      },
+      ['resource-counts'],
+      {
+        revalidate: 21600, // 6 horas
+        tags: ['resources']
+      }
+    )
+
+    const [metadata, resourceStats] = await Promise.all([
+      getCachedMetadata(),
+      getCachedResourceStats()
+    ])
 
     // Se usuário autenticado, buscar estatísticas
     let stats = null
@@ -42,19 +63,20 @@ export async function GET(req: NextRequest) {
       stats = await getCachedStats()
     }
 
-    // Headers de cache
+    // Headers de cache (6 horas para dados que mudam raramente)
     const headers = {
       'Cache-Control': userId
         ? 'private, max-age=60, stale-while-revalidate=300'
-        : 'public, max-age=3600, stale-while-revalidate=7200',
-      'CDN-Cache-Control': userId ? 'private, max-age=60' : 'public, max-age=3600'
+        : 'public, max-age=21600, stale-while-revalidate=43200', // 6h + 12h stale
+      'CDN-Cache-Control': userId ? 'private, max-age=60' : 'public, max-age=21600'
     }
 
     return NextResponse.json(
       {
         subjects: metadata.subjects,
         educationLevels: metadata.educationLevels,
-        stats
+        resourceStats, // ← Adiciona stats gerais
+        stats // ← Stats do usuário (isPremium, isAdmin)
       },
       { headers }
     )

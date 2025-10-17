@@ -75,7 +75,7 @@ export function ResourcesGrid({ resources, isLoading }: ResourcesGridProps) {
   const lockedResources = resources.filter(r => !r.hasAccess)
   const showDivider = accessibleResources.length > 0 && lockedResources.length > 0
 
-  const renderCard = (resource: Resource) => {
+  const renderCard = (resource: Resource, options?: { priority?: boolean }) => {
     const isCardLoading = loadingId === resource.id
     
     return (
@@ -95,6 +95,7 @@ export function ResourcesGrid({ resources, isLoading }: ResourcesGridProps) {
           src={resource.imageUrl}
           alt={resource.title}
           fill
+          priority={options?.priority}
           className="object-cover group-hover:scale-110 transition-transform duration-500"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
         />
@@ -165,7 +166,9 @@ export function ResourcesGrid({ resources, isLoading }: ResourcesGridProps) {
       {accessibleResources.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           <AdInjector injectAfter={10} variant="compact">
-            {accessibleResources.map(renderCard)}
+            {accessibleResources.map((resource, index) =>
+              renderCard(resource, { priority: index === 0 })
+            )}
           </AdInjector>
         </div>
       )}
@@ -185,7 +188,9 @@ export function ResourcesGrid({ resources, isLoading }: ResourcesGridProps) {
       {lockedResources.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           <AdInjector injectAfter={10} variant="compact">
-            {lockedResources.map(renderCard)}
+            {lockedResources.map((resource, index) =>
+              renderCard(resource, { priority: accessibleResources.length === 0 && index === 0 })
+            )}
           </AdInjector>
         </div>
       )}

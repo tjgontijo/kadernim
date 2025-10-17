@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { usePlanOffers } from '@/hooks/use-plan-offers'
-import { useResourceStats } from '@/hooks/use-resource-stats'
 
 interface PremiumBannerProps {
   slot: 'header' | 'inline' | 'sidebar' | 'footer'
@@ -38,15 +37,14 @@ export function PremiumBanner({
 }: PremiumBannerProps) {
   const [isDismissed, setIsDismissed] = useState(false)
   const { primaryPlan } = usePlanOffers()
-  const { stats, isLoading: statsLoading } = useResourceStats()
 
   if (isDismissed) return null
 
   const handleDismiss = () => setIsDismissed(true)
 
-  // Dados inteligentes
-  const totalResources = stats?.total ?? 200
-  const premiumResources = stats?.premium ?? 180
+  // Dados inteligentes (valores fixos - stats vêm do metadata agora)
+  const totalResources = 200
+  const premiumResources = 180
   const planPrice = primaryPlan?.priceFormatted ?? 'R$ 197,00'
   const monthlyPrice = primaryPlan?.monthlyFormatted ?? 'R$ 16,42'
   const planDuration = primaryPlan?.durationLabel ?? '12 meses'
@@ -111,11 +109,9 @@ export function PremiumBanner({
                     <Badge className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-0">
                       🎓 Premium
                     </Badge>
-                    {!statsLoading && (
-                      <span className="text-xs font-medium text-indigo-700 dark:text-indigo-300">
-                        {premiumResources}+ recursos desbloqueados
-                      </span>
-                    )}
+                    <span className="text-xs font-medium text-indigo-700 dark:text-indigo-300">
+                      {premiumResources}+ recursos desbloqueados
+                    </span>
                   </div>
                   <h3 className="text-base font-bold text-gray-900 dark:text-white mb-1">
                     Acesso Total a Todos os Materiais Pedagógicos
@@ -260,11 +256,9 @@ export function PremiumBanner({
                 <Crown className="h-3 w-3 mr-1" />
                 Premium
               </Badge>
-              {!statsLoading && (
-                <span className="text-sm font-medium text-white/90">
-                  {premiumResources}+ Recursos Exclusivos
-                </span>
-              )}
+              <span className="text-sm font-medium text-white/90">
+                {premiumResources}+ Recursos Exclusivos
+              </span>
             </div>
 
             {/* Headline */}

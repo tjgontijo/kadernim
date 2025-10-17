@@ -40,6 +40,11 @@ self.addEventListener('activate', (event) => {
 
 // Interceptar requisições
 self.addEventListener('fetch', (event) => {
+  // Não tentar interceptar métodos não suportados pelo cache
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
   // Para rotas críticas, sempre verificar no servidor primeiro
   if (event.request.url.match(/\.(html|js)$/) || 
       event.request.url.endsWith('/') ||

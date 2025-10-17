@@ -95,8 +95,10 @@ export function useResourcesLibrary(options: UseResourcesLibraryOptions = {}) {
     fetcher,
     {
       keepPreviousData: true, // Mantém dados anteriores durante carregamento
-      revalidateOnFocus: false,
-      dedupingInterval: 5000, // Evita requisições duplicadas em 5s
+      revalidateOnFocus: false, // Não revalida ao focar na aba
+      revalidateOnReconnect: false, // Não revalida ao reconectar
+      dedupingInterval: 120000, // Evita requisições duplicadas em 2min (2 minuto)
+      revalidateIfStale: false, // Não revalida se dados estão "stale"
     }
   )
 

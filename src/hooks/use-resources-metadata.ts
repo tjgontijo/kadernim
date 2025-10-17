@@ -20,9 +20,16 @@ interface LibraryStats {
   isAdmin: boolean
 }
 
+interface ResourceStats {
+  total: number
+  free: number
+  premium: number
+}
+
 interface MetadataResponse {
   subjects: Subject[]
   educationLevels: EducationLevel[]
+  resourceStats: ResourceStats
   stats: LibraryStats | null
 }
 
@@ -39,14 +46,17 @@ export function useResourcesMetadata() {
     fetcher,
     {
       revalidateOnFocus: false,
+      revalidateOnReconnect: false,
       revalidateOnMount: true,
-      dedupingInterval: 30000, // Cache de 30s no cliente
+      dedupingInterval: 21600000, // Cache de 6 horas (mudam raramente)
+      revalidateIfStale: false,
     }
   )
 
   return {
     subjects: data?.subjects || [],
     educationLevels: data?.educationLevels || [],
+    resourceStats: data?.resourceStats || { total: 0, free: 0, premium: 0 },
     stats: data?.stats || null,
     isLoading,
     error: error?.message

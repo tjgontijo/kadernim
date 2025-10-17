@@ -6,17 +6,16 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Check, Sparkles, Users, Award, Download, Star, ArrowRight } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
-import { useResourceStats } from '@/hooks/use-resource-stats'
 import { usePlanOffers } from '@/hooks/use-plan-offers'
 
 export default function PlansPage() {
-  const { stats, isLoading: statsLoading } = useResourceStats()
   const { plans, isLoading: plansLoading } = usePlanOffers()
 
-  const totalResources = stats?.total ?? 0
-  const totalSubjects = stats?.bySubject?.length ?? 0
+  // Valores fixos (stats mudam raramente)
+  const totalResources = 200
+  const totalSubjects = 7
 
-  if (plansLoading || statsLoading) {
+  if (plansLoading) {
     return (
       <div className="container mx-auto px-4 py-12">
         <div className="flex h-60 items-center justify-center">
