@@ -7,15 +7,15 @@ export interface PageConfig {
 }
 
 export const PAGE_CONFIG: Record<string, PageConfig> = {
-  '/feed': { title: 'Atualizações', showBack: false },
-  '/resources': { title: 'Meus Recursos', showBack: false },
-  '/notifications': { title: 'Notificações', showBack: false },
-  '/settings': { title: 'Configurações', showBack: false },
-  '/plans': { title: 'Planos Premium', showBack: true, backHref: '/resources' },
-  '/requests': { title: 'Solicitações', showBack: true, backHref: '/resources' },
-  '/admin': { title: 'Administração', showBack: true, backHref: '/settings' },
-  '/admin/subjects': { title: 'Disciplinas', showBack: true, backHref: '/admin' },
-  '/admin/education-levels': { title: 'Níveis de Ensino', showBack: true, backHref: '/admin' },
+  '/feed': { title: '', showBack: false },
+  '/resources': { title: '', showBack: false },
+  '/notifications': { title: '', showBack: false },
+  '/settings': { title: '', showBack: false },
+  '/plans': { title: '', showBack: true, backHref: '/resources' },
+  '/requests': { title: '', showBack: true, backHref: '/resources' },
+  '/admin': { title: '', showBack: true, backHref: '/settings' },
+  '/admin/subjects': { title: '', showBack: true, backHref: '/admin' },
+  '/admin/education-levels': { title: '', showBack: true, backHref: '/admin' },
 } as const
 
 /**
@@ -30,9 +30,9 @@ export function getPageConfig(pathname: string): PageConfig {
 
   // Fallback para rotas dinâmicas
   if (pathname.startsWith('/resources/') && pathname !== '/resources') {
-    return { title: 'Detalhes do Recurso', showBack: true, backHref: '/resources' }
+    return { title: '', showBack: true, backHref: '/resources' }
   }
 
   // Default fallback
-  return { title: 'Kadernim', showBack: false }
+  return { title: '', showBack: false }
 }

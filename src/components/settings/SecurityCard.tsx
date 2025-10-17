@@ -50,25 +50,6 @@ export function SecurityCard() {
     }
   };
 
-  const handleTestPush = async () => {
-    try {
-      const response = await fetch('/api/v1/notifications/test-push', {
-        method: 'POST',
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        alert(`✅ ${data.message}`);
-      } else {
-        alert(`❌ ${data.error || 'Erro ao enviar notificação'}\n${data.message || ''}`);
-      }
-    } catch (error) {
-      console.error('Erro ao testar push:', error);
-      alert('❌ Erro ao enviar notificação de teste');
-    }
-  };
-
   const handleChangePassword = async () => {
     setError(null);
     setSuccess(false);
@@ -156,24 +137,6 @@ export function SecurityCard() {
                 onClick={() => setIsChangePasswordOpen(true)}
               >
                 Alterar
-              </Button>
-            </div>
-
-            <Separator />
-
-            <div className="flex items-center justify-between">
-              <div>
-                <Label>Testar notificação push</Label>
-                <p className="text-sm text-muted-foreground">
-                  Enviar uma notificação de teste
-                </p>
-              </div>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={handleTestPush}
-              >
-                Testar
               </Button>
             </div>
 

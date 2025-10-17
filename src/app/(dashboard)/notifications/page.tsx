@@ -2,9 +2,9 @@
 
 import { NotificationsClient } from '@/components/notifications/NotificationsClient'
 
-// Desabilitar cache
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
+// ISR - Cache com revalidação rápida
+export const dynamic = 'auto'
+export const revalidate = 30 // Cache por 30 segundos
 
 export default function NotificationsPage() {
   return <NotificationsClient />

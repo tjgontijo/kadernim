@@ -76,27 +76,36 @@ export async function POST(req: NextRequest) {
     const shouldSendNow = !notificationData.expiresAt || 
       notificationData.expiresAt <= new Date();
 
-    // Criar notificações no banco de dados
-    const notificationIds = [];
-    for (const userId of userIds) {
-      const notification = await prisma.notification.create({
-        data: {
-          userId,
-          title: notificationData.title,
-          body: notificationData.body,
-          icon: notificationData.icon,
-          image: notificationData.image,
-          badge: notificationData.badge,
-          data: notificationData.data,
-          type: notificationData.type,
-          category: notificationData.category,
-          clickAction: notificationData.clickAction,
-          expiresAt: notificationData.expiresAt,
-        },
-      });
-      notificationIds.push(notification.id);
+    // ⚡ Criar notificações em batch (muito mais rápido)
+    const notificationsData = userIds.map(userId => ({
+      userId,
+      title: notificationData.title,
+      body: notificationData.body,
+      icon: notificationData.icon,
+      image: notificationData.image,
+      badge: notificationData.badge,
+      data: notificationData.data,
+      type: notificationData.type,
+      category: notificationData.category,
+      clickAction: notificationData.clickAction,
+      expiresAt: notificationData.expiresAt,
+    }));
 
-    }
+    await prisma.notification.createMany({
+      data: notificationsData,
+      skipDuplicates: true,
+    });
+
+    // Buscar IDs criados (necessário para envio de push)
+    const notifications = await prisma.notification.findMany({
+      where: {
+        userId: { in: userIds },
+        title: notificationData.title,
+        sentAt: { gte: new Date(Date.now() - 5000) }, // Últimos 5 segundos
+      },
+      select: { id: true },
+    });
+    const notificationIds = notifications.map(n => n.id);
 
     // Enviar notificações push para todos os dispositivos ativos quando não estiver agendado
     if (shouldSendNow) {

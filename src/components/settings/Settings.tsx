@@ -6,7 +6,7 @@ import { UserPreferences } from '@/lib/schemas/user-preferences';
 
 // Lazy load de componentes menos críticos
 const AppearanceCard = lazy(() => import('./AppearanceCard').then(m => ({ default: m.AppearanceCard })));
-const NotificationsCard = lazy(() => import('./NotificationsCard').then(m => ({ default: m.NotificationsCard })));
+//const NotificationsCard = lazy(() => import('./NotificationsCard').then(m => ({ default: m.NotificationsCard })));
 const SecurityCard = lazy(() => import('./SecurityCard').then(m => ({ default: m.SecurityCard })));
 
 // Tipo do usuário
@@ -103,14 +103,14 @@ export function Settings() {
         />
       </Suspense>
 
-      <Suspense fallback={<CardSkeleton />}>
+      {/* <Suspense fallback={<CardSkeleton />}>
         <NotificationsCard 
           emailEnabled={preferences?.emailNotifications}
           onUpdate={(data) => updatePreferences({
             emailNotifications: data.emailEnabled,
           })}
         />
-      </Suspense>
+      </Suspense> */}
 
       <Suspense fallback={<CardSkeleton />}>
         <SecurityCard />

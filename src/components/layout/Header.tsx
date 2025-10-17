@@ -3,15 +3,30 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, Crown } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { getPageConfig } from '@/lib/page-config';
+import { useSession } from '@/lib/auth/auth-client';
 import Image from 'next/image';
+
+type UserWithAdditionalFields = {
+  name: string;
+  email: string;
+  whatsapp?: string;
+  role?: string;
+  subscriptionTier?: string;
+};
 
 export function Header() {
   const router = useRouter()
   const pathname = usePathname()
   const config = getPageConfig(pathname)
+  const { data: session } = useSession()
+  
+  const user = session?.user as UserWithAdditionalFields | undefined
+  const isAdmin = user?.role === 'admin'
+  const isPremium = user?.subscriptionTier === 'premium' || isAdmin
 
   const handleBack = () => {
     if (config.backHref) {
@@ -36,9 +51,20 @@ export function Header() {
               <span className="sr-only">Voltar</span>
             </Button>
           )}
-           <Image src="/images/system/logo_transparent.png" alt="Logo" width={40} height={40} />
+          <Image src="/images/system/logo_transparent.png" alt="Logo" width={40} height={40} priority />
           <h1 className="text-lg font-semibold truncate">{config.title}</h1>         
         </div>
+        
+        {/* Badge Premium/Admin */}
+        {isPremium && (
+          <Badge 
+            variant="default" 
+            className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-3 py-1 flex-shrink-0"
+          >
+            <Crown className="h-3 w-3 mr-1" />
+            {isAdmin ? 'Admin' : 'Premium'}
+          </Badge>
+        )}
       </div>
     </header>    
   );

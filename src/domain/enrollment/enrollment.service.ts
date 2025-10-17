@@ -6,7 +6,7 @@ import { auth } from '@/lib/auth/auth'
 import { Prisma } from '@prisma/client'
 
 type Result =
-  | { kind: 'premium'; userId: string; email: string; tempPassword?: string | null; planName: string }
+  | { kind: 'premium'; userId: string; email: string; tempPassword?: string | null; planName: string; isNewUser: boolean }
   | {
       kind: 'individual'
       userId: string
@@ -15,6 +15,7 @@ type Result =
       hasPremium: boolean
       resources: { id: string; title: string }[]
       notFound: string[]
+      isNewUser: boolean
     }
 
 export class EnrollmentError extends Error {
@@ -135,7 +136,8 @@ export async function enrollUser(
           userId: existingUser.id,
           email: existingUser.email,
           tempPassword: passwordTempToReturn,
-          planName: premiumPlan.name
+          planName: premiumPlan.name,
+          isNewUser
         }
       }
 
@@ -211,7 +213,8 @@ export async function enrollUser(
         tempPassword: passwordTempToReturn,
         hasPremium,
         resources: granted,
-        notFound
+        notFound,
+        isNewUser
       }
     })
   } catch (err) {

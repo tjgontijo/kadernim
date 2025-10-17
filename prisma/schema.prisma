@@ -216,6 +216,9 @@ model Resource {
   @@index([subjectId])
   @@index([educationLevelId])
   @@index([isFree])
+  @@index([subjectId, educationLevelId]) // Índice composto para filtros combinados
+  @@index([createdAt(sort: Desc)]) // Índice para ordenação por data de criação
+  @@index([isFree, createdAt(sort: Desc)]) // Índice otimizado para buscar recursos gratuitos/pagos ordenados
   @@map("resource")
 }
 
@@ -291,6 +294,8 @@ model UserResourceAccess {
   @@index([resourceId])
   @@index([expiresAt])
   @@index([isActive])
+  @@index([userId, grantedAt(sort: Desc)]) // Índice para recursos recém-adquiridos
+  @@index([userId, isActive, expiresAt]) // Índice para verificação de acesso ativo
   @@map("user_resource_access")
 }
 

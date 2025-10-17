@@ -1,6 +1,6 @@
 ### Testar matriculando em um produto
 POST http://localhost:3000/api/v1/enroll
-x-api-key: 37007c82ba6a16asd343304dd649f54996712577acc99b141a44cdb3b5b454ccb432b
+x-api-key: 37007c82ba6a16asd343304dd6454996712577acc99b141a44cdb3b5b454ccb432b
 Content-Type: application/json
 
 {
@@ -9,12 +9,12 @@ Content-Type: application/json
   "email": "individual@mail.com",
   "cpf": "12345678900",
   "whatsapp": "61982482100",
-  "product_ids": [33192369]
+  "product_ids": [30200956]
 }
 
 ### Testar matriculando em dois produtos
 POST http://localhost:3000/api/v1/enroll
-x-api-key: 37007c82ba6a16asd343304dd649f54996712577acc99b141a44cdb3b5b454ccb432b
+x-api-key: 37007c82ba6a16asd343304dd6454996712577acc99b141a44cdb3b5b454ccb432b
 Content-Type: application/json
 
 {
@@ -28,7 +28,7 @@ Content-Type: application/json
 
 ### Testar com Plano Semestral
 POST http://localhost:3000/api/v1/enroll
-x-api-key: 37007c82ba6a16asd343304dd649f54996712577acc99b141a44cdb3b5b454ccb432b
+x-api-key: 37007c82ba6a16asd343304dd6454996712577acc99b141a44cdb3b5b454ccb432b
 Content-Type: application/json
 
 {

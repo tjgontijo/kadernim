@@ -27,6 +27,7 @@ export async function POST(request: Request) {
         password_temp: result.tempPassword,
         isPremium: true,
         plan: result.planName,
+        isNewUser: result.isNewUser,
         accessUrl
       })
     } else {
@@ -36,6 +37,7 @@ export async function POST(request: Request) {
         email: result.email,
         password_temp: result.tempPassword,
         isPremium: result.hasPremium,
+        isNewUser: result.isNewUser,
         resources: result.resources,
         notFoundProducts: result.notFound.length ? result.notFound : undefined
       })
