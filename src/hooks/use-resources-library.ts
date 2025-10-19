@@ -18,7 +18,6 @@ interface Resource {
   subjectName: string
   educationLevelId: string
   educationLevelName: string
-  fileCount: number
   hasAccess: boolean
 }
 

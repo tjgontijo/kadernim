@@ -16,7 +16,6 @@ export type Resource = {
   educationLevelName: string
   hasAccess: boolean
   description: string
-  fileCount: number
 }
 
 type ResourcesQuery = z.infer<typeof ResourcesQueryDTO>
@@ -65,8 +64,7 @@ async function fetchResourcesPage(q: ResourcesQuery) {
         subjectId: true,
         subject: { select: { name: true } },
         educationLevelId: true,
-        educationLevel: { select: { name: true } },
-        _count: { select: { files: true } }
+        educationLevel: { select: { name: true } }
       },
       orderBy: { createdAt: 'desc' },
       skip,
@@ -85,7 +83,6 @@ async function fetchResourcesPage(q: ResourcesQuery) {
       subjectName: r.subject.name,
       educationLevelId: r.educationLevelId,
       educationLevelName: r.educationLevel.name,
-      fileCount: r._count.files,
       hasAccess: r.isFree // Será atualizado posteriormente
     } as Resource)),
     pagination: {

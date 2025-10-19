@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Subject, EducationLevel, StorageType, Prisma } from '@prisma/client';
 import { resourcesData } from './data-resources';
 
 // Helper para delay entre operações
@@ -29,8 +29,8 @@ export async function seedResources(prisma: PrismaClient) {
   const subjects = await prisma.subject.findMany();
   const educationLevels = await prisma.educationLevel.findMany();
   
-  const subjectMap = new Map(subjects.map((s: any) => [s.slug, s]));
-  const educationLevelMap = new Map(educationLevels.map((e: any) => [e.slug, e]));
+  const subjectMap = new Map(subjects.map((s: Subject) => [s.slug, s]));
+  const educationLevelMap = new Map(educationLevels.map((e: EducationLevel) => [e.slug, e]));
   
   let successCount = 0;
   let errorCount = 0;
@@ -41,8 +41,8 @@ export async function seedResources(prisma: PrismaClient) {
       const { subjectSlug, educationLevelSlug, files, externalMappings, ...resourceFields } = resourceData;
       
       // Buscar do cache
-      const subject = subjectMap.get(subjectSlug) as any;
-      const educationLevel = educationLevelMap.get(educationLevelSlug) as any;
+      const subject = subjectMap.get(subjectSlug);
+      const educationLevel = educationLevelMap.get(educationLevelSlug);
       
       if (!subject || !educationLevel) {
         console.error(`❌ Subject ou EducationLevel não encontrado para ${resourceData.title}`);
@@ -62,15 +62,18 @@ export async function seedResources(prisma: PrismaClient) {
       // Criar arquivos (se houver)
       if (files && files.length > 0) {
         await prisma.resourceFile.createMany({
-          data: files.map((file: any) => ({
-            resourceId: resource.id,
-            storageType: file.storageType as any,
-            externalUrl: file.externalUrl || null,
-            fileName: file.fileName || null,
-            fileType: file.fileType || null,
-            storageKey: file.storageKey || null,
-            metadata: file.metadata || null
-          })),
+          data: files.map((file: unknown) => {
+            const f = file as { storageType: string; externalUrl?: string | null; fileName?: string | null; fileType?: string | null; storageKey?: string | null; metadata?: Prisma.InputJsonValue };
+            return {
+              resourceId: resource.id,
+              storageType: f.storageType as StorageType,
+              externalUrl: f.externalUrl ?? null,
+              fileName: f.fileName ?? null,
+              fileType: f.fileType ?? null,
+              storageKey: f.storageKey ?? null,
+              metadata: f.metadata ?? undefined
+            };
+          }),
           skipDuplicates: true
         });
       }

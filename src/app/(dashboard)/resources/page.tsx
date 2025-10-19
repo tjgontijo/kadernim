@@ -58,8 +58,12 @@ export default function ResourcesPage() {
   // Loading inicial
   if (metadataLoading && !stats) {
     return (
-      <div className="container py-8 space-y-8">
+      <div className="container mx-auto py-8 space-y-8">
         <div className="space-y-4">
+          <Skeleton className="h-12 w-64" />
+          <Skeleton className="h-6 w-96" />
+          <Skeleton className="h-12 w-64" />
+          <Skeleton className="h-6 w-96" />
           <Skeleton className="h-12 w-64" />
           <Skeleton className="h-6 w-96" />
         </div>
@@ -82,7 +86,7 @@ export default function ResourcesPage() {
   }
 
   return (
-    <div className="container py-4 px-4 md:px-6 max-w-7xl">
+    <div className="container mx-auto py-4 px-4 md:px-6 max-w-7xl">
       {/* Banner Premium - Topo */}
       <div className="mb-6">
         <AdSlot 

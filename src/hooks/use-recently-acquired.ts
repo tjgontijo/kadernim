@@ -17,7 +17,6 @@ interface RecentResource {
   subjectName: string
   educationLevelId: string
   educationLevelName: string
-  fileCount: number
   hasAccess: boolean
   acquiredAt: string
 }

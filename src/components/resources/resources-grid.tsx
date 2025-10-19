@@ -5,7 +5,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Lock, FileText, Loader2 } from 'lucide-react'
+import { Lock, Loader2, FileText } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
@@ -21,7 +21,6 @@ interface Resource {
   subjectName: string
   educationLevelId: string
   educationLevelName: string
-  fileCount: number
   hasAccess: boolean
 }
 
@@ -126,13 +125,6 @@ export function ResourcesGrid({ resources, isLoading }: ResourcesGridProps) {
           </div>
         )}
 
-        {/* Contador de arquivos */}
-        <div className="absolute bottom-2 right-2">
-          <Badge variant="secondary" className="bg-white/90 backdrop-blur-sm">
-            <FileText className="h-3 w-3 mr-1" />
-            {resource.fileCount}
-          </Badge>
-        </div>
       </div>
 
       {/* Conteúdo */}

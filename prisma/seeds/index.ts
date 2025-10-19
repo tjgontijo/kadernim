@@ -38,6 +38,7 @@ async function cleanDatabase() {
   } catch (error) {
     // Se as tabelas não existirem ainda, ignora o erro
     console.log('⚠️  Algumas tabelas ainda não existem (primeira execução)');
+    console.debug('Detalhes:', error);
   }
 }
 
@@ -88,6 +89,7 @@ export async function main() {
     await createInitialData();
   } catch (error) {
     console.error('❌ Falha na execução do seed');
+    console.error(error);
     process.exit(1);
   } finally {
     await prisma.$disconnect();

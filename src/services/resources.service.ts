@@ -22,7 +22,6 @@ export interface ResourceWithDetails {
   subjectName: string
   educationLevelId: string
   educationLevelName: string
-  fileCount: number
   hasAccess: boolean
 }
 
@@ -112,8 +111,7 @@ export async function getMyLibrary(
         subjectId: true,
         subject: { select: { name: true } },
         educationLevelId: true,
-        educationLevel: { select: { name: true } },
-        _count: { select: { files: true } }
+        educationLevel: { select: { name: true } }
       },
       orderBy: { createdAt: 'desc' }
     }),
@@ -133,8 +131,7 @@ export async function getMyLibrary(
         subjectId: true,
         subject: { select: { name: true } },
         educationLevelId: true,
-        educationLevel: { select: { name: true } },
-        _count: { select: { files: true } }
+        educationLevel: { select: { name: true } }
       },
       orderBy: { createdAt: 'desc' },
       take: 100 // Limitar para performance
@@ -162,7 +159,6 @@ export async function getMyLibrary(
       subjectName: r.subject.name,
       educationLevelId: r.educationLevelId,
       educationLevelName: r.educationLevel.name,
-      fileCount: r._count.files,
       hasAccess
     }
   })
@@ -214,8 +210,7 @@ export async function getRecentlyAcquired(userId: string, limit = 10) {
           subjectId: true,
           subject: { select: { name: true } },
           educationLevelId: true,
-          educationLevel: { select: { name: true } },
-          _count: { select: { files: true } }
+          educationLevel: { select: { name: true } }
         }
       }
     },
@@ -233,7 +228,6 @@ export async function getRecentlyAcquired(userId: string, limit = 10) {
     subjectName: access.resource.subject.name,
     educationLevelId: access.resource.educationLevelId,
     educationLevelName: access.resource.educationLevel.name,
-    fileCount: access.resource._count.files,
     hasAccess: true,
     acquiredAt: access.grantedAt
   }))
@@ -254,8 +248,7 @@ export async function getRecentlyAdded(limit = 10) {
       subjectId: true,
       subject: { select: { name: true } },
       educationLevelId: true,
-      educationLevel: { select: { name: true } },
-      _count: { select: { files: true } }
+      educationLevel: { select: { name: true } }
     },
     orderBy: { createdAt: 'desc' },
     take: limit
@@ -271,7 +264,6 @@ export async function getRecentlyAdded(limit = 10) {
     subjectName: r.subject.name,
     educationLevelId: r.educationLevelId,
     educationLevelName: r.educationLevel.name,
-    fileCount: r._count.files,
     createdAt: r.createdAt,
     hasAccess: false // Será determinado pelo frontend
   }))

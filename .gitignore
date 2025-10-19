@@ -43,4 +43,5 @@ next-env.d.ts
 
 /src/generated/prisma
 
-http
+http/*
+http/enrol.http
