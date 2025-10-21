@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 import { authClient } from '@/lib/auth/auth-client';
 
 interface ResendVerificationEmailProps {
@@ -57,7 +59,7 @@ export default function ResendVerificationEmail({ email, className = '' }: Resen
       )}
       {status === 'loading' && (
         <div className="flex items-center justify-center py-2">
-          <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mr-2"></div>
+          <Spinner className="w-5 h-5 text-indigo-500 mr-2" />
           <p className="text-gray-600">{message}</p>
         </div>
       )}
