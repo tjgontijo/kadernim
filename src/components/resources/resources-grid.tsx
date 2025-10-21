@@ -5,8 +5,9 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Lock, Loader2, FileText } from 'lucide-react'
+import { Lock, FileText } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Spinner } from '@/components/ui/spinner'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { AdInjector } from '@/components/ads'
@@ -102,7 +103,7 @@ export function ResourcesGrid({ resources, isLoading }: ResourcesGridProps) {
         {/* Overlay de loading */}
         {isCardLoading && (
           <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-2 z-10">
-            <Loader2 className="h-10 w-10 text-white animate-spin" />
+            <Spinner className="h-10 w-10 text-white" />
             <span className="text-white text-sm font-medium">Abrindo...</span>
           </div>
         )}
