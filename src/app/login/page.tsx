@@ -8,6 +8,7 @@ import { FiPhone, FiAlertCircle } from 'react-icons/fi'
 import { toast } from 'sonner'
 import { applyWhatsAppMask, validateWhatsApp } from '@/lib/masks/whatsapp'
 import { InstallPWA } from '@/components/pwa/InstallPWA'
+import { Spinner } from '@/components/ui/spinner'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -130,7 +131,7 @@ export default function LoginPage() {
                 className="flex w-full cursor-pointer justify-center rounded-md bg-indigo-600 px-4 py-3 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isLoading ? (
-                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  <Spinner className="h-5 w-5 text-white" />
                 ) : (
                   'Receber link de acesso'
                 )}
