@@ -6,7 +6,7 @@ const urlsToCache = [
   '/login',
   '/icon.png',
   '/images/icons/icon.png',
-  '/images/system/check.png'
+  '/images/system/logo_transparent.png'
 ];
 
 // Instalação do Service Worker
@@ -153,7 +153,7 @@ self.addEventListener('push', (event) => {
           {
             action: 'explore',
             title: 'Ver detalhes',
-            icon: '/images/system/check.png'
+            icon: '/images/icons/icon.png'
           }
         ],
         // Configurações específicas para iOS

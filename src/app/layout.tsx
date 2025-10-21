@@ -64,7 +64,7 @@ export const metadata: Metadata = {
     description: appDescription,
     images: [
       {
-        url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://kadernim.com'}/images/system/og-kadernim.jpg`,
+        url: `${process.env.NEXT_PUBLIC_APP_URL}/images/system/og-kadernim.jpg`,
         width: 1200,
         height: 630,
         alt: appName,
@@ -76,7 +76,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: appName,
     description: appDescription,
-    images: [`${process.env.NEXT_PUBLIC_APP_URL || 'https://kadernim.com'}/images/system/og-kadernim.jpg`],
+    images: [`${process.env.NEXT_PUBLIC_APP_URL}/images/system/og-kadernim.jpg`],
   },
 };
 
