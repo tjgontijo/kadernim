@@ -2,6 +2,7 @@
 
 import { useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { Spinner } from '@/components/ui/spinner';
 import { useSession } from '@/lib/auth/auth-client';
 
 interface ProtectedRouteProps {
@@ -35,7 +36,7 @@ export default function ProtectedRoute({
       <div className="flex min-h-screen flex-col items-center justify-center p-4">
         <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
           <div className="text-center">
-            <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <Spinner className="w-12 h-12 text-indigo-500 mx-auto" />
             <p className="mt-4 text-zinc-600">Verificando autenticação...</p>
           </div>
         </div>
