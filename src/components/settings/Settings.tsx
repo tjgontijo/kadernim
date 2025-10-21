@@ -18,7 +18,8 @@ type UserData = {
 
 export function Settings() {
   const [user, setUser] = useState<UserData | null>(null);
-  const [_preferences, setPreferences] = useState<UserPreferences | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchUserData = useCallback(async () => {

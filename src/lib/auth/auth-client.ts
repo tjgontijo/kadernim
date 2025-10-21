@@ -2,17 +2,19 @@
 import { createAuthClient } from "better-auth/react"
 import { adminClient } from "better-auth/client/plugins"
 import { organizationClient } from "better-auth/client/plugins"
+import { magicLinkClient } from "better-auth/client/plugins"
 
 export const authClient = createAuthClient({
   baseURL:
     process.env.NEXT_PUBLIC_BASE_URL ??
     (typeof window !== "undefined" ? window.location.origin : undefined),
 
-  basePath: "/api/v1/auth", // <-- adiciona isso aqui
+  basePath: "/api/v1/auth",
 
   plugins: [
     adminClient(),
     organizationClient(),
+    magicLinkClient(),
   ],
 })
 

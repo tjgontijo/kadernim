@@ -50,7 +50,7 @@ export async function POST() {
         userId: session.user.id,
         title: '🎉 Notificação de Teste',
         body: 'Esta é uma notificação push de teste do Kadernim!',
-        icon: '/icon.png',
+        icon: '/images/icons/icon.png',
         type: 'info',
         category: 'test',
         data: {
@@ -75,8 +75,8 @@ export async function POST() {
           JSON.stringify({
             title: '🎉 Notificação de Teste',
             body: 'Esta é uma notificação push de teste do Kadernim!',
-            icon: '/icon.png',
-            badge: '/icon.png',
+            icon: '/images/icons/icon.png',
+            badge: '/images/icons/icon.png',
             data: {
               url: '/notifications',
               notificationId: notification.id,

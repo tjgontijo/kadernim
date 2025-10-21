@@ -33,9 +33,6 @@ export async function getMyLibrary(
   filters: ResourceFilters,
   _pagination: PaginationParams
 ) {
-  // Ignorar paginação - buscar todos os recursos
-  // A paginação será feita no frontend
-
   // Construir condições de filtro
   const filterConditions: Prisma.ResourceWhereInput[] = []
 

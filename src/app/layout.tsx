@@ -54,6 +54,30 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: appName,
   },
+  // Configurações de OpenGraph para compartilhamento em redes sociais
+  openGraph: {
+    type: 'website',
+    locale: 'pt_BR',
+    url: process.env.NEXT_PUBLIC_APP_URL,
+    siteName: appName,
+    title: `${appName} | Plataforma de Gerenciamento`,
+    description: appDescription,
+    images: [
+      {
+        url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://kadernim.com'}/images/system/og-kadernim.jpg`,
+        width: 1200,
+        height: 630,
+        alt: appName,
+      },
+    ],
+  },
+  // Configurações para o Twitter (agora X)
+  twitter: {
+    card: 'summary_large_image',
+    title: appName,
+    description: appDescription,
+    images: [`${process.env.NEXT_PUBLIC_APP_URL || 'https://kadernim.com'}/images/system/og-kadernim.jpg`],
+  },
 };
 
 export const viewport: Viewport = {

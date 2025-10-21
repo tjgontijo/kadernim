@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, CheckCircle, Zap, Shield, Users } from 'lucide-react'
+import { CheckCircle, Zap, Shield, Users } from 'lucide-react'
 
 export default function HomePage() {
   return (
@@ -14,9 +14,6 @@ export default function HomePage() {
           <nav className="flex items-center gap-4">
             <Link href="/login">
               <Button variant="ghost">Entrar</Button>
-            </Link>
-            <Link href="/register">
-              <Button>Começar Grátis</Button>
             </Link>
           </nav>
         </div>
@@ -33,12 +30,7 @@ export default function HomePage() {
               Gerencie suas aulas, alunos e conteúdos de forma simples e eficiente.
               Tudo que você precisa em um só lugar.
             </p>
-            <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
-              <Link href="/register">
-                <Button size="lg" className="gap-2">
-                  Começar Agora <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
+            <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">              
               <Link href="/login">
                 <Button size="lg" variant="outline">
                   Já tenho conta

@@ -2,6 +2,8 @@
 import { NextResponse } from 'next/server'
 import { EnrollmentInput } from '@/lib/schemas/enrollment'
 import { EnrollmentError, enrollUser } from '@/domain/enrollment/enrollment.service'
+import { isWhatsAppNumberValid } from '@/lib/whatsapp/uazapi/check'
+import { normalizeWhatsApp } from '@/lib/masks/whatsapp'
 
 const API_KEY = process.env.WEBHOOK_API_KEY || ''
 
@@ -16,6 +18,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Payload inválido', details: parsed.error.format() }, { status: 400 })
     }
 
+    // Normalizar e verificar se o número de WhatsApp é válido antes de prosseguir
+    if (parsed.data.whatsapp) {
+      // Normalizar o número (adicionar 55 se necessário e remover caracteres não numéricos)
+      const normalizedWhatsApp = normalizeWhatsApp(parsed.data.whatsapp)
+      
+      // Verificar se o número é válido no WhatsApp
+      const isValid = await isWhatsAppNumberValid(normalizedWhatsApp)
+      if (!isValid) {
+        return NextResponse.json({ 
+          error: 'Número de WhatsApp inválido ou inexistente', 
+          code: 'invalid_whatsapp' 
+        }, { status: 400 })
+      }
+      
+      // Atualizar o número normalizado nos dados
+      parsed.data.whatsapp = normalizedWhatsApp
+    }
+
     const result = await enrollUser(parsed.data, { apiBaseUrl: process.env.NEXT_PUBLIC_APP_URL ?? '' })
 
     if (result.kind === 'premium') {
@@ -25,6 +45,7 @@ export async function POST(request: Request) {
         userId: result.userId,
         email: result.email,
         password_temp: result.tempPassword,
+        whatsapp: result.whatsapp,
         isPremium: true,
         plan: result.planName,
         isNewUser: result.isNewUser,
@@ -36,6 +57,7 @@ export async function POST(request: Request) {
         userId: result.userId,
         email: result.email,
         password_temp: result.tempPassword,
+        whatsapp: result.whatsapp,
         isPremium: result.hasPremium,
         isNewUser: result.isNewUser,
         resources: result.resources,

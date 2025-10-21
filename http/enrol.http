@@ -1,7 +1,11 @@
+@host = {{$dotenv NEXT_PUBLIC_APP_URL}}
+@apiKey = {{$dotenv WEBHOOK_API_KEY}}
+@contentType = application/json
+
 ### Testar matriculando em um produto
-POST http://localhost:3000/api/v1/enroll
-x-api-key: 37007c82ba6a16asd343304dd6454996712577acc99b141a44cdb3b5b454ccb432b
-Content-Type: application/json
+POST {{host}}/api/v1/enroll HTTP/1.1
+x-api-key: {{apiKey}}
+Content-Type: {{contentType}}
 
 {
   "store": "prof-didatica",
@@ -13,44 +17,50 @@ Content-Type: application/json
 }
 
 ### Testar matriculando em dois produtos
-POST http://localhost:3000/api/v1/enroll
-x-api-key: 37007c82ba6a16asd343304dd6454996712577acc99b141a44cdb3b5b454ccb432b
-Content-Type: application/json
+POST {{host}}/api/v1/enroll HTTP/1.1
+x-api-key: {{apiKey}}
+Content-Type: {{contentType}}
 
 {
   "store": "prof-didatica",
   "name": "Multi Produtos",
   "email": "multi@mail.com",
   "cpf": "12345678900",
-  "whatsapp": "61982482101",
+  "whatsapp": "61982482112",
   "product_ids": [37235525,30200121]
 }
 
 ### Testar com Plano Semestral
-POST http://localhost:3000/api/v1/enroll
-x-api-key: 37007c82ba6a16asd343304dd6454996712577acc99b141a44cdb3b5b454ccb432b
-Content-Type: application/json
+POST {{host}}/api/v1/enroll HTTP/1.1
+x-api-key: {$apiKey}
+Content-Type: {{contentType}}
 
 {
   "store": "prof-didatica",
   "name": "Plano Semestral",
   "email": "semestral@mail.com",
   "cpf": "12345678900",
-  "whatsapp": "61982482102",
+  "whatsapp": "61982482113",
   "product_ids": [42643883]
 }
 
-
 ### Testar com Plano Anual
-POST http://localhost:3000/api/v1/enroll
-x-api-key: 37007c82ba6a16asd343304dd649f54996712577acc99b141a44cdb3b5b454ccb432b
-Content-Type: application/json
+POST {{host}}/api/v1/enroll HTTP/1.1
+x-api-key: {$apiKey}}
+Content-Type: {{contentType}}
 
 {
   "store": "prof-didatica",
   "name": "Plano Anual",
   "email": "anual@mail.com",
   "cpf": "12345678900",
-  "whatsapp": "61982482103",
+  "whatsapp": "61982482114",
   "product_ids": [42643885]
 }
+
+### Testar saúde
+GET {{host}}/api/health
+
+
+
+

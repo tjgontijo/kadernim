@@ -2,14 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { usersData } from './data-users';
 import { auth } from '@/lib/auth/auth';
 
-// Interface para tipagem dos dados de usuário
-interface UserData {
-  name: string;
-  email: string;
-  password: string;
-  whatsapp: string;
-  role: string;
-}
+// Os dados de usuário são importados de data-users.ts
 
 export async function seedUsers(prisma: PrismaClient) {
   console.log('🌱 Populando usuários...');
@@ -30,7 +23,8 @@ export async function seedUsers(prisma: PrismaClient) {
 
       try {
 
-        const result = await (auth.api.signUpEmail as any)({
+        // Ignorando o resultado da operação
+        await (auth.api.signUpEmail as unknown as (params: {body: Record<string, unknown>}) => Promise<unknown>)({
           body: {
             name: userData.name,
             email: userData.email,

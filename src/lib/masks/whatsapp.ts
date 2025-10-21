@@ -20,9 +20,13 @@ export function applyWhatsAppMask(value: string): string {
   if (limited.length <= 2) {
     return limited.length === 0 ? '' : `(${limited}`; // (11
   } else if (limited.length <= 6) {
-    return `(${limited.slice(0, 2)}) ${limited.slice(2)}`; // (11) 8888
+    return `(${limited.slice(0, 2)}) ${limited.slice(2)}`; // (11) 9824
+  } else if (limited.length === 11) {
+    // Com nono dígito: (61) 98248-2100
+    return `(${limited.slice(0, 2)}) ${limited.slice(2, 7)}-${limited.slice(7)}`;
   } else {
-    return `(${limited.slice(0, 2)}) ${limited.slice(2, 6)}-${limited.slice(6)}`; // (11) 8888-8888
+    // Sem nono dígito: (61) 8248-2100
+    return `(${limited.slice(0, 2)}) ${limited.slice(2, 6)}-${limited.slice(6)}`;
   }
 }
 

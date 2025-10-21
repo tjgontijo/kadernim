@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
         userId,
         title: body.title,
         body: body.body,
-        icon: body.icon || '/icon.png',
+        icon: body.icon || '/images/icons/icon.png',
         type: body.type || 'info',
         category: body.category || 'test',
         data: body.data || { test: true },
@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
             JSON.stringify({
               title: body.title,
               body: body.body,
-              icon: body.icon || '/icon.png',
+              icon: body.icon || '/images/icons/icon.png',
               data: body.data || { test: true },
               tag: `kadernim-test-${Date.now()}`,
               requireInteraction: body.requireInteraction || false,

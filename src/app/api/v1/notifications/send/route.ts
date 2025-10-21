@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
     const notificationData = {
       title: body.title,
       body: body.body,
-      icon: body.icon || '/icon.png',
+      icon: body.icon || '/images/icons/icon.png',
       image: body.image,
       badge: body.badge,
       data: body.data || {},

@@ -17,7 +17,8 @@ export async function middleware(request: NextRequest) {
                     pathname === '/manifest.json' ||
                     pathname === '/manifest.webmanifest' ||
                     pathname === '/icon.png' ||
-                    pathname === '/apple-icon.png'
+                    pathname === '/apple-icon.png' ||
+                    pathname.startsWith('/images/icons/')
   
   // Rotas de autenticação
   const isAuthRoute = pathname.startsWith('/login') || 
@@ -56,5 +57,5 @@ export async function middleware(request: NextRequest) {
 export const runtime = 'nodejs'
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|images|sw.js|manifest).*)'] 
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|images|sw.js|manifest|icon.png).*)'] 
 }

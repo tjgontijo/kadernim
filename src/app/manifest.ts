@@ -22,8 +22,14 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: '#09090b', // Cor do background (tema escuro) - status bar
     icons: [
       {
+        src: '/images/icons/icon.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'maskable'
+      },
+      {
         src: '/icon.png',
-        sizes: 'any',
+        sizes: '512x512',
         type: 'image/png',
       },
     ],

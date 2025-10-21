@@ -1,9 +1,12 @@
 // Service Worker para Kadernim PWA
-const CACHE_VERSION = '1';
+const CACHE_VERSION = '3';
 const CACHE_NAME = `kadernim-v${CACHE_VERSION}`;
 const urlsToCache = [
   '/',
-  '/login'    
+  '/login',
+  '/icon.png',
+  '/images/icons/icon.png',
+  '/images/system/check.png'
 ];
 
 // Instalação do Service Worker
@@ -69,6 +72,34 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Para ícones e imagens estáticas, priorizar o cache
+  if (event.request.url.includes('/icon.png') || 
+      event.request.url.includes('/images/icons/') ||
+      event.request.url.includes('/images/system/')) {
+    event.respondWith(
+      caches.match(event.request).then((response) => {
+        // Se estiver no cache, retornar imediatamente
+        if (response) {
+          return response;
+        }
+        
+        // Se não estiver no cache, buscar e armazenar
+        return fetch(event.request).then(response => {
+          // Clone da resposta
+          const responseToCache = response.clone();
+          
+          // Armazenar no cache com alta prioridade
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseToCache);
+          });
+          
+          return response;
+        });
+      })
+    );
+    return;
+  }
+  
   // Para outros recursos, usar a estratégia padrão
   event.respondWith(
     caches.match(event.request).then((response) => {
@@ -110,8 +141,8 @@ self.addEventListener('push', (event) => {
       const data = event.data.json();
       const options = {
         body: data.body,
-        icon: data.icon || '/icon.png',
-        badge: '/icon.png',
+        icon: data.icon || '/images/icons/icon.png',
+        badge: '/images/icons/icon.png',
         vibrate: [100, 50, 100],
         data: {
           dateOfArrival: Date.now(),
@@ -142,7 +173,7 @@ self.addEventListener('push', (event) => {
       event.waitUntil(
         self.registration.showNotification('Kadernim', {
           body: text,
-          icon: '/icon.png'
+          icon: '/images/icons/icon.png'
         })
       );
     }
@@ -183,16 +214,16 @@ self.addEventListener('notificationclick', (event) => {
 });
 
 // Evento quando uma notificação é fechada sem interação
-self.addEventListener('notificationclose', (event) => {
+self.addEventListener('notificationclose', (_event) => {
   console.log('Notificação fechada sem clique');
   // Aqui você pode implementar analytics ou outras ações
 });
 
 // Sincronização em segundo plano (útil para enviar dados quando o usuário está offline)
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'sync-data') {
+self.addEventListener('sync', (_event) => {
+  if (_event.tag === 'sync-data') {
     console.log('Sincronizando dados em segundo plano');
-    event.waitUntil(syncData());
+    _event.waitUntil(syncData());
   }
 });
 

@@ -4,14 +4,24 @@ import { EnrollmentInput } from '@/lib/schemas/enrollment'
 import { randomPassword } from '@/lib/helpers/password'
 import { auth } from '@/lib/auth/auth'
 import { Prisma } from '@prisma/client'
+import { isWhatsAppNumberValid } from '@/lib/whatsapp/uazapi/check'
 
 type Result =
-  | { kind: 'premium'; userId: string; email: string; tempPassword?: string | null; planName: string; isNewUser: boolean }
+  | {
+      kind: 'premium'
+      userId: string
+      email: string
+      tempPassword?: string | null
+      whatsapp?: string | null
+      planName: string
+      isNewUser: boolean
+    }
   | {
       kind: 'individual'
       userId: string
       email: string
       tempPassword?: string | null
+      whatsapp?: string | null
       hasPremium: boolean
       resources: { id: string; title: string }[]
       notFound: string[]
@@ -39,6 +49,13 @@ export async function enrollUser(
   let isNewUser = false
 
   if (input.whatsapp) {
+    // Verificar se o número de WhatsApp é válido
+    const isValid = await isWhatsAppNumberValid(input.whatsapp)
+    if (!isValid) {
+      throw new EnrollmentError('Número de WhatsApp inválido', 'invalid_whatsapp', 400)
+    }
+    
+    // Verificar se já existe um usuário com este WhatsApp
     const existingByWhatsapp = await prisma.user.findUnique({ where: { whatsapp: input.whatsapp } })
     if (existingByWhatsapp && (!user || existingByWhatsapp.id !== user.id)) {
       throw new EnrollmentError('WhatsApp já cadastrado para outro usuário', 'duplicate_whatsapp', 409)
@@ -67,13 +84,14 @@ export async function enrollUser(
     isNewUser = true
   }
 
-  const existingUser = user
+  let existingUser = user
   const passwordTempToReturn = isNewUser ? tempPassword : null
 
   try {
     return await prisma.$transaction(async tx => {
       if (isNewUser) {
-        await tx.user.update({
+        // Atualizar o usuário e obter o resultado atualizado
+        const updatedUser = await tx.user.update({
           where: { id: existingUser.id },
           data: {
             emailVerified: true,
@@ -83,11 +101,42 @@ export async function enrollUser(
             temporaryPassword: tempPassword
           }
         })
-      } else if (existingUser.temporaryPassword) {
-        await tx.user.update({
-          where: { id: existingUser.id },
-          data: { temporaryPassword: null }
-        })
+        
+        // Atualizar a referência do usuário existente com os dados atualizados
+        existingUser = updatedUser
+      } else {
+        // Para usuários existentes, atualizar whatsapp e outros campos se necessário
+        // Definir um tipo específico para os campos que podem ser atualizados
+        const updateData: {
+          temporaryPassword?: null;
+          whatsapp?: string;
+          cpf?: string;
+        } = {};
+        
+        if (existingUser.temporaryPassword) {
+          updateData.temporaryPassword = null;
+        }
+        
+        // Atualizar whatsapp se fornecido
+        if (input.whatsapp) {
+          updateData.whatsapp = input.whatsapp;
+        }
+        
+        // Atualizar cpf se fornecido
+        if (input.cpf) {
+          updateData.cpf = input.cpf;
+        }
+        
+        if (Object.keys(updateData).length > 0) {
+          // Atualizar o usuário e obter o resultado atualizado
+          const updatedUser = await tx.user.update({
+            where: { id: existingUser.id },
+            data: updateData
+          });
+          
+          // Atualizar a referência do usuário existente
+          existingUser = updatedUser;
+        }
       }
 
       const premiumPlan = await tx.plan.findFirst({
@@ -135,6 +184,7 @@ export async function enrollUser(
           kind: 'premium',
           userId: existingUser.id,
           email: existingUser.email,
+          whatsapp: existingUser.whatsapp,
           tempPassword: passwordTempToReturn,
           planName: premiumPlan.name,
           isNewUser
@@ -210,6 +260,7 @@ export async function enrollUser(
         kind: 'individual',
         userId: existingUser.id,
         email: existingUser.email,
+        whatsapp: existingUser.whatsapp,
         tempPassword: passwordTempToReturn,
         hasPremium,
         resources: granted,

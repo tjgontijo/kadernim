@@ -58,14 +58,28 @@ export default function ResourcesPage() {
   // Loading inicial
   if (metadataLoading && !stats) {
     return (
-      <div className="container mx-auto py-8 space-y-8">
-        <div className="space-y-4">
-          <Skeleton className="h-12 w-64" />
-          <Skeleton className="h-6 w-96" />
-          <Skeleton className="h-12 w-64" />
-          <Skeleton className="h-6 w-96" />
-          <Skeleton className="h-12 w-64" />
-          <Skeleton className="h-6 w-96" />
+      <div className="container mx-auto py-4 px-4 md:px-6 max-w-7xl">
+        <div className="mb-6">
+          <Skeleton className="h-24 w-full rounded-xl" />
+        </div>
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <Skeleton className="h-9 w-52" />
+            <Skeleton className="h-9 w-40" />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <Skeleton key={index} className="h-7 w-24" />
+            ))}
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <Skeleton key={index} className="h-48 w-full rounded-xl" />
+            ))}
+          </div>
+          <div className="flex justify-center mt-6">
+            <Skeleton className="h-10 w-48" />
+          </div>
         </div>
       </div>
     )

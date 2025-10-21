@@ -1,6 +1,11 @@
 // Script para atualizar automaticamente a versão do Service Worker
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Obter o diretório atual em ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Caminho para o arquivo do service worker
 const swPath = path.join(__dirname, '..', 'public', 'sw.js');

@@ -32,8 +32,9 @@ export function InstallPWA() {
     }
 
     // Listener para o evento beforeinstallprompt (Android/Desktop)
+    // Não usamos preventDefault() para permitir que o banner nativo seja exibido automaticamente
     const promptHandler = (e: Event) => {
-      e.preventDefault();
+      // Armazenamos a referência para uso posterior caso o usuário queira instalar via nosso botão
       setDeferredPrompt(e as BeforeInstallPromptEvent);
       setIsInstallable(true);
     };
