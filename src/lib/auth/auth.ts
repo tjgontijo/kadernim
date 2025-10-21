@@ -20,6 +20,9 @@ export const auth = betterAuth({
     cookieCache: {
       enabled: true,
       maxAge: 5 * 60,
+      domain: process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_BASE_URL,
+      sameSite: 'none',
+      secure: true,
     }
   },
 
