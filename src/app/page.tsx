@@ -27,13 +27,12 @@ export default function HomePage() {
               App de bolso para toda professora moderna
             </h2>
             <p className="mb-8 text-xl text-muted-foreground">
-              Gerencie suas aulas, alunos e conteúdos de forma simples e eficiente.
-              Tudo que você precisa em um só lugar.
+             Tenha acesso a centenas de recursos pedagógicos e conteúdos educacionais prontos para imprimir e aplicar na sala de aula.
             </p>
             <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">              
               <Link href="/login">
                 <Button size="lg" variant="outline">
-                  Já tenho conta
+                  Entrar
                 </Button>
               </Link>
             </div>
