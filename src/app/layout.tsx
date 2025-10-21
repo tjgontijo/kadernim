@@ -5,6 +5,8 @@ import "./mobile.css"; // Importando estilos específicos para mobile
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { Toaster } from "sonner";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
+import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 // Fonte Principal: Inter (para títulos e logos)
 const inter = Inter({
@@ -109,6 +111,8 @@ export default function RootLayout({
           <ServiceWorkerRegister />
           {children}
           <Toaster position="top-right" richColors closeButton />
+          <Analytics />
+          <SpeedInsights />
         </ThemeProvider>
       </body>
     </html>
