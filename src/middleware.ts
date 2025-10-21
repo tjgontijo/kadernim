@@ -11,7 +11,8 @@ export async function middleware(request: NextRequest) {
   // Rotas que não precisam de validação
   const isApiOrStaticRoute = pathname.startsWith('/api') || 
                            pathname.includes('/_next/') || 
-                           pathname.includes('/static/')
+                           pathname.includes('/static/') ||
+                           pathname.includes('/auth/')
   
   const isPWAFile = pathname === '/sw.js' || 
                     pathname === '/manifest.json' ||
