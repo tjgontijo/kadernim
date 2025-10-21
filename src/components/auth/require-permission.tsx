@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { Spinner } from '@/components/ui/spinner'
 import { usePermissions } from '@/lib/hooks/use-permissions'
 
 interface RequirePermissionProps {
@@ -35,7 +36,7 @@ export function RequirePermission({
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent"></div>
+        <Spinner className="h-8 w-8 text-indigo-500" />
       </div>
     )
   }
