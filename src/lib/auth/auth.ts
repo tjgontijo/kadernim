@@ -5,6 +5,12 @@ import { prisma } from '../prisma'
 import { admin, organization, magicLink } from 'better-auth/plugins'
 import { deliverMagicLink } from '@/services/magic-link/magic-link-delivery'
 
+console.log('[auth] Inicializando better-auth com config:')
+console.log('[auth] NODE_ENV:', process.env.NODE_ENV)
+console.log('[auth] DATABASE_URL configurada:', !!process.env.DATABASE_URL)
+console.log('[auth] DIRECT_URL configurada:', !!process.env.DIRECT_URL)
+console.log('[auth] BETTER_AUTH_SECRET configurada:', !!process.env.BETTER_AUTH_SECRET)
+
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET,
 
@@ -35,17 +41,43 @@ export const auth = betterAuth({
     magicLink({      
       expiresIn: 60 * 20,
       sendMagicLink: async ({ email, url }) => {
-        console.log('[magic-link] Iniciando entrega para:', email)
-        console.log('[magic-link] URL gerada:', url)
+        console.log('[auth] ========== MAGIC LINK CALLBACK INICIADO ==========')
+        console.log('[auth] Email:', email)
+        console.log('[auth] Token URL:', url)
+        console.log('[auth] Timestamp:', new Date().toISOString())
+        console.log('[auth] NODE_ENV:', process.env.NODE_ENV)
         
-        const result = await deliverMagicLink({ email, url })
+        // Verificar se o token foi salvo no banco
+        try {
+          const token = url.split('token=')[1]?.split('&')[0]
+          if (token) {
+            const verification = await prisma.verification.findFirst({
+              where: { value: token }
+            })
+            console.log('[auth] Token encontrado no banco?', !!verification)
+            if (verification) {
+              console.log('[auth] Verificação encontrada:', { id: verification.id, identifier: verification.identifier, expiresAt: verification.expiresAt })
+            } else {
+              console.error('[auth] ⚠️ TOKEN NÃO FOI SALVO NO BANCO!')
+            }
+          }
+        } catch (checkError) {
+          console.error('[auth] Erro ao verificar token no banco:', checkError)
+        }
+        
+        try {
+          const result = await deliverMagicLink({ email, url })
 
-        console.log('[magic-link] Resultado da entrega:', result)
-        
-        if (!result.success) {
-          console.error('[magic-link] Entrega falhou', result.error)
-        } else {
-          console.log('[magic-link] Entrega bem-sucedida via', result.channel)
+          console.log('[auth] Resultado da entrega:', result)
+          
+          if (!result.success) {
+            console.error('[auth] Entrega falhou', result.error)
+          } else {
+            console.log('[auth] Entrega bem-sucedida via', result.channel)
+          }
+        } catch (callbackError) {
+          console.error('[auth] Erro no callback sendMagicLink:', callbackError)
+          console.error('[auth] Stack trace:', callbackError instanceof Error ? callbackError.stack : 'N/A')
         }
       }
     })
