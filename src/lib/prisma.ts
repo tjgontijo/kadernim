@@ -43,8 +43,6 @@ export const prisma =
 // Log de inicialização
 if (process.env.NODE_ENV === 'production') {
   console.log('[prisma] Inicializado em produção')
-  console.log('[prisma] DATABASE_URL:', process.env.DATABASE_URL?.substring(0, 50) + '...')
-  console.log('[prisma] DIRECT_URL:', process.env.DIRECT_URL?.substring(0, 50) + '...')
 }
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
