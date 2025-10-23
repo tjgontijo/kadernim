@@ -1,8 +1,10 @@
-import { betterAuth } from 'better-auth'
+import { betterAuth, email } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { prisma } from '../prisma'
 import { magicLink } from 'better-auth/plugins'
-import { nodemailerProvider } from '@/services/mail/nodemailer'
+import { deliverMagicLink } from '@/services/magic-link/magic-link-delivery'
+import { admin } from 'better-auth/plugins'
+import { organization } from 'better-auth/plugins'
 
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET,
@@ -10,26 +12,26 @@ export const auth = betterAuth({
   basePath: '/api/v1/auth',
 
   database: prismaAdapter(prisma, { provider: 'postgresql' }),
+  
+  emailAndPassword: {
+    enabled: true   
+  },
 
   plugins: [
+    admin(), 
+    organization(),
     magicLink({
       expiresIn: 60 * 20, // 20 minutos
-      sendMagicLink: async ({ email, url }) => {        
-        await nodemailerProvider.send({
-          to: email,
-          subject: 'Seu link de acesso - Kadernim',
-          html: `
-            <p>Olá!</p>
-            <p>Clique no link abaixo para acessar sua conta:</p>
-            <a href="${url}" style="display: inline-block; padding: 10px 20px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 5px;">
-              Acessar Conta
-            </a>
-            <p>Este link expira em 20 minutos.</p>
-            <p>Se você não solicitou este email, ignore-o.</p>
-          `
-        })
+      sendMagicLink: async ({ email, url }) => {
+        console.log('[magic-link] Iniciando entrega do magic link para:', email)
         
-        console.log('[magic-link] Email enviado com sucesso')
+        try {
+          await deliverMagicLink({ email, url })
+          console.log('[magic-link] Magic link entregue com sucesso para:', email)
+        } catch (error) {
+          console.error('[magic-link] Erro ao entregar magic link:', error)
+          throw error
+        }
       }
     })
   ],

@@ -14,7 +14,8 @@
       "@/*": ["../src/*"]
     },
     "resolveJsonModule": true,
-    "declaration": true
+    "declaration": true,
+    "jsx": "react-jsx"
   },
   "include": ["seeds/**/*", "*.ts"],
   "exclude": ["node_modules"]

@@ -23,7 +23,7 @@ class ResendProvider implements EmailProvider {
       }
       
       const { data, error } = await this.client!.emails.send({
-        from: process.env.EMAIL_FROM || 'no-reply@kadernim.com',
+        from: process.env.RESEND_FROM || 'Kadernim <no-reply@kadernim.com>',
         to: payload.to,
         subject: payload.subject,
         html: payload.html || '',

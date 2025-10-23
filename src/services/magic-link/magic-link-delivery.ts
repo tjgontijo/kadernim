@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
-import { nodemailerProvider } from '@/services/mail/nodemailer'
+import { resendProvider } from '@/services/mail/resend'
 import { sendTextMessage } from '@/services/whatsapp/uazapi/send-message'
+import { renderMagicLinkEmail } from './magic-link-renderer'
 
 interface DeliverMagicLinkParams {
   email: string
@@ -25,7 +26,7 @@ export async function deliverMagicLink({ email, url }: DeliverMagicLinkParams): 
       }
     })
 
-    console.log('[magic-link-delivery] Usuário encontrado:', { email, hasWhatsapp: !!user?.whatsapp })
+    console.log('[magic-link-delivery] Usuário encontrado:', { email, hasWhatsapp: !!user?.whatsapp, name: user?.name })
 
     if (!user) {
       console.error('[magic-link-delivery] Usuário não encontrado:', email)
@@ -35,51 +36,26 @@ export async function deliverMagicLink({ email, url }: DeliverMagicLinkParams): 
         error: 'user_not_found'
       }
     }
+    
+    console.log('[magic-link-delivery] Dados do usuário completos:', { name: user.name, email, whatsapp: user.whatsapp })
 
-    let whatsappDelivered = false
     let emailDelivered = false
 
-    if (user.whatsapp) {
-      try {
-        // user.whatsapp já vem normalizado do banco (ex: 5561982482100)
-        console.log('[magic-link-delivery] Enviando WhatsApp para:', user.whatsapp)
-        
-        const message = `Olá ${user.name ?? ''}! 🎉\n\n` +
-          `🔐 *Acesse sua conta Kadernim:*\n\n${url}\n\n` +
-          `⏰ Este link é válido por 20 minutos.\n\n` +
-          `_Não compartilhe este link com ninguém._`
-
-        const result = await sendTextMessage({
-          phone: user.whatsapp,
-          message
-        })
-
-        console.log('[magic-link-delivery] Resultado WhatsApp:', result)
-
-        if (!result.status) {
-          throw new Error(result.error || 'WhatsApp send failed')
-        }
-
-        whatsappDelivered = true
-        console.log('[magic-link-delivery] WhatsApp enviado com sucesso')
-      } catch (whatsappError) {
-        console.error('[magic-link-delivery] Erro ao enviar via WhatsApp:', whatsappError)
-      }
-    }
-
-    const subject = 'Kadernim - Acesse sua conta'
-    const textBody = `Olá ${user.name ?? ''}!\n\nUse o link a seguir para acessar sua conta: ${url}\n\nEste link expira em 20 minutos. Não compartilhe com ninguém.`
-    const htmlBody = `<!doctype html><html><body style="font-family: Arial, sans-serif; color: #111;">
-      <p>Olá ${user.name ?? ''}! 🎉</p>
-      <p><strong>🔐 Acesse sua conta Kadernim:</strong></p>
-      <p><a href="${url}" style="color:#2563eb;">${url}</a></p>
-      <p>⏰ Este link é válido por 20 minutos.</p>
-      <p><em>Não compartilhe este link com ninguém.</em></p>
-    </body></html>`
+    const subject = '🔐 Seu link de acesso - Kadernim'
+    const textBody = `Olá ${user.name ?? ''}!\n\nUse o link a seguir para acessar sua conta: ${url}\n\nEste link expira em 20 minutos. Não compartilhe com ninguém.\n\nPrecisa de ajuda?\nWhatsApp: +55 11 4863-5262\nE-mail: contato@kadernim.com.br\nEndereço: Brasília - DF, Brasil`
+    
+    console.log('[magic-link-delivery] Nome do usuário:', user.name)
+    
+    // Renderizar template React Email
+    const htmlBody = await renderMagicLinkEmail({
+      name: user.name || 'Usuário',
+      magicLink: url,
+      expiresIn: 20,
+    })
 
     console.log('[magic-link-delivery] Enviando e-mail para:', email)
     
-    const emailResult = await nodemailerProvider.send({
+    const emailResult = await resendProvider.send({
       to: email,
       subject,
       text: textBody,
@@ -95,12 +71,44 @@ export async function deliverMagicLink({ email, url }: DeliverMagicLinkParams): 
       console.error('[magic-link-delivery] Erro ao enviar e-mail:', emailResult.error)
     }
 
-    console.log('[magic-link-delivery] Status final - WhatsApp:', whatsappDelivered, 'Email:', emailDelivered)
+    if (user.whatsapp) {
+      const whatsappNumber = user.whatsapp
+      console.log('[magic-link-delivery] Agendando envio de WhatsApp para 15 segundos')
 
-    if (whatsappDelivered || emailDelivered) {
+      void (async () => {
+        try {
+          await new Promise((resolve) => setTimeout(resolve, 15000))
+          console.log('[magic-link-delivery] Enviando WhatsApp para:', whatsappNumber)
+
+          const message = `Olá ${user.name ?? ''}! 🎉\n\n` +
+            `🔐 *Acesse sua conta Kadernim:*\n\n${url}\n\n` +
+            `⏰ Este link é válido por 20 minutos.\n\n` +
+            `_Não compartilhe este link com ninguém._`
+
+          const result = await sendTextMessage({
+            phone: whatsappNumber,
+            message
+          })
+
+          console.log('[magic-link-delivery] Resultado WhatsApp:', result)
+
+          if (!result.status) {
+            throw new Error(result.error || 'WhatsApp send failed')
+          }
+
+          console.log('[magic-link-delivery] WhatsApp enviado com sucesso')
+        } catch (whatsappError) {
+          console.error('[magic-link-delivery] Erro ao enviar via WhatsApp:', whatsappError)
+        }
+      })()
+    }
+
+    console.log('[magic-link-delivery] Status final - Email:', emailDelivered)
+
+    if (emailDelivered) {
       const finalResult = {
         success: true,
-        channel: whatsappDelivered ? 'whatsapp' as const : 'email' as const
+        channel: 'email' as const
       }
       console.log('[magic-link-delivery] Entrega bem-sucedida:', finalResult)
       return finalResult
