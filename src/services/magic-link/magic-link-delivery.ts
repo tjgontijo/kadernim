@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma'
-import { normalizeWhatsApp } from '@/lib/masks/whatsapp'
 import { nodemailerProvider } from '@/services/mail/nodemailer'
 import { sendTextMessage } from '@/services/whatsapp/uazapi/send-message'
 
@@ -42,8 +41,8 @@ export async function deliverMagicLink({ email, url }: DeliverMagicLinkParams): 
 
     if (user.whatsapp) {
       try {
-        const normalizedPhone = normalizeWhatsApp(user.whatsapp)
-        console.log('[magic-link-delivery] Enviando WhatsApp para:', normalizedPhone)
+        // user.whatsapp já vem normalizado do banco (ex: 5561982482100)
+        console.log('[magic-link-delivery] Enviando WhatsApp para:', user.whatsapp)
         
         const message = `Olá ${user.name ?? ''}! 🎉\n\n` +
           `🔐 *Acesse sua conta Kadernim:*\n\n${url}\n\n` +
@@ -51,7 +50,7 @@ export async function deliverMagicLink({ email, url }: DeliverMagicLinkParams): 
           `_Não compartilhe este link com ninguém._`
 
         const result = await sendTextMessage({
-          phone: normalizedPhone,
+          phone: user.whatsapp,
           message
         })
 
@@ -115,7 +114,8 @@ export async function deliverMagicLink({ email, url }: DeliverMagicLinkParams): 
     console.error('[magic-link-delivery] Entrega falhou:', failureResult)
     return failureResult
   } catch (error) {
-    console.error('[magic-link] Erro no serviço de entrega:', error)
+    console.error('[magic-link-delivery] Erro no serviço de entrega:', error)
+    console.error('[magic-link-delivery] Stack trace:', error instanceof Error ? error.stack : 'N/A')
     return {
       success: false,
       channel: 'none',
