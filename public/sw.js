@@ -57,11 +57,13 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(event.request)
         .then(response => {
-          // Atualizar o cache com a nova resposta
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, responseToCache);
-          });
+          // Só cachear se a resposta for bem-sucedida (status 200)
+          if (response.status === 200) {
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseToCache);
+            });
+          }
           return response;
         })
         .catch(() => {
