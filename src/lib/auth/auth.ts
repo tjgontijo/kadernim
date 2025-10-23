@@ -47,22 +47,57 @@ export const auth = betterAuth({
         console.log('[auth] Timestamp:', new Date().toISOString())
         console.log('[auth] NODE_ENV:', process.env.NODE_ENV)
         
-        // Verificar se o token foi salvo no banco
-        try {
-          const token = url.split('token=')[1]?.split('&')[0]
-          if (token) {
-            const verification = await prisma.verification.findFirst({
-              where: { value: token }
-            })
-            console.log('[auth] Token encontrado no banco?', !!verification)
-            if (verification) {
-              console.log('[auth] Verificação encontrada:', { id: verification.id, identifier: verification.identifier, expiresAt: verification.expiresAt })
-            } else {
-              console.error('[auth] ⚠️ TOKEN NÃO FOI SALVO NO BANCO!')
+        // Extrair o token da URL
+        const token = url.split('token=')[1]?.split('&')[0]
+        console.log('[auth] Token extraído:', token?.substring(0, 10) + '...')
+        
+        // Verificar se o token foi salvo no banco com retry
+        let tokenFound = false
+        let retries = 0
+        const maxRetries = 3
+        
+        while (!tokenFound && retries < maxRetries) {
+          try {
+            if (token) {
+              const verification = await prisma.verification.findFirst({
+                where: { value: token }
+              })
+              
+              if (verification) {
+                console.log('[auth] ✅ Token encontrado no banco na tentativa', retries + 1)
+                console.log('[auth] Verificação:', { id: verification.id, identifier: verification.identifier, expiresAt: verification.expiresAt })
+                tokenFound = true
+              } else {
+                retries++
+                if (retries < maxRetries) {
+                  console.log('[auth] ⏳ Token não encontrado, tentando novamente...', retries)
+                  await new Promise(resolve => setTimeout(resolve, 500)) // Aguardar 500ms
+                } else {
+                  console.error('[auth] ⚠️ TOKEN NÃO FOI SALVO NO BANCO APÓS', maxRetries, 'TENTATIVAS!')
+                  console.log('[auth] Tentando salvar manualmente...')
+                  
+                  // Forçar salvamento manual do token
+                  try {
+                    const expiresAt = new Date(Date.now() + 60 * 20 * 1000) // 20 minutos
+                    const manualVerification = await prisma.verification.create({
+                      data: {
+                        identifier: email,
+                        value: token,
+                        expiresAt
+                      }
+                    })
+                    console.log('[auth] ✅ Token salvo manualmente:', { id: manualVerification.id, identifier: manualVerification.identifier })
+                    tokenFound = true
+                  } catch (createError) {
+                    console.error('[auth] ❌ Erro ao salvar token manualmente:', createError)
+                  }
+                }
+              }
             }
+          } catch (checkError) {
+            console.error('[auth] Erro ao verificar token no banco:', checkError)
+            retries++
           }
-        } catch (checkError) {
-          console.error('[auth] Erro ao verificar token no banco:', checkError)
         }
         
         try {
