@@ -3,6 +3,8 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth/auth'
 import { normalizeWhatsApp, validateWhatsApp } from '@/lib/masks/whatsapp'
+import { deliverMagicLink } from '@/services/magic-link/magic-link-delivery'
+import { generateId } from 'better-auth/utils'
 
 // Schema de validação
 const whatsappSchema = z.object({
