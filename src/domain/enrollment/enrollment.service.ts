@@ -4,7 +4,7 @@ import { EnrollmentInput } from '@/lib/schemas/enrollment'
 import { randomPassword } from '@/lib/helpers/password'
 import { auth } from '@/lib/auth/auth'
 import { Prisma } from '@prisma/client'
-import { isWhatsAppNumberValid } from '@/lib/whatsapp/uazapi/check'
+import { isWhatsAppNumberValid } from '@/services/whatsapp/uazapi/check'
 
 type Result =
   | {

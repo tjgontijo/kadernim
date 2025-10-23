@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server'
 import { EnrollmentInput } from '@/lib/schemas/enrollment'
 import { EnrollmentError, enrollUser } from '@/domain/enrollment/enrollment.service'
-import { isWhatsAppNumberValid } from '@/lib/whatsapp/uazapi/check'
+import { isWhatsAppNumberValid } from '@/services/whatsapp/uazapi/check'
 import { normalizeWhatsApp } from '@/lib/masks/whatsapp'
 
 const API_KEY = process.env.WEBHOOK_API_KEY || ''
