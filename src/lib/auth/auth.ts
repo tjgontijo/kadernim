@@ -14,10 +14,7 @@ export const auth = betterAuth({
   plugins: [
     magicLink({
       expiresIn: 60 * 20, // 20 minutos
-      sendMagicLink: async ({ email, url }) => {
-        console.log('[magic-link] Enviando para:', email)
-        console.log('[magic-link] URL:', url)
-        
+      sendMagicLink: async ({ email, url }) => {        
         await nodemailerProvider.send({
           to: email,
           subject: 'Seu link de acesso - Kadernim',
