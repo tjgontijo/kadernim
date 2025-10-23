@@ -3,8 +3,6 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth/auth'
 import { normalizeWhatsApp, validateWhatsApp } from '@/lib/masks/whatsapp'
-import { deliverMagicLink } from '@/services/magic-link/magic-link-delivery'
-import { generateId } from 'better-auth/utils'
 
 // Schema de validação
 const whatsappSchema = z.object({
@@ -58,8 +56,10 @@ export async function POST(request: Request) {
       email: user.email
     })
     
-    // Gerar magic link via Better Auth (que usa email)
+    // Gerar magic link via Better Auth
     try {
+      console.log('[whatsapp-login] Chamando signInMagicLink para:', user.email)
+      
       // Chamar a API do Better Auth para gerar o magic link
       await auth.api.signInMagicLink({
         body: {
@@ -68,6 +68,8 @@ export async function POST(request: Request) {
         },
         headers: {}
       })
+      
+      console.log('[whatsapp-login] Magic link gerado com sucesso')
             
       // O envio do WhatsApp já acontece automaticamente no callback do plugin
       return NextResponse.json({
