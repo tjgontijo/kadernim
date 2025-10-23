@@ -4,30 +4,27 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { FiPhone, FiAlertCircle } from 'react-icons/fi'
+import { FiMail, FiAlertCircle } from 'react-icons/fi'
 import { toast } from 'sonner'
-import { applyWhatsAppMask, validateWhatsApp } from '@/lib/masks/whatsapp'
 import { InstallPWA } from '@/components/pwa/InstallPWA'
 import { Spinner } from '@/components/ui/spinner'
 
 export default function LoginPage() {
   const router = useRouter()
-  const [whatsapp, setWhatsapp] = useState('')
+  const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const handleWhatsappChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setWhatsapp(applyWhatsAppMask(e.target.value))
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value)
     if (error) setError('')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    // Validação básica
-    const whatsappClean = whatsapp.replace(/\D/g, '')
-    if (!validateWhatsApp(whatsappClean)) {
-      setError('WhatsApp inválido. Digite um número com DDD.')
+    if (!email || !email.includes('@')) {
+      setError('Email inválido')
       return
     }
 
@@ -35,19 +32,19 @@ export default function LoginPage() {
     setError('')
 
     try {
-      const response = await fetch('/api/v1/auth/whatsapp-login', {
+      const response = await fetch('/api/v1/auth/sign-in/magic-link', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ whatsapp: whatsappClean })
+        body: JSON.stringify({ email, callbackURL: '/resources' })
       })
 
       const data = await response.json()
 
       if (response.ok) {
-        toast.success('Link de acesso enviado para seu WhatsApp!')
-        router.push(`/login/sent?phone=${encodeURIComponent(whatsapp)}`)
+        toast.success('Link de acesso enviado para seu email!')
+        router.push(`/login/sent?email=${encodeURIComponent(email)}`)
       } else {
         setError(data.error || 'Erro ao enviar link de acesso')
         toast.error(data.error || 'Erro ao enviar link de acesso')
@@ -98,29 +95,29 @@ export default function LoginPage() {
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label
-                htmlFor="whatsapp"
+                htmlFor="email"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300"
               >
-                Seu WhatsApp
+                Seu Email
               </label>
               <div className="relative mt-1 rounded-md">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <FiPhone className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+                  <FiMail className="h-5 w-5 text-gray-400 dark:text-gray-500" />
                 </div>
                 <input
-                  id="whatsapp"
-                  name="whatsapp"
-                  type="tel"
-                  autoComplete="tel"
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
                   required
-                  value={whatsapp}
-                  onChange={handleWhatsappChange}
+                  value={email}
+                  onChange={handleEmailChange}
                   className="block w-full rounded-md border border-gray-300 bg-white py-3 pl-10 text-gray-900 placeholder-gray-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 dark:focus:border-indigo-400 dark:focus:ring-indigo-400 sm:text-sm"
-                  placeholder="(11) 98888-8888"
+                  placeholder="seu@email.com"
                 />
               </div>
               <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                Você receberá um link de acesso no WhatsApp informado
+                Você receberá um link de acesso no email informado
               </p>
             </div>
 

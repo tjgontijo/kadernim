@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth/auth';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
-import { normalizeWhatsApp } from '@/lib/masks/whatsapp';
+import { normalizeWhatsApp } from '@/lib/helpers/phone';
 import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';

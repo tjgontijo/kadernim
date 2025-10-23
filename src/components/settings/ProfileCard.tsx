@@ -15,7 +15,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { User, Edit } from 'lucide-react';
-import { applyWhatsAppMask, denormalizeWhatsApp } from '@/lib/masks/whatsapp';
+import { applyWhatsAppMask, denormalizeWhatsApp } from '@/lib/helpers/phone';
 import { z } from 'zod';
 
 // Schema de validação (mesmo do backend)

@@ -12,7 +12,7 @@ import Link from 'next/link';
 
 import { useSession } from '@/lib/auth/auth-client';
 import { ChangePasswordForm } from './ChangePasswordForm';
-import { applyWhatsAppMask, removeWhatsAppMask, validateWhatsApp, denormalizeWhatsApp } from '@/lib/masks/whatsapp';
+import { applyWhatsAppMask, removeWhatsAppMask, validateWhatsApp, denormalizeWhatsApp } from '@/lib/helpers/phone';
 
 type UserWithSubscription = {
   subscriptionTier?: string | null;

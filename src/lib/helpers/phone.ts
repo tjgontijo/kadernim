@@ -1,56 +1,26 @@
-/**
- * Máscara para WhatsApp no formato brasileiro
- * Usuário digita: (11) 98888-8888
- * Armazena: 556182493200 (com 55 + sem espaços + sem o nono dígito)
- */
-
-/**
- * Aplica máscara visual no input (sem o código do país)
- * @param value - Valor do input
- * @returns Valor formatado para exibição: (11) 98888-8888
- */
 export function applyWhatsAppMask(value: string): string {
-  // Remove tudo que não é número
   const numbers = value.replace(/\D/g, '');
   
-  // Limita a 11 dígitos (DDD + 9 dígitos)
   const limited = numbers.slice(0, 11);
   
-  // Aplica a máscara
   if (limited.length <= 2) {
     return limited.length === 0 ? '' : `(${limited}`; // (11
   } else if (limited.length <= 6) {
     return `(${limited.slice(0, 2)}) ${limited.slice(2)}`; // (11) 9824
   } else if (limited.length === 11) {
-    // Com nono dígito: (61) 98248-2100
     return `(${limited.slice(0, 2)}) ${limited.slice(2, 7)}-${limited.slice(7)}`;
   } else {
-    // Sem nono dígito: (61) 8248-2100
     return `(${limited.slice(0, 2)}) ${limited.slice(2, 6)}-${limited.slice(6)}`;
   }
 }
 
-/**
- * Remove a máscara e retorna apenas números
- * @param value - Valor formatado
- * @returns Apenas números (formato para salvar no banco)
- */
 export function removeWhatsAppMask(value: string): string {
   return value.replace(/\D/g, '');
 }
 
-/**
- * Valida se o WhatsApp está no formato correto
- * @param value - Valor sem máscara (apenas números do DDD + número)
- * @returns true se válido
- */
 export function validateWhatsApp(value: string): boolean {
-  // Remove qualquer caractere não numérico
   const numbers = value.replace(/\D/g, '');
   
-  // Deve ter 10 ou 11 dígitos (DDD + número)
-  // 10 dígitos: DDD (2) + número (8) - sem nono dígito (números antigos)
-  // 11 dígitos: DDD (2) + 9 + número (8) - com nono dígito (padrão atual)
   if (numbers.length < 10 || numbers.length > 11) {
     return false;
   }
