@@ -45,7 +45,7 @@ function MagicLinkSentContent() {
             <div>
               <p className="font-medium text-indigo-900 dark:text-indigo-200">Email enviado</p>
               <p className="text-sm text-indigo-700 dark:text-indigo-300 mt-1">
-                Verifique sua caixa de entrada (e spam) para o link de acesso. Não se esqueça de marcar como "Não Spam".
+                Verifique sua caixa de entrada (e spam) para o link de acesso. Não se esqueça de marcar como &quot;Não Spam&quot;.
               </p>
             </div>
           </div>
