@@ -1,7 +1,9 @@
 // app/api/v1/resources/[id]/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { auth } from '@/lib/auth/auth';
+import { NextRequest, NextResponse } from 'next/server'
+import { UserRoleType } from '@/types/user-role'
+import { auth } from '@/lib/auth/auth'
+import { isAdmin } from '@/lib/auth/roles'
+import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic';
 
@@ -111,8 +113,9 @@ export async function GET(
     }
 
     // Determinar se o usuário tem acesso
-    const isAdmin = user?.role === 'admin';
-    const isPremium = isAdmin || 
+    // Dentro da função onde isAdmin é usado
+    const userIsAdmin = isAdmin(user?.role as UserRoleType);
+    const isPremium = userIsAdmin || 
       user?.subscriptionTier === 'premium' ||
       (subscription?.isActive && 
         (!subscription.expiresAt || subscription.expiresAt > new Date()) &&
@@ -129,7 +132,7 @@ export async function GET(
         }, 
         subscription,
         userInfo: {
-          isAdmin,
+          isAdmin: userIsAdmin,
           isPremium,
           hasAccess
         }

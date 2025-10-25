@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma'
 import type { Prisma } from '@prisma/client'
 import { z } from 'zod'
 import { ResourcesQueryDTO } from '@/lib/schemas/resource'
+import { UserRoleType } from '@/types/user-role'
+import { isAdmin } from '@/lib/auth/roles'
 
 export type Resource = {
   id: string
@@ -145,7 +147,8 @@ export async function listOptimizedResources(
       }
     })
 
-    if (user?.role === 'admin') {
+    // Dentro da função onde isAdmin é usado
+    if (isAdmin(user?.role as UserRoleType)) {
       return {
         accessibleResources: resources.map(r => ({ ...r, hasAccess: true })),
         restrictedResources: [],

@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import Link from 'next/link'
 import { Lock, Unlock, Calendar, Tag, Loader2 } from 'lucide-react'
 import { useNavigationCache } from '@/hooks/use-navigation-cache'
 

@@ -3,13 +3,15 @@
 import { SubjectsTable } from './SubjectsTable'
 import { useSession } from '@/lib/auth/auth-client'
 import { Shield } from 'lucide-react'
+import { isAdmin } from '@/lib/auth/roles'
+import { UserRoleType } from '@/types/user-role'
 
 export function SubjectsClient() {
   // Middleware já garantiu que há sessão
   const { data: session } = useSession()
-  const isAdmin = session?.user?.role === 'admin'
+  const userIsAdmin = isAdmin(session?.user?.role as UserRoleType)
 
-  if (!isAdmin) {
+  if (!userIsAdmin) {
     return (
       <div className="flex flex-1 items-center justify-center p-4">
         <div className="text-center">

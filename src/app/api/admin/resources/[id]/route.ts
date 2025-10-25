@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { UserRoleType } from '@/types/user-role'
 
 import { auth } from '@/lib/auth/auth'
 import { prisma } from '@/lib/prisma'
+import { isAdmin } from '@/lib/auth/roles'
 import { z } from 'zod'
 
 const resourcePayloadSchema = z.object({
@@ -20,8 +22,8 @@ export async function GET(
 ) {
   try {
     const session = await auth.api.getSession({ headers: req.headers })
-
-    if (session?.user?.role !== 'admin') {
+  
+    if (!session?.user || !isAdmin(session.user.role as UserRoleType)) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
@@ -54,8 +56,8 @@ export async function PUT(
 ) {
   try {
     const session = await auth.api.getSession({ headers: req.headers })
-
-    if (session?.user?.role !== 'admin') {
+  
+    if (!session?.user || !isAdmin(session.user.role as UserRoleType)) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
@@ -110,8 +112,8 @@ export async function DELETE(
 ) {
   try {
     const session = await auth.api.getSession({ headers: req.headers })
-
-    if (session?.user?.role !== 'admin') {
+  
+    if (!session?.user || !isAdmin(session.user.role as UserRoleType)) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 

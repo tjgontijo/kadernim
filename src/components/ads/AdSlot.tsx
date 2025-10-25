@@ -1,7 +1,7 @@
 // src/components/ads/AdSlot.tsx
 'use client'
 
-import { usePremiumStatus } from '@/hooks/use-premium-status'
+import { useSubscriberStatus } from '@/hooks/use-subscriber-status'
 import { PremiumBanner } from './PremiumBanner'
 import { cn } from '@/lib/utils'
 
@@ -14,7 +14,7 @@ interface AdSlotProps {
 }
 
 export function AdSlot({ slot, className, variant = 'default', creative = 'conversion', position }: AdSlotProps) {
-  const { showAds, isLoading } = usePremiumStatus()
+  const { showAds, isLoading } = useSubscriberStatus()
   
   // Não renderiza nada se ainda está carregando ou se o usuário é premium/admin
   if (isLoading || !showAds) {

@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { UserRoleType } from '@/types/user-role'
 import { auth } from '@/lib/auth/auth'
-import { headers } from 'next/headers'
+import { prisma } from '@/lib/prisma'
+import { isAdmin } from '@/lib/auth/roles'
 import { revalidateTag } from 'next/cache'
 import { SubjectCreateInput, SubjectDTO } from '@/lib/schemas/subject'
 import { z } from 'zod'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: await headers() })
-    if (!session?.user || session.user.role !== 'admin') {
+    const session = await auth.api.getSession({ headers: req.headers })
+    if (!session?.user || !isAdmin(session.user.role as UserRoleType)) {
       return NextResponse.json({ message: 'Não autorizado' }, { status: 403 })
     }
 
@@ -28,8 +29,8 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: await headers() })
-    if (!session?.user || session.user.role !== 'admin') {
+    const session = await auth.api.getSession({ headers: req.headers })
+    if (!session?.user || !isAdmin(session.user.role as UserRoleType)) {
       return NextResponse.json({ message: 'Não autorizado' }, { status: 403 })
     }
 

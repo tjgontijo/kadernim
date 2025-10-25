@@ -8,6 +8,8 @@ import { ArrowLeft, Crown } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { getPageConfig } from '@/lib/page-config';
 import { useSession } from '@/lib/auth/auth-client';
+import { isAdmin } from '@/lib/auth/roles';
+import { UserRoleType } from '@/types/user-role';
 import Image from 'next/image';
 
 type UserWithAdditionalFields = {
@@ -25,8 +27,8 @@ export function Header() {
   const { data: session } = useSession()
   
   const user = session?.user as UserWithAdditionalFields | undefined
-  const isAdmin = user?.role === 'admin'
-  const isPremium = user?.subscriptionTier === 'premium' || isAdmin
+  const userIsAdmin = isAdmin(user?.role as UserRoleType)
+  const isPremium = user?.subscriptionTier === 'premium' || userIsAdmin
 
   const handleBack = () => {
     if (config.backHref) {
@@ -62,7 +64,7 @@ export function Header() {
             className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-3 py-1 flex-shrink-0"
           >
             <Crown className="h-3 w-3 mr-1" />
-            {isAdmin ? 'Admin' : 'Premium'}
+            {userIsAdmin ? 'Admin' : 'Premium'}
           </Badge>
         )}
       </div>

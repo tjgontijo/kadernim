@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth/auth';
-import { headers } from 'next/headers';
-import { prisma } from '@/lib/prisma';
-import webpush from 'web-push';
+import { NextRequest, NextResponse } from 'next/server'
+import { UserRoleType } from '@/types/user-role'
+import { auth } from '@/lib/auth/auth'
+import { isAdmin } from '@/lib/auth/roles'
+import { prisma } from '@/lib/prisma'
+import webpush from 'web-push'
 
 // Configure web-push with VAPID keys
 webpush.setVapidDetails(
@@ -13,21 +14,14 @@ webpush.setVapidDetails(
 
 export async function POST(req: NextRequest) {
   try {
-    // Obter o usuário autenticado usando Better Auth
-    const session = await auth.api.getSession({
-      headers: await headers()
-    });
+    const session = await auth.api.getSession({ headers: req.headers })
     
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
-    // Verificar se o usuário é admin
-    if (session.user.role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Proibido: Acesso de admin necessário' },
-        { status: 403 }
-      );
+    if (!isAdmin(session.user.role as UserRoleType)) {
+      return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
     }
 
     const body = await req.json();

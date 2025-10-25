@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { UserRoleType } from '@/types/user-role'
 import { auth } from '@/lib/auth/auth'
+import { isAdmin } from '@/lib/auth/roles'
 import { headers } from 'next/headers'
 import { prisma } from '@/lib/prisma'
 
@@ -19,7 +21,7 @@ export async function GET(_request: NextRequest) {
       select: { role: true }
     })
 
-    if (user?.role !== 'admin') {
+    if (!isAdmin(user?.role as UserRoleType)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

@@ -5,6 +5,8 @@ import { randomPassword } from '@/lib/helpers/password'
 import { auth } from '@/lib/auth/auth'
 import { Prisma } from '@prisma/client'
 import { isWhatsAppNumberValid } from '@/services/whatsapp/uazapi/check'
+import { type UserRoleType } from '@/types/user-role'
+import { getHighestRole } from '@/lib/auth/roles'
 
 type Result =
   | {
@@ -148,7 +150,7 @@ export async function enrollUser(
           ? new Date(Date.now() + premiumPlan.durationDays * 24 * 60 * 60 * 1000)
           : null
 
-        await tx.subscription.upsert({
+        const subscription = await tx.subscription.upsert({
           where: { userId: existingUser.id },
           create: {
             userId: existingUser.id,
@@ -178,7 +180,20 @@ export async function enrollUser(
           }
         })
 
-        await tx.user.update({ where: { id: existingUser.id }, data: { subscriptionTier: 'premium' } })
+        // Determinar a role baseada na subscription
+        const newRole = getHighestRole(
+          existingUser.role as UserRoleType,
+          subscription.isActive
+        )
+        
+        // Atualizar o usuário com a nova role e subscriptionTier (mantido para compatibilidade)
+        await tx.user.update({ 
+          where: { id: existingUser.id }, 
+          data: { 
+            role: newRole,
+            subscriptionTier: 'subscriber' 
+          } 
+        })
 
         return {
           kind: 'premium',

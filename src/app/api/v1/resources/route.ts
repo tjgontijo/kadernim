@@ -1,6 +1,8 @@
 // src/app/api/v1/resources/route.ts
 import { NextRequest, NextResponse } from 'next/server'
+import { UserRoleType } from '@/types/user-role'
 import { auth } from '@/lib/auth/auth'
+import { isAdmin } from '@/lib/auth/roles'
 import { headers } from 'next/headers'
 import { prisma } from '@/lib/prisma'
 
@@ -155,8 +157,9 @@ export async function GET(request: NextRequest) {
     const accessedResourceIds = new Set(userAccesses.map(access => access.resourceId))
     
     // Check if user is admin or premium
-    const isAdmin = user?.role === 'admin'
-    const isPremium = isAdmin || 
+    // Dentro da função onde isAdmin é usado
+    const userIsAdmin = isAdmin(user?.role as UserRoleType)
+    const isPremium = userIsAdmin || 
       user?.subscriptionTier === 'premium' ||
       (userSubscription && 
         (!userSubscription.expiresAt || userSubscription.expiresAt > new Date()))

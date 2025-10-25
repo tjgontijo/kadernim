@@ -2,7 +2,6 @@ import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { prisma } from '../prisma'
 import { magicLink, emailOTP } from 'better-auth/plugins'
-import { deliverMagicLink } from '@/services/magic-link/magic-link-delivery'
 import { admin } from 'better-auth/plugins'
 import { organization } from 'better-auth/plugins'
 import { authDeliveryService } from '@/services/delivery'
@@ -24,21 +23,23 @@ export const auth = betterAuth({
     magicLink({
       expiresIn: 60 * 20, // 20 minutos
       sendMagicLink: async ({ email, url }) => {
-        console.log('[magic-link] Iniciando entrega do magic link para:', email)
-        
-        try {
-          await deliverMagicLink({ email, url })
-          console.log('[magic-link] Magic link entregue com sucesso para:', email)
-        } catch (error) {
-          console.error('[magic-link] Erro ao entregar magic link:', error)
-          throw error
+        const result = await authDeliveryService.send({
+          email,
+          type: 'magic-link',
+          data: {
+            url,
+            expiresIn: 20,
+          },
+          channels: ['email', 'whatsapp'],
+        })
+
+        if (!result.success) {
+          throw new Error(result.error ?? 'magic_link_delivery_failed')
         }
       }
     }),
     emailOTP({
       async sendVerificationOTP({ email, otp, type }) {
-        console.log('[email-otp] Iniciando envio de OTP para:', email, 'tipo:', type)
-
         const result = await authDeliveryService.send({
           email,
           type: 'otp',

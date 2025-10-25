@@ -1,6 +1,8 @@
 // src/services/resources.service.ts
 import { prisma } from '@/lib/prisma'
 import type { Prisma } from '@prisma/client'
+import { UserRoleType } from '@/types/user-role'
+import { isAdmin } from '@/lib/auth/roles'
 
 export interface ResourceFilters {
   subjectId?: string
@@ -60,7 +62,8 @@ export async function getMyLibrary(
     }
   })
 
-  const isAdmin = user?.role === 'admin'
+  // Nas funções onde isAdmin é usado
+  const userIsAdmin = isAdmin(user?.role as UserRoleType)
   const isPremium = Boolean(
     user?.subscriptionTier === 'premium' ||
     (user?.subscription?.isActive &&
@@ -144,7 +147,7 @@ export async function getMyLibrary(
   const mappedResources = resources.map(r => {
     // Determinar se o usuário tem acesso
     const hasIndividualAccess = accessedResourceIds.includes(r.id)
-    const hasAccess = isAdmin || isPremium || r.isFree || hasIndividualAccess
+    const hasAccess = userIsAdmin || isPremium || r.isFree || hasIndividualAccess
 
     return {
       id: r.id,
@@ -312,7 +315,7 @@ export async function getLibraryStats(userId: string) {
     }
   })
 
-  const isAdmin = user?.role === 'admin'
+  const userIsAdmin = isAdmin(user?.role as UserRoleType)
   const isPremium = Boolean(
     user?.subscriptionTier === 'premium' ||
     (user?.subscription?.isActive &&
@@ -323,6 +326,6 @@ export async function getLibraryStats(userId: string) {
 
   return {
     isPremium,
-    isAdmin
+    isAdmin: userIsAdmin
   }
 }

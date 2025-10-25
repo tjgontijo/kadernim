@@ -1,7 +1,9 @@
 // src/app/api/education-levels/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { UserRoleType } from '@/types/user-role'
 import { auth } from '@/lib/auth/auth'
+import { prisma } from '@/lib/prisma'
+import { isAdmin } from '@/lib/auth/roles'
 import { revalidateTag } from 'next/cache'
 import { EducationLevelUpdateInput } from '@/lib/schemas/education-level'
 
@@ -10,7 +12,7 @@ type Ctx = { params: Promise<{ id: string }> }
 export async function GET(req: NextRequest, ctx: Ctx) {
   try {
     const session = await auth.api.getSession({ headers: req.headers })
-    if (!session?.user || session.user.role !== 'admin') {
+    if (!session?.user || !isAdmin(session.user.role as UserRoleType)) {
       return NextResponse.json({ message: 'Não autorizado' }, { status: 403 })
     }
 
@@ -30,7 +32,7 @@ export async function GET(req: NextRequest, ctx: Ctx) {
 export async function PUT(req: NextRequest, ctx: Ctx) {
   try {
     const session = await auth.api.getSession({ headers: req.headers })
-    if (!session?.user || session.user.role !== 'admin') {
+    if (!session?.user || !isAdmin(session.user.role as UserRoleType)) {
       return NextResponse.json({ message: 'Não autorizado' }, { status: 403 })
     }
 
@@ -63,7 +65,7 @@ export async function PUT(req: NextRequest, ctx: Ctx) {
 export async function DELETE(req: NextRequest, ctx: Ctx) {
   try {
     const session = await auth.api.getSession({ headers: req.headers })
-    if (!session?.user || session.user.role !== 'admin') {
+    if (!session?.user || !isAdmin(session.user.role as UserRoleType)) {
       return NextResponse.json({ message: 'Não autorizado' }, { status: 403 })
     }
 
