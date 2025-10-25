@@ -4,7 +4,6 @@ import { UserRoleType } from '@/types/user-role'
 import { auth } from '@/lib/auth/auth'
 import { prisma } from '@/lib/prisma'
 import { isAdmin } from '@/lib/auth/roles'
-import { z } from 'zod'
 import { revalidateTag } from 'next/cache'
 import { SubjectUpdateInput, SubjectDTO } from '@/lib/schemas/subject'
 
