@@ -39,7 +39,7 @@ export const auth = betterAuth({
       }
     }),
     emailOTP({
-      async sendVerificationOTP({ email, otp, type }) {
+      async sendVerificationOTP({ email, otp, type: _ }) {
         const result = await authDeliveryService.send({
           email,
           type: 'otp',
