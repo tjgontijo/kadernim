@@ -4,7 +4,6 @@ import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth/auth'
 import { revalidateTag } from 'next/cache'
 import { EducationLevelUpdateInput } from '@/lib/schemas/education-level'
-import { slugify } from '@/lib/helpers/slug'
 
 type Ctx = { params: Promise<{ id: string }> }
 
@@ -47,17 +46,9 @@ export async function PUT(req: NextRequest, ctx: Ctx) {
       return NextResponse.json({ message: 'Nível de ensino não encontrado' }, { status: 404 })
     }
 
-    const finalSlug = slugify(parsed.data.slug ?? parsed.data.name)
-    const duplicate = await prisma.educationLevel.findFirst({
-      where: { slug: finalSlug, NOT: { id } }
-    })
-    if (duplicate) {
-      return NextResponse.json({ message: 'Já existe outro nível de ensino com este slug' }, { status: 400 })
-    }
-
     const updated = await prisma.educationLevel.update({
       where: { id },
-      data: { name: parsed.data.name, slug: finalSlug, ageRange: parsed.data.ageRange ?? null }
+      data: { name: parsed.data.name }
     })
 
     revalidateTag('education-levels')

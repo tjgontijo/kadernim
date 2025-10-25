@@ -13,7 +13,6 @@ import { EducationLevelFormDialog } from './EducationLevelFormDialog'
 type EducationLevel = {
   id: string
   name: string
-  slug: string
   ageRange: string | null
   createdAt: Date
   updatedAt: Date

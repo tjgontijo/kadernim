@@ -1,139 +1,802 @@
 export const resourcesData = [
-{"title":"40 Páginas de Atividades de Matemática para 5º ANO","slug":"40-paginas-de-atividades-de-matematica-para-5-ano","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/40-paginas-de-atividades-de-matematica-para-5o-ano-676d5f6f5c159-medium.png","isFree":false,"featured":false,"subjectSlug":"matematica","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1ciqko34k3J3SVnv2gkxLYc9cRehOu8b9?usp=sharing"}],"externalMappings":[{"productId":"37235525","store":"prof-paper"}]},
-{"title":"50 Cards - Escrita mágica","slug":"50-cards-escrita-magica","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/50-cards-escrita-magica-661559362aee1-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1SqCx7E7e-Yn07MYH4TdczTrwuq5n6WCb?usp=sharing"}],"externalMappings":[{"productId":"30200121","store":"prof-paper"}]},
-{"title":"50 frases e expressões para relatórios descritivos","slug":"50-frases-e-expressoes-para-relatorios-descritivos","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/50-frases-e-expressoes-para-relatorios-descritivos-66129585751ea-medium.png","isFree":false,"featured":false,"subjectSlug":"planejamento","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/17hWpySvTUz594GrAOfCi_Xvw26DEwqMd?usp=sharing"}],"externalMappings":[{"productId":"30201120","store":"prof-paper"}]},
-//{"title":"50% de DESCONTO - Combo folhinhas de conceitos - 1° ao 5 ° ano","slug":"50-desconto-combo-folhinhas-de-conceitos-1-ao-5-ano","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/50-de-desconto-combo-folhinhas-de-conceitos-10-ao-5-0-ano-66304cf80d0b1-medium.png","isFree":false,"featured":false,"subjectSlug":"combos","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1AEuI7ymM_1pNk2jrjbORMpRwgV6bFAHP?usp=sharing"}],"externalMappings":[{"productId":"30201127","store":"prof-paper"}]},
-//{"title":"Álbum de figurinhas - desvendando enigmas","slug":"album-de-figurinhas-desvendando-enigmas","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/album-de-figurinhas-desvendando-enigmas-6612948a4f2cf-medium.png","isFree":false,"featured":false,"subjectSlug":"diversos","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1O_H6HigomkclXwT2P6GIU903toFa-_OD?usp=sharing"}],"externalMappings":[{"productId":"30201083","store":"prof-paper"}]},
-{"title":"Alfabeto Cursivo","slug":"alfabeto-cursivo","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/alfabeto-cursivo-66676628d6323-medium.jpg","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1yDps5Mse-wT6sttpK88BFDM3Z7cOAtii?usp=drive_link"}],"externalMappings":[{"productId":"32970420","store":"prof-didatica"}]},
-{"title":"Alfabeto em Pixel Art","slug":"alfabeto-em-pixel-art","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/alfabeto-em-pixel-art-68c097fc8a5cc-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1s4gPvv1TGJsMxTPE5bQmaNlVNJY-Yght?usp=sharing"}],"externalMappings":[{"productId":"42219116","store":"prof-paper"}]},
-{"title":"Apostila Alfabeto Fônico","slug":"apostila-alfabeto-fonico","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/apostila-alfabeto-fonico-667063ac591af-medium.jpg","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1crl0TKj5tSMwI-fYEnCs-b9adOPXQFuf?usp=drive_link"}],"externalMappings":[{"productId":"33192369","store":"prof-didatica"}]},
-{"title":"Apostila Atividades Festa Junina","slug":"apostila-atividades-festa-junina","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/apostila-atividades-festa-junina-666748382d1e7-medium.jpg","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1TSJFqP7vjBHtEdLE1oU2COGiTcc4cV_n?usp=drive_link"}],"externalMappings":[{"productId":"32967105","store":"prof-didatica"}]},
-{"title":"Apostila Consciência Fonológica","slug":"apostila-consciencia-fonologica","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/atividades-consiencia-fonologica-667222e1ca364-medium.jpg","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1ooDMMR3Grc1YGP94wXtFe-A8t8AnpZ0D?usp=drive_link"}],"externalMappings":[{"productId":"33249797","store":"prof-didatica"}]},
-{"title":"Apostila de Atividades do Folclore","slug":"apostila-de-atividades-do-folclore","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/apostila-de-atividades-do-folclore-66be9f499f6c9-medium.jpg","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1WGEua-gjlhhrqJUBKyWcL10W-F0H3gSv?usp=sharing"}],"externalMappings":[{"productId":"34801248","store":"prof-didatica"}]},
-{"title":"Apostila de Atividades Sílabas Complexas","slug":"apostila-de-atividades-silabas-complexas","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/organize-as-silabas-silabas-complexas-66674b2c8ffc3-medium.jpg","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1TfFwTZsa56hLVVWg6KB3kJu2YDRQaL77?usp=sharing"}],"externalMappings":[{"productId":"32967425","store":"prof-didatica"}]},
-{"title":"Apostila Família Silábica Simples","slug":"apostila-familia-silabica-simples","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/atividades-de-alfabetizacao-com-familias-silabicas-simples-66609f88c060c-medium.jpg","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1FoStkq3zbPjDsnuzUDaR1PqPG_IRSbjO?usp=drive_link"}],"externalMappings":[{"productId":"32801347","store":"prof-didatica"}]},
-{"title":"Apostila Famílias Silábicas - Complete","slug":"apostila-familias-silabicas-complete","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/apostila-familias-silabicas-complete-66880a5b8b383-medium.jpg","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1xBhge6IaliOHvFD8XAiKH5tscdzT17BN?usp=sharing"}],"externalMappings":[{"productId":"33746900","store":"prof-didatica"}]},
-{"title":"Apostila Interpretação de Textos","slug":"apostila-interpretacao-de-textos","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/aventuras-na-leitura-textos-e-atividades-de-interpretacao-para-criancas-665f619c31726-medium.jpg","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1jsBZU2MzHwB4_PBWeAVB8NeG73Llky75?usp=drive_link"}],"externalMappings":[{"productId":"32762140","store":"prof-didatica"}]},
-{"title":"Apostila Numerais de 1 a 20","slug":"apostila-numerais-de-1-a-20","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/apostila-de-numerais-de-1-a-20-para-educacao-infantil-e-fundamental-6660a45898fed-medium.jpg","isFree":false,"featured":false,"subjectSlug":"matematica","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/121b7wvm7Eu1otkB2t7GcF0DRcJFJLHdt?usp=drive_link"}],"externalMappings":[{"productId":"32802615","store":"prof-didatica"}]},
-{"title":"Apostila Organize as Sílabas Complexas","slug":"apostila-organize-as-silabas-complexas","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/organize-as-silabas-silabas-complexas-66674b2c8ffc3-medium.jpg","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1EKZxOPafrf9yROK8sm4nnvso3h2OWX6R?usp=drive_link"}],"externalMappings":[{"productId":"32967425","store":"prof-didatica"}]},
-{"title":"As 4 Operações Matemática em Pixel Art","slug":"as-4-operacoes-matematica-em-pixel-art","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/as-4-operacoes-matematica-em-pixel-art-6682bed79c121-medium.png","isFree":false,"featured":false,"subjectSlug":"matematica","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/17zDLKBm09GbhbsLZaXvys0vvW9OI4wY1?usp=sharing"}],"externalMappings":[{"productId":"33612530","store":"prof-paper"}]},
-{"title":"Atividade Digital de Encontro Consonantal - R e L: Recurso Pedagógico Interativo","slug":"atividade-digital-de-encontro-consonantal-r-e-l-recurso-pedagogico-interativo","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/atividade-digital-de-encontro-consonantal-r-e-l-recurso-pedagogico-interativo-661559c81ec30-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1ekYqH7fJU6tNityeVc7jdjmWCEGb7uWN?usp=sharing"}],"externalMappings":[{"productId":"30200143","store":"prof-paper"}]},
-{"title":"Atividade Eu Sou Assim","slug":"atividade-eu-sou-assim","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/eu-sou-assim-66659e315a738-medium.jpg","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1N190nIfWnln4DgXl76UZJzppkIniKQab?usp=drive_link"}],"externalMappings":[{"productId":"32923728","store":"prof-didatica"}]},
-{"title":"Atividade Interativa - Formação de palavras","slug":"atividade-interativa-formacao-de-palavras","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/atividade-interativa-formacao-de-palavras-661559587c4ac-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1ShqIPw7iaDSz7FUZHgNUC6T62OU3jPjQ?usp=sharing"}],"externalMappings":[{"productId":"30200127","store":"prof-paper"}]},
-{"title":"Atividade Interativa - Início do outono","slug":"atividade-interativa-inicio-do-outono","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/atividade-interativa-inicio-do-outono-6616f3e4070b1-medium.png","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1iFnIeTJIsOfUPS0TRXynoWdfcnjWD51p?usp=sharing"}],"externalMappings":[{"productId":"30366028","store":"prof-paper"}]},
-{"title":"Atividade Interativa - Livro dos Sistemas Humanos","slug":"atividade-interativa-livro-dos-sistemas-humanos","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/atividade-interativa-livro-dos-sistemas-humanos-66435da307cd2-medium.png","isFree":false,"featured":false,"subjectSlug":"ciencias","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1zoUsWeomfSvW-kzG1XVXgdZSBup5zVVE?usp=sharing"}],"externalMappings":[{"productId":"31865123","store":"prof-paper"}]},
-{"title":"Atividade Interativa - Voltas às Aulas - Tudo Sobre Mim","slug":"atividade-interativa-voltas-as-aulas-tudo-sobre-mim","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/atividade-interativa-voltas-as-aulas-tudo-sobre-mim-6773f80e280ff-medium.jpg","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1cs2skBL5iKVcF-ld44IC48f8DBJ3gvnZ?usp=sharing"}],"externalMappings":[{"productId":"37914331","store":"prof-paper"}]},
-{"title":"Atividade Interativa Dia Internacional da Mulher - 8 de Março","slug":"atividade-interativa-dia-internacional-da-mulher-8-de-marco","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/atividade-interativa-dia-internacional-da-mulher-8-de-marco-6616cc473d373-medium.png","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1UHMS009bHmvd-kvlDbj0ZZoVtXy3mLsb?usp=sharing"}],"externalMappings":[{"productId":"30354472","store":"prof-paper"}]},
-{"title":"Atividade Interativa- Livro dos Sistemas Humanos","slug":"atividade-interativa-livro-dos-sistemas-humanos-2","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/atividade-interativa-livro-dos-sistemas-humanos-67c70e3cde6d2-medium.png","isFree":false,"featured":false,"subjectSlug":"ciencias","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1zoUsWeomfSvW-kzG1XVXgdZSBup5zVVE?usp=sharing"}],"externalMappings":[{"productId":"39305065","store":"prof-paper"}]},
-{"title":"Atividade Povos Indígenas do Brasil","slug":"atividade-povos-indigenas-do-brasil","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/atividade-povos-indigenas-do-brasil-6616ac6609544-medium.png","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1B0G1598AheoG56-x2iDAZ61DcUD0c4iD?usp=sharing"}],"externalMappings":[{"productId":"30347427","store":"prof-paper"}]},
-{"title":"Atividade Proclamação da República","slug":"atividade-proclamacao-da-republica","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/atividade-proclamacao-da-republica-66169f85e65ce-medium.png","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1pbIkI1K7N-N_Gpedb3CkuWZoYkrQQvvU?usp=sharing"}],"externalMappings":[{"productId":"30345127","store":"prof-paper"}]},
-{"title":"Atividade Setembro Amarelo - Conscientização no Ensino Fundamental","slug":"atividade-setembro-amarelo-conscientizacao-no-ensino-fundamental","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/atividade-setembro-amarelo-conscientizacao-no-ensino-fundamental-66169e492753a-medium.png","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1i9Edke8egA1W-bBcRWlifb9UrgYYrkKo?usp=sharing"}],"externalMappings":[{"productId":"30343622","store":"prof-paper"}]},
-{"title":"Atividade Vaso de Flor Dia da Mulher - Homenagem Criativa","slug":"atividade-vaso-de-flor-dia-da-mulher-homenagem-criativa","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/atividade-vaso-de-flor-dia-da-mulher-homenagem-criativa-6616cdd918c8e-medium.png","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1bUtsz3HY88B78nx-Ddj_aCh6xgtxcP_G?usp=sharing"}],"externalMappings":[{"productId":"30355549","store":"prof-paper"}]},
-{"title":"Atividades de Gêneros & Narrativa 5º Ano","slug":"atividades-de-generos-narrativa-5-ano","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/atividades-de-generos-narrativa-5o-ano-68b9889b590c7-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/15BtIL-udCyKtz5UngoWOG9zH6PjbhRdL?usp=sharing"}],"externalMappings":[{"productId":"42156695","store":"prof-paper"}]},
-{"title":"Atividades de Gramática Avançada 5º Ano","slug":"atividades-de-gramatica-avancada-5-ano","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/atividades-de-gramatica-avancada-5o-ano-68b98b01ed3d9-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1j1hlCzRWbhvrKpIzz7uv9PWwYYAETnwb?usp=sharing"}],"externalMappings":[{"productId":"42156742","store":"prof-paper"}]},
-{"title":"Atividades de Gramática Base 5º Ano","slug":"atividades-de-gramatica-base-5-ano","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/atividades-de-gramatica-base-5o-ano-68b98dd713804-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1CxG0go0yLaWtchbDfwSLfmHVaSzD3X_5?usp=sharing"}],"externalMappings":[{"productId":"42156785","store":"prof-paper"}]},
-{"title":"Atividades de Ortografia Certa 5º Ano","slug":"atividades-de-ortografia-certa-5-ano","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/atividades-de-ortografia-certa-5o-ano-68b99041159a4-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1UpYMe0cAb--UxRaiu1SiOrg5gwREqVEX?usp=sharing"}],"externalMappings":[{"productId":"42156811","store":"prof-paper"}]},
-{"title":"ATIVIDADES PORTUGUÊS - FOLHINHAS PARTE I - 1º AO 5º ANO","slug":"atividades-portugues-folhinhas-parte-i-1-ao-5-ano","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/atividades-portugues-folhinhas-parte-i-1o-ao-5o-ano-663a9ce761f66-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/14okr_BBoWh0cUS8bSlt1R10nGiPbiIBN?usp=sharing"}],"externalMappings":[{"productId":"31566073","store":"prof-paper"}]},
-{"title":"Atividades Português 5º Ano Acervo Essencial","slug":"atividades-portugues-5-ano-acervo-essencial","description":"","imageUrl":"https://king-assets.yampi.me/dooki/68b8535f66991/68b8535f66999.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1279g7r2-4IiVyUwk1QtlZVbOp3yUNxpN?usp=sharing"}],"externalMappings":[{"productId":"42153812","store":"prof-paper"}]},
-{"title":"Avaliação ciências - 4º bimestre - 4º ano","slug":"avaliacao-ciencias-4-bimestre-4-ano","description":"","imageUrl":"https://king-assets.yampi.me/dooki/68daf43ea8b54/68daf43ea8b5d.png","isFree":false,"featured":false,"subjectSlug":"ciencias","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/17CE50XZS0R7VIdPB3T5ISiABubzczM6V?usp=sharing"}],"externalMappings":[{"productId":"42478068","store":"prof-paper"}]},
-{"title":"Avaliação ciências - 4º bimestre - 5º ano","slug":"avaliacao-ciencias-4-bimestre-5-ano","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/avaliacao-ciencias-4o-bimestre-5o-ano-68c9c2200372f-medium.png","isFree":false,"featured":false,"subjectSlug":"ciencias","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1xdE08zCzIn9WBEpqJF2EFAHIIWRCkW3h?usp=sharing"}],"externalMappings":[{"productId":"42311388","store":"prof-paper"}]},
-{"title":"Avaliação geografia - 4º bimestre - 5º ano","slug":"avaliacao-geografia-4-bimestre-5-ano","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/avaliacao-geografia-4o-bimestre-5o-ano-68c9c58125e51-medium.png","isFree":false,"featured":false,"subjectSlug":"geografia","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1OUlAFzm0auoNKqvxFEzWkzg7gT-a1MXP?usp=sharing"}],"externalMappings":[{"productId":"42313389","store":"prof-paper"}]},
-{"title":"Avaliação geografia 4º bimestre 4º ano","slug":"avaliacao-geografia-4-bimestre-4-ano","description":"","imageUrl":"https://king-assets.yampi.me/dooki/68db17262d045/68db17262d04c.png","isFree":false,"featured":false,"subjectSlug":"geografia","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1iGUV3u34RJT60CuEskVqTpkxseoXfAfm?usp=sharing"}],"externalMappings":[{"productId":"42479572","store":"prof-paper"}]},
-{"title":"Avaliação história - 4º bimestre - 5º ano","slug":"avaliacao-historia-4-bimestre-5-ano","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/avaliacao-historia-4o-bimestre-5o-ano-68c9c863896bd-medium.png","isFree":false,"featured":false,"subjectSlug":"historia","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1Vcu73q0FdeU-DVlKaHOgqhIJNGk_eeHt?usp=sharing"}],"externalMappings":[{"productId":"42315251","store":"prof-paper"}]},
-{"title":"Avaliação história 4º bimestre 4º ano","slug":"avaliacao-historia-4-bimestre-4-ano","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/avaliacao-historia-4o-bimestre-4o-ano-68db19387ddc8-medium.png","isFree":false,"featured":false,"subjectSlug":"historia","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1W5xHlBR0ogOutDNjW2-pUYjwRTNWWeun?usp=sharing"}],"externalMappings":[{"productId":"42479601","store":"prof-paper"}]},
-{"title":"Avaliação matemática - 4º Bimestre - 5º ano","slug":"avaliacao-matematica-4-bimestre-5-ano","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/avaliacao-matematica-4o-bimestre-5o-ano-68c9cc84c7a55-medium.png","isFree":false,"featured":false,"subjectSlug":"matematica","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1NOPQSGKypMNaG6sB9-I5ROA-Eu2WURSr?usp=sharing"}],"externalMappings":[{"productId":"42317126","store":"prof-paper"}]},
-{"title":"Avaliação matemática 4º bimestre 4º ano","slug":"avaliacao-matematica-4-bimestre-4-ano","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/avaliacao-matematica-4o-bimestre-4o-ano-68db1496d3853-medium.png","isFree":false,"featured":false,"subjectSlug":"matematica","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1NbWh1RaMh-AZed82Z3AQ-6y6rsTnD4QD?usp=sharing"}],"externalMappings":[{"productId":"42479330","store":"prof-paper"}]},
-{"title":"Avaliação português - 4º Bimestre - 5º ano","slug":"avaliacao-portugues-4-bimestre-5-ano","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/avaliacao-portugues-4o-bimestre-5o-ano-68c9ce62f2305-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1-U9wyDlQ_xK9NvQ7XQItabwFGy6IaYM4?usp=sharing"}],"externalMappings":[{"productId":"42317283","store":"prof-paper"}]},
-{"title":"Avaliação português 4º bimestre 4º ano","slug":"avaliacao-portugues-4-bimestre-4-ano","description":"","imageUrl":"https://king-assets.yampi.me/dooki/68db0e091fdf6/68db0e091fdff.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1FCsBdSR4pdCB1mB253CPWo8nPvmrRgu0?usp=sharing"}],"externalMappings":[{"productId":"42479069","store":"prof-paper"}]},
-{"title":"Bingo Junino","slug":"bingo-junino","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/bingo-junino-diversao-e-aprendizado-para-criancas-66577f29defca-medium.jpg","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1YKDgxZqrnpc-9caaNfrpcIjt3GK31wKl?usp=drive_link"}],"externalMappings":[{"productId":"32556256","store":"prof-didatica"}]},
-{"title":"Caixinhas 3D Páscoa","slug":"caixinhas-3d-pascoa","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/caixinhas-3d-pascoa-67f4539915b29-medium.png","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1UPwm8wIdGI-aOgHhh28VyEXSMRBCe7oN?usp=sharing"}],"externalMappings":[{"productId":"39952412","store":"prof-paper"}]},
-{"title":"Capas de Caderno","slug":"capas-de-caderno","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/capas-de-caderno-6616937d4a4c9-medium.png","isFree":false,"featured":false,"subjectSlug":"docente","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1BL5Td3jEHPHgbkq-bA947wE_PXngKbz_?usp=sharing"}],"externalMappings":[{"productId":"30201068","store":"prof-paper"}]},
-{"title":"Cards do Substantivo","slug":"cards-do-substantivo","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/cards-do-substantivo-68d18e8e58e2b-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1y-aapBWaulh0TdZ5LcIChjfBo0nAIt2C?usp=sharing"}],"externalMappings":[{"productId":"30200131","store":"prof-paper"}]},
-{"title":"Cartão Jardim 3D","slug":"cartao-jardim-3d","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/cartao-jardim-3d-666746e42992d-medium.jpg","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1utn_sOplnq3N_rC12wrUi-grEfKItGLE?usp=drive_link"}],"externalMappings":[{"productId":"32965409","store":"prof-didatica"}]},
-{"title":"Cartão Pop UP - Encontro de culturas: a chegada dos portugueses ao Brasil","slug":"cartao-pop-up-encontro-de-culturas-a-chegada-dos-portugueses-ao-brasil","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/encontro-de-culturas-a-chegada-dos-portugueses-ao-brasil-661e890079449-medium.png","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1hOK_0xJg6JnBDkNaq4xJW_mek0bZt_vI?usp=sharing"}],"externalMappings":[{"productId":"30620983","store":"prof-paper"}]},
-{"title":"Cartão Surpresa dia dos Pais","slug":"cartao-surpresa-dia-dos-pais","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/cartao-surpresa-dia-dos-pais-6616c57ac915f-medium.png","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/10S0FZBb5NaQLwyA6t21aI4US2fZqYPKh?usp=sharing"}],"externalMappings":[{"productId":"30353503","store":"prof-paper"}]},
-{"title":"Cartaz Número do Dia","slug":"cartaz-numero-do-dia","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/cartaz-numero-do-dia-664d38ebcf9cc-medium.jpg","isFree":false,"featured":false,"subjectSlug":"matematica","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1jsfM-TJeFfVCtsLmftm6dN_OfNo876E_?usp=drive_link"}],"externalMappings":[{"productId":"32169562","store":"prof-didatica"}]},
-{"title":"Casinha do Alfabeto","slug":"casinha-do-alfabeto","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/casinha-do-alfabeto-6615598324006-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1p_IdZCyDofaV9AI9eDn9MOKCJKiM0RQr?usp=sharing"}],"externalMappings":[{"productId":"30200132","store":"prof-paper"}]},
-{"title":"Casinha dos Números","slug":"casinha-dos-numeros","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/casinha-dos-numeros-sequencia-numerica-para-educacao-infantil-6653c9885342e-medium.jpg","isFree":false,"featured":false,"subjectSlug":"matematica","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1ficc6wuzR19alvTrcuf5PRIAK-Pr5q3A?usp=drive_link"}],"externalMappings":[{"productId":"32439709","store":"prof-didatica"}]},
-{"title":"Coleção de Planners \"Na minha época\" - inspirada nos: Flinstons, Ursinhos Carinhosos, Moranguinho, Sarah Key e Snoopy","slug":"colecao-de-planners-na-minha-epoca-inspirada-nos-flinstons-ursinhos-carinhosos-moranguinho-sarah-key-e-snoopy","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/colecao-de-planners-na-minha-epoca-inspirada-nos-flinstons-ursinhos-carinhosos-moranguinho-sarah-key-e-snoopy-flinstons-675798c5de365-medium.png","isFree":false,"featured":false,"subjectSlug":"docente","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":""}],"externalMappings":[{"productId":"37560106","store":"prof-paper"}]},
-{"title":"Combo 245 Folhinhas","slug":"combo-245-folhinhas","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/combo-245-folhinhas-6667047ac15d6-medium.png","isFree":false,"featured":false,"subjectSlug":"combos","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1jSSsH7m0rwy5n9KAKefXefE4oHUnoXsd?usp=sharing"}],"externalMappings":[{"productId":"32627668","store":"prof-paper"}]},
-{"title":"COMBO Avaliações MATEMÁTICA, PORTUGUÊS, CIÊNCIAS, HISTÓRIA E GEOGRAFIA - 4º bimestre - 5º ano","slug":"combo-avaliacoes-matematica-portugues-ciencias-historia-e-geografia-4-bimestre-5-ano","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/combo-avaliacoes-matematica-portugues-ciencias-historia-e-geografia-4o-bimestre-5o-ano-68c9d209f060e-medium.png","isFree":false,"featured":false,"subjectSlug":"combos","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1LiTbHik6IjGAthGeGfPudFBwapxJ5HHa?usp=sharing"}],"externalMappings":[{"productId":"42317576","store":"prof-paper"}]},
-{"title":"Combo Folhinhas Português + Bônus Atividades","slug":"combo-folhinhas-portugues-bonus-atividades","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/combo-folhinhas-portugues-bonus-atividades-6679b20224b0f-medium.png","isFree":false,"featured":false,"subjectSlug":"matematica","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1_w7JYEGMOqudMa-8854JmQjGRBPFJzjw?usp=sharing"}],"externalMappings":[{"productId":"33408866","store":"prof-paper"}]},
-{"title":"Combo Folhinhas Português 1 e 2 + Atividades","slug":"combo-folhinhas-portugues-1-e-2-atividades","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/combo-folhinhas-portugues-1-e-2-atividades-6810e9f2acfd8-medium.png","isFree":false,"featured":false,"subjectSlug":"combos","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1_w7JYEGMOqudMa-8854JmQjGRBPFJzjw?usp=sharing"}],"externalMappings":[{"productId":"40326095","store":"prof-paper"}]},
-{"title":"Combo Matemática","slug":"combo-matematica","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/combo-matematica-66efe824ccca6-medium.png","isFree":false,"featured":false,"subjectSlug":"combos","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1kfPAUgEQNPmskE73DKgrygiaosxHk4D-?usp=sharing"}],"externalMappings":[{"productId":"35736764","store":"prof-paper"}]},
-{"title":"Combo Páscoa","slug":"combo-pascoa","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/combo-pascoa-6616d0e531d41-medium.png","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1UGsqDB_V4o2BTHn_1JyeUg31NyhOhw0K?usp=sharing"}],"externalMappings":[{"productId":"30356118","store":"prof-paper"}]},
-{"title":"Começo Brilhante - Planos de aula para a 1ª Semana (1º ano)","slug":"comeco-brilhante-planos-de-aula-para-a-1-semana-1-ano","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/comeco-brilhante-planos-de-aula-para-a-1a-semana-1o-ano-679cf21666212-medium.png","isFree":false,"featured":false,"subjectSlug":"diversos","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1xkM2bOdjc80InDetRjWDuImQaCOYqX7b?usp=sharing"}],"externalMappings":[{"productId":"38492181","store":"prof-paper"}]},
-{"title":"Começo Brilhante - Planos de aula para a 1ª Semana (2º ano)","slug":"comeco-brilhante-planos-de-aula-para-a-1-semana-2-ano","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/comeco-brilhante-planos-de-aula-para-a-1a-semana-2o-ano-679ba0263ed2c-medium.png","isFree":false,"featured":false,"subjectSlug":"diversos","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1EA1PIoL9e0hgwMsOaMvlKddTA98PqEzU?usp=sharing"}],"externalMappings":[{"productId":"38471695","store":"prof-paper"}]},
-{"title":"Começo Brilhante - Planos de aula para a 1ª Semana (3º ano)","slug":"comeco-brilhante-planos-de-aula-para-a-1-semana-3-ano","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/comeco-brilhante-planos-de-aula-para-a-1a-semana-3o-ano-679a2705e04c1-medium.png","isFree":false,"featured":false,"subjectSlug":"diversos","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1Qw53o_IyX55hBnzHCN0ItYej7HtksqDc?usp=sharing"}],"externalMappings":[{"productId":"38442965","store":"prof-paper"}]},
-{"title":"Começo Brilhante - Planos de aula para a 1ª Semana (4º ano)","slug":"comeco-brilhante-planos-de-aula-para-a-1-semana-4-ano","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/comeco-brilhante-planos-de-aula-para-a-1a-semana-4o-ano-679a00e6dc817-medium.png","isFree":false,"featured":false,"subjectSlug":"diversos","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1lU8Mq-d8mlHpmVl-2FN6DmhBI0ZBunlq?usp=sharing"}],"externalMappings":[{"productId":"38433983","store":"prof-paper"}]},
-{"title":"Começo Brilhante - Planos de aula para a 1ª Semana (5º ano)","slug":"comeco-brilhante-planos-de-aula-para-a-1-semana-5-ano","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/comeco-brilhante-planos-de-aula-para-a-1a-semana-5o-ano-679a0346054a6-medium.png","isFree":false,"featured":false,"subjectSlug":"diversos","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/19IqxRTAOOeoqPdxwlCuVcA54pdzc0aIo?usp=sharing"}],"externalMappings":[{"productId":"38430779","store":"prof-paper"}]},
-{"title":"Contando Sílabas","slug":"contando-silabas","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/arquivo-contando-silabas-desenvolvendo-a-consciencia-fonologica-6654b4d7eb690-medium.jpg","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1uKk2XwpnURkXH-yzLz9Ieti7XdbfMprW?usp=drive_link"}],"externalMappings":[{"productId":"32459349","store":"prof-didatica"}]},
-{"title":"Conto de Terror interativo","slug":"conto-de-terror-interativo","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/conto-de-terror-interativo-6615599a3a002-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/14ybr-u79IlaDo-8Aye-WPmeg5wTCfJqB?usp=sharing"}],"externalMappings":[{"productId":"30200135","store":"prof-paper"}]},
-{"title":"Criando Frases","slug":"criando-frases","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/kit-criando-frases-aprender-e-brincar-6666352ba7aa2-medium.jpg","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1sulAY8Q3kudJwdenAB7orYWPQeCPsrw7?usp=drive_link"}],"externalMappings":[{"productId":"32942405","store":"prof-didatica"}]},
-{"title":"Dia da árvore","slug":"dia-da-arvore","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/dia-da-arvore-68c18a540fe7c-medium.png","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1HvL-X-PcInJv_2H4-EMyGTSQ57v03TLh?usp=sharing"}],"externalMappings":[{"productId":"42229493","store":"prof-paper"}]},
-{"title":"Dia das Crianças - Cartão com Blister - Lembrancinha","slug":"dia-das-criancas-cartao-com-blister-lembrancinha","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/dia-das-criancas-cartao-com-blister-lembrancinha-66fe6972dfa5c-medium.png","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1rGmLnUtc2SioIyJKhBsvme5jAo8ByPWe?usp=sharing"}],"externalMappings":[{"productId":"36010554","store":"prof-paper"}]},
-{"title":"Escrita mágica 50 folhinhas com comandos para pequenos escritores","slug":"escrita-magica-50-folhinhas-com-comandos-para-pequenos-escritores","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/escrita-magica-50-folhinhas-com-comandos-para-pequenos-escritores-661559e42f377-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1_6EaBKuXhaozCEtVcMd5UoOFqMLrpx3W?usp=sharing"}],"externalMappings":[{"productId":"30200243","store":"prof-paper"}]},
-{"title":"Explorando Emoções: Atividades Interativas Inspiradas em Divertidamente","slug":"explorando-emocoes-atividades-interativas-inspiradas-em-divertidamente","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/explorando-emocoes-atividades-interativas-inspiradas-em-divertidamente-6686bdcf8a5f6-medium.jpg","isFree":false,"featured":false,"subjectSlug":"diversos","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1tHu8EQRWvxbSmKHC4uXfFhceoTnReAUJ?usp=sharing"}],"externalMappings":[{"productId":"33721430","store":"prof-paper"}]},
-{"title":"Folhinhas de Conceito - Gênero Textual - 1º ao 5º ano","slug":"folhinhas-de-conceito-genero-textual-1-ao-5-ano","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/folhinhas-de-conceito-genero-textual-1o-ao-5o-ano-6615609e5f652-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1iTGbSxAl43EChLDIiBmTpph-Y6KDbIg0?usp=sharing"}],"externalMappings":[{"productId":"30296625","store":"prof-paper"}]},
-{"title":"Folhinhas de Conceito - Matemática 1º ao 5º ano","slug":"folhinhas-de-conceito-matematica-1-ao-5-ano","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/folhinhas-de-conceito-matematica-1o-ao-5o-ano-66155b16c97ae-medium.png","isFree":false,"featured":false,"subjectSlug":"matematica","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1yGiDOnYqJd4Nl_Q23ufkvZoI00gRNWV2?usp=sharing"}],"externalMappings":[{"productId":"30107631","store":"prof-paper"}]},
-{"title":"Folhinhas de conceito Prevenção à Dengue","slug":"folhinhas-de-conceito-prevencao-a-dengue","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/folhinhas-de-conceito-prevencao-a-dengue-6616920c0efa5-medium.png","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1JMF2jklJ-HbNj7X0bAA4f2dLbFqvf_Qz?usp=sharing"}],"externalMappings":[{"productId":"30200991","store":"prof-paper"}]},
-{"title":"Folhinhas de Conceitos - Português - Parte I - 1º ao 5º ano","slug":"folhinhas-de-conceitos-portugues-parte-i-1-ao-5-ano","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/folhinhas-conceito-de-portugues-1o-ao-5o-ano-661558fb2a3f6-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1I1IBmH6sUc0u5DoFpLsaS1EfBvOGS9uw?usp=sharing"}],"externalMappings":[{"productId":"30100557","store":"prof-paper"}]},
-{"title":"Folhinhas de Conceitos - Português - Parte II - 1º ao 5º ano","slug":"folhinhas-de-conceitos-portugues-parte-ii-1-ao-5-ano","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/folhinhas-de-conceitos-portugues-parte-ii-atividades-ludicas-em-pdf-para-ensino-fundamental-i-662fbc21e4441-medium.jpeg","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1HxDNIYRTZAFWbbzzJ8EnOnypDFiOFdfr?usp=sharing"}],"externalMappings":[{"productId":"31219018","store":"prof-paper"}]},
-{"title":"Folhinhas de Conceitos Datas Comemorativas/Sazonais","slug":"folhinhas-de-conceitos-datas-comemorativas-sazonais","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/folhinhas-de-conceitos-datas-comemorativassazonais-6811445cde70e-medium.png","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1kYAPTPV13JHTFy2YYYbiXXvH6lqg9niP?usp=sharing"}],"externalMappings":[{"productId":"40339636","store":"prof-paper"}]},
-{"title":"Folhinhas de conceitos de ciências","slug":"folhinhas-de-conceitos-de-ciencias","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/folhinhas-de-conceitos-de-ciencias-6615571234e3c-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/10SqUkqtNH9EN-G3v7chPpok0WJfcyXWe?usp=sharing"}],"externalMappings":[{"productId":"30201437","store":"prof-paper"}]},
-{"title":"Folhinhas de conceitos de Geografia para o 1º ao 5º ano","slug":"folhinhas-de-conceitos-de-geografia-para-o-1-ao-5-ano","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/folhinhas-de-conceitos-de-geografia-para-o-1o-ao-5o-ano-66126a6fbb258-medium.png","isFree":false,"featured":false,"subjectSlug":"geografia","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/13CpP2ZhxOPKUKBrC8lyXxOia7wkZitSo?usp=sharing"}],"externalMappings":[{"productId":"30200115","store":"prof-paper"}]},
-{"title":"Folhinhas de conceitos História","slug":"folhinhas-de-conceitos-historia","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/folhinhas-de-conceitos-historia-661557512d84a-medium.png","isFree":false,"featured":false,"subjectSlug":"historia","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1edbc7FnMW04Mceq5qzVFhnPDVhaJrS1N?usp=sharing"}],"externalMappings":[{"productId":"30201143","store":"prof-paper"}]},
-{"title":"Fração em Pixel Art","slug":"fracao-em-pixel-art","description":"","imageUrl":"https://king-assets.yampi.me/dooki/68bcbc2a2d207/68bcbc2a2d20d.png","isFree":false,"featured":false,"subjectSlug":"matematica","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1p7dwOeQC7FJw_Zl4zXD-Ade9rfT01wG4?usp=sharing"}],"externalMappings":[{"productId":"42181865","store":"prof-paper"}]},
-{"title":"Frase Misteriosa","slug":"frase-misteriosa","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/frase-misteriosa-6675f304076d3-medium.jpg","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1ER_RcIT4JorablBvvcZVOFW1ssL5fiXE?usp=drive_link"}],"externalMappings":[{"productId":"33350543","store":"prof-didatica"}]},
-{"title":"Gênero Textual: Conto de Fadas","slug":"genero-textual-conto-de-fadas","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/genero-textual-conto-de-fadas-66155a0d4ecda-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1J8wRvyJi-RY8qmULMFyu5acoDDK61lPj?usp=sharing"}],"externalMappings":[{"productId":"30200826","store":"prof-paper"}]},
-{"title":"Gênero Textual: Reportagem","slug":"genero-textual-reportagem","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/genero-textual-reportagem-66155a242e8bc-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1uLlpedOM3dTFSwLRctCbXCckbgkYQvUj?usp=sharing"}],"externalMappings":[{"productId":"30200830","store":"prof-paper"}]},
-{"title":"Histórias Para Missões Literárias","slug":"historias-para-missoes-literarias","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/40-historinhas-para-fichas-literarias-68b862e770a3c-medium.jpg","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/164nlnziZpknRlr0Rvi5XUTI39n6aFZ_X?usp=sharing"}],"externalMappings":[{"productId":"40651167","store":"prof-didatica"}]},
-{"title":"Interpretação de Frases","slug":"interpretacao-de-frases","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/interpretacao-de-frases-668ff3d07ed59-medium.jpg","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/16E8nDgnXydFKqIpYhFiSuFgT7Vq9Ebyt?usp=sharing"}],"externalMappings":[{"productId":"33915782","store":"prof-didatica"}]},
-{"title":"Interpretando Textos (3º ano)","slug":"interpretando-textos-3-ano","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/interpretando-textos-3o-ano-67af3d0e9b309-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1WU33B7jkWwcSdjgPOuTOFt-VYsoaOp72?usp=sharing"}],"externalMappings":[{"productId":"38768242","store":"prof-paper"}]},
-{"title":"Interpretando Textos 4°ano","slug":"interpretando-textos-4-ano","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/interpretando-textos-40ano-67c20439035cc-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1v3IC6kiytRy-H2V3LjzozD2xijQcvqfO?usp=sharing"}],"externalMappings":[{"productId":"39255572","store":"prof-paper"}]},
-{"title":"Interpretando Textos 5°ano","slug":"interpretando-textos-5-ano","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/interpretando-textos-50ano-67cb42720f634-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1T2RzXrjg74Epe99zzKpVcl-kO9E_UqtA?usp=sharing"}],"externalMappings":[{"productId":"39382017","store":"prof-paper"}]},
-{"title":"Jogo da Memória Folclore","slug":"jogo-da-memoria-folclore","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/jogo-da-memoria-folclore-66be9b5dcf14e-medium.jpg","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1revUnS7zx7fiaHXX7QpH170dCP5DFpCz?usp=sharing"}],"externalMappings":[{"productId":"34800521","store":"prof-didatica"}]},
-{"title":"Jogos da Memória - S/SS e R/RR","slug":"jogos-da-memoria-s-ss-e-r-rr","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/jogos-da-memoria-sss-e-rrr-66155a47e51ea-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1tz-o4-BIqQ8cYqEG01yRUQKyJwiQcvA6?usp=sharing"}],"externalMappings":[{"productId":"30200840","store":"prof-paper"}]},
-{"title":"Kit de Atividades do Folclore","slug":"kit-de-atividades-do-folclore","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/kit-de-atividades-do-folclore-66bea29eb1f6b-medium.jpg","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1oKcDX1wXo7kUUW4iaD65jcESHwOVSKVh?usp=sharing"}],"externalMappings":[{"productId":"34801637","store":"prof-didatica"}]},
-{"title":"Kit de Férias Criativas: Desafio de Recesso e Pintura Anti-Stress","slug":"kit-de-ferias-criativas-desafio-de-recesso-e-pintura-anti-stress","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/kit-de-ferias-criativas-desafio-de-recesso-e-pintura-anti-stress-6686b6ef82f46-medium.jpg","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1uwV1hd6Gvw7oyLh4BQfFkyQo5uzFcZ9l?usp=sharing"}],"externalMappings":[{"productId":"33721093","store":"prof-paper"}]},
-{"title":"Kit Dia da Consciência Negra","slug":"kit-dia-da-consciencia-negra","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/conciencia-negra-6616bdab891c8-medium.png","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1O6YA039SosX0okA9NwpqCa0fNUqrtNgJ?usp=sharing"}],"externalMappings":[{"productId":"30350749","store":"prof-paper"}]},
-{"title":"Kit Dia dos Professores","slug":"kit-dia-dos-professores","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/kit-dia-dos-professores-68e3c3a145479-thumb.png","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1uI0nZfuyVMKqwzLRFBHLbzdHNdD1Licz?usp=sharing"}],"externalMappings":[{"productId":"42560107","store":"prof-paper"}]},
-{"title":"Kit Interativo- Alimentação saudável","slug":"kit-interativo-alimentacao-saudavel","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/kit-interativo-alimentacao-saudavel-67cf0184a9dfa-medium.png","isFree":false,"featured":false,"subjectSlug":"ciencias","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1ld4lD7_rjADvc2uFADLenA4mEQlSi_lF?usp=sharing"}],"externalMappings":[{"productId":"39420230","store":"prof-paper"}]},
-{"title":"Kit Natal","slug":"kit-natal","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/kit-natal-6750666ad4046-medium.png","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1vHhnwDSyrl9QilIzjFJLzHqz3KZLLyon?usp=sharing"}],"externalMappings":[{"productId":"37450127","store":"prof-paper"}]},
-{"title":"Lapbook Alfabeto","slug":"lapbook-alfabeto","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/lapbook-do-alfabeto-666b3e590d98f-medium.jpg","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1NQp5-nxOEYMgN3j1pNk9C4kzxfeiR8rA?usp=drive_link"}],"externalMappings":[{"productId":"33071521","store":"prof-didatica"}]},
-{"title":"Lapbook Numerais de 0 a 10","slug":"lapbook-numerais-de-0-a-10","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/lapbook-de-aprendizagem-numerica-665b621967983-medium.jpg","isFree":false,"featured":false,"subjectSlug":"matematica","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/16KpjOU_LEYgC1N55msGXD7Lr0YsAarkD?usp=sharing"}],"externalMappings":[{"productId":"32663286","store":"prof-didatica"}]},
-{"title":"Lembrança Dia dos Professores","slug":"lembranca-dia-dos-professores","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/lembranca-dia-dos-professores-66fe662adea59-medium.png","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1ngrz2b4MwtPxkYOeq8Oq1e88XbvtV9h6?usp=drive_link"}],"externalMappings":[{"productId":"36010532","store":"prof-paper"}]},
-{"title":"Livrinho Minhas Férias","slug":"livrinho-minhas-ferias","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/aventuras-de-ferias-interativa-66630a93c6d7e-medium.jpg","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1Z60UP5VfdW9Hqu2MICly5Kp7hfOLd3gS?usp=drive_link"}],"externalMappings":[{"productId":"32872296","store":"prof-didatica"}]},
-{"title":"Manual dos Relatórios","slug":"manual-dos-relatorios","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/manual-dos-relatorios-66674590f2450-medium.jpg","isFree":false,"featured":false,"subjectSlug":"planejamento","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1T1WoIqNL-kn4e12WRGHGWa6PE25xzURY?usp=drive_link"}],"externalMappings":[{"productId":"32964447","store":"prof-didatica"}]},
-{"title":"Narrativa Criativa - Livro Interativo com Flash Cards","slug":"narrativa-criativa-livro-interativo-com-flash-cards","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/narrativa-criativa-livro-interativo-com-flash-cards-66155a6e5eab4-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1pXN6Sm-vJi-aaxKfRPA2dKWLpJHOcz51?usp=sharing"}],"externalMappings":[{"productId":"30200842","store":"prof-paper"}]},
-{"title":"O Baú dos Tesouros","slug":"o-bau-dos-tesouros","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/o-bau-dos-tesouros-666738ae65c71-medium.jpg","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1G3L9-E4nwoOQwGT1LESgs_tEBeZextdr?usp=drive_link"}],"externalMappings":[{"productId":"32964026","store":"prof-didatica"}]},
-{"title":"O Corpo Humano","slug":"o-corpo-humano","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/o-corpo-humano-669ac60cf3424-medium.jpg","isFree":false,"featured":false,"subjectSlug":"ciencias","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1q60BaidxON7zF9UaOBxp_R-_u1ukJeP3?usp=sharing"}],"externalMappings":[{"productId":"34158154","store":"prof-didatica"}]},
-{"title":"Oferta de Black Friday Recursos Pedagógicos Português + Bônus","slug":"oferta-de-black-friday-recursos-pedagogicos-portugues-bonus","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/oferta-de-black-friday-recursos-pedagogicos-portugues-bonus-673b4dd1071c6-medium.png","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1YDVx-JMZoo_sXChRYhMkY-RkvSAEX0uv?usp=sharing"}],"externalMappings":[{"productId":"37081242","store":"prof-paper"}]},
-{"title":"Operação Maluca","slug":"operacao-maluca","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/operacao-maluca-66abd1f23df87-medium.jpg","isFree":false,"featured":false,"subjectSlug":"matematica","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1ZChoTVZ8Ahmha90BPtsKsm1GidQeUYKx?usp=sharing"}],"externalMappings":[{"productId":"34461430","store":"prof-didatica"}]},
-{"title":"Operações Matemáticas em Pixel Art - Divertidamente II","slug":"operacoes-matematicas-em-pixel-art-divertidamente-ii","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/operacoes-matematicas-em-pixel-art-divertidamente-ii-67032d0b836a6-medium.png","isFree":false,"featured":false,"subjectSlug":"matematica","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1m8XEa4dsz3hIwkQsVVxGx8oMh3kul_Bu?usp=sharing"}],"externalMappings":[{"productId":"34240101","store":"prof-didatica"}]},
-{"title":"Operações Matemáticas em Pixel Art Editável - Divertidamente II","slug":"operacoes-matematicas-em-pixel-art-editavel-divertidamente-ii","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/versao-editavel-das-operacoes-matematicas-em-pixel-art-do-filme-divertidamente-ii-67043720c9d89-medium.jpg","isFree":false,"featured":false,"subjectSlug":"matematica","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/118fdpl7qkyzurxgmiZ5oE0ECL6ivRdjz?usp=sharing"}],"externalMappings":[{"productId":"35655266","store":"prof-didatica"}]},
-{"title":"Ortografia em Pixel Art","slug":"ortografia-em-pixel-art","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/ortografia-em-pixel-art-67ef1b392dba6-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1rre6-_Qqgy5eDO5fQN3Q4x_EgDtYMq_b?usp=sharing"}],"externalMappings":[{"productId":"39893386","store":"prof-paper"}]},
-{"title":"Pack com 25 Estampas Criativas para Camisetas e Canecas Personalizadas","slug":"pack-com-25-estampas-criativas-para-camisetas-e-canecas-personalizadas","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/pack-com-25-estampas-criativas-para-camisetas-e-canecas-personalizadas-661692fea769c-medium.png","isFree":false,"featured":false,"subjectSlug":"diversos","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/18lGaQnwaxEB78Xr252Y-ZSoLyqIHYMRh?usp=sharing"}],"externalMappings":[{"productId":"30201002","store":"prof-paper"}]},
-{"title":"Pareando Palavrinhas","slug":"pareando-palavrinhas","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/pareando-palavrinhas-667464926d00a-medium.jpg","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1xt86d4n-5zzlvfWL36liLkBqeRWmp0Yf?usp=drive_link"}],"externalMappings":[{"productId":"33306666","store":"prof-didatica"}]},
-{"title":"Pense Rápido","slug":"pense-rapido","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/pense-rapido-adivinhas-interativas-665e0a39641a7-medium.jpg","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/160QNpt3uAm-XaTO9fVIT8XCugOd2cmnb?usp=drive_link"}],"externalMappings":[{"productId":"32719427","store":"prof-didatica"}]},
-{"title":"Planner Moranguinho - \"Na minha época...\"","slug":"planner-moranguinho-na-minha-epoca","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/planner-moranguinho-na-minha-epoca-6782bda41794f-medium.png","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":""}],"externalMappings":[{"productId":"38102381","store":"prof-paper"}]},
-{"title":"Plano de Aula Independência do Brasil","slug":"plano-de-aula-independencia-do-brasil","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/plano-de-aula-independencia-do-brasil-atividades-completas-6616d30ca4c60-medium.png","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1sxL7qlfDCGhtGYtZLhRX4SRCvFmLBVF-?usp=sharing"}],"externalMappings":[{"productId":"30357444","store":"prof-paper"}]},
-{"title":"Plano de aula: A origem dos seres humanos","slug":"plano-de-aula-a-origem-dos-seres-humanos","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/plano-de-aula-a-origem-dos-seres-humanos-67f50965113aa-medium.png","isFree":false,"featured":false,"subjectSlug":"ciencias","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1_FhjzSxEwRXa0TnVmrLhjoZ327OR-uOw?usp=sharing"}],"externalMappings":[{"productId":"39959830","store":"prof-paper"}]},
-{"title":"Plano de aula: Gênero textual Notícia","slug":"plano-de-aula-genero-textual-noticia","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/plano-de-aula-genero-textual-noticia-66155a9208e9c-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/14FGlknPDelgDiW1osluth_BpJwP_ALqK?usp=sharing"}],"externalMappings":[{"productId":"30200859","store":"prof-paper"}]},
-{"title":"Plano de aula: O planeta terra e sua Superfície","slug":"plano-de-aula-o-planeta-terra-e-sua-superficie","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/plano-de-aula-o-planeta-terra-e-sua-superficie-66169978a3c1b-medium.png","isFree":false,"featured":false,"subjectSlug":"geografia","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1fdamswyo98-Dc0m15wS-gP7EWZSMozeu?usp=sharing"}],"externalMappings":[{"productId":"30341530","store":"prof-paper"}]},
-{"title":"Projeto Desafio Literário Combo","slug":"projeto-desafio-literario-combo","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/projeto-desafio-literario-presentes-68b808bacc3fb-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1SRXuyx5wplBqSX-XW7mqvK_otWmqCaDZ?usp=sharing"}],"externalMappings":[{"productId":"41997313","store":"prof-didatica"}]},
-{"title":"Projeto Desafio Literário","slug":"projeto-desafio-literario","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/projeto-desafio-literario-presentes-68b808bacc3fb-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1SRXuyx5wplBqSX-XW7mqvK_otWmqCaDZ?usp=sharing"}],"externalMappings":[{"productId":"41556399","store":"prof-didatica"}]},
-{"title":"Projeto Desvendando Conceitos de Português - Fundamental 1","slug":"projeto-desvendando-conceitos-de-portugues-fundamental-1","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/projeto-desvendando-conceitos-de-portugues-fundamental-1-6845a0d50dd46-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1JNKORYmRHVx4mjIMrwiQ4ZMFdlvXUa5d?usp=sharing"}],"externalMappings":[{"productId":"40866795","store":"prof-paper"}]},
-{"title":"Projeto Dia das Mães","slug":"projeto-dia-das-maes","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/projeto-dia-das-maes-6616cfe821952-medium.png","isFree":false,"featured":false,"subjectSlug":"datas-especiais","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":""}],"externalMappings":[{"productId":"30356018","store":"prof-paper"}]},
-{"title":"Projeto Leitor do Futuro","slug":"projeto-leitor-do-futuro","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/projeto-leitor-do-futuro-683c2947c81c3-medium.jpeg","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1Pkuq8l50BqWJ7PcrjhbPJtb-59eFfNX3?usp=sharing"}],"externalMappings":[{"productId":"40860782","store":"prof-paper"}]},
-{"title":"Projeto Literário: Recurso Pedagógico Completo para Professores","slug":"projeto-literario-recurso-pedagogico-completo-para-professores","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/projeto-literario-6616915f0c279-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1l978q8HP3HU9UmwJHYheLGy7IBDAfHkT?usp=sharing"}],"externalMappings":[{"productId":"30200883","store":"prof-paper"}]},
-{"title":"Recurso Alfabeto na Caixa","slug":"recurso-alfabeto-na-caixa","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/recurso-alfabeto-na-caixa-66672ea85b50d-medium.jpg","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1cX3z28VVdLfgkA1XBXWlxTQEq2-P4IMu?usp=drive_link"}],"externalMappings":[{"productId":"32962574","store":"prof-didatica"}]},
-{"title":"Recurso Complete a Frase","slug":"recurso-complete-a-frase","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/fichas-educativas-para-alfabetizacao-e-leitura-6660abb3293cc-medium.jpg","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1eu_QACe9DV6peOW5yzWQMzLNlHxzY0hD?usp=drive_link"}],"externalMappings":[{"productId":"32804268","store":"prof-didatica"}]},
-{"title":"Roda Gigante da Ordem Alfabética","slug":"roda-gigante-da-ordem-alfabetica","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/roda-gigante-da-ordem-alfabetica-66155aadcaf36-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1RNNY_0CBP6DI-MniQnG_zNCzEJThePSm?usp=sharing"}],"externalMappings":[{"productId":"30200942","store":"prof-paper"}]},
-{"title":"Roleta dos Números","slug":"roleta-dos-numeros","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/roleta-dos-numeros-66ae4398555cb-medium.png","isFree":false,"featured":false,"subjectSlug":"matematica","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1unBfpY3_2RfPIPMDwr3X_aKpEU4oSt2P?usp=sharing"}],"externalMappings":[{"productId":"34501242","store":"prof-didatica"}]},
-{"title":"Sistema de Recompensas - Realis","slug":"sistema-de-recompensas-realis","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/sistema-de-recompensas-realis-67d4336e35cbd-medium.png","isFree":false,"featured":false,"subjectSlug":"diversos","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1Ie4F6IVu0fYTS_aLETtblQVd4vpoDSmL?usp=sharing"}],"externalMappings":[{"productId":"39530909","store":"prof-paper"}]},
-{"title":"Tabuada","slug":"tabuada","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/tabuada-66b11080853e2-medium.jpg","isFree":false,"featured":false,"subjectSlug":"matematica","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1Q6m2QtoyPqvMPKiwjqvU8CKKhITCVO-x?usp=sharing"}],"externalMappings":[{"productId":"34546068","store":"prof-paper"}]},
-{"title":"Tangram","slug":"tangram","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/tangram-668301b14c6d2-medium.png","isFree":false,"featured":false,"subjectSlug":"matematica","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/11pOlzmz2uxWlu1oE6d73fA0Jzj9MT2fi?usp=sharing"}],"externalMappings":[{"productId":"33625961","store":"prof-paper"}]},
-{"title":"Traçando os Numerais","slug":"tracando-os-numerais","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-didatica/uploads/images/tracando-os-numerais-664d31fc3b962-medium.jpg","isFree":false,"featured":false,"subjectSlug":"matematica","educationLevelSlug":"infantil","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1_QzYjwDmDh9KKO0eBXz9nCo-j27gJTvx?usp=drive_link"}],"externalMappings":[{"productId":"32219233","store":"prof-didatica"}]},
-{"title":"Uso de CH, NH e LH","slug":"uso-de-ch-nh-e-lh","description":"","imageUrl":"https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/uso-de-ch-nh-e-lh-66155ac3eccad-medium.png","isFree":false,"featured":false,"subjectSlug":"portugues","educationLevelSlug":"fundamental-i","files":[{"storageType":"GOOGLE_DRIVE","externalUrl":"https://drive.google.com/drive/folders/1ZqVIZ2iJVHziw63BsBych-5vl5SB6t8o?usp=sharing"}],"externalMappings":[{"productId":"30200956","store":"prof-paper"}]}
+    {
+        "title": "Alfabeto Cursivo",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/alfabeto-cursivo-66676628d6323-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1yDps5Mse-wT6sttpK88BFDM3Z7cOAtii?usp=drive_link"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "32970420",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Português",
+        "educationLevelName": "Educação Infantil"
+    },
+    {
+        "title": "Apostila Alfabeto Fônico",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/apostila-alfabeto-fonico-667063ac591af-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1crl0TKj5tSMwI-fYEnCs-b9adOPXQFuf?usp=drive_link"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "33192369",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Português",
+        "educationLevelName": "Educação Infantil"
+    },
+    {
+        "title": "Apostila Atividades Festa Junina",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/apostila-atividades-festa-junina-666748382d1e7-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1TSJFqP7vjBHtEdLE1oU2COGiTcc4cV_n?usp=drive_link"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "32967105",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Datas Especiais",
+        "educationLevelName": "Educação Infantil"
+    },
+    {
+        "title": "Apostila Consciência Fonológica",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/atividades-consiencia-fonologica-667222e1ca364-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1ooDMMR3Grc1YGP94wXtFe-A8t8AnpZ0D?usp=drive_link"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "33249797",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Português",
+        "educationLevelName": "Educação Infantil"
+    },
+    {
+        "title": "Apostila de Atividades do Folclore",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/apostila-de-atividades-do-folclore-66be9f499f6c9-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1WGEua-gjlhhrqJUBKyWcL10W-F0H3gSv?usp=sharing"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "34801248",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Datas Especiais",
+        "educationLevelName": "Educação Infantil"
+    },
+    {
+        "title": "Apostila de Atividades Sílabas Complexas",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/organize-as-silabas-silabas-complexas-66674b2c8ffc3-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1TfFwTZsa56hLVVWg6KB3kJu2YDRQaL77?usp=sharing"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "32967425",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Português",
+        "educationLevelName": "Fundamental I"
+    },
+    {
+        "title": "Apostila Família Silábica Simples",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/atividades-de-alfabetizacao-com-familias-silabicas-simples-66609f88c060c-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1FoStkq3zbPjDsnuzUDaR1PqPG_IRSbjO?usp=drive_link"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "32801347",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Português",
+        "educationLevelName": "Educação Infantil"
+    },
+    {
+        "title": "Apostila Famílias Silábicas - Complete",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/apostila-familias-silabicas-complete-66880a5b8b383-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1xBhge6IaliOHvFD8XAiKH5tscdzT17BN?usp=sharing"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "33746900",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Português",
+        "educationLevelName": "Educação Infantil"
+    },
+    {
+        "title": "Apostila Interpretação de Textos",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/aventuras-na-leitura-textos-e-atividades-de-interpretacao-para-criancas-665f619c31726-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1jsBZU2MzHwB4_PBWeAVB8NeG73Llky75?usp=drive_link"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "32762140",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Português",
+        "educationLevelName": "Fundamental I"
+    },
+    {
+        "title": "Apostila Numerais de 1 a 20",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/apostila-de-numerais-de-1-a-20-para-educacao-infantil-e-fundamental-6660a45898fed-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/121b7wvm7Eu1otkB2t7GcF0DRcJFJLHdt?usp=drive_link"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "32802615",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Matemática",
+        "educationLevelName": "Educação Infantil"
+    },
+    {
+        "title": "Apostila Organize as Sílabas Complexas",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/organize-as-silabas-silabas-complexas-66674b2c8ffc3-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1EKZxOPafrf9yROK8sm4nnvso3h2OWX6R?usp=drive_link"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "32967425",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Português",
+        "educationLevelName": "Fundamental I"
+    },
+    {
+        "title": "Atividade Eu Sou Assim",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/eu-sou-assim-66659e315a738-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1N190nIfWnln4DgXl76UZJzppkIniKQab?usp=drive_link"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "32923728",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Português",
+        "educationLevelName": "Educação Infantil"
+    },
+    {
+        "title": "Bingo Junino",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/bingo-junino-diversao-e-aprendizado-para-criancas-66577f29defca-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1YKDgxZqrnpc-9caaNfrpcIjt3GK31wKl?usp=drive_link"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "32556256",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Datas Especiais",
+        "educationLevelName": "Educação Infantil"
+    },
+    {
+        "title": "Cartão Jardim 3D",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/cartao-jardim-3d-666746e42992d-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1utn_sOplnq3N_rC12wrUi-grEfKItGLE?usp=drive_link"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "32965409",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Datas Especiais",
+        "educationLevelName": "Educação Infantil"
+    },
+    {
+        "title": "Cartaz Número do Dia",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/cartaz-numero-do-dia-664d38ebcf9cc-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1jsfM-TJeFfVCtsLmftm6dN_OfNo876E_?usp=drive_link"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "32169562",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Matemática",
+        "educationLevelName": "Educação Infantil"
+    },
+    {
+        "title": "Casinha dos Números",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/casinha-dos-numeros-sequencia-numerica-para-educacao-infantil-6653c9885342e-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1ficc6wuzR19alvTrcuf5PRIAK-Pr5q3A?usp=drive_link"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "32439709",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Matemática",
+        "educationLevelName": "Educação Infantil"
+    },
+    {
+        "title": "Contando Sílabas",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/arquivo-contando-silabas-desenvolvendo-a-consciencia-fonologica-6654b4d7eb690-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1uKk2XwpnURkXH-yzLz9Ieti7XdbfMprW?usp=drive_link"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "32459349",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Português",
+        "educationLevelName": "Fundamental I"
+    },
+    {
+        "title": "Criando Frases",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/kit-criando-frases-aprender-e-brincar-6666352ba7aa2-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1sulAY8Q3kudJwdenAB7orYWPQeCPsrw7?usp=drive_link"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "32942405",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Português",
+        "educationLevelName": "Educação Infantil"
+    },
+    {
+        "title": "Frase Misteriosa",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/frase-misteriosa-6675f304076d3-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1ER_RcIT4JorablBvvcZVOFW1ssL5fiXE?usp=drive_link"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "33350543",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Português",
+        "educationLevelName": "Educação Infantil"
+    },
+    {
+        "title": "Histórias Para Missões Literárias",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/40-historinhas-para-fichas-literarias-68b862e770a3c-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/164nlnziZpknRlr0Rvi5XUTI39n6aFZ_X?usp=sharing"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "40651167",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Português",
+        "educationLevelName": "Fundamental I"
+    },
+    {
+        "title": "Interpretação de Frases",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/interpretacao-de-frases-668ff3d07ed59-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/16E8nDgnXydFKqIpYhFiSuFgT7Vq9Ebyt?usp=sharing"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "33915782",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Português",
+        "educationLevelName": "Educação Infantil"
+    },
+    {
+        "title": "Jogo da Memória Folclore",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/jogo-da-memoria-folclore-66be9b5dcf14e-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1revUnS7zx7fiaHXX7QpH170dCP5DFpCz?usp=sharing"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "34800521",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Datas Especiais",
+        "educationLevelName": "Educação Infantil"
+    },
+    {
+        "title": "Kit de Atividades do Folclore",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/kit-de-atividades-do-folclore-66bea29eb1f6b-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1oKcDX1wXo7kUUW4iaD65jcESHwOVSKVh?usp=sharing"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "34801637",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Datas Especiais",
+        "educationLevelName": "Educação Infantil"
+    },
+    {
+        "title": "Lapbook Alfabeto",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/lapbook-do-alfabeto-666b3e590d98f-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1NQp5-nxOEYMgN3j1pNk9C4kzxfeiR8rA?usp=drive_link"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "33071521",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Português",
+        "educationLevelName": "Fundamental I"
+    },
+    {
+        "title": "Lapbook Numerais de 0 a 10",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/lapbook-de-aprendizagem-numerica-665b621967983-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/16KpjOU_LEYgC1N55msGXD7Lr0YsAarkD?usp=sharing"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "32663286",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Matemática",
+        "educationLevelName": "Educação Infantil"
+    },
+    {
+        "title": "Livrinho Minhas Férias",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/aventuras-de-ferias-interativa-66630a93c6d7e-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1Z60UP5VfdW9Hqu2MICly5Kp7hfOLd3gS?usp=drive_link"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "32872296",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Datas Especiais",
+        "educationLevelName": "Educação Infantil"
+    },
+    {
+        "title": "Manual dos Relatórios",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/manual-dos-relatorios-66674590f2450-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1T1WoIqNL-kn4e12WRGHGWa6PE25xzURY?usp=drive_link"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "32964447",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Planejamento",
+        "educationLevelName": "Educação Infantil"
+    },
+    {
+        "title": "O Baú dos Tesouros",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/o-bau-dos-tesouros-666738ae65c71-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1G3L9-E4nwoOQwGT1LESgs_tEBeZextdr?usp=drive_link"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "32964026",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Português",
+        "educationLevelName": "Educação Infantil"
+    },
+    {
+        "title": "O Corpo Humano",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/o-corpo-humano-669ac60cf3424-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1q60BaidxON7zF9UaOBxp_R-_u1ukJeP3?usp=sharing"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "34158154",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Ciências",
+        "educationLevelName": "Educação Infantil"
+    },
+    {
+        "title": "Operação Maluca",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/operacao-maluca-66abd1f23df87-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1ZChoTVZ8Ahmha90BPtsKsm1GidQeUYKx?usp=sharing"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "34461430",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Matemática",
+        "educationLevelName": "Educação Infantil"
+    },
+    {
+        "title": "Operações Matemáticas em Pixel Art - Divertidamente II",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/operacoes-matematicas-em-pixel-art-divertidamente-ii-67032d0b836a6-medium.png",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1m8XEa4dsz3hIwkQsVVxGx8oMh3kul_Bu?usp=sharing"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "34240101",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Matemática",
+        "educationLevelName": "Fundamental I"
+    },
+    {
+        "title": "Operações Matemáticas em Pixel Art Editável - Divertidamente II",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/versao-editavel-das-operacoes-matematicas-em-pixel-art-do-filme-divertidamente-ii-67043720c9d89-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/118fdpl7qkyzurxgmiZ5oE0ECL6ivRdjz?usp=sharing"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "35655266",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Matemática",
+        "educationLevelName": "Fundamental I"
+    },
+    {
+        "title": "Pareando Palavrinhas",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/pareando-palavrinhas-667464926d00a-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1xt86d4n-5zzlvfWL36liLkBqeRWmp0Yf?usp=drive_link"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "33306666",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Português",
+        "educationLevelName": "Educação Infantil"
+    },
+    {
+        "title": "Pense Rápido",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/pense-rapido-adivinhas-interativas-665e0a39641a7-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/160QNpt3uAm-XaTO9fVIT8XCugOd2cmnb?usp=drive_link"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "32719427",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Português",
+        "educationLevelName": "Educação Infantil"
+    },
+    {
+        "title": "Projeto Desafio Literário Combo",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/projeto-desafio-literario-presentes-68b808bacc3fb-medium.png",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1SRXuyx5wplBqSX-XW7mqvK_otWmqCaDZ?usp=sharing"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "41997313",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Português",
+        "educationLevelName": "Fundamental I"
+    },
+    {
+        "title": "Projeto Desafio Literário",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/projeto-desafio-literario-presentes-68b808bacc3fb-medium.png",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1SRXuyx5wplBqSX-XW7mqvK_otWmqCaDZ?usp=sharing"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "41556399",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Português",
+        "educationLevelName": "Fundamental I"
+    },
+    {
+        "title": "Recurso Alfabeto na Caixa",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/recurso-alfabeto-na-caixa-66672ea85b50d-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1cX3z28VVdLfgkA1XBXWlxTQEq2-P4IMu?usp=drive_link"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "32962574",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Português",
+        "educationLevelName": "Educação Infantil"
+    },
+    {
+        "title": "Recurso Complete a Frase",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/fichas-educativas-para-alfabetizacao-e-leitura-6660abb3293cc-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1eu_QACe9DV6peOW5yzWQMzLNlHxzY0hD?usp=drive_link"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "32804268",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Português",
+        "educationLevelName": "Educação Infantil"
+    },
+    {
+        "title": "Roleta dos Números",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/roleta-dos-numeros-66ae4398555cb-medium.png",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1unBfpY3_2RfPIPMDwr3X_aKpEU4oSt2P?usp=sharing"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "34501242",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Matemática",
+        "educationLevelName": "Educação Infantil"
+    },
+    {
+        "title": "Traçando os Numerais",
+        "description": "",
+        "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/tracando-os-numerais-664d31fc3b962-medium.jpg",
+        "isFree": false,
+        "files": [
+            {
+                "storageType": "GOOGLE_DRIVE",
+                "externalUrl": "https://drive.google.com/drive/folders/1_QzYjwDmDh9KKO0eBXz9nCo-j27gJTvx?usp=drive_link"
+            }
+        ],
+        "externalMappings": [
+            {
+                "productId": "32219233",
+                "store": "prof-didatica"
+            }
+        ],
+        "subjectName": "Matemática",
+        "educationLevelName": "Educação Infantil"
+    }
 ]

@@ -7,9 +7,9 @@ import { PushNotificationSetup } from '@/components/pwa/PushNotificationSetup'
 import { auth } from '@/lib/auth/auth'
 import { Spinner } from '@/components/ui/spinner'
 
-// Desabilitar cache para rotas protegidas
+// Configuração otimizada para rotas protegidas
 export const dynamic = 'force-dynamic'
-export const revalidate = 0
+export const revalidate = 60 // Cache de 60 segundos para melhorar navegação
 
 export const metadata: Metadata = {
   title: {
@@ -40,7 +40,7 @@ export default async function ProtectedLayout({
       <PushNotificationSetup />
       <div className="flex min-h-screen w-full flex-col bg-background">
         <Header />
-        <main className="flex-1 pb-20 px-4 md:px-6 lg:px-8">
+        <main className="flex-1 pb-20">
           <Suspense fallback={<PageLoader />}>
             {children}
           </Suspense>

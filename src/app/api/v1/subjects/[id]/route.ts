@@ -26,7 +26,7 @@ export async function GET(
 
     // valida saída em dev
     if (process.env.NODE_ENV !== 'production') {
-      const parsed = SubjectDTO.safeParse({ id: row.id, name: row.name, slug: row.slug })
+      const parsed = SubjectDTO.safeParse({ id: row.id, name: row.name })
       if (!parsed.success) console.error('SubjectDTO inválido', parsed.error.format())
     }
 
@@ -58,26 +58,20 @@ export async function PUT(
     }
 
     const name = parsed.data.name
-    const finalSlug = (parsed.data.slug ?? name)
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^\w\s-]/g, '')
-      .replace(/\s+/g, '-')
 
     const existing = await prisma.subject.findUnique({ where: { id } })
     if (!existing) return NextResponse.json({ message: 'Disciplina não encontrada' }, { status: 404 })
 
     const duplicate = await prisma.subject.findFirst({
-      where: { slug: finalSlug, NOT: { id } }
+      where: { name, NOT: { id } }
     })
     if (duplicate) {
-      return NextResponse.json({ message: 'Já existe outra disciplina com este slug' }, { status: 400 })
+      return NextResponse.json({ message: 'Já existe outra disciplina com este nome' }, { status: 400 })
     }
 
     const updated = await prisma.subject.update({
       where: { id },
-      data: { name, slug: finalSlug }
+      data: { name }
     })
 
     revalidateTag('subjects')

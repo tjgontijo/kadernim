@@ -7,7 +7,7 @@ import { SubjectDTO } from '@/lib/schemas/subject'
 const getSubjects = unstable_cache(
   async () => {
     const rows = await prisma.subject.findMany({
-      select: { id: true, name: true, slug: true },
+      select: { id: true, name: true },
       orderBy: { name: 'asc' }
     })
     if (process.env.NODE_ENV !== 'production') {

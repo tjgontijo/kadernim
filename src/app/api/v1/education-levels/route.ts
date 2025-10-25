@@ -4,8 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth/auth'
 import { headers } from 'next/headers'
 import { revalidateTag } from 'next/cache'
-import { EducationLevelCreateInput } from '@/lib/schemas/education-level'
-import { slugify } from '@/lib/helpers/slug'
+import { EducationLevelCreateInput, EducationLevelDTO } from '@/lib/schemas/education-level'
 
 export async function GET() {
   try {
@@ -14,11 +13,15 @@ export async function GET() {
       return NextResponse.json({ message: 'Não autorizado' }, { status: 403 })
     }
 
-    const educationLevels = await prisma.educationLevel.findMany({
-      orderBy: { name: 'asc' }
-    })
+    const rows = await prisma.educationLevel.findMany({ orderBy: { name: 'asc' } })
+    if (process.env.NODE_ENV !== 'production') {
+      const parsed = EducationLevelDTO.array().safeParse(rows.map(r => ({ id: r.id, name: r.name })))
+      if (!parsed.success) {
+        console.error('Erro ao parsear níveis de ensino:', parsed.error.format())
+      }
+    }
 
-    return NextResponse.json(educationLevels, { headers: { 'Cache-Control': 'no-store' } })
+    return NextResponse.json(rows, { headers: { 'Cache-Control': 'no-store' } })
   } catch (error) {
     console.error('Erro ao listar níveis de ensino:', error)
     return NextResponse.json({ message: 'Erro ao listar níveis de ensino' }, { status: 500 })
@@ -39,15 +42,14 @@ export async function POST(req: NextRequest) {
     }
 
     const name = parsed.data.name
-    const finalSlug = slugify(parsed.data.slug ?? name)
 
-    const dup = await prisma.educationLevel.findUnique({ where: { slug: finalSlug } })
+    const dup = await prisma.educationLevel.findUnique({ where: { name } })
     if (dup) {
-      return NextResponse.json({ message: 'Já existe um nível de ensino com este slug' }, { status: 400 })
+      return NextResponse.json({ message: 'Já existe um nível de ensino com este nome' }, { status: 400 })
     }
 
     const educationLevel = await prisma.educationLevel.create({
-      data: { name, slug: finalSlug, ageRange: parsed.data.ageRange ?? null }
+      data: { name }
     })
 
     revalidateTag('education-levels')

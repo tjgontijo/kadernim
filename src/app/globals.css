@@ -239,14 +239,21 @@ body {
   }
 }
 
-/* Reduzir motion para usuários que preferem */
+/* Reduzir motion para usuários que preferem - exceto spinners */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *:not(.animate-spin):not(.spinner-force),
+  *:not(.animate-spin):not(.spinner-force)::before,
+  *:not(.animate-spin):not(.spinner-force)::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+  
+  /* Manter spinners funcionando mesmo com reduced motion */
+  .animate-spin,
+  .spinner-force {
+    animation-duration: 1s !important;
+    animation-iteration-count: infinite !important;
   }
 }
 
@@ -260,20 +267,26 @@ html {
   view-transition-name: root;
 }
 
-/* Remover delay de transições em mobile */
+/* Remover delay de transições em mobile - exceto spinners */
 @media (max-width: 768px) {
-  * {
+  *:not(.animate-spin):not(.spinner-force) {
     transition-duration: 0.15s !important;
   }
   
-  button,
-  a,
-  [role="button"] {
+  button:not(.animate-spin):not(.spinner-force),
+  a:not(.animate-spin):not(.spinner-force),
+  [role="button"]:not(.animate-spin):not(.spinner-force) {
     transition-duration: 0.1s !important;
+  }
+  
+  /* Manter spinners funcionando em mobile */
+  .animate-spin,
+  .spinner-force {
+    animation: spin 1s linear infinite !important;
   }
 }
 
-/* Animação de spinner */
+/* Animação de spinner - Garantir que funcione */
 @keyframes spin {
   from {
     transform: rotate(0deg);
@@ -281,4 +294,15 @@ html {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Classe animate-spin personalizada para garantir funcionamento */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Força a animação mesmo se o Tailwind não carregar */
+.spinner-force {
+  animation: spin 1s linear infinite !important;
+  display: inline-block;
 }

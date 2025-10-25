@@ -18,51 +18,128 @@ export async function GET(
       return NextResponse.json({ error: 'ID inválido' }, { status: 400 });
     }
 
-    const resource = await prisma.resource.findUnique({
-      where: { id },
-      include: {
-        subject: true,
-        educationLevel: true,
-        files: true,
-        externalMappings: true,
-        bnccCodes: {
-          include: {
-            bnccCode: true,
+    // Otimização: Buscar dados em paralelo quando possível
+    const [resource, subscription, user] = await Promise.all([
+      // Query principal do recurso com includes otimizados
+      prisma.resource.findUnique({
+        where: { id },
+        include: {
+          subject: {
+            select: {
+              id: true,
+              name: true,
+            },
           },
+          educationLevel: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          files: {
+            select: {
+              id: true,
+              fileName: true,
+              fileType: true,
+              storageType: true,
+              externalUrl: true,
+              storageKey: true,
+              metadata: true,
+            },
+          },
+          externalMappings: {
+            select: {
+              id: true,
+              productId: true,
+              store: true,
+            },
+          },
+          ...(userId && {
+            accesses: {
+              where: { 
+                userId,
+                isActive: true,
+                OR: [
+                  { expiresAt: null },
+                  { expiresAt: { gt: new Date() } }
+                ]
+              },
+              select: {
+                id: true,
+                isActive: true,
+                expiresAt: true,
+              },
+              take: 1, // Só precisamos saber se tem acesso
+            },
+          }),
         },
-        ...(userId && {
-          accesses: {
+      }),
+      
+      // Query da subscription em paralelo se o usuário estiver logado
+      userId
+        ? prisma.subscription.findUnique({
             where: { userId },
             select: {
               id: true,
               isActive: true,
               expiresAt: true,
+              plan: {
+                select: {
+                  id: true,
+                  slug: true,
+                  name: true,
+                },
+              },
             },
-          },
-        }),
-      },
-    });
+          })
+        : null,
+
+      // Query do usuário para verificar role e subscription tier
+      userId
+        ? prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+              role: true,
+              subscriptionTier: true,
+            },
+          })
+        : null,
+    ]);
 
     if (!resource) {
       return NextResponse.json({ error: 'Recurso não encontrado' }, { status: 404 });
     }
 
-    const subscription = userId
-      ? await prisma.subscription.findUnique({
-          where: { userId },
-          include: {
-            plan: {
-              select: {
-                slug: true,
-              },
-            },
-          },
-        })
-      : null;
+    // Determinar se o usuário tem acesso
+    const isAdmin = user?.role === 'admin';
+    const isPremium = isAdmin || 
+      user?.subscriptionTier === 'premium' ||
+      (subscription?.isActive && 
+        (!subscription.expiresAt || subscription.expiresAt > new Date()) &&
+        subscription.plan?.slug !== 'free');
+    
+    const hasIndividualAccess = resource.accesses && resource.accesses.length > 0;
+    const hasAccess = resource.isFree || isPremium || hasIndividualAccess;
 
     return NextResponse.json(
-      { resource, subscription },
-      { headers: { 'Cache-Control': 'no-store' } }
+      { 
+        resource: {
+          ...resource,
+          hasAccess
+        }, 
+        subscription,
+        userInfo: {
+          isAdmin,
+          isPremium,
+          hasAccess
+        }
+      },
+      { 
+        headers: { 
+          'Cache-Control': 'public, max-age=60, stale-while-revalidate=300',
+          'CDN-Cache-Control': 'public, max-age=300'
+        } 
+      }
     );
   } catch (error) {
     console.error('Erro ao buscar recurso:', error);

@@ -36,14 +36,6 @@ function buildWhere(q: ResourcesQuery): Prisma.ResourceWhereInput {
     })
   }
   
-  if (q.bnccCodes?.length) {
-    conditions.push({
-      bnccCodes: {
-        some: { bnccCode: { code: { in: q.bnccCodes } } }
-      }
-    })
-  }
-  
   return conditions.length ? { AND: conditions } : {}
 }
 
@@ -114,7 +106,6 @@ export async function listOptimizedResources(
       !query.subjectId &&
       !query.educationLevelId &&
       !query.q &&
-      (!query.bnccCodes || query.bnccCodes.length === 0) &&
       query.page === 1
 
     const { resources, pagination } = shouldUseCache
@@ -205,6 +196,17 @@ export async function listOptimizedResources(
     const accessibleResources = resources
       .filter(resource => resource.isFree || accessibleResourceIds.has(resource.id))
       .map(resource => ({ ...resource, hasAccess: true }))
+      .sort((a, b) => {
+        // Priorizar recursos com acesso individual comprado
+        const aHasIndividualAccess = accessibleResourceIds.has(a.id) && !a.isFree
+        const bHasIndividualAccess = accessibleResourceIds.has(b.id) && !b.isFree
+        
+        if (aHasIndividualAccess !== bHasIndividualAccess) {
+          return aHasIndividualAccess ? -1 : 1
+        }
+        
+        return 0 // Manter ordem original
+      })
 
     const restrictedResources = resources
       .filter(resource => !resource.isFree && !accessibleResourceIds.has(resource.id))

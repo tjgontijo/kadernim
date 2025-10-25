@@ -25,11 +25,6 @@ const subjectFormSchema = z.object({
   name: z.string().min(2, {
     message: 'O nome deve ter pelo menos 2 caracteres.',
   }),
-  slug: z.string().min(2, {
-    message: 'O slug deve ter pelo menos 2 caracteres.',
-  }).regex(/^[a-z0-9-]+$/, {
-    message: 'O slug deve conter apenas letras minúsculas, números e hífens.',
-  }),
   iconName: z.string().optional(),
 })
 
@@ -39,7 +34,6 @@ type SubjectFormValues = z.infer<typeof subjectFormSchema>
 type Subject = {
   id: string
   name: string
-  slug: string
   iconName: string | null
   createdAt: Date
   updatedAt: Date
@@ -57,7 +51,6 @@ export function SubjectForm({ subject }: SubjectFormProps) {
   // Definir valores padrão do formulário
   const defaultValues: Partial<SubjectFormValues> = {
     name: subject?.name || '',
-    slug: subject?.slug || '',
     iconName: subject?.iconName || '',
   }
 
@@ -65,26 +58,6 @@ export function SubjectForm({ subject }: SubjectFormProps) {
     resolver: zodResolver(subjectFormSchema),
     defaultValues,
   })
-
-  // Função para gerar slug a partir do nome
-  const generateSlug = (name: string) => {
-    return name
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^\w\s-]/g, '')
-      .replace(/\s+/g, '-')
-  }
-
-  // Atualizar o slug quando o nome mudar
-  const currentSlug = form.watch('slug')
-
-  // Só atualiza o slug automaticamente se o usuário não tiver modificado manualmente
-  const handleNameChange = (name: string) => {
-    if (!currentSlug || currentSlug === generateSlug(form.getValues('name'))) {
-      form.setValue('slug', generateSlug(name), { shouldValidate: true })
-    }
-  }
 
   const onSubmit = async (data: SubjectFormValues) => {
     setIsLoading(true)
@@ -96,12 +69,17 @@ export function SubjectForm({ subject }: SubjectFormProps) {
       
       const method = isEditing ? 'PUT' : 'POST'
 
+      const payload = {
+        name: data.name,
+        ...(data.iconName ? { iconName: data.iconName } : {}),
+      }
+
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       })
 
       if (!response.ok) {
@@ -140,28 +118,6 @@ export function SubjectForm({ subject }: SubjectFormProps) {
                   <FormControl>
                     <Input 
                       placeholder="Ex: Matemática" 
-                      {...field} 
-                      onChange={(e) => {
-                        field.onChange(e)
-                        handleNameChange(e.target.value)
-                      }}
-                      disabled={isLoading}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="slug"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Slug</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="Ex: matematica" 
                       {...field} 
                       disabled={isLoading}
                     />

@@ -160,13 +160,22 @@ export async function getMyLibrary(
     }
   })
 
-  // Ordenar: recursos com acesso primeiro, depois por data de criação
+  // Ordenar: recursos com acesso individual primeiro, depois recursos com acesso, depois por data de criação
   const sortedResources = mappedResources.sort((a, b) => {
-    // Primeiro critério: hasAccess (true primeiro)
+    // Primeiro critério: recursos com acesso individual comprado aparecem primeiro
+    const aHasIndividualAccess = accessedResourceIds.includes(a.id) && !a.isFree
+    const bHasIndividualAccess = accessedResourceIds.includes(b.id) && !b.isFree
+    
+    if (aHasIndividualAccess !== bHasIndividualAccess) {
+      return aHasIndividualAccess ? -1 : 1
+    }
+    
+    // Segundo critério: recursos com acesso (gratuitos ou premium) aparecem antes dos bloqueados
     if (a.hasAccess !== b.hasAccess) {
       return a.hasAccess ? -1 : 1
     }
-    // Segundo critério: manter ordem original (já ordenado por createdAt desc)
+    
+    // Terceiro critério: manter ordem original (já ordenado por createdAt desc)
     return 0
   })
 
@@ -272,11 +281,11 @@ export async function getRecentlyAdded(limit = 10) {
 export async function getFilterMetadata() {
   const [subjects, educationLevels] = await prisma.$transaction([
     prisma.subject.findMany({
-      select: { id: true, name: true, slug: true },
+      select: { id: true, name: true },
       orderBy: { name: 'asc' }
     }),
     prisma.educationLevel.findMany({
-      select: { id: true, name: true, slug: true },
+      select: { id: true, name: true },
       orderBy: { name: 'asc' }
     })
   ])

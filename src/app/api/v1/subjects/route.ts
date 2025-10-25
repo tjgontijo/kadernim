@@ -4,7 +4,6 @@ import { auth } from '@/lib/auth/auth'
 import { headers } from 'next/headers'
 import { revalidateTag } from 'next/cache'
 import { SubjectCreateInput, SubjectDTO } from '@/lib/schemas/subject'
-import { slugify } from '@/lib/helpers/slug'
 import { z } from 'zod'
 
 export async function GET() {
@@ -16,7 +15,7 @@ export async function GET() {
 
     const rows = await prisma.subject.findMany({ orderBy: { name: 'asc' } })
     if (process.env.NODE_ENV !== 'production') {
-      const parsed = z.array(SubjectDTO).safeParse(rows.map(r => ({ id: r.id, name: r.name, slug: r.slug })))
+      const parsed = z.array(SubjectDTO).safeParse(rows.map(r => ({ id: r.id, name: r.name })))
       if (!parsed.success) console.error('SubjectDTO inválido', parsed.error.format())
     }
 
@@ -41,14 +40,13 @@ export async function POST(req: NextRequest) {
     }
 
     const name = parsed.data.name
-    const finalSlug = parsed.data.slug ? slugify(parsed.data.slug) : slugify(name)
 
-    const duplicate = await prisma.subject.findUnique({ where: { slug: finalSlug } })
+    const duplicate = await prisma.subject.findUnique({ where: { name } })
     if (duplicate) {
-      return NextResponse.json({ message: 'Já existe uma disciplina com este slug' }, { status: 400 })
+      return NextResponse.json({ message: 'Já existe uma disciplina com este nome' }, { status: 400 })
     }
 
-    const subject = await prisma.subject.create({ data: { name, slug: finalSlug } })
+    const subject = await prisma.subject.create({ data: { name } })
 
     revalidateTag('subjects')
 

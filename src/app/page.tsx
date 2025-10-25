@@ -12,7 +12,7 @@ export default function HomePage() {
             <h1 className="text-2xl font-bold">Kadernim</h1>
           </div>
           <nav className="flex items-center gap-4">
-            <Link href="/login">
+            <Link href="/login/otp">
               <Button variant="ghost">Entrar</Button>
             </Link>
           </nav>
@@ -30,7 +30,7 @@ export default function HomePage() {
              Tenha acesso a centenas de recursos pedagógicos e conteúdos educacionais prontos para imprimir e aplicar na sala de aula.
             </p>
             <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">              
-              <Link href="/login">
+              <Link href="/login/otp">
                 <Button size="lg" variant="outline">
                   Entrar
                 </Button>

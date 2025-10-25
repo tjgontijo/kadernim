@@ -2,16 +2,12 @@ import { PrismaClient } from '@prisma/client';
 import { usersData } from './data-users';
 import { auth } from '@/lib/auth/auth';
 
-// Os dados de usuário são importados de data-users.ts
-
 export async function seedUsers(prisma: PrismaClient) {
   console.log('🌱 Populando usuários...');
   console.log(`Preparando ${usersData.length} usuários...`);
   
   try {
-    // Criar usuários usando better-auth
     for (const userData of usersData) {
-      // Verificar se o usuário já existe
       const existingUser = await prisma.user.findUnique({
         where: { email: userData.email }
       });
@@ -23,7 +19,6 @@ export async function seedUsers(prisma: PrismaClient) {
 
       try {
 
-        // Ignorando o resultado da operação
         await (auth.api.signUpEmail as unknown as (params: {body: Record<string, unknown>}) => Promise<unknown>)({
           body: {
             name: userData.name,
@@ -37,8 +32,8 @@ export async function seedUsers(prisma: PrismaClient) {
           where: { email: userData.email },
           data: { 
             role: userData.role,
-            whatsapp: userData.whatsapp, // Garantir que whatsapp seja salvo
-            emailVerified: true // Marcar como verificado
+            whatsapp: userData.whatsapp,
+            emailVerified: true
           }
         });
         

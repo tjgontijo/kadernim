@@ -8,17 +8,24 @@ type UserWithSubscription = {
 }
 
 export function usePremiumStatus() {
-  const { data: session } = useSession()
+  const { data: session, isPending } = useSession()
   const user = session?.user as UserWithSubscription
   
-  const isPremium = user?.subscriptionTier === 'premium'
+  const isAdmin = user?.role === 'admin'
+  const isPremium = isAdmin || user?.subscriptionTier === 'premium'
   const isFree = !isPremium
+  
+  // Não mostra ads enquanto está carregando a sessão
+  // Só mostra ads se não está carregando E o usuário é free
+  const showAds = !isPending && isFree
   
   return {
     isPremium,
     isFree,
-    showAds: isFree, // Mostra ads apenas para usuários free
+    showAds,
     subscriptionTier: user?.subscriptionTier || 'free',
-    user
+    isAdmin,
+    user,
+    isLoading: isPending
   }
 }

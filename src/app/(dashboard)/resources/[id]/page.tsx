@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 // app/(dashboard)/resources/[id]/page.tsx
 import { notFound } from 'next/navigation';
-import { headers } from 'next/headers';
+import { cookies } from 'next/headers';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -13,92 +13,102 @@ type PageParams = {
   params: Promise<{ id: string }>;
 };
 
-type SubscriptionPlan = {
-  slug: string | null;
-};
+interface SubscriptionPlan {
+  id: string;
+  slug: string;
+  name: string;
+}
 
-type Subscription = {
-  isActive: boolean;
-  expiresAt: string | null;
-  plan: SubscriptionPlan | null;
-} | null;
-
-type ResourceAccess = {
+interface Subscription {
   id: string;
   isActive: boolean;
   expiresAt: string | null;
-};
+  plan: SubscriptionPlan;
+}
 
-type ResourceFile = {
+interface ResourceAccess {
+  id: string;
+  isActive: boolean;
+  expiresAt: string | null;
+}
+
+interface ResourceFile {
   id: string;
   fileName: string | null;
   fileType: string | null;
   storageType: string;
   externalUrl: string | null;
-};
+  storageKey: string | null;
+  metadata: Record<string, unknown> | null;
+}
 
-type ResourceBnccCode = {
-  id: string;
-  bnccCode: {
-    code: string;
-  };
-};
-
-type ResourceExternalMapping = {
+interface ResourceExternalMapping {
   id: string;
   productId: string | null;
   store: string | null;
-};
+}
 
-type ResourceEntity = {
+interface ResourceEntity {
   id: string;
   title: string;
-  description: string | null;
-  imageUrl: string | null;
+  description: string;
+  imageUrl: string;
   isFree: boolean;
-  subject: { name: string } | null;
-  educationLevel: { name: string } | null;
+  createdAt: string;
+  updatedAt: string;
+  subject: {
+    id: string;
+    name: string;
+  };
+  educationLevel: {
+    id: string;
+    name: string;
+  };
   files: ResourceFile[];
+  accesses: ResourceAccess[];
   externalMappings: ResourceExternalMapping[];
-  bnccCodes: ResourceBnccCode[];
-  accesses?: ResourceAccess[] | null;
-};
+}
 
-type ResourceResponse = {
-  resource: ResourceEntity;
-  subscription: Subscription;
-} | null;
+interface ResourceResponse {
+  resource: ResourceEntity & { hasAccess?: boolean };
+  subscription: Subscription | null;
+  userInfo?: {
+    isAdmin: boolean;
+    isPremium: boolean;
+    hasAccess: boolean;
+  };
+}
 
 async function getResource(id: string): Promise<ResourceResponse> {
-  const incomingHeaders = await headers();
-  const protocol = incomingHeaders.get('x-forwarded-proto') ?? 'http';
-  const host = incomingHeaders.get('host');
-  const baseUrl = host
-    ? `${protocol}://${host}`
-    : process.env.NEXT_PUBLIC_APP_URL;
-
-  if (!baseUrl) {
-    throw new Error('Base URL is not defined for resource fetch');
+  const cookieStore = await cookies();
+  
+  // Construir a URL base
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  
+  // Preparar headers com cookies
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+  
+  // Adicionar cookies se existirem
+  const cookieHeader = cookieStore.toString();
+  if (cookieHeader) {
+    headers['Cookie'] = cookieHeader;
   }
 
-  const requestHeaders = new Headers();
-  const cookie = incomingHeaders.get('cookie');
-  if (cookie) {
-    requestHeaders.set('cookie', cookie);
-  }
-
-  const res = await fetch(`${baseUrl}/api/v1/resources/${id}`, {
-    headers: requestHeaders,
-    cache: 'no-store',
+  const response = await fetch(`${baseUrl}/api/v1/resources/${id}`, {
+    headers,
+    next: { revalidate: 60 } // Cache por 60 segundos
   });
 
-  if (!res.ok) {
-    if (res.status === 404) return null;
-    throw new Error('Failed to fetch resource');
+  if (!response.ok) {
+    if (response.status === 404) {
+      notFound();
+    }
+    throw new Error(`Erro ao carregar recurso: ${response.status}`);
   }
 
-  const data = (await res.json()) as ResourceResponse;
-  return data;
+  return response.json();
 }
 
 export default async function ResourcePage({ params }: PageParams) {
@@ -111,11 +121,29 @@ export default async function ResourcePage({ params }: PageParams) {
 
   const resource = data.resource;
   const subscription = data.subscription;
+  const userInfo = data.userInfo;
 
   const now = new Date();
   const subscriptionExpiresAt = subscription?.expiresAt
     ? new Date(subscription.expiresAt)
     : null;
+
+  // Usar a informação de acesso da API se disponível, senão calcular localmente
+  const hasAccess = userInfo?.hasAccess ?? (
+    resource.hasAccess ?? (
+      resource.isFree || 
+      Boolean(
+        subscription?.isActive &&
+          (subscriptionExpiresAt === null || subscriptionExpiresAt > now) &&
+          subscription?.plan?.slug &&
+          subscription.plan.slug !== 'free'
+      ) ||
+      (resource.accesses?.some((access) => {
+        const accessExpiresAt = access.expiresAt ? new Date(access.expiresAt) : null;
+        return access.isActive && (accessExpiresAt === null || accessExpiresAt > now);
+      }) ?? false)
+    )
+  );
 
   const hasActivePremium = Boolean(
     subscription?.isActive &&
@@ -123,16 +151,8 @@ export default async function ResourcePage({ params }: PageParams) {
       subscription?.plan?.slug &&
       subscription.plan.slug !== 'free'
   );
-
-  const hasIndividualAccess = resource.accesses?.some((access) => {
-    const accessExpiresAt = access.expiresAt ? new Date(access.expiresAt) : null;
-    return access.isActive && (accessExpiresAt === null || accessExpiresAt > now);
-  }) ?? false;
-
-  const hasAccess = resource.isFree || hasActivePremium || hasIndividualAccess;
   const isPremiumResource = !resource.isFree;
   const hasFiles = resource.files.length > 0;
-  const hasBnccCodes = resource.bnccCodes.length > 0;
   const hasImage = Boolean(resource.imageUrl);
 
   const renderDescription = () => {
@@ -301,20 +321,6 @@ export default async function ResourcePage({ params }: PageParams) {
               </div>
             )}
           </section>
-
-
-          {hasBnccCodes && (
-            <section className="space-y-3 rounded-3xl border bg-background/60 p-6 shadow-sm">
-              <h3 className="text-lg font-semibold text-foreground">Códigos BNCC</h3>
-              <div className="flex flex-wrap gap-2">
-                {resource.bnccCodes.map((item) => (
-                  <Badge key={item.id} variant="outline" className="rounded-full px-3 py-1 text-sm">
-                    {item.bnccCode.code}
-                  </Badge>
-                ))}
-              </div>
-            </section>
-          )}
         </article>
       </main>
   );

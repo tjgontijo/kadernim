@@ -1,154 +1,178 @@
 // src/app/(dashboard)/resources/page.tsx
-'use client'
+import { Suspense } from 'react'
+import { cookies } from 'next/headers'
+import { ResourcesVirtualGrid } from '@/components/resources/ResourcesVirtualGrid'
+import { ResourceFilters } from '@/components/resources/ResourceFilters'
+import { AdSlot } from '@/components/ads/AdSlot'
+import type { UnifiedResourcesResponse } from '@/app/api/v1/resources/route'
 
-import { useState, useCallback } from 'react'
-import { ResourcesFilters } from '@/components/resources/resources-filters'
-import { ResourcesGrid } from '@/components/resources/resources-grid'
-import { useResourcesLibrary } from '@/hooks/use-resources-library'
-import { useResourcesMetadata } from '@/hooks/use-resources-metadata'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle } from 'lucide-react'
-import { AdSlot } from '@/components/ads'
+interface ResourcesPageProps {
+  searchParams: Promise<{
+    subjectId?: string
+    educationLevelId?: string
+    search?: string
+  }>
+}
 
-export default function ResourcesPage() {
-  const [filters, setFilters] = useState({
-    subjectId: 'all',
-    educationLevelId: 'all'
+async function fetchResources(params: {
+  subjectId?: string
+  educationLevelId?: string
+  search?: string
+}): Promise<UnifiedResourcesResponse> {
+  const searchParams = new URLSearchParams()
+  
+  if (params.subjectId) searchParams.set('subjectId', params.subjectId)
+  if (params.educationLevelId) searchParams.set('educationLevelId', params.educationLevelId)
+  if (params.search) searchParams.set('search', params.search)
+
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+  const url = `${baseUrl}/api/v1/resources?${searchParams.toString()}`
+
+  // Obter cookies para autenticação
+  const cookieStore = await cookies()
+  const cookieHeader = cookieStore.toString()
+
+  const response = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Cookie': cookieHeader,
+    },
+    next: { 
+      revalidate: 60, // Cache por 60 segundos
+      tags: ['resources'] // Tag para invalidação seletiva
+    }
   })
-  const [displayedCount, setDisplayedCount] = useState(24)
-  const ITEMS_PER_LOAD = 24
 
-  // Buscar metadados
-  const {
-    subjects,
-    educationLevels,
-    stats,
-    isLoading: metadataLoading,
-    error: metadataError
-  } = useResourcesMetadata()
-
-  // Buscar recursos com filtros (buscar todos de uma vez)
-  const {
-    resources,
-    isLoading: resourcesLoading,
-    errorMessage: resourcesError
-  } = useResourcesLibrary({
-    page: 1,
-    pageSize: 1000, // Buscar todos
-    subjectId: filters.subjectId !== 'all' ? filters.subjectId : undefined,
-    educationLevelId: filters.educationLevelId !== 'all' ? filters.educationLevelId : undefined
-  })
-
-  // Handler para mudança de filtros
-  const handleFilterChange = useCallback((newFilters: typeof filters) => {
-    setFilters(newFilters)
-    setDisplayedCount(ITEMS_PER_LOAD) // Resetar contagem ao filtrar
-  }, [ITEMS_PER_LOAD])
-
-  // Handler para carregar mais
-  const handleLoadMore = useCallback(() => {
-    setDisplayedCount(prev => prev + ITEMS_PER_LOAD)
-  }, [ITEMS_PER_LOAD])
-
-  // Recursos exibidos
-  const displayedResources = resources.slice(0, displayedCount)
-  const hasMore = displayedCount < resources.length
-
-  // Loading inicial
-  if (metadataLoading && !stats) {
-    return (
-      <div className="container mx-auto py-4 px-4 md:px-6 max-w-7xl">
-        <div className="mb-6">
-          <Skeleton className="h-24 w-full rounded-xl" />
-        </div>
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <Skeleton className="h-9 w-52" />
-            <Skeleton className="h-9 w-40" />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <Skeleton key={index} className="h-7 w-24" />
-            ))}
-          </div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, index) => (
-              <Skeleton key={index} className="h-48 w-full rounded-xl" />
-            ))}
-          </div>
-          <div className="flex justify-center mt-6">
-            <Skeleton className="h-10 w-48" />
-          </div>
-        </div>
-      </div>
-    )
+  if (!response.ok) {
+    throw new Error('Failed to fetch resources')
   }
 
-  // Erro nos metadados
-  if (metadataError) {
-    return (
-      <div className="container py-8">
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Erro ao carregar informações da biblioteca. Tente recarregar a página.
-          </AlertDescription>
-        </Alert>
-      </div>
-    )
-  }
+  return response.json()
+}
 
+function ResourcesLoading() {
   return (
-    <div className="container mx-auto py-4 px-4 md:px-6 max-w-7xl">
-      {/* Banner Premium - Topo */}
-      <div className="mb-6">
-        <AdSlot 
-          slot="header" 
-          variant="compact" 
-          creative="conversion"
-        />
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
+        <div className="h-10 w-64 bg-gray-200 rounded animate-pulse" />
       </div>
-
-      {/* Filtros */}
-      <ResourcesFilters
-        subjects={subjects}
-        educationLevels={educationLevels}
-        onFilterChange={handleFilterChange}
-      />
-
-      {/* Erro ao carregar recursos */}
-      {resourcesError && (
-        <Alert variant="destructive" className="mb-6">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{resourcesError}</AlertDescription>
-        </Alert>
-      )}
-
-      {/* Grid de recursos */}
-      <ResourcesGrid
-        resources={displayedResources}
-        isLoading={resourcesLoading}
-      />
-
-      {/* Botão Carregar Mais */}
-      {!resourcesLoading && hasMore && (
-        <div className="flex justify-center mt-8 mb-4">
-          <button
-            onClick={handleLoadMore}
-            className="px-6 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            Carregar mais {Math.min(ITEMS_PER_LOAD, resources.length - displayedCount)} recursos
-          </button>
-        </div>
-      )}
-
-      {/* Contador de recursos */}
-      {!resourcesLoading && resources.length > 0 && (
-        <div className="text-center text-sm text-muted-foreground mt-4 mb-8">
-          Exibindo {displayedResources.length} de {resources.length} recursos
-        </div>
-      )}
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {Array.from({ length: 12 }).map((_, i) => (
+          <div key={i} className="bg-white rounded-lg shadow-sm border p-4 space-y-3">
+            <div className="h-32 bg-gray-200 rounded animate-pulse" />
+            <div className="h-4 bg-gray-200 rounded animate-pulse" />
+            <div className="h-3 bg-gray-200 rounded animate-pulse w-3/4" />
+            <div className="flex justify-between items-center">
+              <div className="h-3 bg-gray-200 rounded animate-pulse w-16" />
+              <div className="h-6 w-16 bg-gray-200 rounded animate-pulse" />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   )
+}
+
+export default async function ResourcesPage({ searchParams }: ResourcesPageProps) {
+  const params = await searchParams
+  
+  return (
+    <div className="container mx-auto px-2 md:px-4 py-6 space-y-6 max-w-7xl">
+      {/* Ad Slot */}
+      <AdSlot 
+        slot="header" 
+        variant='compact'
+        className="w-full max-w-4xl mx-auto"
+      />
+      {/* Header */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Recursos Pedagógicos
+          </h1>
+          <p className="text-gray-600 mt-1">
+            Explore nossa biblioteca de materiais educacionais
+          </p>
+        </div>
+        
+        <Suspense fallback={<div className="h-10 w-64 bg-gray-200 rounded animate-pulse" />}>
+          <ResourceFiltersWrapper params={params} />
+        </Suspense>
+      </div>
+
+
+
+      {/* Resources Grid */}
+      <Suspense fallback={<ResourcesLoading />}>
+        <ResourcesContent params={params} />
+      </Suspense>
+
+      {/* Bottom Ad */}
+      <AdSlot 
+        slot="footer" 
+        variant='compact'
+        className="w-full max-w-4xl mx-auto"
+      />
+    </div>
+  )
+}
+
+async function ResourceFiltersWrapper({ 
+  params 
+}: { 
+  params: { subjectId?: string; educationLevelId?: string; search?: string } 
+}) {
+  try {
+    const data = await fetchResources(params)
+    
+    return (
+      <ResourceFilters 
+        subjects={data.metadata.subjects}
+        educationLevels={data.metadata.educationLevels}
+      />
+    )
+  } catch (error) {
+    console.error('Error loading filters:', error)
+    return <div className="h-10 w-64 bg-gray-200 rounded animate-pulse" />
+  }
+}
+
+async function ResourcesContent({ 
+  params 
+}: { 
+  params: { subjectId?: string; educationLevelId?: string; search?: string } 
+}) {
+  try {
+    const data = await fetchResources(params)
+    
+    return (
+      <div className="space-y-6">
+        {/* Virtual Grid */}
+        <ResourcesVirtualGrid 
+          resources={data.resources}
+          isPremium={data.userInfo.isPremium}
+        />
+      </div>
+    )
+  } catch (error) {
+    console.error('Error loading resources:', error)
+    
+    return (
+      <div className="text-center py-12">
+        <div className="text-gray-500 mb-4">
+          <svg className="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            Erro ao carregar recursos
+          </h3>
+          <p className="text-gray-600">
+            Não foi possível carregar os recursos. Tente novamente.
+          </p>
+        </div>
+      </div>
+    )
+  }
 }

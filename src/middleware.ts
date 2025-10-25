@@ -22,8 +22,8 @@ export async function middleware(request: NextRequest) {
                     pathname.startsWith('/images/icons/')
   
   // Rotas de autenticação
-  const isAuthRoute = pathname.startsWith('/login') || 
-                     pathname.startsWith('/register')
+  const isAuthRoute = pathname.startsWith('/login/otp') || 
+                     pathname.startsWith('/login/magic-link')
   
   // Rotas públicas explícitas
   const isPublicRoute = pathname === '/'
@@ -48,7 +48,7 @@ export async function middleware(request: NextRequest) {
   
   // Qualquer outra rota é protegida por padrão
   if (!isLoggedIn) {
-    return NextResponse.redirect(new URL('/login', request.url))
+    return NextResponse.redirect(new URL('/login/otp', request.url))
   }
   
   return NextResponse.next()

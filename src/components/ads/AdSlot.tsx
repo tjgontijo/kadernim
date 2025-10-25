@@ -14,10 +14,10 @@ interface AdSlotProps {
 }
 
 export function AdSlot({ slot, className, variant = 'default', creative = 'conversion', position }: AdSlotProps) {
-  const { showAds } = usePremiumStatus()
+  const { showAds, isLoading } = usePremiumStatus()
   
-  // Não renderiza nada se o usuário é premium
-  if (!showAds) {
+  // Não renderiza nada se ainda está carregando ou se o usuário é premium/admin
+  if (isLoading || !showAds) {
     return null
   }
   

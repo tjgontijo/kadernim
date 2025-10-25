@@ -9,10 +9,10 @@ const getEducationLevels = unstable_cache(
   async () => {
     const rows = await prisma.educationLevel.findMany({
       orderBy: { name: 'asc' },
-      select: { id: true, name: true, slug: true }
+      select: { id: true, name: true }
     })
     if (process.env.NODE_ENV !== 'production') {
-      const ok = z.array(EducationLevelDTO.pick({ id: true, name: true, slug: true })).safeParse(rows)
+      const ok = z.array(EducationLevelDTO.pick({ id: true, name: true })).safeParse(rows)
       if (!ok.success) console.error('EducationLevelDTO inválido', ok.error.format())
     }
     return rows

@@ -5,11 +5,7 @@ export const ResourcesQueryDTO = z.object({
   limit: z.coerce.number().int().positive().min(1).max(50).default(12),
   subjectId: z.string().min(1).optional(),
   educationLevelId: z.string().min(1).optional(),
-  q: z.string().trim().max(200).optional(),
-  bnccCodes: z.preprocess(
-    v => Array.isArray(v) ? v : typeof v === 'string' ? v.split(',') : [],
-    z.array(z.string().min(1)).optional()
-  )
+  q: z.string().trim().max(200).optional()
 })
 
 const ResourceSummaryDTO = z.object({

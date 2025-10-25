@@ -1,10 +1,11 @@
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { prisma } from '../prisma'
-import { magicLink } from 'better-auth/plugins'
+import { magicLink, emailOTP } from 'better-auth/plugins'
 import { deliverMagicLink } from '@/services/magic-link/magic-link-delivery'
 import { admin } from 'better-auth/plugins'
 import { organization } from 'better-auth/plugins'
+import { authDeliveryService } from '@/services/delivery'
 
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET,
@@ -33,6 +34,26 @@ export const auth = betterAuth({
           throw error
         }
       }
+    }),
+    emailOTP({
+      async sendVerificationOTP({ email, otp, type }) {
+        console.log('[email-otp] Iniciando envio de OTP para:', email, 'tipo:', type)
+
+        const result = await authDeliveryService.send({
+          email,
+          type: 'otp',
+          data: {
+            otp,
+            expiresIn: 5,
+          },
+          channels: ['email', 'whatsapp'],
+        })
+
+        if (!result.success) {
+          console.error('[email-otp] Falha ao entregar OTP', result)
+          throw new Error(result.error ?? 'otp_delivery_failed')
+        }
+      },
     })
   ],
 

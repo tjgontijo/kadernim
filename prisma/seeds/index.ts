@@ -1,7 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import { subjects } from './seed-subjects';
-import { educationLevels } from './seed-education-levels';
-import { seedBNCC } from './seed-bncc';
+import { subjects } from './data-subjects';
+import { educationLevels } from './data-education-levels';
 import { seedUsers } from './seed-users';
 import { seedResources } from './seed-resources';
 import { plansData } from './data-plans';
@@ -14,12 +13,10 @@ async function cleanDatabase() {
   try {
     await prisma.$executeRaw`
       TRUNCATE TABLE 
-        "resource_bncc_code",
         "resource_file",
         "external_product_mapping",
         "user_resource_access",
         "resource",
-        "bncc_code",
         "subject",
         "education_level",
         "push_subscription",
@@ -51,12 +48,12 @@ async function createInitialData() {
     console.log('✅ Banco de dados limpo.');
         
     await prisma.educationLevel.createMany({
-      data: educationLevels
+      data: educationLevels.map(level => ({ ...level }))
     });
     console.log('✅ Níveis de ensino criados');
     
     await prisma.subject.createMany({
-      data: subjects
+      data: subjects.map(subject => ({ ...subject }))
     });
     console.log('✅ Disciplinas criadas');    
 
@@ -64,8 +61,6 @@ async function createInitialData() {
       data: plansData
     });
     console.log('✅ Planos criados');
-    
-    await seedBNCC(prisma);
     
     await seedUsers(prisma);
     

@@ -1,8 +1,11 @@
 // src/lib/auth/auth-client.ts
 import { createAuthClient } from "better-auth/react"
-import { adminClient } from "better-auth/client/plugins"
-import { organizationClient } from "better-auth/client/plugins"
-import { magicLinkClient } from "better-auth/client/plugins"
+import {
+  adminClient,
+  organizationClient,
+  magicLinkClient,
+  emailOTPClient,
+} from "better-auth/client/plugins"
 
 export const authClient = createAuthClient({
   baseURL:
@@ -15,6 +18,7 @@ export const authClient = createAuthClient({
     adminClient(),
     organizationClient(),
     magicLinkClient(),
+    emailOTPClient(),
   ],
 })
 

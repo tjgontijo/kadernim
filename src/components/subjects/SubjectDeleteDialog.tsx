@@ -14,7 +14,6 @@ import {
 type Subject = {
   id: string
   name: string
-  slug: string
   iconName: string | null
   createdAt: Date
   updatedAt: Date

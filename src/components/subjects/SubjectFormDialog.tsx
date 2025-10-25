@@ -39,7 +39,6 @@ type SubjectFormValues = z.infer<typeof subjectFormSchema>
 type Subject = {
   id: string
   name: string
-  slug: string
   iconName: string | null
   createdAt: Date
   updatedAt: Date
@@ -84,18 +83,6 @@ export function SubjectFormDialog({
     }
   }, [form, subject])
 
-  // Função para gerar slug a partir do nome
-  const generateSlug = (name: string) => {
-    return name
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^\w\s-]/g, '')
-      .replace(/\s+/g, '-')
-  }
-
-  // Não precisamos mais atualizar o slug em tempo real, pois ele será gerado no momento do envio
-
   const onSubmit = async (data: SubjectFormValues) => {
     setIsLoading(true)
 
@@ -105,22 +92,13 @@ export function SubjectFormDialog({
         : '/api/subjects'
       
       const method = isEditing ? 'PUT' : 'POST'
-      
-      // Gerar o slug automaticamente a partir do nome
-      const slug = generateSlug(data.name)
-      
-      // Adicionar o slug aos dados
-      const submitData = {
-        ...data,
-        slug
-      }
 
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(submitData),
+        body: JSON.stringify(data),
       })
 
       if (!response.ok) {

@@ -28,9 +28,9 @@ export async function seedResources(prisma: PrismaClient) {
   // Cache de subjects e education levels para evitar queries repetidas
   const subjects = await prisma.subject.findMany();
   const educationLevels = await prisma.educationLevel.findMany();
-  
-  const subjectMap = new Map(subjects.map((s: Subject) => [s.slug, s]));
-  const educationLevelMap = new Map(educationLevels.map((e: EducationLevel) => [e.slug, e]));
+
+  const subjectMap = new Map(subjects.map((s: Subject) => [s.name, s]));
+  const educationLevelMap = new Map(educationLevels.map((e: EducationLevel) => [e.name, e]));
   
   let successCount = 0;
   let errorCount = 0;
@@ -38,11 +38,11 @@ export async function seedResources(prisma: PrismaClient) {
   // Processar em batches de 10 recursos por vez
   await processBatch(resourcesData, 10, async (resourceData) => {
     try {
-      const { subjectSlug, educationLevelSlug, files, externalMappings, ...resourceFields } = resourceData;
-      
+      const { subjectName, educationLevelName, files, externalMappings, ...resourceFields } = resourceData;
+
       // Buscar do cache
-      const subject = subjectMap.get(subjectSlug);
-      const educationLevel = educationLevelMap.get(educationLevelSlug);
+      const subject = subjectMap.get(subjectName);
+      const educationLevel = educationLevelMap.get(educationLevelName);
       
       if (!subject || !educationLevel) {
         console.error(`❌ Subject ou EducationLevel não encontrado para ${resourceData.title}`);

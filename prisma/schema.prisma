@@ -192,12 +192,10 @@ enum StorageType {
 // Modelo de Recurso Educacional
 model Resource {
   id          String   @id @default(cuid())
-  title       String
-  slug      String     @unique
+  title       String  
   description String   @db.Text
-  imageUrl    String
-  featured    Boolean  @default(false)
-  isFree      Boolean  @default(false) // true = gratuito, false = requer compra individual OU assinatura premium
+  imageUrl    String  
+  isFree      Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
@@ -210,8 +208,7 @@ model Resource {
 
   files            ResourceFile[]
   accesses         UserResourceAccess[]
-  externalMappings ExternalProductMapping[]
-  bnccCodes        ResourceBNCCCode[]
+  externalMappings ExternalProductMapping[]  
 
   @@index([subjectId])
   @@index([educationLevelId])
@@ -253,12 +250,10 @@ model ResourceFile {
 model Subject {
   id        String     @id @default(cuid())
   name      String     @unique
-  slug      String     @unique
-  
+    
   resources Resource[]
   createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  BNCCCode  BNCCCode[]
+  updatedAt DateTime   @updatedAt  
 
   @@map("subject")
 }
@@ -267,12 +262,10 @@ model Subject {
 model EducationLevel {
   id        String     @id @default(cuid())
   name      String     @unique
-  slug      String     @unique
-  ageRange  String? // ex: "0-5 anos"
+  
   resources Resource[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
-  BNCCCode  BNCCCode[]
 
   @@map("education_level")
 }
@@ -372,41 +365,4 @@ model ExternalProductMapping {
 
   @@index([resourceId])
   @@map("external_product_mapping")
-}
-
-// Modelo para códigos BNCC
-model BNCCCode {
-  id               String   @id @default(cuid())
-  code             String   @unique
-  description      String   @db.Text
-  subjectId        String
-  educationLevelId String
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
-  // Relacionamentos
-  subject        Subject            @relation(fields: [subjectId], references: [id])
-  educationLevel EducationLevel     @relation(fields: [educationLevelId], references: [id])
-  resources      ResourceBNCCCode[]
-
-  @@index([code])
-  @@index([subjectId])
-  @@index([educationLevelId])
-  @@map("bncc_code")
-}
-
-// Relação muitos-para-muitos entre Recursos e Códigos BNCC
-model ResourceBNCCCode {
-  id         String @id @default(cuid())
-  resourceId String
-  bnccCodeId String
-
-  // Relacionamentos
-  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
-  bnccCode BNCCCode @relation(fields: [bnccCodeId], references: [id], onDelete: Cascade)
-
-  @@unique([resourceId, bnccCodeId])
-  @@index([resourceId])
-  @@index([bnccCodeId])
-  @@map("resource_bncc_code")
 }

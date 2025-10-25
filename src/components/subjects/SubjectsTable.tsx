@@ -13,7 +13,6 @@ import { SubjectFormDialog } from './SubjectFormDialog'
 type Subject = {
   id: string
   name: string
-  slug: string
   iconName: string | null
   createdAt: Date
   updatedAt: Date
@@ -37,7 +36,7 @@ export function SubjectsTable() {
   const fetchSubjects = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch('/api/subjects')
+      const response = await fetch('/api/v1/subjects')
       if (!response.ok) {
         throw new Error('Failed to fetch subjects')
       }
@@ -102,11 +101,6 @@ export function SubjectsTable() {
         )
       },
       cell: ({ row }) => <div className="font-medium">{row.getValue('name')}</div>,
-    },
-    {
-      accessorKey: 'slug',
-      header: 'Slug',
-      cell: ({ row }) => <div>{row.getValue('slug')}</div>,
     },
     {
       accessorKey: 'createdAt',

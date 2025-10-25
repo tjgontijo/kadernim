@@ -1,3 +1,5 @@
 // src/components/resources/index.ts
-export { ResourcesFilters } from './resources-filters'
-export { ResourcesGrid } from './resources-grid'
+export { ResourceFilters } from './ResourceFilters'
+export { ResourcesVirtualGrid } from './ResourcesVirtualGrid'
+export { ResourceCard } from './ResourceCard'
+export { ResourceForm } from './ResourceForm'

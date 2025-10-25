@@ -30,7 +30,6 @@ import { Button } from '@/components/ui/button'
 type EducationLevel = {
   id: string
   name: string
-  slug: string
   ageRange: string | null
   createdAt: Date
   updatedAt: Date
@@ -85,16 +84,6 @@ export function EducationLevelFormDialog({
     }
   }, [form, educationLevel, defaultValues])
 
-  // Função para gerar slug a partir do nome
-  const generateSlug = (name: string) => {
-    return name
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^\w\s-]/g, '')
-      .replace(/\s+/g, '-')
-  }
-
   const onSubmit = async (data: FormValues) => {
     setIsLoading(true)
 
@@ -104,22 +93,13 @@ export function EducationLevelFormDialog({
         : '/api/education-levels'
       
       const method = isEditing ? 'PUT' : 'POST'
-      
-      // Gerar o slug automaticamente a partir do nome
-      const slug = generateSlug(data.name)
-      
-      // Adicionar o slug aos dados
-      const submitData = {
-        ...data,
-        slug
-      }
 
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(submitData),
+        body: JSON.stringify(data),
       })
 
       if (!response.ok) {
@@ -170,9 +150,6 @@ export function EducationLevelFormDialog({
                     />
                   </FormControl>
                   <FormMessage />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    O slug será gerado automaticamente a partir do nome.
-                  </p>
                 </FormItem>
               )}
             />
