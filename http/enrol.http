@@ -30,23 +30,23 @@ Content-Type: {{contentType}}
   "product_ids": [37235525,30200121]
 }
 
-### Testar com Plano Semestral
+### Testar com Plano Trimestral
 POST {{host}}/api/v1/enroll HTTP/1.1
-x-api-key: {$apiKey}
+x-api-key: {{apiKey}}
 Content-Type: {{contentType}}
 
 {
   "store": "prof-didatica",
-  "name": "Plano Semestral",
-  "email": "semestral@mail.com",
+  "name": "Plano Trimestral",
+  "email": "trimestral@mail.com",
   "cpf": "12345678900",
-  "whatsapp": "61982482113",
+  "whatsapp": "61982482100",
   "product_ids": [42643883]
 }
 
 ### Testar com Plano Anual
 POST {{host}}/api/v1/enroll HTTP/1.1
-x-api-key: {$apiKey}}
+x-api-key: {{apiKey}}
 Content-Type: {{contentType}}
 
 {
