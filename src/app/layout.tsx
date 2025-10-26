@@ -4,7 +4,8 @@ import "./globals.css";
 import "./mobile.css"; // Importando estilos específicos para mobile
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { Toaster } from "sonner";
-import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
+import ServiceWorkerRegister from "@/components/pwa/ServiceWorkerRegister";
+
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
@@ -107,7 +108,7 @@ export default function RootLayout({
         className={`${inter.variable} ${poppins.variable} ${openSans.variable} ${nunitoSans.variable} antialiased`}
         suppressHydrationWarning
       >
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <ServiceWorkerRegister />
           {children}
           <Toaster position="top-right" richColors closeButton />

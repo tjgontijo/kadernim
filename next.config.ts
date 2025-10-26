@@ -1,43 +1,45 @@
-import type { NextConfig } from "next";
-
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  // Otimizações de performance
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
-  
-  // Headers para CORS
   async headers() {
     return [
       {
         source: '/api/v1/auth/:path*',
         headers: [
-          { key: 'Access-Control-Allow-Credentials', value: 'true' },
           { key: 'Access-Control-Allow-Origin', value: '*' },
-          { key: 'Access-Control-Allow-Methods', value: 'GET,OPTIONS,PATCH,DELETE,POST,PUT' },
-          { key: 'Access-Control-Allow-Headers', value: 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version' },
-        ]
-      }
-    ];
+          { key: 'Access-Control-Allow-Methods', value: 'GET, POST, PUT, DELETE, OPTIONS' },
+          { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' },
+        ],
+      },
+    ]
   },
-  
-  // Otimizar navegação
   experimental: {
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+    optimizePackageImports: [
+      '@radix-ui/react-icons',
+      '@radix-ui/react-avatar',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-label',
+      '@radix-ui/react-select',
+      '@radix-ui/react-separator',
+      '@radix-ui/react-slot',
+      '@radix-ui/react-switch',
+      '@radix-ui/react-tabs',
+      '@radix-ui/react-toast',
+      '@radix-ui/react-tooltip',
+      'lucide-react',
+    ],
   },
-
   images: {
-    dangerouslyAllowSVG: true,
-    contentDispositionType: 'attachment',
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'cewnwprpymsgiphympeg.supabase.co',
+        hostname: '*.supabase.co',
         port: '',
-        pathname: '/storage/v1/object/public/**',
+        pathname: '/**',
       },
       {
         protocol: 'https',
@@ -49,18 +51,16 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'images.yampi.me',
         port: '',
-        pathname: '/assets/stores/**',
+        pathname: '/**',
       },
       {
         protocol: 'https',
         hostname: 'king-assets.yampi.me',
         port: '',
         pathname: '/**',
-      }
+      },
     ],
-  }
-};
+  },
+}
 
-
-
-export default nextConfig;
+export default nextConfig

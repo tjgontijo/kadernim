@@ -4,6 +4,7 @@ import { cookies } from 'next/headers'
 import { ResourcesVirtualGrid } from '@/components/resources/ResourcesVirtualGrid'
 import { ResourceFilters } from '@/components/resources/ResourceFilters'
 import { AdSlot } from '@/components/ads/AdSlot'
+import { ResourceListSkeleton } from '@/components/ui/resource-skeleton'
 import type { UnifiedResourcesResponse } from '@/app/api/v1/resources/route'
 
 interface ResourcesPageProps {
@@ -53,24 +54,7 @@ async function fetchResources(params: {
 function ResourcesLoading() {
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
-        <div className="h-10 w-64 bg-gray-200 rounded animate-pulse" />
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {Array.from({ length: 12 }).map((_, i) => (
-          <div key={i} className="bg-white rounded-lg shadow-sm border p-4 space-y-3">
-            <div className="h-32 bg-gray-200 rounded animate-pulse" />
-            <div className="h-4 bg-gray-200 rounded animate-pulse" />
-            <div className="h-3 bg-gray-200 rounded animate-pulse w-3/4" />
-            <div className="flex justify-between items-center">
-              <div className="h-3 bg-gray-200 rounded animate-pulse w-16" />
-              <div className="h-6 w-16 bg-gray-200 rounded animate-pulse" />
-            </div>
-          </div>
-        ))}
-      </div>
+      <ResourceListSkeleton count={12} />
     </div>
   )
 }
@@ -79,42 +63,52 @@ export default async function ResourcesPage({ searchParams }: ResourcesPageProps
   const params = await searchParams
   
   return (
-    <div className="container mx-auto px-2 md:px-4 py-6 space-y-6 max-w-7xl">
-      {/* Ad Slot */}
-      <AdSlot 
-        slot="header" 
-        variant='compact'
-        className="w-full max-w-4xl mx-auto"
-      />
-      {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Recursos Pedagógicos
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Explore nossa biblioteca de materiais educacionais
-          </p>
+    <div className="min-h-screen">
+      {/* Container principal com padding responsivo */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Ad Slot */}
+        <div className="mb-6">
+          <AdSlot 
+            slot="header" 
+            variant='compact'
+            className="w-full max-w-4xl mx-auto"
+          />
         </div>
-        
-        <Suspense fallback={<div className="h-10 w-64 bg-gray-200 rounded animate-pulse" />}>
-          <ResourceFiltersWrapper params={params} />
-        </Suspense>
+
+        {/* Header Section - Título à esquerda, filtro à direita */}
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold text-gray-900">
+              Recursos Pedagógicos
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Explore nossa biblioteca de materiais educacionais
+            </p>
+          </div>
+          
+          <div className="flex-shrink-0 sm:self-end">
+            <Suspense fallback={<div className="h-12 w-64 bg-gray-200 rounded-full animate-pulse" />}>
+              <ResourceFiltersWrapper params={params} />
+            </Suspense>
+          </div>
+        </div>
+
+        {/* Resources Grid Section */}
+        <div className="mb-6">
+          <Suspense fallback={<ResourcesLoading />}>
+            <ResourcesContent params={params} />
+          </Suspense>
+        </div>
+
+        {/* Bottom Ad */}
+        <div className="mt-8">
+          <AdSlot 
+            slot="footer" 
+            variant='compact'
+            className="w-full max-w-4xl mx-auto"
+          />
+        </div>
       </div>
-
-
-
-      {/* Resources Grid */}
-      <Suspense fallback={<ResourcesLoading />}>
-        <ResourcesContent params={params} />
-      </Suspense>
-
-      {/* Bottom Ad */}
-      <AdSlot 
-        slot="footer" 
-        variant='compact'
-        className="w-full max-w-4xl mx-auto"
-      />
     </div>
   )
 }
@@ -131,6 +125,7 @@ async function ResourceFiltersWrapper({
       <ResourceFilters 
         subjects={data.metadata.subjects}
         educationLevels={data.metadata.educationLevels}
+        className="w-full sm:w-auto sm:min-w-[320px]"
       />
     )
   } catch (error) {
@@ -148,13 +143,11 @@ async function ResourcesContent({
     const data = await fetchResources(params)
     
     return (
-      <div className="space-y-6">
-        {/* Virtual Grid */}
-        <ResourcesVirtualGrid 
-          resources={data.resources}
-          isPremium={data.userInfo.isPremium}
-        />
-      </div>
+      <ResourcesVirtualGrid 
+        resources={data.resources}
+        isPremium={data.userInfo.isPremium}
+        className="justify-center md:justify-start"
+      />
     )
   } catch (error) {
     console.error('Error loading resources:', error)

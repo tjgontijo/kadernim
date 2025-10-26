@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { Lock, Unlock, Calendar, Tag, Loader2 } from 'lucide-react'
+import { Lock, Unlock, Calendar, Tag } from 'lucide-react'
 import { useNavigationCache } from '@/hooks/use-navigation-cache'
+import { Spinner } from '@/components/ui/spinner'
 
 interface Resource {
   id: string
@@ -111,7 +112,7 @@ export function ResourceCard({ resource, userInfo: _userInfo }: ResourceCardProp
         {isNavigating && (
           <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
             <div className="bg-white rounded-full p-2 shadow-lg">
-              <Loader2 className="w-5 h-5 animate-spin spinner-force text-blue-600" style={{ animation: 'spin 1s linear infinite' }} />
+              <Spinner className="h-5 w-5 text-blue-600" />
             </div>
           </div>
         )}
@@ -162,13 +163,13 @@ export function ResourceCard({ resource, userInfo: _userInfo }: ResourceCardProp
           {resource.hasAccess ? (
             <button
               onClick={handleClick}
-              className={`w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors text-center block relative ${
+              className={`w-full cursor-pointer bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors text-center block relative ${
                 isNavigating ? 'pointer-events-none' : ''
               }`}
             >
               {isNavigating ? (
                 <span className="flex items-center justify-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin spinner-force" style={{ animation: 'spin 1s linear infinite' }} />
+                  <Spinner className="h-4 w-4" />
                   Carregando...
                 </span>
               ) : (
@@ -184,7 +185,7 @@ export function ResourceCard({ resource, userInfo: _userInfo }: ResourceCardProp
             >
               {isNavigating ? (
                 <span className="flex items-center justify-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin spinner-force" style={{ animation: 'spin 1s linear infinite' }} />
+                  <Spinner className="h-4 w-4" />
                   Carregando...
                 </span>
               ) : (

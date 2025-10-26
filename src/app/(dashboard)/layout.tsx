@@ -40,7 +40,7 @@ export default async function ProtectedLayout({
       <PushNotificationSetup />
       <div className="flex min-h-screen w-full flex-col bg-background">
         <Header />
-        <main className="flex-1 pb-20">
+        <main className="flex-1 pb-20 native-scroll">
           <Suspense fallback={<PageLoader />}>
             {children}
           </Suspense>

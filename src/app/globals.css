@@ -1,73 +1,121 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Variante dark padrão */
 @custom-variant dark (&:is(.dark *));
 
+/* Paleta de cores KADERNIN */
 :root {
-  /* Paleta KADERNIN - Baseada no manual de identidade visual */
-
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
 
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
 
-  /* Primary: Azul Principal #2E5BBA */
+  /* Primary: Azul Principal */
   --primary: #2E5BBA;
   --primary-foreground: #FFFFFF;
 
-  /* Secondary: Verde Inovação #4A9B8E */
+  /* Secondary: Verde Inovação */
   --secondary: #4A9B8E;
   --secondary-foreground: #FFFFFF;
 
-  --muted: #F3F4F6; /* Cinza Claro */
-  --muted-foreground: #6B7280; /* Cinza Neutro */
+  --muted: #F3F4F6;
+  --muted-foreground: #6B7280;
 
-  /* Accent: Azul Claro #7FB3D3 */
+  /* Accent: Azul Claro */
   --accent: #7FB3D3;
-  --accent-foreground: #1F2937; /* Preto Suave */
+  --accent-foreground: #1F2937;
 
   --destructive: #EF4444;
   --destructive-foreground: #FFFFFF;
 
-  --border: #E5E7EB; /* Variação do Cinza Claro */
-  --input: #E5E7EB; /* Variação do Cinza Claro */
+  --border: #E5E7EB;
+  --input: #E5E7EB;
 
-  /* Ring: Azul Principal mais claro */
   --ring: #4A72D1;
 
-  --radius: 0.75rem; /* Border radius 12px conforme especificação */
+  --radius: 0.75rem;
 
-  --background: #FFFFFF; /* Branco */
-  --foreground: #1F2937; /* Preto Suave */
+  --background: #FFFFFF;
+  --foreground: #1F2937;
 
-  /* Cores para gráficos baseadas na paleta KADERNIN */
-  --chart-1: #2E5BBA; /* Azul Principal */
-  --chart-2: #4A9B8E; /* Verde Inovação */
-  --chart-3: #7FB3D3; /* Azul Claro */
-  --chart-4: #A8D5BA; /* Verde Suave */
-  --chart-5: #6B7280; /* Cinza Neutro */
+  /* Gráficos */
+  --chart-1: #2E5BBA;
+  --chart-2: #4A9B8E;
+  --chart-3: #7FB3D3;
+  --chart-4: #A8D5BA;
+  --chart-5: #6B7280;
 
-  /* Sidebar: KADERNIN theme */
+  /* Sidebar */
   --sidebar: #FFFFFF;
-  --sidebar-foreground: #1F2937; /* Preto Suave */
-  --sidebar-primary: #2E5BBA; /* Azul Principal */
+  --sidebar-foreground: #1F2937;
+  --sidebar-primary: #2E5BBA;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #F3F4F6; /* Cinza Claro */
-  --sidebar-accent-foreground: #2E5BBA; /* Azul Principal */
-  --sidebar-border: #E5E7EB; /* Variação do Cinza Claro */
-  --sidebar-ring: #4A72D1; /* Azul Principal mais claro */
+  --sidebar-accent: #F3F4F6;
+  --sidebar-accent-foreground: #2E5BBA;
+  --sidebar-border: #E5E7EB;
+  --sidebar-ring: #4A72D1;
 }
 
+/* Dark mode */
+.dark {
+  --background: #1F2937;
+  --foreground: #FFFFFF;
+
+  --card: #2A3441;
+  --card-foreground: #FFFFFF;
+
+  --popover: #2A3441;
+  --popover-foreground: #FFFFFF;
+
+  --primary: #4A72D1;
+  --primary-foreground: #FFFFFF;
+
+  --secondary: #5BBCAD;
+  --secondary-foreground: #FFFFFF;
+
+  --muted: #374151;
+  --muted-foreground: #9CA3AF;
+
+  --accent: #374151;
+  --accent-foreground: #FFFFFF;
+
+  --destructive: #F87171;
+  --destructive-foreground: #FFFFFF;
+
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.15);
+
+  --ring: #4A72D1;
+
+  --chart-1: #4A72D1;
+  --chart-2: #5BBCAD;
+  --chart-3: #93C5E4;
+  --chart-4: #BADED0;
+  --chart-5: #9CA3AF;
+
+  --sidebar: #2A3441;
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-primary: #4A72D1;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #374151;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: #4A72D1;
+}
+
+/* Tema inline */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  /* Atualização das fontes conforme manual de identidade visual */
-  --font-primary: var(--font-inter); /* Fonte Principal: Inter */
-  --font-primary-alt: var(--font-poppins); /* Fonte Principal alternativa: Poppins */
-  --font-secondary: var(--font-open-sans); /* Fonte Secundária: Open Sans */
-  --font-secondary-alt: var(--font-nunito-sans); /* Fonte Secundária alternativa: Nunito Sans */
-  --font-sans: var(--font-primary); /* Default para UI */
+
+  --font-primary: var(--font-inter);
+  --font-primary-alt: var(--font-poppins);
+  --font-secondary: var(--font-open-sans);
+  --font-secondary-alt: var(--font-nunito-sans);
+  --font-sans: var(--font-primary);
+
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -76,11 +124,13 @@
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
+
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
+
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -97,212 +147,131 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-.dark {
-  /* Dark mode com tema KADERNIN */
-
-  --background: #1F2937; /* Preto Suave */
-  --foreground: #FFFFFF; /* Branco */
-
-  --card: #2A3441; /* Preto Suave mais claro */
-  --card-foreground: #FFFFFF; /* Branco */
-
-  --popover: #2A3441; /* Preto Suave mais claro */
-  --popover-foreground: #FFFFFF; /* Branco */
-
-  /* Primary: Azul Principal mais claro para dark mode */
-  --primary: #4A72D1; /* Versão mais clara do Azul Principal */
-  --primary-foreground: #FFFFFF;
-
-  /* Secondary: Verde Inovação mais claro para dark mode */
-  --secondary: #5BBCAD; /* Versão mais clara do Verde Inovação */
-  --secondary-foreground: #FFFFFF;
-
-  --muted: #374151; /* Versão escura do Cinza Claro */
-  --muted-foreground: #9CA3AF; /* Versão clara do Cinza Neutro */
-
-  /* Accent: Azul Claro adaptado para dark mode */
-  --accent: #374151; /* Versão escura do Cinza Claro com toque de azul */
-  --accent-foreground: #FFFFFF;
-
-  --destructive: #F87171; /* Vermelho mais claro para dark mode */
-  --destructive-foreground: #FFFFFF;
-
-  --border: rgba(255, 255, 255, 0.1);
-  --input: rgba(255, 255, 255, 0.15);
-
-  /* Ring: Azul Principal mais claro */
-  --ring: #4A72D1;
-
-  /* Cores para gráficos adaptadas para dark mode */
-  --chart-1: #4A72D1; /* Azul Principal mais claro */
-  --chart-2: #5BBCAD; /* Verde Inovação mais claro */
-  --chart-3: #93C5E4; /* Azul Claro mais claro */
-  --chart-4: #BADED0; /* Verde Suave mais claro */
-  --chart-5: #9CA3AF; /* Cinza Neutro mais claro */
-
-  /* Sidebar dark: KADERNIN theme */
-  --sidebar: #2A3441; /* Preto Suave mais claro */
-  --sidebar-foreground: #FFFFFF;
-  --sidebar-primary: #4A72D1; /* Azul Principal mais claro */
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #374151; /* Versão escura do Cinza Claro */
-  --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: rgba(255, 255, 255, 0.1);
-  --sidebar-ring: #4A72D1; /* Azul Principal mais claro */
+/* View Transitions API */
+@view-transition {
+  navigation: auto;
 }
 
+/* Transições suaves para navegação */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.3s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+::view-transition-old(root) {
+  animation-name: slide-out-to-left;
+}
+
+::view-transition-new(root) {
+  animation-name: slide-in-from-right;
+}
+
+@keyframes slide-out-to-left {
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+@keyframes slide-in-from-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Estilos base */
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
+  html {
+    /* Previne overscroll bounce no iOS */
+    overscroll-behavior: none;
+    /* Suporte a View Transitions */
+    view-transition-name: root;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-secondary), sans-serif;
     font-size: 16px;
     line-height: 1.5;
+    /* Previne overscroll bounce */
+    overscroll-behavior: none;
+    /* Remove scrollbar no webkit */
+    -webkit-overflow-scrolling: touch;
   }
 
-  /* Hierarquia tipográfica conforme manual de identidade visual */
+  /* Scrollbars invisíveis mas funcionais */
+  ::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: transparent;
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: none;
+  }
+
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-primary), sans-serif;
     font-weight: 600;
     line-height: 1.2;
   }
 
-  h1 {
-    font-size: 32px;
-    font-weight: 700;
+  h1 { font-size: 32px; font-weight: 700; }
+  h2 { font-size: 24px; }
+  h3 { font-size: 20px; }
+  small { font-size: 14px; }
+
+  /* Botões com tamanho mínimo para touch */
+  button, 
+  [role="button"],
+  input[type="button"],
+  input[type="submit"] {
+    min-height: 44px;
+    min-width: 44px;
   }
 
-  h2 {
-    font-size: 24px;
-  }
-
-  h3 {
-    font-size: 20px;
-  }
-
-  small {
-    font-size: 14px;
-  }
-
-  /* Responsividade para dispositivos móveis */
   @media (max-width: 640px) {
-    h1 {
-      font-size: 28px;
-    }
-
-    h2 {
-      font-size: 22px;
-    }
-
-    h3 {
-      font-size: 18px;
+    h1 { font-size: 28px; }
+    h2 { font-size: 22px; }
+    h3 { font-size: 18px; }
+    
+    /* Fontes do sistema no mobile */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
     }
   }
 }
 
-/* Otimizações de performance para dispositivos móveis */
-* {
-  -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
-}
-
-/* Otimizar scroll em iOS */
-body {
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
-}
-
-/* Otimizar animações para GPU */
-.animate-pulse,
-[class*="transition"],
-[class*="animate"] {
-  will-change: transform, opacity;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  perspective: 1000px;
-}
-
-/* Otimizar hover states para touch devices */
-@media (hover: none) and (pointer: coarse) {
-  button:hover,
-  a:hover,
-  [role="button"]:hover {
-    transform: none !important;
-  }
-}
-
-/* Reduzir motion para usuários que preferem - exceto spinners */
-@media (prefers-reduced-motion: reduce) {
-  *:not(.animate-spin):not(.spinner-force),
-  *:not(.animate-spin):not(.spinner-force)::before,
-  *:not(.animate-spin):not(.spinner-force)::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+/* PWA Native-like styles */
+@layer utilities {
+  .native-scroll {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
   
-  /* Manter spinners funcionando mesmo com reduced motion */
-  .animate-spin,
-  .spinner-force {
-    animation-duration: 1s !important;
-    animation-iteration-count: infinite !important;
-  }
-}
-
-/* Transições de página instantâneas */
-@view-transition {
-  navigation: auto;
-}
-
-/* Otimizar transições de navegação */
-html {
-  view-transition-name: root;
-}
-
-/* Remover delay de transições em mobile - exceto spinners */
-@media (max-width: 768px) {
-  *:not(.animate-spin):not(.spinner-force) {
-    transition-duration: 0.15s !important;
+  .pull-to-refresh {
+    overscroll-behavior-y: contain;
   }
   
-  button:not(.animate-spin):not(.spinner-force),
-  a:not(.animate-spin):not(.spinner-force),
-  [role="button"]:not(.animate-spin):not(.spinner-force) {
-    transition-duration: 0.1s !important;
+  .haptic-feedback {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
   }
-  
-  /* Manter spinners funcionando em mobile */
-  .animate-spin,
-  .spinner-force {
-    animation: spin 1s linear infinite !important;
-  }
-}
-
-/* Animação de spinner - Garantir que funcione */
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Classe animate-spin personalizada para garantir funcionamento */
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
-
-/* Força a animação mesmo se o Tailwind não carregar */
-.spinner-force {
-  animation: spin 1s linear infinite !important;
-  display: inline-block;
 }

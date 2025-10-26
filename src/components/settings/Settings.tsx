@@ -5,7 +5,7 @@ import { ProfileCard } from './ProfileCard';
 import { UserPreferences } from '@/lib/schemas/user-preferences';
 
 // Lazy load de componentes menos críticos
-const AppearanceCard = lazy(() => import('./AppearanceCard').then(m => ({ default: m.AppearanceCard })));
+// const AppearanceCard = lazy(() => import('./AppearanceCard').then(m => ({ default: m.AppearanceCard })));
 //const NotificationsCard = lazy(() => import('./NotificationsCard').then(m => ({ default: m.NotificationsCard })));
 const SecurityCard = lazy(() => import('./SecurityCard').then(m => ({ default: m.SecurityCard })));
 
@@ -98,11 +98,11 @@ export function Settings() {
     <div className="mx-auto max-w-4xl space-y-6">
       <ProfileCard user={user} onUpdate={fetchUserData} />
       
-      <Suspense fallback={<CardSkeleton />}>
+      {/* <Suspense fallback={<CardSkeleton />}>
         <AppearanceCard 
           onUpdate={(theme) => updatePreferences({ theme })}
         />
-      </Suspense>
+      </Suspense> */}
 
       {/* <Suspense fallback={<CardSkeleton />}>
         <NotificationsCard 

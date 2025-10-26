@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
 import { ResourceCard } from './ResourceCard'
 
 type Resource = {
@@ -21,47 +20,13 @@ type Resource = {
 interface ResourcesVirtualGridProps {
   resources: Resource[]
   isPremium: boolean
+  className?: string
 }
 
-export function ResourcesVirtualGrid({ resources, isPremium }: ResourcesVirtualGridProps) {
-  const [windowSize, setWindowSize] = useState({ width: 0, height: 0 })
-
-  useEffect(() => {
-    const updateSize = () => {
-      setWindowSize({
-        width: window.innerWidth,
-        height: window.innerHeight
-      })
-    }
-
-    updateSize()
-    window.addEventListener('resize', updateSize)
-    return () => window.removeEventListener('resize', updateSize)
-  }, [])
-
-  const { columnCount, itemWidth } = useMemo(() => {
-    // Ajustar padding para mobile - mais espaço nas laterais
-    const isMobile = windowSize.width <= 640
-    const padding = isMobile ? 32 : 32 // 16px de cada lado no mobile, 16px no desktop
-    const containerWidth = Math.max(windowSize.width - padding, 280)
-    
-    const minItemWidth = isMobile ? 280 : 300
-    const maxItemWidth = isMobile ? 350 : 380
-    const gap = isMobile ? 16 : 24 // Gap menor no mobile
-
-    let cols = Math.floor((containerWidth + gap) / (minItemWidth + gap))
-    cols = Math.max(1, Math.min(cols, 4)) // Between 1 and 4 columns
-
-    const actualItemWidth = Math.min(
-      maxItemWidth,
-      Math.floor((containerWidth - (cols - 1) * gap) / cols)
-    )
-
-    return {
-      columnCount: cols,
-      itemWidth: actualItemWidth
-    }
-  }, [windowSize.width])
+export function ResourcesVirtualGrid({ resources, isPremium, className }: ResourcesVirtualGridProps) {
+  const gridClassName = className
+    ? `grid gap-4 sm:gap-6 ${className}`
+    : 'grid gap-4 sm:gap-6'
 
   if (resources.length === 0) {
     return (
@@ -82,26 +47,20 @@ export function ResourcesVirtualGrid({ resources, isPremium }: ResourcesVirtualG
     )
   }
 
-  if (windowSize.width === 0) {
-    return <div className="h-96 flex items-center justify-center">Carregando...</div>
-  }
-
   return (
-    <div className="w-full px-4 md:px-0">
-      <div 
-        className="grid gap-4 md:gap-6 justify-center"
-        style={{
-          gridTemplateColumns: `repeat(${columnCount}, minmax(${itemWidth}px, 1fr))`
-        }}
-      >
-        {resources.map((resource) => (
-          <ResourceCard 
-            key={resource.id} 
-            resource={resource} 
-            userInfo={{ isPremium, premiumExpiresAt: null }} 
-          />
-        ))}
-      </div>
+    <div 
+      className={gridClassName}
+      style={{
+        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))'
+      }}
+    >
+      {resources.map((resource) => (
+        <ResourceCard 
+          key={resource.id} 
+          resource={resource} 
+          userInfo={{ isPremium, premiumExpiresAt: null }} 
+        />
+      ))}
     </div>
   )
 }
