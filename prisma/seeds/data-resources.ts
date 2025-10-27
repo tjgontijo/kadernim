@@ -3,7 +3,7 @@ export const resourcesData = [
         "title": "Alfabeto Cursivo",
         "description": "",
         "imageUrl": "https://images.yampi.me/assets/stores/prof-didatica/uploads/images/alfabeto-cursivo-66676628d6323-medium.jpg",
-        "isFree": false,
+        "isFree": true,
         "files": [
             {
                 "storageType": "GOOGLE_DRIVE",

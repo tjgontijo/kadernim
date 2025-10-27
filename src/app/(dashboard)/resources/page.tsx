@@ -1,6 +1,6 @@
 // src/app/(dashboard)/resources/page.tsx
 import { Suspense } from 'react'
-import { cookies } from 'next/headers'
+import { headers } from 'next/headers'
 import { ResourcesVirtualGrid } from '@/components/resources/ResourcesVirtualGrid'
 import { ResourceFilters } from '@/components/resources/ResourceFilters'
 import { AdSlot } from '@/components/ads/AdSlot'
@@ -26,23 +26,30 @@ async function fetchResources(params: {
   if (params.educationLevelId) searchParams.set('educationLevelId', params.educationLevelId)
   if (params.search) searchParams.set('search', params.search)
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
-  const url = `${baseUrl}/api/v1/resources?${searchParams.toString()}`
+  const headerList = await headers()
+  const host = headerList.get('x-forwarded-host') ?? headerList.get('host')
 
-  // Obter cookies para autenticação
-  const cookieStore = await cookies()
-  const cookieHeader = cookieStore.toString()
+  if (!host) {
+    throw new Error('Host não disponível para montar URL da API')
+  }
+
+  const protocol = headerList.get('x-forwarded-proto') ?? 'http'
+  const baseUrl = `${protocol}://${host}`
+  const url = `${baseUrl}/api/v1/resources?${searchParams.toString()}`
 
   const response = await fetch(url, {
     headers: {
-      'Content-Type': 'application/json',
-      'Cookie': cookieHeader,
+      cookie: headerList.get('cookie') ?? ''
     },
     next: { 
-      revalidate: 60, // Cache por 60 segundos
+      revalidate: 180, // Cache por 180 segundos
       tags: ['resources'] // Tag para invalidação seletiva
     }
   })
+
+  if (response.status === 401) {
+    throw new Error('Unauthorized')
+  }
 
   if (!response.ok) {
     throw new Error('Failed to fetch resources')

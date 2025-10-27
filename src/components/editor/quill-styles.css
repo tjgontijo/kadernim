@@ -2,7 +2,7 @@
 .quill-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 8px;
 }
 
 /* Toolbar */
@@ -14,13 +14,53 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.25rem;
+  align-items: center;
+}
+
+/* Redefinindo tamanhos dos botões e ícones */
+.quill-wrapper .ql-toolbar.ql-snow .ql-formats {
+  display: flex;
+  align-items: center;
+  margin-right: 8px;
+  gap: 2px;
+}
+
+/* Ajuste do tamanho dos botões */
+.quill-wrapper .ql-toolbar button svg {
+  width: 16px;
+  height: 16px;
 }
 
 .quill-wrapper .ql-toolbar button,
 .quill-wrapper .ql-toolbar .ql-picker-label {
   color: #1d4ed8;
-  border-radius: 0.5rem;
+  border-radius: 0.375rem;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 640px) {
+  .quill-wrapper .ql-toolbar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 0.5rem;
+    padding-right: 0.25rem;
+  }
+
+  .quill-wrapper .ql-toolbar .ql-formats {
+    flex-wrap: nowrap;
+  }
+
+  .quill-wrapper .ql-toolbar::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .quill-wrapper .ql-toolbar::-webkit-scrollbar-thumb {
+    background-color: rgba(59, 130, 246, 0.35);
+    border-radius: 9999px;
+  }
 }
 
 .quill-wrapper .ql-toolbar button:hover,
@@ -34,11 +74,24 @@
 
 .quill-wrapper .ql-toolbar.ql-snow .ql-stroke {
   stroke: #2563eb;
+  stroke-width: 1px;
 }
 
 .quill-wrapper .ql-toolbar.ql-snow .ql-fill,
 .quill-wrapper .ql-toolbar.ql-snow .ql-stroke.ql-fill {
   fill: #2563eb;
+}
+
+/* Ajuste para os seletores (dropdown) */
+.quill-wrapper .ql-toolbar .ql-picker {
+  height: auto;
+  font-size: 12px;
+}
+
+.quill-wrapper .ql-toolbar .ql-picker-label {
+  width: auto;
+  padding: 0 6px;
+  height: auto;
 }
 
 .quill-wrapper .ql-toolbar .ql-picker-options {
@@ -49,7 +102,7 @@
 
 /* Editor container */
 .quill-wrapper .ql-container {
-  border: 1px solid #e2e8f0;
+  /* border: 1px solid #e2e8f0; */
   border-radius: 0.75rem;
   background-color: #ffffff;
   min-height: 220px;

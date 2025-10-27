@@ -15,6 +15,7 @@ export function QuillEditor({ value, onChange }: Props) {
   const editorRef = useRef<HTMLDivElement | null>(null)
   const quillRef = useRef<QuillType | null>(null)
   const changeHandlerRef = useRef<(() => void) | null>(null)
+  const inputHandlerRef = useRef<(() => void) | null>(null)
   const latestOnChangeRef = useRef(onChange)
   const [isHtmlMode, setIsHtmlMode] = useState(false)
   const [htmlValue, setHtmlValue] = useState(value)
@@ -38,7 +39,9 @@ export function QuillEditor({ value, onChange }: Props) {
   }, [htmlValue])
 
   const emitChange = useCallback((html: string) => {
+    console.log('🔄 [QuillEditor] emitChange chamado com conteúdo:', html)
     if (typeof window === 'undefined') {
+      console.log('🔄 [Quill] SSR mode')
       latestOnChangeRef.current(html)
       return
     }
@@ -49,7 +52,19 @@ export function QuillEditor({ value, onChange }: Props) {
 
     pendingFrameRef.current = window.requestAnimationFrame(() => {
       pendingFrameRef.current = null
-      latestOnChangeRef.current(html)
+      console.log('✅ [Quill] onChange callback executado')
+      
+      // Garantir que sempre temos um conteúdo válido, mesmo que vazio
+      // Isso evita que o editor envie um valor nulo ou undefined
+      const validContent = html || '<p></p>'
+      
+      // Verificar se o HTML contém conteúdo real
+      const tempDiv = document.createElement('div')
+      tempDiv.innerHTML = validContent
+      const hasContent = (tempDiv.textContent?.trim().length || 0) > 0
+      console.log('🔍 [QuillEditor] HTML contém conteúdo real?', hasContent, 'Texto:', tempDiv.textContent)
+      
+      latestOnChangeRef.current(validContent)
     })
   }, [])
 
@@ -75,11 +90,13 @@ export function QuillEditor({ value, onChange }: Props) {
     })
   }, [emitChange])
 
+  const [isInitialized, setIsInitialized] = useState(false)
+
   useEffect(() => {
     let isMounted = true
 
     const initializeEditor = async () => {
-      if (!editorRef.current || quillRef.current) {
+      if (!editorRef.current || quillRef.current || isInitialized) {
         return
       }
 
@@ -89,30 +106,24 @@ export function QuillEditor({ value, onChange }: Props) {
         return
       }
 
+      // Limpar o editor antes de inicializar
       editorRef.current.innerHTML = ''
+      
+      // Marcar como inicializado para evitar duplicação
+      setIsInitialized(true)
 
       const quillInstance = new Quill(editorRef.current, {
         theme: 'snow',
         modules: {
-          toolbar: {
-            container: [
-              [{ header: [1, 2, 3, false] }],
-              ['bold', 'italic', 'underline', 'strike'],
-              ['blockquote', 'code-block'],
-              [{ list: 'ordered' }, { list: 'bullet' }],
-              [{ indent: '-1' }, { indent: '+1' }],
-              ['link', 'image', 'video'],
-              [{ align: [] }],
-              [{ color: [] }, { background: [] }],
-              ['clean'],
-            ],
-            handlers: {
-              'code-block': () => {
-                toggleHtmlView()
-              },
-            },
-          },
+          toolbar: [
+            [{ header: [1, 2, false] }],
+            ['bold', 'italic', 'underline'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            ['link'],
+            ['clean'],
+          ],
         },
+        placeholder: 'Digite aqui a descrição detalhada...',
       })
 
       quillRef.current = quillInstance
@@ -121,13 +132,69 @@ export function QuillEditor({ value, onChange }: Props) {
       codeButtonRef.current = toolbarModule?.container?.querySelector('.ql-code-block') ?? null
       codeButtonRef.current?.classList.toggle('ql-active', isHtmlMode)
 
+      // Forçar um conteúdo inicial para evitar o problema de descrição vazia
+      if (!value || value === '<p><br></p>') {
+        // Se não houver valor inicial, definimos um parágrafo vazio que será detectável
+        quillInstance.root.innerHTML = '<p></p>'
+        // Emitimos a mudança para atualizar o estado do formulário
+        emitChange('<p></p>')
+      } else {
+        quillInstance.root.innerHTML = value
+        // Emitimos a mudança para garantir que o valor inicial seja registrado
+        emitChange(value)
+      }
+
       const handleTextChange = () => {
-        emitChange(quillInstance.root.innerHTML)
+        const html = quillInstance.root.innerHTML
+        console.log('🔄 [Quill] text-change event disparado, HTML:', html)
+        
+        // Verificar se o conteúdo é realmente vazio
+        const tempDiv = document.createElement('div')
+        tempDiv.innerHTML = html
+        const textContent = tempDiv.textContent?.trim() || ''
+        
+        console.log('🔍 [Quill] Conteúdo de texto após mudança:', textContent)
+        console.log('🔍 [Quill] HTML após mudança:', html)
+        
+        // Garantir que o valor nunca seja completamente vazio
+        if (html === '' || html === '<p><br></p>') {
+          console.log('⚠️ [Quill] Detectado HTML vazio, usando <p></p>')
+          emitChange('<p></p>')
+        } else {
+          emitChange(html)
+        }
+      }
+
+      // Fallback: também escutar mudanças diretas no contenteditable
+      const handleInput = () => {
+        const html = quillInstance.root.innerHTML
+        console.log('🔄 [Quill] input event disparado, HTML:', html)
+        
+        // Verificar se o conteúdo é realmente vazio
+        const tempDiv = document.createElement('div')
+        tempDiv.innerHTML = html
+        const textContent = tempDiv.textContent?.trim() || ''
+        
+        console.log('🔍 [Quill] Conteúdo de texto após input:', textContent)
+        
+        // Garantir que o valor nunca seja completamente vazio
+        if (html === '' || html === '<p><br></p>') {
+          console.log('⚠️ [Quill] Detectado HTML vazio no input, usando <p></p>')
+          emitChange('<p></p>')
+        } else {
+          emitChange(html)
+        }
       }
 
       changeHandlerRef.current = handleTextChange
+      inputHandlerRef.current = handleInput
       quillInstance.on('text-change', handleTextChange)
-      quillInstance.root.innerHTML = value || ''
+      quillInstance.root.addEventListener('input', handleInput)
+      console.log('✅ [Quill] Listeners registrados (text-change + input)')
+      console.log('✅ [Quill] Editor inicializado com valor:', quillInstance.root.innerHTML)
+      
+      // Disparar um evento de mudança inicial para garantir que o valor seja registrado
+      handleTextChange()
     }
 
     void initializeEditor()
@@ -137,8 +204,12 @@ export function QuillEditor({ value, onChange }: Props) {
       if (quillRef.current && changeHandlerRef.current) {
         quillRef.current.off('text-change', changeHandlerRef.current)
       }
+      if (quillRef.current && inputHandlerRef.current) {
+        quillRef.current.root.removeEventListener('input', inputHandlerRef.current)
+      }
       quillRef.current = null
       changeHandlerRef.current = null
+      inputHandlerRef.current = null
       codeButtonRef.current = null
       if (pendingFrameRef.current) {
         if (typeof window !== 'undefined') {
@@ -147,13 +218,14 @@ export function QuillEditor({ value, onChange }: Props) {
         pendingFrameRef.current = null
       }
     }
-  }, [toggleHtmlView, isHtmlMode, value, emitChange])
+  }, [toggleHtmlView, isHtmlMode, value, emitChange, isInitialized])
 
   useEffect(() => {
-    if (quillRef.current && quillRef.current.root.innerHTML !== value) {
-      quillRef.current.root.innerHTML = value || ''
+    if (quillRef.current && !isHtmlMode && quillRef.current.root.innerHTML !== value) {
+      // Usar clipboard.dangerouslyPasteHTML para evitar problemas de renderização
+      quillRef.current.clipboard.dangerouslyPasteHTML(value || '', 'silent')
     }
-  }, [value])
+  }, [value, isHtmlMode])
 
   const handleHtmlChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newHtml = event.target.value

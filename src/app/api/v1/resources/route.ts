@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { UserRoleType } from '@/types/user-role'
 import { auth } from '@/lib/auth/auth'
 import { isAdmin } from '@/lib/auth/roles'
-import { headers } from 'next/headers'
 import { prisma } from '@/lib/prisma'
 
 export interface UnifiedResourcesResponse {
@@ -49,11 +48,15 @@ export interface UnifiedResourcesResponse {
 export async function GET(request: NextRequest) {
   try {
     const session = await auth.api.getSession({
-      headers: await headers()
+      headers: request.headers
     })
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      // Fazer logout e redirecionar para home
+      const response = NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      response.cookies.delete('better-auth.session_token')
+      response.cookies.delete('better-auth.session_token.raw')
+      return response
     }
 
     const { searchParams } = new URL(request.url)

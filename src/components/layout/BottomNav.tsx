@@ -3,7 +3,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Rss, BookOpen, Bell, Settings } from 'lucide-react'
+import { Rss, BookOpen, Heart, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export function BottomNav() {
@@ -21,9 +21,9 @@ export function BottomNav() {
       icon: BookOpen,
     },
     {
-      label: 'Notificações',
-      href: '/notifications',
-      icon: Bell,
+      label: 'Solicitações',
+      href: '/requests',
+      icon: Heart,
     },
     {
       label: 'Configurações',

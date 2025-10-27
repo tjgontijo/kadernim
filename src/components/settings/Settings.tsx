@@ -48,24 +48,24 @@ export function Settings() {
     }
   }, []);
 
-  const updatePreferences = useCallback(async (updates: Partial<UserPreferences>) => {
-    try {
-      const response = await fetch('/api/v1/user/preferences', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updates),
-      });
+  // const updatePreferences = useCallback(async (updates: Partial<UserPreferences>) => {
+  //   try {
+  //     const response = await fetch('/api/v1/user/preferences', {
+  //       method: 'PATCH',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify(updates),
+  //     });
 
-      if (response.ok) {
-        const data = await response.json();
-        setPreferences(data.preferences);
-      }
-    } catch (error) {
-      console.error('Erro ao atualizar preferências:', error);
-    }
-  }, []);
+  //     if (response.ok) {
+  //       const data = await response.json();
+  //       setPreferences(data.preferences);
+  //     }
+  //   } catch (error) {
+  //     console.error('Erro ao atualizar preferências:', error);
+  //   }
+  // }, []);
 
   useEffect(() => {
     fetchUserData();

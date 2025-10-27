@@ -44,6 +44,10 @@ model User {
   resourceAccess UserResourceAccess[]
   subscription   Subscription?
 
+  // Solicitações de recursos
+  resourceRequests ResourceRequest[] @relation("ResourceRequestCreator")
+  resourceRequestVotes ResourceRequestVote[] @relation("ResourceRequestVotes")
+
   accounts      Account[]
   invitations   Invitation[] @relation("UserInvitations")
   members       Member[]
@@ -258,6 +262,7 @@ model Subject {
   name      String     @unique
     
   resources Resource[]
+  resourceRequests ResourceRequest[] @relation("ResourceRequestSubject")
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt  
 
@@ -270,6 +275,7 @@ model EducationLevel {
   name      String     @unique
   
   resources Resource[]
+  resourceRequests ResourceRequest[] @relation("ResourceRequestLevel")
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 
@@ -298,7 +304,7 @@ model UserResourceAccess {
   @@map("user_resource_access")
 }
 
-// Planos premium disponíveis (configuração dos produtos que liberam acesso total)
+// Planos de assinatura disponíveis (configuração dos produtos que liberam acesso total)
 model Plan {
   id            String   @id @default(cuid())
   name          String   // Ex: "Plano Premium 3 Meses", "Plano Anual"
@@ -371,4 +377,66 @@ model ExternalProductMapping {
 
   @@index([resourceId])
   @@map("external_product_mapping")
+}
+
+// =========================================
+// Modelos para Solicitação de Recursos
+// =========================================
+
+enum ResourceRequestStatus {
+  SUBMITTED
+  IN_PRODUCTION
+  PUBLISHED
+}
+
+model ResourceRequest {
+  id                  String   @id @default(cuid())
+  title               String
+  description         String   @db.Text // Editor QL - sem limite
+  status              ResourceRequestStatus @default(SUBMITTED)
+  
+  // Criador da solicitação
+  userId              String
+  user                User     @relation("ResourceRequestCreator", fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Relacionamentos com Level e Subject
+  educationLevelId    String
+  educationLevel      EducationLevel @relation("ResourceRequestLevel", fields: [educationLevelId], references: [id])
+  
+  subjectId           String
+  subject             Subject  @relation("ResourceRequestSubject", fields: [subjectId], references: [id])
+  
+  // Votos
+  votes               ResourceRequestVote[]
+  voteCount           Int      @default(0)
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([educationLevelId])
+  @@index([subjectId])
+  @@index([voteCount(sort: Desc)]) // Para ordenar por votos
+  @@index([status, voteCount(sort: Desc)]) // Para listar Enviadas ordenadas por votos
+  @@map("resource_request")
+}
+
+model ResourceRequestVote {
+  id        String   @id @default(cuid())
+  
+  // Quem votou
+  userId    String
+  user      User     @relation("ResourceRequestVotes", fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Em qual request
+  requestId String
+  request   ResourceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+
+  @@unique([userId, requestId]) // Um voto por usuário por request
+  @@index([userId])
+  @@index([requestId])
+  @@map("resource_request_vote")
 }

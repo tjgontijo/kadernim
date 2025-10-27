@@ -70,9 +70,9 @@ const swConfig = {
   additionalManifestEntries: [
     { url: '/offline', revision: null }
   ],
-  // Configuração para offline fallback - removendo por enquanto para evitar erro
-  // navigateFallback: '/offline',
-  // navigateFallbackDenylist: [/^\/_/, /\/[^/?]+\.[^/]+$/],
+  // Configuração para offline fallback
+  navigateFallback: '/offline',
+  navigateFallbackDenylist: [/^\/_/, /\/[^/?]+\.[^/]+$/, /^\/api\//, /^\/login\//],
 };
 
 generateSW(swConfig).then(({ count, size }) => {

@@ -1,10 +1,8 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
-import { headers } from 'next/headers'
 import { Header } from '@/components/layout/Header'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { PushNotificationSetup } from '@/components/pwa/PushNotificationSetup'
-import { auth } from '@/lib/auth/auth'
 import { Spinner } from '@/components/ui/spinner'
 
 // Configuração otimizada para rotas protegidas
@@ -27,13 +25,13 @@ function PageLoader() {
   )
 }
 
-export default async function ProtectedLayout({
+export default function ProtectedLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  // Verificar sessão (middleware já protege, mas mantém a verificação)
-  await auth.api.getSession({ headers: await headers() })
+  // Middleware já valida a sessão e bloqueia rotas não autenticadas
+  // Layout fica estático para não re-renderizar Header/BottomNav entre rotas
 
   return (
     <>
