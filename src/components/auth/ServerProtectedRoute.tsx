@@ -15,7 +15,7 @@ interface ServerProtectedRouteProps {
  */
 export default async function ServerProtectedRoute({
   children,
-  redirectTo = '/login'
+  redirectTo = '/'
 }: ServerProtectedRouteProps) {
   // Verificar a sessão no servidor
   const session = await auth.api.getSession({

@@ -8,7 +8,7 @@ export async function RequireAuth({ children }: { children: ReactNode }) {
   const session = await auth.api.getSession({ headers: await headers() })
   
   if (!session) {
-    redirect('/login')
+    redirect('/')
   }
   
   return <>{children}</>

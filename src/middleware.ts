@@ -21,12 +21,17 @@ export async function middleware(request: NextRequest) {
                     pathname === '/apple-icon.png' ||
                     pathname.startsWith('/images/icons/')
   
+  const AUTH_ROUTES = ['/']
+  const PUBLIC_ROUTES = ['/', '/sent', '/offline']
+
+  const matchesRoute = (route: string) =>
+    pathname === route || pathname.startsWith(`${route}/`)
+
   // Rotas de autenticação
-  const isAuthRoute = pathname.startsWith('/login/otp') || 
-                     pathname.startsWith('/login/magic-link')
+  const isAuthRoute = AUTH_ROUTES.some(matchesRoute)
   
   // Rotas públicas explícitas
-  const isPublicRoute = pathname === '/'
+  const isPublicRoute = PUBLIC_ROUTES.some(matchesRoute)
   
   // Não precisa validação: API, static, PWA, auth e home
   if (isApiOrStaticRoute || isPWAFile) {
@@ -41,14 +46,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
   
-  // Home é pública
+  // Rotas públicas
   if (isPublicRoute) {
     return NextResponse.next()
   }
   
   // Qualquer outra rota é protegida por padrão
   if (!isLoggedIn) {
-    return NextResponse.redirect(new URL('/login/otp', request.url))
+    return NextResponse.redirect(new URL('/', request.url))
   }
   
   return NextResponse.next()

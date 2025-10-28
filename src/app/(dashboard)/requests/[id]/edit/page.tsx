@@ -22,7 +22,7 @@ export default async function EditRequestPage({ params }: EditRequestPageProps) 
   const session = await auth.api.getSession({ headers: await headers() })
   
   if (!session?.user) {
-    redirect('/login/magic-link')
+    redirect('/')
   }
 
   // Carregar dados

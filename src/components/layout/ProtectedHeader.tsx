@@ -22,7 +22,7 @@ export default function ProtectedHeader() {
           sessionStorage.clear()
           
           // Redirecionar com replace para evitar voltar
-          window.location.replace('/login')
+          window.location.replace('/')
         },
       },
     })

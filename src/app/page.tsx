@@ -1,97 +1,157 @@
+'use client'
+
+import { ChangeEvent, FormEvent, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { CheckCircle, Zap, Shield, Users } from 'lucide-react'
+import Image from 'next/image'
+import { FiMail, FiAlertCircle, FiLock } from 'react-icons/fi'
+import { toast } from 'sonner'
+import { authClient } from '@/lib/auth/auth-client'
+import { Spinner } from '@/components/ui/spinner'
+import { InstallPWA } from '@/components/pwa/InstallPWA'
 
-export default function HomePage() {
+interface RequestOtpForm {
+  email: string
+}
+
+type SubmissionState = 'idle' | 'loading' | 'error'
+
+export default function RequestOtpPage() {
+  const router = useRouter()
+  const [form, setForm] = useState<RequestOtpForm>({ email: '' })
+  const [status, setStatus] = useState<SubmissionState>('idle')
+  const [errorMessage, setErrorMessage] = useState<string>('')
+
+  const handleEmailChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setForm({ email: event.target.value })
+    if (errorMessage) setErrorMessage('')
+  }
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    if (!form.email || !form.email.includes('@')) {
+      setStatus('error')
+      setErrorMessage('Informe um email válido.')
+      return
+    }
+
+    setStatus('loading')
+    setErrorMessage('')
+
+    try {
+      const { error } = await authClient.emailOtp.sendVerificationOtp({
+        email: form.email,
+        type: 'sign-in',
+      })
+
+      if (error) {
+        const message = error.message ?? 'Não foi possível enviar o código. Tente novamente.'
+        setStatus('error')
+        setErrorMessage(message)
+        toast.error(message)
+        return
+      }
+
+      toast.success('Código enviado! Verifique seu email.')
+      router.push(`/sent?email=${encodeURIComponent(form.email)}`)
+    } catch (cause) {
+      console.error('[otp] erro ao solicitar OTP', cause)
+      const message = 'Falha na comunicação com o servidor. Tente novamente.'
+      setStatus('error')
+      setErrorMessage(message)
+      toast.error(message)
+    } finally {
+      setStatus('idle')
+    }
+  }
+
   return (
-    <div className="flex min-h-screen flex-col">
-      {/* Header */}
-      <header className="border-b">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold">Kadernim</h1>
-          </div>
-          <nav className="flex items-center gap-4">
-            <Link href="/login/otp">
-              <Button variant="ghost">Entrar</Button>
+    <div className="flex min-h-screen items-center justify-center bg-white dark:bg-gray-900">
+      <div className="w-full max-w-md px-4">
+        <div className="py-8 px-4 sm:px-6">
+          <div className="mb-6 flex justify-center">
+            <Link href="/" className="inline-block cursor-pointer">
+              <Image
+                src="/images/system/logo_transparent.png"
+                alt="Kadernim Logo"
+                width={150}
+                height={150}
+                style={{ height: 'auto' }}
+                priority
+              />
             </Link>
-          </nav>
-        </div>
-      </header>
-
-      {/* Hero Section */}
-      <section className="flex flex-1 items-center bg-gradient-to-br from-indigo-50 via-white to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
-        <div className="container mx-auto px-4 py-20">
-          <div className="mx-auto max-w-3xl text-center">
-            <h2 className="mb-6 text-5xl font-bold tracking-tight">
-              App de bolso para toda professora moderna
-            </h2>
-            <p className="mb-8 text-xl text-muted-foreground">
-             Tenha acesso a centenas de recursos pedagógicos e conteúdos educacionais prontos para imprimir e aplicar na sala de aula.
-            </p>
-            <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">              
-              <Link href="/login/otp">
-                <Button size="lg" variant="outline">
-                  Entrar
-                </Button>
-              </Link>
-            </div>
           </div>
-        </div>
-      </section>
 
-      {/* Features Section */}
-      <section className="border-t bg-muted/50 py-20">
-        <div className="container mx-auto px-4">
-          <h3 className="mb-12 text-center text-3xl font-bold">
-            Por que escolher o Kadernim?
-          </h3>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-            <div className="flex flex-col items-center text-center">
-              <div className="mb-4 rounded-full bg-primary/10 p-3">
-                <Zap className="h-6 w-6 text-primary" />
+          <h1 className="mb-2 text-center text-2xl font-bold text-gray-900 dark:text-white">
+            Acesse sua conta
+          </h1>
+          <p className="mb-6 text-center text-sm text-gray-600 dark:text-gray-300">
+            Informe seu email para receber um código de verificação.
+          </p>
+
+          {status === 'error' && errorMessage && (
+            <div className="mb-4 rounded-md bg-red-50 p-4 dark:bg-red-900/30">
+              <div className="flex">
+                <FiAlertCircle className="h-5 w-5 text-red-400 dark:text-red-500" />
+                <span className="ml-3 text-sm text-red-800 dark:text-red-200">{errorMessage}</span>
               </div>
-              <h4 className="mb-2 font-semibold">Rápido e Eficiente</h4>
-              <p className="text-sm text-muted-foreground">
-                Interface intuitiva que economiza seu tempo
+            </div>
+          )}
+
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
+                Email
+              </label>
+              <div className="relative mt-1 rounded-md">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                  <FiMail className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+                </div>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={form.email}
+                  onChange={handleEmailChange}
+                  className="block w-full rounded-md border border-gray-300 bg-white py-3 pl-10 text-gray-900 placeholder-gray-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 dark:focus:border-indigo-400 dark:focus:ring-indigo-400 sm:text-sm"
+                  placeholder="seu@email.com"
+                  aria-invalid={status === 'error'}
+                />
+              </div>
+              <p className="mt-2 flex items-center text-xs text-gray-500 dark:text-gray-400">
+                <FiLock className="mr-1 h-4 w-4" />
+                O código expira em 5 minutos.
               </p>
             </div>
-            <div className="flex flex-col items-center text-center">
-              <div className="mb-4 rounded-full bg-primary/10 p-3">
-                <Shield className="h-6 w-6 text-primary" />
-              </div>
-              <h4 className="mb-2 font-semibold">Seguro</h4>
-              <p className="text-sm text-muted-foreground">
-                Seus dados protegidos com criptografia
-              </p>
-            </div>
-            <div className="flex flex-col items-center text-center">
-              <div className="mb-4 rounded-full bg-primary/10 p-3">
-                <Users className="h-6 w-6 text-primary" />
-              </div>
-              <h4 className="mb-2 font-semibold">Colaborativo</h4>
-              <p className="text-sm text-muted-foreground">
-                Trabalhe em equipe de forma integrada
-              </p>
-            </div>
-            <div className="flex flex-col items-center text-center">
-              <div className="mb-4 rounded-full bg-primary/10 p-3">
-                <CheckCircle className="h-6 w-6 text-primary" />
-              </div>
-              <h4 className="mb-2 font-semibold">Completo</h4>
-              <p className="text-sm text-muted-foreground">
-                Todas as ferramentas que você precisa
-              </p>
-            </div>
-          </div>
+
+            <button
+              type="submit"
+              disabled={status === 'loading'}
+              className="flex w-full cursor-pointer justify-center rounded-md bg-indigo-600 px-4 py-3 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {status === 'loading' ? <Spinner className="h-5 w-5 text-white" /> : 'Enviar código'}
+            </button>
+          </form>
+
+          {/* <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
+            Prefere receber um link de acesso?{' '}
+            <Link
+              href="/login/magic-link"
+              className="cursor-pointer font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+            >
+              Entrar com Magic Link
+            </Link>
+          </div> */}
+
+          <InstallPWA />
         </div>
-      </section>
-      {/* Footer */}
-      <footer className="border-t py-8">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>&copy; 2025 Kadernim. Todos os direitos reservados.</p>
-        </div>
-      </footer>
+      </div>
     </div>
   )
 }

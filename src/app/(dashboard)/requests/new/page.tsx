@@ -13,7 +13,7 @@ export default async function NewRequestPage() {
   const session = await auth.api.getSession({ headers: await headers() })
   
   if (!session?.user) {
-    redirect('/login/magic-link')
+    redirect('/')
   }
 
   // Carregar dados da API (com cache)
