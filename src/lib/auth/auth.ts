@@ -8,7 +8,7 @@ import { authDeliveryService } from '@/services/delivery'
 
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET,
-  baseURL: process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_BASE_URL,
+  baseURL: process.env.NEXT_PUBLIC_APP_URL,
   basePath: '/api/v1/auth',
 
   database: prismaAdapter(prisma, { provider: 'postgresql' }),
