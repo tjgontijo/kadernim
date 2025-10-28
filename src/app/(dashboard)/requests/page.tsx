@@ -13,6 +13,20 @@ import { toast } from 'sonner'
 import { Plus } from 'lucide-react'
 import { useSession } from '@/lib/auth/auth-client'
 
+type RequestsEnvConfig = {
+  baseUrl: string
+}
+
+const requestsEnvConfig: RequestsEnvConfig = (() => {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
+
+  if (!baseUrl) {
+    throw new Error('NEXT_PUBLIC_BASE_URL não configurada.')
+  }
+
+  return { baseUrl }
+})()
+
 // Remover isLoading manual e integrar com Suspense
 
 interface EducationLevel {
@@ -44,8 +58,7 @@ export default function RequestPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
-        const response = await fetch(`${baseUrl}/api/v1/requests/metadata`)
+        const response = await fetch(`${requestsEnvConfig.baseUrl}/api/v1/requests/metadata`)
         
         if (!response.ok) {
           throw new Error('Erro ao buscar metadata')
@@ -65,7 +78,6 @@ export default function RequestPage() {
   // Carregar requests com filtros
   const loadRequests = useCallback(async () => {
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
       const params = new URLSearchParams()
       
       if (filters.educationLevelId) {
@@ -78,7 +90,7 @@ export default function RequestPage() {
         params.set('myRequests', 'true')
       }
 
-      const response = await fetch(`${baseUrl}/api/v1/requests?${params.toString()}`)
+      const response = await fetch(`${requestsEnvConfig.baseUrl}/api/v1/requests?${params.toString()}`)
       
       if (!response.ok) {
         throw new Error('Erro ao buscar solicitações')
