@@ -18,10 +18,10 @@ type RequestsEnvConfig = {
 }
 
 const requestsEnvConfig: RequestsEnvConfig = (() => {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL
 
   if (!baseUrl) {
-    throw new Error('NEXT_PUBLIC_BASE_URL não configurada.')
+    throw new Error('NEXT_PUBLIC_APP_URL não configurada.')
   }
 
   return { baseUrl }
