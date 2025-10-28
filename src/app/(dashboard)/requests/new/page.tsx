@@ -4,6 +4,16 @@ import { auth } from '@/lib/auth/auth'
 import { headers } from 'next/headers'
 import { RequestFormPage } from '@/components/requests/request-form-page'
 
+const requestsEnvConfig = (() => {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
+
+  if (!baseUrl) {
+    throw new Error('NEXT_PUBLIC_BASE_URL não configurada.')
+  }
+
+  return { baseUrl } as const
+})()
+
 export const metadata = {
   title: 'Nova Solicitação | Kadernim',
 }
@@ -17,8 +27,7 @@ export default async function NewRequestPage() {
   }
 
   // Carregar dados da API (com cache)
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL 
-  const response = await fetch(`${baseUrl}/api/v1/requests/metadata`, {
+  const response = await fetch(`${requestsEnvConfig.baseUrl}/api/v1/requests/metadata`, {
     next: { revalidate: 3600 }, // Cache por 1 hora
   })
   
