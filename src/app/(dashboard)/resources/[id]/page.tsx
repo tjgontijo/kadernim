@@ -9,6 +9,16 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Download, ExternalLink, FileText, Lock } from 'lucide-react';
 
+const resourcesEnvConfig = (() => {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+
+  if (!baseUrl) {
+    throw new Error('NEXT_PUBLIC_APP_URL não configurada.');
+  }
+
+  return { baseUrl } as const;
+})();
+
 type PageParams = {
   params: Promise<{ id: string }>;
 };
@@ -82,9 +92,6 @@ interface ResourceResponse {
 async function getResource(id: string): Promise<ResourceResponse> {
   const cookieStore = await cookies();
   
-  // Construir a URL base
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-  
   // Preparar headers com cookies
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
@@ -96,7 +103,7 @@ async function getResource(id: string): Promise<ResourceResponse> {
     headers['Cookie'] = cookieHeader;
   }
 
-  const response = await fetch(`${baseUrl}/api/v1/resources/${id}`, {
+  const response = await fetch(`${resourcesEnvConfig.baseUrl}/api/v1/resources/${id}`, {
     headers,
     next: { revalidate: 60 } // Cache por 60 segundos
   });
