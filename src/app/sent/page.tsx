@@ -126,12 +126,12 @@ function OTPSentContent() {
         </div>
 
         <div className="text-center">
-          <FiCheckCircle className="mx-auto mb-4 h-12 w-12 text-indigo-500" />
-          <h1 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
+          <FiCheckCircle className="mx-auto mb-4 h-8 w-8 text-indigo-500" />
+          <h1 className="mb-2 text-xl font-bold text-gray-900 dark:text-white">
             Código enviado!
           </h1>
           <p className="text-sm text-gray-600 dark:text-gray-300">
-            Enviamos um código de 6 dígitos para <strong>{form.email || 'seu email'}</strong>.
+            Enviamos um código de 6 dígitos para o e-mail: <strong>{form.email || 'seu email'}</strong>.
             Ele expira em 5 minutos.
           </p>
         </div>
@@ -142,7 +142,7 @@ function OTPSentContent() {
               htmlFor="otp"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
-              Código OTP
+              Código de Acesso
             </label>
             <input
               id="otp"
@@ -195,18 +195,6 @@ function OTPSentContent() {
             Informar outro email
           </button>
         </div>
-
-        <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-          Prefere usar um link mágico?
-          {' '}
-          <Link
-            href="/login/magic-link"
-            className="cursor-pointer font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
-          >
-            Entrar com Magic Link
-          </Link>
-        </div>
-
         <InstallPWA />
       </div>
     </div>
