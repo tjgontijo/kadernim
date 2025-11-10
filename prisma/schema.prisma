@@ -6,7 +6,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+ directUrl = env("DIRECT_URL")
 }
 
 enum UserRole {
@@ -15,55 +15,49 @@ enum UserRole {
   admin
 }
 
-model User {
-  id               String    @id @default(cuid())
-  name             String
-  email            String    @unique
-  emailVerified    Boolean   @default(false)
-  image            String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  role             UserRole? @default(user)
-  banned           Boolean?  @default(false)
-  banReason        String?
-  banExpires       DateTime?
-  subscriptionTier String?
-
-  whatsapp String? @unique // ex: 556182493200 (sem + e sem espaços e sem o nono digito)
-
-  preferences Json? @default("{}")
-
-  resourceAccess UserResourceAccess[]
-  subscription   Subscription?
-
-  resourceRequests ResourceRequest[] @relation("ResourceRequestCreator")
-  resourceRequestVotes ResourceRequestVote[] @relation("ResourceRequestVotes")
-
-  accounts      Account[]
-  invitations   Invitation[] @relation("UserInvitations")
-  members       Member[]
-  notifications Notification[]
-  sessions      Session[]
-
-  @@map("user")
+enum EducationLevel {
+  EARLY_CHILDHOOD_EDUCATION     // Educação Infantil
+  ELEMENTARY_SCHOOL_I           // Ensino Fundamental I
+  ELEMENTARY_SCHOOL_II          // Ensino Fundamental II
+  HIGH_SCHOOL                   // Ensino Médio
 }
 
-model Session {
-  id                   String   @id @default(cuid())
-  expiresAt            DateTime
-  token                String   @unique
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
-  ipAddress            String?
-  userAgent            String?
-  userId               String
-  impersonatedBy       String?
-  activeOrganizationId String?
-  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+enum Subject {
+  PORTUGUESE           // Língua Portuguesa
+  MATHEMATICS          // Matemática
+  SCIENCE              // Ciências (geral, ensino fundamental)
+  HISTORY              // História
+  GEOGRAPHY            // Geografia
+  ENGLISH              // Língua Inglesa
+  ART                  // Arte / Educação Artística
+  PHYSICAL_EDUCATION   // Educação Física
+  PHILOSOPHY           // Filosofia
+  SOCIOLOGY            // Sociologia
+  BIOLOGY              // Biologia
+  CHEMISTRY            // Química
+  PHYSICS              // Física
+  IMPORTANT_DATE       // Data Importante
+  PLANNING             // Planejamento
+}
 
-  @@index([userId])
-  @@index([expiresAt])
-  @@map("session")
+model User {
+  id               String     @id @default(cuid())
+  name             String
+  email            String     @unique
+  phone            String?
+  emailVerified    Boolean    @default(false)
+  image            String?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  role             UserRole   @default(user)  
+  banned           Boolean    @default(false)
+  
+  accounts     Account[]
+  sessions     Session[]
+  subscription Subscription?
+  resourceAccesses UserResourceAccess[]
+
+  @@map("user")
 }
 
 model Account {
@@ -87,6 +81,24 @@ model Account {
   @@map("account")
 }
 
+model Session {
+  id                   String   @id @default(cuid())
+  expiresAt            DateTime
+  token                String   @unique
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  ipAddress            String?
+  userAgent            String?
+  userId               String
+  impersonatedBy       String?
+  activeOrganizationId String?
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("session")
+}
+
 model Verification {
   id         String   @id @default(cuid())
   identifier String
@@ -100,335 +112,78 @@ model Verification {
 }
 
 model Organization {
-  id          String       @id @default(cuid())
-  name        String
-  slug        String?      @unique
-  logo        String?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  metadata    String?
-  invitations Invitation[]
-  members     Member[]
+  id        String   @id @default(cuid())
+  name      String
+  slug      String? @unique
+  logo      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  metadata  String?
 
   @@map("organization")
 }
 
-model Member {
-  id             String       @id @default(cuid())
-  organizationId String
-  userId         String
-  role           String
-  createdAt      DateTime     @default(now())
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([organizationId, userId])
-  @@map("member")
-}
-
-model Invitation {
-  id             String       @id @default(cuid())
-  organizationId String
-  email          String
-  role           String?
-  status         String
-  expiresAt      DateTime
-  inviterId      String
-  token          String       @unique
-  user           User         @relation("UserInvitations", fields: [inviterId], references: [id], onDelete: Cascade)
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-
-  @@index([email])
-  @@map("invitation")
-}
-
-model Notification {
-  id          String    @id @default(cuid())
-  userId      String
-  title       String
-  body        String
-  icon        String?
-  image       String?
-  badge       String?
-  data        Json?
-  type        String
-  category    String?
-  read        Boolean   @default(false)
-  readAt      DateTime?
-  clickAction String?
-  sentAt      DateTime  @default(now())
-  expiresAt   DateTime?
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([read])
-  @@map("notification")
-}
-
-model PushSubscription {
-  id        String   @id @default(cuid())
-  endpoint  String   @unique
-  p256dh    String
-  auth      String
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
-
-  @@index([active])
-  @@map("push_subscription")
-}
-
-// =========================================
-// Modelos para Recursos Pedagógicos
-// =========================================
-
-// Enum para tipos de armazenamento de arquivos
-enum StorageType {
-  GOOGLE_DRIVE
-  S3
-  VIMEO
-  YOUTUBE
-  EXTERNAL
-}
-
-// Modelo de Recurso Educacional
-model Resource {
-  id          String   @id @default(cuid())
-  title       String  
-  description String   @db.Text
-  imageUrl    String  
-  isFree      Boolean  @default(false)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  // Relacionamentos
-  subjectId String
-  subject   Subject @relation(fields: [subjectId], references: [id])
-
-  educationLevelId String
-  educationLevel   EducationLevel @relation(fields: [educationLevelId], references: [id])
-
-  files            ResourceFile[]
-  accesses         UserResourceAccess[]
-  externalMappings ExternalProductMapping[]  
-
-  @@index([subjectId])
-  @@index([educationLevelId])
-  @@index([isFree])
-  @@index([subjectId, educationLevelId]) // Índice composto para filtros combinados
-  @@index([createdAt(sort: Desc)]) // Índice para ordenação por data de criação
-  @@index([isFree, createdAt(sort: Desc)]) // Índice otimizado para buscar recursos gratuitos/pagos ordenados
-  @@map("resource")
-}
-
-// Arquivos de recursos (múltiplos arquivos por recurso)
-model ResourceFile {
-  id           String      @id @default(cuid())
-  fileName     String?     // Opcional: nome do arquivo (usado principalmente para S3)
-  fileType     String?     // Opcional: MIME type (application/pdf, video/mp4, etc)
-  storageType  StorageType // Obrigatório: tipo de armazenamento
-  
-  // Para links externos (Google Drive, Vimeo, YouTube, etc)
-  externalUrl  String?
-  
-  // Para storage próprio (S3/Supabase)
-  storageKey   String?
-  
-  // Metadados adicionais (tamanho, duração de vídeo, etc)
-  metadata     Json?
-  
-  createdAt    DateTime @default(now())
-
-  // Relacionamento
-  resourceId String
-  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
-
-  @@index([resourceId])
-  @@index([storageType])
-  @@map("resource_file")
-}
-
-// Modelo de Disciplina (personalizável)
-model Subject {
-  id        String     @id @default(cuid())
-  name      String     @unique
-    
-  resources Resource[]
-  resourceRequests ResourceRequest[] @relation("ResourceRequestSubject")
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt  
-
-  @@map("subject")
-}
-
-// Modelo de Nível de Ensino (personalizável)
-model EducationLevel {
-  id        String     @id @default(cuid())
-  name      String     @unique
-  
-  resources Resource[]
-  resourceRequests ResourceRequest[] @relation("ResourceRequestLevel")
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-
-  @@map("education_level")
-}
-
-// Acesso do usuário aos recursos
-model UserResourceAccess {
-  id         String    @id @default(cuid())
-  userId     String
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  resourceId String
-  resource   Resource  @relation(fields: [resourceId], references: [id], onDelete: Cascade)
-  grantedAt  DateTime  @default(now())
-  expiresAt  DateTime? // Data de expiração do acesso (null = acesso vitalício)
-  isActive   Boolean   @default(true) // Se o acesso está ativo ou foi revogado
-  metadata   Json? // Dados da transação (orderId, transactionId, etc)
-
-  @@unique([userId, resourceId])
-  @@index([userId])
-  @@index([resourceId])
-  @@index([expiresAt])
-  @@index([isActive])
-  @@index([userId, grantedAt(sort: Desc)]) // Índice para recursos recém-adquiridos
-  @@index([userId, isActive, expiresAt]) // Índice para verificação de acesso ativo
-  @@map("user_resource_access")
-}
-
-// Planos de assinatura disponíveis (configuração dos produtos que liberam acesso total)
-model Plan {
-  id            String   @id @default(cuid())
-  name          String   // Ex: "Plano Premium 3 Meses", "Plano Anual"
-  slug          String   @unique // Ex: "premium-3m", "premium-anual"
-  description   String?  @db.Text
-  
-  // IDs dos produtos nas plataformas externas
-  productId     String?  @unique // ID do produto na loja (null para plano free)
-  store         String   // "yampi", "hotmart", etc
-  
-  // Duração do plano
-  durationDays  Int?     // null = vitalício, número = dias de acesso
-  
-  // Preço
-  price         Float    // Preço total em reais (ex: 97.00)
-  priceMonthly  Float?   // Preço mensal equivalente (ex: 8.08)
-  
-  // Checkout
-  linkCheckout  String?  @db.Text // URL do checkout (ex: https://seguro.profdidatica.com.br/r/...)
-  
-  // Controle
-  isActive      Boolean  @default(true) // Se o plano está disponível para venda
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
-  // Relacionamento
-  subscriptions Subscription[]
-
-  @@index([productId])
-  @@index([isActive])
-  @@map("plan")
-}
-
-// Assinatura premium do usuário (libera TODOS os recursos)
 model Subscription {
   id            String   @id @default(cuid())
   userId        String   @unique
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  // Referência ao plano premium
-  planId        String?
-  plan          Plan? @relation(fields: [planId], references: [id])
-  
+
   isActive      Boolean  @default(true)
   purchaseDate  DateTime @default(now())
   expiresAt     DateTime? // Calculado automaticamente baseado no plan.durationDays
-  
-  // Dados da transação
-  transactionId String? // ID da transação de pagamento
-  productId     String? // ID do produto comprado (redundante para histórico)
-  
-  // Metadados da compra
-  metadata      Json? // Dados adicionais (valor pago, cupom, etc)
 
   @@index([userId])
-  @@index([planId])
   @@index([isActive])
   @@index([expiresAt])
   @@map("subscription")
 }
 
-model ExternalProductMapping {
-  id          String   @id @default(cuid())  
-  productId   String? // ID do produto na plataforma externa  
-  store       String? // Nome da Loja
+model Resource {
+  id              String             @id @default(cuid())
+  title           String
+  description     String?
+  thumbUrl        String?
+  educationLevel  EducationLevel
+  subject         Subject
+  externalId      Int             @unique
+  isFree          Boolean         @default(false)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  files ResourceFile[]
+  accessEntries UserResourceAccess[]
+
+  @@index([educationLevel])
+  @@index([subject])
+  @@index([educationLevel, subject])
+  @@index([title, id])
+  @@map("resource")
+}
+
+model ResourceFile {
+  id          String       @id @default(cuid())
+  name        String
+  url         String
   resourceId  String
-  resource    Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  resource    Resource  @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
 
   @@index([resourceId])
-  @@map("external_product_mapping")
+  @@map("resource_file")
 }
 
-// =========================================
-// Modelos para Solicitação de Recursos
-// =========================================
+model UserResourceAccess {
+  id         String   @id @default(cuid())
+  userId     String
+  resourceId String
+  source     String?
+  grantedAt  DateTime @default(now())
+  expiresAt  DateTime?
 
-enum ResourceRequestStatus {
-  SUBMITTED
-  IN_PRODUCTION
-  PUBLISHED
-}
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
 
-model ResourceRequest {
-  id                  String   @id @default(cuid())
-  title               String
-  description         String   @db.Text // Editor QL - sem limite
-  status              ResourceRequestStatus @default(SUBMITTED)
-  
-  // Criador da solicitação
-  userId              String
-  user                User     @relation("ResourceRequestCreator", fields: [userId], references: [id], onDelete: Cascade)
-  
-  // Relacionamentos com Level e Subject
-  educationLevelId    String
-  educationLevel      EducationLevel @relation("ResourceRequestLevel", fields: [educationLevelId], references: [id])
-  
-  subjectId           String
-  subject             Subject  @relation("ResourceRequestSubject", fields: [subjectId], references: [id])
-  
-  // Votos
-  votes               ResourceRequestVote[]
-  voteCount           Int      @default(0)
-  
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-
-  @@index([userId])
-  @@index([status])
-  @@index([educationLevelId])
-  @@index([subjectId])
-  @@index([voteCount(sort: Desc)]) // Para ordenar por votos
-  @@index([status, voteCount(sort: Desc)]) // Para listar Enviadas ordenadas por votos
-  @@map("resource_request")
-}
-
-model ResourceRequestVote {
-  id        String   @id @default(cuid())
-  
-  // Quem votou
-  userId    String
-  user      User     @relation("ResourceRequestVotes", fields: [userId], references: [id], onDelete: Cascade)
-  
-  // Em qual request
-  requestId String
-  request   ResourceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
-  
-  createdAt DateTime @default(now())
-
-  @@unique([userId, requestId]) // Um voto por usuário por request
-  @@index([userId])
-  @@index([requestId])
-  @@map("resource_request_vote")
+  @@unique([userId, resourceId])
+  @@index([userId, resourceId])
+  @@map("user_resource_access")
 }
