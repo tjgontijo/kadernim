@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { FiCheckCircle, FiMail, FiMessageCircle, FiClock } from 'react-icons/fi'
+import { CheckCircle2, Clock, Mail, MessageCircle } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 
@@ -27,7 +27,7 @@ function MagicLinkSentContent() {
         </div>
         
         <div className="mb-6 flex justify-center">
-          <FiCheckCircle className="h-12 w-12 text-green-500" />
+          <CheckCircle2 className="h-12 w-12 text-green-500" />
         </div>
         
         <h1 className="mb-4 text-center text-2xl font-bold text-gray-900 dark:text-white">
@@ -41,7 +41,7 @@ function MagicLinkSentContent() {
         {/* Email Section */}
         <div className="mb-4 rounded-md bg-indigo-50 p-4 dark:bg-indigo-900/30">
           <div className="flex items-start">
-            <FiMail className="h-5 w-5 text-indigo-600 dark:text-indigo-400 mt-0.5 mr-3 flex-shrink-0" />
+            <Mail className="mt-0.5 mr-3 h-5 w-5 flex-shrink-0 text-indigo-600 dark:text-indigo-400" />
             <div>
               <p className="font-medium text-indigo-900 dark:text-indigo-200">Email enviado</p>
               <p className="text-sm text-indigo-700 dark:text-indigo-300 mt-1">
@@ -54,7 +54,7 @@ function MagicLinkSentContent() {
         {/* WhatsApp Section */}
         <div className="mb-4 rounded-md bg-green-50 p-4 dark:bg-green-900/30">
           <div className="flex items-start">
-            <FiMessageCircle className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5 mr-3 flex-shrink-0" />
+            <MessageCircle className="mt-0.5 mr-3 h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-400" />
             <div>
               <p className="font-medium text-green-900 dark:text-green-200">WhatsApp enviado</p>
               <p className="text-sm text-green-700 dark:text-green-300 mt-1">
@@ -67,7 +67,7 @@ function MagicLinkSentContent() {
         {/* Expiration Info */}
         <div className="mb-6 rounded-md bg-yellow-50 p-4 dark:bg-yellow-900/30">
           <div className="flex items-start">
-            <FiClock className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mt-0.5 mr-3 flex-shrink-0" />
+            <Clock className="mt-0.5 mr-3 h-5 w-5 flex-shrink-0 text-yellow-600 dark:text-yellow-400" />
             <div>
               <p className="font-medium text-yellow-900 dark:text-yellow-200">Link válido por 20 minutos</p>
               <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">

@@ -9,6 +9,7 @@ import {
   Section,
   Text,
 } from '@react-email/components'
+import { pretty, render } from '@react-email/render'
 import * as React from 'react'
 
 interface OtpEmailProps {
@@ -96,6 +97,34 @@ export const OtpEmail = ({
 )
 
 export default OtpEmail
+
+export async function generateOtpEmail({
+  name = 'Usuário',
+  otp,
+  expiresIn = 5,
+}: OtpEmailProps) {
+  const subject = '🔐 Seu código de acesso - Kadernim'
+
+  const text = [
+    `Olá ${name}!`,
+    '',
+    `Seu código de acesso é: ${otp}`,
+    '',
+    `Este código expira em ${expiresIn} minutos. Não compartilhe com ninguém.`,
+    '',
+    'Precisa de ajuda?',
+    'WhatsApp: +55 11 4863-5262',
+    'E-mail: contato@kadernim.com.br',
+    'Endereço: Brasília - DF, Brasil',
+  ].join('\n')
+
+  const htmlRaw = await render(
+    React.createElement(OtpEmail, { name, otp, expiresIn })
+  )
+  const html = await pretty(htmlRaw)
+
+  return { subject, text, html }
+}
 
 // Styles
 const main = {

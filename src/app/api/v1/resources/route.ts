@@ -1,243 +1,182 @@
-// src/app/api/v1/resources/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { UserRoleType } from '@/types/user-role'
-import { auth } from '@/lib/auth/auth'
-import { isAdmin } from '@/lib/auth/roles'
-import { prisma } from '@/lib/prisma'
+import { unstable_cache } from 'next/cache'
+import { Prisma } from '@prisma/client'
 
-export interface UnifiedResourcesResponse {
-  resources: Array<{
-    id: string
-    title: string
-    description: string
-    imageUrl: string
-    subjectId: string
-    subjectName: string
-    educationLevelId: string
-    educationLevelName: string
-    isFree: boolean
-    hasAccess: boolean
-    hasIndividualAccess?: boolean
-    createdAt: string
-    updatedAt: string
-  }>
-  metadata: {
-    subjects: Array<{
-      id: string
-      name: string
-      resourceCount: number
-    }>
-    educationLevels: Array<{
-      id: string
-      name: string
-      resourceCount: number
-    }>
-    stats: {
-      totalResources: number
-      freeResources: number
-      premiumResources: number
-      userAccessCount: number
-    }
-  }
-  userInfo: {
-    isPremium: boolean
-    premiumExpiresAt: string | null
-  }
+import { prisma } from '@/lib/prisma'
+import { auth } from '@/lib/auth/auth'
+import { ResourceFilterSchema } from '@/lib/schemas/resource'
+import {
+  buildResourceCacheKey,
+  buildResourceCacheTag,
+} from '@/lib/helpers/cache'
+import { checkRateLimit } from '@/lib/helpers/rate-limit'
+
+type ResourceRow = {
+  id: string
+  title: string
+  thumbUrl: string | null
+  educationLevel: string
+  subject: string
+  description: string | null
+  isFree: boolean
+  hasAccess: boolean
 }
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers
-    })
-    
-    if (!session?.user?.id) {
-      // Fazer logout e redirecionar para home
-      const response = NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-      response.cookies.delete('better-auth.session_token')
-      response.cookies.delete('better-auth.session_token.raw')
-      return response
+    const session = await auth.api.getSession({ headers: request.headers })
+    const userId = session?.user?.id
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { searchParams } = new URL(request.url)
-    const subjectId = searchParams.get('subjectId')
-    const educationLevelId = searchParams.get('educationLevelId')
-    const search = searchParams.get('search')
-
-    // Build where clause for filtering
-    const whereClause: Record<string, unknown> = {}
-    if (subjectId) whereClause.subjectId = subjectId
-    if (educationLevelId) whereClause.educationLevelId = educationLevelId
-    if (search) {
-      whereClause.title = {
-        contains: search,
-        mode: 'insensitive'
-      }
-    }
-
-    // Single optimized query with all data
-    const [resources, subjects, educationLevels, userAccesses, userSubscription, user] = await Promise.all([
-      // Resources with related data
-      prisma.resource.findMany({
-        where: whereClause,
-        select: {
-          id: true,
-          title: true,
-          description: true,
-          imageUrl: true,
-          subjectId: true,
-          educationLevelId: true,
-          isFree: true,
-          createdAt: true,
-          updatedAt: true,
-          subject: {
-            select: { name: true }
-          },
-          educationLevel: {
-            select: { name: true }
-          }
+    const rl = checkRateLimit(`resources:${userId}`, { windowMs: 60_000, limit: 60 })
+    if (!rl.allowed) {
+      return new NextResponse(JSON.stringify({ error: 'rate_limited' }), {
+        status: 429,
+        headers: {
+          'Content-Type': 'application/json',
+          'Retry-After': String(rl.retryAfter),
         },
-        orderBy: [
-          { createdAt: 'desc' }
-        ]
-      }),
-
-      // Subjects with resource counts
-      prisma.subject.findMany({
-        select: {
-          id: true,
-          name: true,
-          _count: {
-            select: { resources: true }
-          }
-        },
-        orderBy: { name: 'asc' }
-      }),
-
-      // Education levels with resource counts
-      prisma.educationLevel.findMany({
-        select: {
-          id: true,
-          name: true,
-          _count: {
-            select: { resources: true }
-          }
-        },
-        orderBy: { name: 'asc' }
-      }),
-
-      // User's resource accesses
-      prisma.userResourceAccess.findMany({
-        where: { 
-          userId: session.user.id,
-          isActive: true
-        },
-        select: { resourceId: true }
-      }),
-
-      // User's premium status
-      prisma.subscription.findFirst({
-        where: {
-          userId: session.user.id,
-          isActive: true
-        },
-        select: {
-          expiresAt: true
-        }
-      }),
-
-      // User data to check role and subscription tier
-      prisma.user.findUnique({
-        where: { id: session.user.id },
-        select: {
-          role: true,
-          subscriptionTier: true
-        }
       })
-    ])
+    }
 
-    // Create access lookup for O(1) performance
-    const accessedResourceIds = new Set(userAccesses.map(access => access.resourceId))
+    const searchParams = request.nextUrl.searchParams
     
-    // Check if user is admin or premium
-    // Dentro da função onde isAdmin é usado
-    const userIsAdmin = isAdmin(user?.role as UserRoleType)
-    const isPremium = userIsAdmin || 
-      user?.subscriptionTier === 'premium' ||
-      (userSubscription && 
-        (!userSubscription.expiresAt || userSubscription.expiresAt > new Date()))
-
-    // Add access information to resources
-    const resourcesWithAccess = resources.map(resource => ({
-      id: resource.id,
-      title: resource.title,
-      description: resource.description,
-      imageUrl: resource.imageUrl,
-      subjectId: resource.subjectId,
-      subjectName: resource.subject.name,
-      educationLevelId: resource.educationLevelId,
-      educationLevelName: resource.educationLevel.name,
-      isFree: resource.isFree,
-      hasAccess: resource.isFree || !!isPremium || accessedResourceIds.has(resource.id),
-      hasIndividualAccess: accessedResourceIds.has(resource.id),
-      createdAt: resource.createdAt.toISOString(),
-      updatedAt: resource.updatedAt.toISOString()
-    }))
-
-    // Ordenar recursos: recursos com acesso individual primeiro, depois por data de criação
-    const sortedResources = resourcesWithAccess.sort((a, b) => {
-      // Primeiro critério: recursos com acesso individual comprado aparecem primeiro
-      if (a.hasIndividualAccess !== b.hasIndividualAccess) {
-        return a.hasIndividualAccess ? -1 : 1
-      }
-      
-      // Segundo critério: recursos com acesso (gratuitos ou premium) aparecem antes dos bloqueados
-      if (a.hasAccess !== b.hasAccess) {
-        return a.hasAccess ? -1 : 1
-      }
-      
-      // Terceiro critério: manter ordem por data de criação (mais recentes primeiro)
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    // Validar e parsear query params com Zod
+    const parsed = ResourceFilterSchema.safeParse({
+      page: searchParams.get('page') ?? undefined,
+      limit: searchParams.get('limit') ?? undefined,
+      q: searchParams.get('q') ?? undefined,
+      educationLevel: searchParams.get('educationLevel') ?? undefined,
+      subject: searchParams.get('subject') ?? undefined,
+      tab: searchParams.get('tab') ?? undefined,
     })
 
-    // Calculate stats
-    const totalResources = sortedResources.length
-    const freeResources = sortedResources.filter(r => r.isFree).length
-    const premiumResources = totalResources - freeResources
-    const userAccessCount = accessedResourceIds.size
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Parâmetros inválidos', issues: parsed.error.format() },
+        { status: 400 }
+      )
+    }
 
-    const response: UnifiedResourcesResponse = {
-      resources: sortedResources,
-      metadata: {
-        subjects: subjects.map(subject => ({
-          id: subject.id,
-          name: subject.name,
-          resourceCount: subject._count.resources
-        })),
-        educationLevels: educationLevels.map(level => ({
-          id: level.id,
-          name: level.name,
-          resourceCount: level._count.resources
-        })),
-        stats: {
-          totalResources,
-          freeResources,
-          premiumResources,
-          userAccessCount
+    const { page, limit, q, educationLevel, subject, tab } = parsed.data
+    const limitPlusOne = limit + 1
+    const offset = (page - 1) * limit
+
+    const activeSubscription = await prisma.subscription.findFirst({
+      where: {
+        userId,
+        isActive: true,
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      },
+      select: { id: true },
+    })
+
+    const hasFullAccess = Boolean(activeSubscription)
+
+    const cacheKey = buildResourceCacheKey({
+      userId,
+      isSubscriber: hasFullAccess,
+      filters: { q, educationLevel, subject, tab, page, limit },
+    })
+
+    const fetchResources = unstable_cache(
+      async () => {
+        const whereConditions: Prisma.Sql[] = []
+
+        if (q) {
+          whereConditions.push(Prisma.sql`r."title" ILIKE ${`%${q}%`}`)
+        }
+
+        if (educationLevel) {
+          whereConditions.push(
+            Prisma.sql`r."educationLevel" = CAST(${educationLevel} AS "EducationLevel")`
+          )
+        }
+
+        if (subject) {
+          whereConditions.push(Prisma.sql`r."subject" = CAST(${subject} AS "Subject")`)
+        }
+
+        if (tab === 'mine') {
+          whereConditions.push(Prisma.sql`${Prisma.sql`(
+            EXISTS(
+              SELECT 1
+              FROM "user_resource_access" ura
+              WHERE ura."resourceId" = r.id
+                AND ura."userId" = ${userId}
+                AND (ura."expiresAt" IS NULL OR ura."expiresAt" > NOW())
+            )
+          )`}`)
+        } else if (tab === 'free') {
+          whereConditions.push(Prisma.sql`r."isFree" = true`)
+        }
+
+        const whereClause = Prisma.join(
+          whereConditions.length ? whereConditions : [Prisma.sql`TRUE`],
+          ' AND '
+        )
+
+        const hasAccessCondition = Prisma.sql`(
+          r."isFree"
+          OR ${hasFullAccess}
+          OR EXISTS(
+            SELECT 1
+            FROM "user_resource_access" ura
+            WHERE ura."resourceId" = r.id
+              AND ura."userId" = ${userId}
+              AND (ura."expiresAt" IS NULL OR ura."expiresAt" > NOW())
+          )
+        )`
+
+        const rows = await prisma.$queryRaw<ResourceRow[]>(Prisma.sql`
+          SELECT
+            r.id,
+            r.title,
+            r."thumbUrl" AS "thumbUrl",
+            r."educationLevel" AS "educationLevel",
+            r."subject" AS "subject",
+            r.description AS description,
+            r."isFree" AS "isFree",
+            ${hasAccessCondition} AS "hasAccess"
+          FROM "resource" r
+          WHERE ${whereClause}
+          ORDER BY
+            CASE WHEN ${hasAccessCondition} THEN 1 ELSE 0 END DESC,
+            r.title ASC,
+            r.id ASC
+          LIMIT ${limitPlusOne}
+          OFFSET ${offset}
+        `)
+
+        const hasMore = rows.length > limit
+        const data = hasMore ? rows.slice(0, limit) : rows
+
+        return {
+          data,
+          pagination: {
+            page,
+            limit,
+            hasMore,
+          },
         }
       },
-      userInfo: {
-        isPremium: !!isPremium,
-        premiumExpiresAt: userSubscription?.expiresAt?.toISOString() || null
+      cacheKey,
+      {
+        revalidate: 30,
+        tags: [buildResourceCacheTag(userId)],
       }
-    }
+    )
 
-    return NextResponse.json(response)
+    const { data, pagination } = await fetchResources()
 
+    return NextResponse.json({ data, pagination })
   } catch (error) {
-    console.error('Error fetching unified resources:', error)
+    console.error('Erro ao buscar recursos:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Erro ao buscar recursos' },
       { status: 500 }
     )
   }

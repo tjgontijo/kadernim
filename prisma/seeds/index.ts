@@ -1,71 +1,40 @@
 import { PrismaClient } from '@prisma/client';
-import { subjects } from './data-subjects';
-import { educationLevels } from './data-education-levels';
 import { seedUsers } from './seed-users';
 import { seedResources } from './seed-resources';
-import { plansData } from './data-plans';
+import { seedResourceFiles } from './seed-resource-files';
 
 const prisma = new PrismaClient();
 
 async function cleanDatabase() {
-  // Usar TRUNCATE CASCADE para limpar todas as tabelas de uma vez
-  // Ignora erros se as tabelas não existirem ainda
+  // Usar deleteMany para limpar cada tabela (mais seguro que TRUNCATE)
+  // Respeita as FK e não falha se tabelas não existem
   try {
-    await prisma.$executeRaw`
-      TRUNCATE TABLE 
-        "resource_file",
-        "external_product_mapping",
-        "user_resource_access",
-        "resource",
-        "subject",
-        "education_level",
-        "push_subscription",
-        "notification",
-        "invitation",
-        "member",
-        "organization",
-        "subscription",
-        "plan",
-        "session",
-        "account",
-        "verification",
-        "user"
-      CASCADE;
-    `;
+    await prisma.resourceFile.deleteMany()
+    await prisma.resource.deleteMany()
+    await prisma.session.deleteMany()
+    await prisma.account.deleteMany()
+    await prisma.verification.deleteMany()
+    await prisma.subscription.deleteMany()
+    await prisma.user.deleteMany()
+    await prisma.organization.deleteMany()
   } catch (error) {
-    // Se as tabelas não existirem ainda, ignora o erro
-    console.log('⚠️  Algumas tabelas ainda não existem (primeira execução)');
-    console.debug('Detalhes:', error);
+    console.error('❌ Erro ao limpar banco de dados:', error);
+    throw error;
   }
 }
 
 async function createInitialData() {
   console.log('🌱 Iniciando população do banco de dados...');
-  
-  try {    
+
+  try {
     console.log('🧹 Limpando banco de dados...');
     await cleanDatabase();
     console.log('✅ Banco de dados limpo.');
-        
-    await prisma.educationLevel.createMany({
-      data: educationLevels.map(level => ({ ...level }))
-    });
-    console.log('✅ Níveis de ensino criados');
-    
-    await prisma.subject.createMany({
-      data: subjects.map(subject => ({ ...subject }))
-    });
-    console.log('✅ Disciplinas criadas');    
 
-    await prisma.plan.createMany({
-      data: plansData
-    });
-    console.log('✅ Planos criados');
-    
     await seedUsers(prisma);
-    
     await seedResources(prisma);
-    
+    await seedResourceFiles(prisma);
+
     console.log('✅ População do banco de dados concluída com sucesso!');
   } catch (error) {
     if (error instanceof Error) {

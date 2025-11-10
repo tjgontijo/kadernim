@@ -1,18 +1,17 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { getSessionCookie } from "better-auth/cookies"
+import { auth } from '@/lib/auth/auth'
 
 export async function middleware(request: NextRequest) {  
-  const sessionCookie = getSessionCookie(request)
-  const isLoggedIn = !!sessionCookie
-  
+  const dest = request.headers.get('sec-fetch-dest')
+  const isDocument = dest === 'document'
   const { pathname } = request.nextUrl
     
   // Rotas que não precisam de validação
   const isApiOrStaticRoute = pathname.startsWith('/api') || 
                            pathname.includes('/_next/') || 
                            pathname.includes('/static/') ||
-                           pathname.includes('/auth/')
+                           pathname.includes('/login/')
   
   const isPWAFile = pathname === '/sw.js' || 
                     pathname === '/manifest.json' ||
@@ -22,7 +21,7 @@ export async function middleware(request: NextRequest) {
                     pathname.startsWith('/images/icons/')
   
   const AUTH_ROUTES = ['/']
-  const PUBLIC_ROUTES = ['/', '/sent', '/offline']
+  const PUBLIC_ROUTES = ['/login/otp', '/login/magic-link', '/login/magic-link/sent', '/offline']
 
   const matchesRoute = (route: string) =>
     pathname === route || pathname.startsWith(`${route}/`)
@@ -38,12 +37,20 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
   
-  // Se está em rota de auth e está logado, redireciona para resources
+  // Validar sessão apenas em navegações de documento para reduzir consultas
+  if (!isDocument) {
+    return NextResponse.next()
+  }
+
+  const session = await auth.api.getSession({ headers: request.headers })
+  const isLoggedIn = !!session?.user?.id
+
+  // Se está em rota de auth e está logado, redireciona para resources; caso contrário, envia para login
   if (isAuthRoute) {
     if (isLoggedIn) {
       return NextResponse.redirect(new URL('/resources', request.url))
     }
-    return NextResponse.next()
+    return NextResponse.redirect(new URL('/login/otp', request.url))
   }
   
   // Rotas públicas
@@ -53,7 +60,7 @@ export async function middleware(request: NextRequest) {
   
   // Qualquer outra rota é protegida por padrão
   if (!isLoggedIn) {
-    return NextResponse.redirect(new URL('/', request.url))
+    return NextResponse.redirect(new URL('/login/otp', request.url))
   }
   
   return NextResponse.next()

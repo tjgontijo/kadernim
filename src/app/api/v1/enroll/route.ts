@@ -1,75 +1,154 @@
-// src/app/api/v1/enroll/route.ts
-import { NextResponse } from 'next/server'
-import { EnrollmentInput } from '@/lib/schemas/enrollment'
-import { EnrollmentError, enrollUser } from '@/domain/enrollment/enrollment.service'
-import { isWhatsAppNumberValid } from '@/services/whatsapp/uazapi/check'
-import { normalizeWhatsApp } from '@/lib/helpers/phone'
+import { NextResponse, NextRequest } from 'next/server'
+import { revalidateTag } from 'next/cache'
 
-const API_KEY = process.env.WEBHOOK_API_KEY || ''
+import { EnrollmentPayloadSchema } from '@/lib/schemas/enroll'
+import { prisma } from '@/lib/prisma'
+import { auth } from '@/lib/auth/auth'
+import { buildResourceCacheTag } from '@/lib/helpers/cache'
 
-export async function POST(request: Request) {
+function validateApiKey(request: NextRequest) {
+  const headerKey = request.headers.get('x-api-key')
+  const expectedKey = process.env.WEBHOOK_API_KEY
+
+  if (!expectedKey) {
+    throw new Error('WEBHOOK_API_KEY não configurada')
+  }
+
+  if (!headerKey || headerKey !== expectedKey) {
+    return false
+  }
+
+  return true
+}
+
+export async function POST(request: NextRequest) {
   try {
-    const apiKey = request.headers.get('x-api-key')
-    if (!apiKey || apiKey !== API_KEY) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!validateApiKey(request)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     const json = await request.json()
-    const parsed = EnrollmentInput.safeParse(json)
+    const parsed = EnrollmentPayloadSchema.safeParse(json)
+
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Payload inválido', details: parsed.error.format() }, { status: 400 })
+      return NextResponse.json(
+        {
+          error: 'Payload inválido',
+          issues: parsed.error.issues,
+        },
+        { status: 400 }
+      )
     }
 
-    // Normalizar e verificar se o número de WhatsApp é válido antes de prosseguir
-    if (parsed.data.whatsapp) {
-      // Normalizar o número (adicionar 55 se necessário e remover caracteres não numéricos)
-      const normalizedWhatsApp = normalizeWhatsApp(parsed.data.whatsapp)
-      
-      // Verificar se o número é válido no WhatsApp
-      const isValid = await isWhatsAppNumberValid(normalizedWhatsApp)
-      if (!isValid) {
-        return NextResponse.json({ 
-          error: 'Número de WhatsApp inválido ou inexistente', 
-          code: 'invalid_whatsapp' 
-        }, { status: 400 })
-      }
-      
-      // Atualizar o número normalizado nos dados
-      parsed.data.whatsapp = normalizedWhatsApp
-    }
+    const { store, name, email, phone, expiresAt, product_ids } = parsed.data
 
-    const result = await enrollUser(parsed.data, { apiBaseUrl: process.env.NEXT_PUBLIC_APP_URL ?? '' })
+    // Verifica se o usuário já existe
+    let user = await prisma.user.findUnique({ where: { email } })
 
-    if (result.kind === 'premium') {
-      const accessUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/resources`
-      return NextResponse.json({
-        success: true,
-        userId: result.userId,
-        email: result.email,
-        password_temp: result.tempPassword,
-        whatsapp: result.whatsapp,
-        isPremium: true,
-        plan: result.planName,
-        isNewUser: result.isNewUser,
-        accessUrl
+    if (!user) {
+      await (auth.api.signUpEmail as unknown as (params: { body: Record<string, unknown> }) => Promise<unknown>)({
+        body: {
+          name,
+          email,
+          password: crypto.randomUUID(),
+        },
       })
-    } else {
-      return NextResponse.json({
-        success: true,
-        userId: result.userId,
-        email: result.email,
-        password_temp: result.tempPassword,
-        whatsapp: result.whatsapp,
-        isPremium: result.hasPremium,
-        isNewUser: result.isNewUser,
-        resources: result.resources,
-        notFoundProducts: result.notFound.length ? result.notFound : undefined
-      })
-    }
-  } catch (e) {
-    if (e instanceof EnrollmentError) {
-      return NextResponse.json({ error: e.message, code: e.code }, { status: e.status })
+
+      user = await prisma.user.findUniqueOrThrow({ where: { email } })
     }
 
-    console.error('Erro ao processar matrícula', e)
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+    user = await prisma.user.update({
+      where: { email },
+      data: {
+        name,
+        phone,
+        emailVerified: true,
+      },
+    })
+
+    const resources = await prisma.resource.findMany({
+      where: {
+        externalId: {
+          in: product_ids,
+        },
+      },
+      select: {
+        id: true,
+        externalId: true,
+      },
+    })
+
+    if (resources.length === 0) {
+      return NextResponse.json(
+        {
+          error: 'Nenhum recurso correspondente aos product_ids informados',
+          product_ids,
+        },
+        { status: 404 }
+      )
+    }
+
+    const existing: { resourceId: string; expiresAt: Date | null }[] = await prisma.userResourceAccess.findMany({
+      where: {
+        userId: user.id,
+        resourceId: { in: resources.map((r) => r.id) },
+      },
+      select: { resourceId: true, expiresAt: true },
+    })
+
+    const mapExisting = new Map<string, Date | null>(
+      existing.map((e) => [e.resourceId, e.expiresAt])
+    )
+
+    await Promise.all(
+      resources.map((resource) => {
+        const prev = mapExisting.get(resource.id) ?? null
+        const nextExpires = prev === null || expiresAt === null
+          ? null
+          : prev.getTime() >= expiresAt.getTime()
+            ? prev
+            : expiresAt
+
+        return prisma.userResourceAccess.upsert({
+          where: {
+            userId_resourceId: {
+              userId: user.id,
+              resourceId: resource.id,
+            },
+          },
+          create: {
+            userId: user.id,
+            resourceId: resource.id,
+            source: `${store}:${resource.externalId}`,
+            expiresAt: expiresAt ?? null,
+          },
+          update: {
+            source: `${store}:${resource.externalId}`,
+            expiresAt: nextExpires,
+          },
+        })
+      })
+    )
+
+    await revalidateTag(buildResourceCacheTag(user.id))
+
+    return NextResponse.json(
+      {
+        message: 'Matrícula processada com sucesso',
+        userId: user.id,
+        granted: resources.map((resource) => resource.externalId),
+        missing_product_ids: product_ids.filter(
+          (productId) => !resources.some((resource) => resource.externalId === productId)
+        ),
+        expiresAt: expiresAt ? expiresAt.toISOString() : null,
+      },
+      { status: 201 }
+    )
+  } catch (error) {
+    console.error('Erro ao processar matrícula', error)
+    return NextResponse.json(
+      { error: 'Erro interno ao processar matrícula' },
+      { status: 500 }
+    )
   }
 }

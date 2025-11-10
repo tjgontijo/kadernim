@@ -1,33 +1,78 @@
 import { z } from 'zod'
+import { EducationLevelLabels } from '@/constants/educationLevel'
+import { SubjectLabels } from '@/constants/subject'
 
-export const ResourcesQueryDTO = z.object({
+const educationLevelValues = Object.keys(EducationLevelLabels)
+const subjectValues = Object.keys(SubjectLabels)
+
+export const ResourceFilterSchema = z.object({
+  q: z
+    .string()
+    .trim()
+    .min(2, { message: 'query muito curta' })
+    .max(100)
+    .optional(),
+  educationLevel: z
+    .string()
+    .refine((v) => educationLevelValues.includes(v), {
+      message: 'educationLevel inválido',
+    })
+    .optional(),
+  subject: z
+    .string()
+    .refine((v) => subjectValues.includes(v), {
+      message: 'subject inválido',
+    })
+    .optional(),
+  tab: z.enum(['mine', 'free', 'all']).default('all'),
   page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().min(1).max(50).default(12),
-  subjectId: z.string().min(1).optional(),
-  educationLevelId: z.string().min(1).optional(),
-  q: z.string().trim().max(200).optional()
+  limit: z.coerce.number().int().positive().max(100).default(20),
 })
 
-const ResourceSummaryDTO = z.object({
+export type ResourceFilter = z.infer<typeof ResourceFilterSchema>
+
+export const ResourceSchema = z.object({
   id: z.string(),
   title: z.string(),
-  imageUrl: z.string(),
+  description: z.string().nullable().optional(),
+  thumbUrl: z.string().nullable().optional(),
+  educationLevel: z
+    .string()
+    .refine((v) => educationLevelValues.includes(v), {
+      message: 'educationLevel inválido',
+    }),
+  subject: z
+    .string()
+    .refine((v) => subjectValues.includes(v), {
+      message: 'subject inválido',
+    }),
   isFree: z.boolean(),
-  subjectId: z.string(),
-  educationLevelId: z.string(),
-  hasAccess: z.boolean()
+  hasAccess: z.boolean(),
 })
 
-export const ResourcesResponseDTO = z.object({
-  accessibleResources: z.array(ResourceSummaryDTO),
-  restrictedResources: z.array(ResourceSummaryDTO),
+export type Resource = z.infer<typeof ResourceSchema>
+
+export const ResourceFileMetadataSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  createdAt: z.string(),
+})
+
+export type ResourceFileMetadata = z.infer<typeof ResourceFileMetadataSchema>
+
+export const ResourceDetailSchema = ResourceSchema.extend({
+  files: z.array(ResourceFileMetadataSchema),
+})
+
+export type ResourceDetail = z.infer<typeof ResourceDetailSchema>
+
+export const ResourceListResponseSchema = z.object({
+  data: z.array(ResourceSchema),
   pagination: z.object({
-    total: z.number().int().nonnegative(),
     page: z.number().int().positive(),
     limit: z.number().int().positive(),
-    hasMore: z.boolean()
-  })
+    hasMore: z.boolean(),
+  }),
 })
 
-export type ResourcesQuery = z.infer<typeof ResourcesQueryDTO>
-export type ResourcesResponse = z.infer<typeof ResourcesResponseDTO>
+export type ResourceListResponse = z.infer<typeof ResourceListResponseSchema>

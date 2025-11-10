@@ -2,12 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Poppins, Open_Sans, Nunito_Sans } from "next/font/google";
 import "./globals.css";
 import "./mobile.css"; // Importando estilos específicos para mobile
-import { ThemeProvider } from "@/components/layout/theme-provider";
-import { Toaster } from "sonner";
 import ServiceWorkerRegister from "@/components/pwa/ServiceWorkerRegister";
-
-import { Analytics } from "@vercel/analytics/next"
-import { SpeedInsights } from "@vercel/speed-insights/next"
+import { ReactQueryProvider } from "@/providers/react-query-provider";
 
 // Fonte Principal: Inter (para títulos e logos)
 const inter = Inter({
@@ -50,7 +46,7 @@ const appName = process.env.NEXT_PUBLIC_APP_NAME
 const appDescription = process.env.NEXT_PUBLIC_APP_DESCRIPTION
 
 export const metadata: Metadata = {
-  title: `${appName} | Plataforma de Gerenciamento`,
+  title: appName,
   description: appDescription,
   appleWebApp: {
     capable: true,
@@ -63,7 +59,7 @@ export const metadata: Metadata = {
     locale: 'pt_BR',
     url: process.env.NEXT_PUBLIC_APP_URL,
     siteName: appName,
-    title: `${appName} | Plataforma de Gerenciamento`,
+    title: appName,
     description: appDescription,
     images: [
       {
@@ -101,20 +97,12 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
-        {/* Adicionando meta tag para controle de tema */}
         <meta name="color-scheme" content="light dark" />
       </head>
       <body
-        className={`${inter.variable} ${poppins.variable} ${openSans.variable} ${nunitoSans.variable} antialiased`}
-        suppressHydrationWarning
-      >
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+        className={`${inter.variable} ${poppins.variable} ${openSans.variable} ${nunitoSans.variable} antialiased`} suppressHydrationWarning>       
           <ServiceWorkerRegister />
-          {children}
-          <Toaster position="top-right" richColors closeButton />
-          <Analytics />
-          <SpeedInsights />
-        </ThemeProvider>
+          <ReactQueryProvider>{children}</ReactQueryProvider>          
       </body>
     </html>
   );

@@ -4,8 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { FiMail, FiAlertCircle } from 'react-icons/fi'
-import { toast } from 'sonner'
+import { AlertCircle, CheckCircle2, Mail } from 'lucide-react'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { InstallPWA } from '@/components/pwa/InstallPWA'
 import { Spinner } from '@/components/ui/spinner'
 
@@ -13,23 +13,25 @@ export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [feedback, setFeedback] = useState<
+    { type: 'success' | 'error'; message: string }
+  | null>(null)
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value)
-    if (error) setError('')
+    if (feedback?.type === 'error') setFeedback(null)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (!email || !email.includes('@')) {
-      setError('Email inválido')
+      setFeedback({ type: 'error', message: 'Informe um email válido.' })
       return
     }
 
     setIsLoading(true)
-    setError('')
+    setFeedback(null)
 
     try {
       const response = await fetch('/api/v1/auth/sign-in/magic-link', {
@@ -43,16 +45,14 @@ export default function LoginPage() {
       const data = await response.json()
 
       if (response.ok) {
-        toast.success('Link de acesso enviado para seu email!')
+        setFeedback({ type: 'success', message: 'Link enviado! Redirecionando...' })
         router.push(`/login/sent?email=${encodeURIComponent(email)}`)
       } else {
-        setError(data.error || 'Erro ao enviar link de acesso')
-        toast.error(data.error || 'Erro ao enviar link de acesso')
+        setFeedback({ type: 'error', message: data.error || 'Erro ao enviar link de acesso' })
       }
     } catch (error) {
       console.error('Erro ao solicitar magic link:', error)
-      setError('Falha na comunicação com o servidor')
-      toast.error('Falha na comunicação com o servidor')
+      setFeedback({ type: 'error', message: 'Falha na comunicação com o servidor' })
     } finally {
       setIsLoading(false)
     }
@@ -79,17 +79,23 @@ export default function LoginPage() {
             Acesse sua conta
           </h1>
           
-          {error && (
-            <div className="mb-4 rounded-md bg-red-50 p-4 dark:bg-red-900/30">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <FiAlertCircle className="h-5 w-5 text-red-400 dark:text-red-500" />
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
-                </div>
-              </div>
-            </div>
+          {feedback && (
+            <Alert
+              variant={feedback.type === 'error' ? 'destructive' : 'default'}
+              className="mb-4"
+            >
+              {feedback.type === 'error' ? (
+                <AlertCircle className="h-4 w-4" />
+              ) : (
+                <CheckCircle2 className="h-4 w-4" />
+              )}
+              <AlertTitle>
+                {feedback.type === 'error'
+                  ? 'Não foi possível enviar o link'
+                  : 'Link enviado com sucesso'}
+              </AlertTitle>
+              <AlertDescription>{feedback.message}</AlertDescription>
+            </Alert>
           )}
 
           <form className="space-y-6" onSubmit={handleSubmit}>
@@ -102,7 +108,7 @@ export default function LoginPage() {
               </label>
               <div className="relative mt-1 rounded-md">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <FiMail className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+                  <Mail className="h-5 w-5 text-gray-400 dark:text-gray-500" />
                 </div>
                 <input
                   id="email"
@@ -114,6 +120,7 @@ export default function LoginPage() {
                   onChange={handleEmailChange}
                   className="block w-full rounded-md border border-gray-300 bg-white py-3 pl-10 text-gray-900 placeholder-gray-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 dark:focus:border-indigo-400 dark:focus:ring-indigo-400 sm:text-sm"
                   placeholder="seu@email.com"
+                  aria-invalid={feedback?.type === 'error'}
                 />
               </div>
               <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">

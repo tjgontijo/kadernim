@@ -20,7 +20,7 @@ export function InstallPWA() {
     const userAgent = window.navigator.userAgent.toLowerCase();
     const isIOSDevice = /iphone|ipad|ipod/.test(userAgent);
     const isAndroidMobile = /android/.test(userAgent) && /mobile/.test(userAgent);
-    const isMobileDevice = isIOSDevice || isAndroidMobile || window.innerWidth < 768;
+    const isMobileDevice = isIOSDevice || isAndroidMobile;
     
     setIsIOS(isIOSDevice);
     setIsMobile(isMobileDevice);
@@ -39,19 +39,10 @@ export function InstallPWA() {
       setIsInstallable(true);
     };
 
-    // Listener para mudanças no tamanho da tela
-    const resizeHandler = () => {
-      const isMobileWidth = window.innerWidth < 768;
-      const isMobileDevice = isIOSDevice || isAndroidMobile || isMobileWidth;
-      setIsMobile(isMobileDevice);
-    };
-
     window.addEventListener('beforeinstallprompt', promptHandler);
-    window.addEventListener('resize', resizeHandler);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', promptHandler);
-      window.removeEventListener('resize', resizeHandler);
     };
   }, []);
 

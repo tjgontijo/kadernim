@@ -8,12 +8,11 @@ x-api-key: {{apiKey}}
 Content-Type: {{contentType}}
 
 {
-  "store": "prof-didatica",
-  "name": "Individual",
+  "name": "Nome do Assinante",
   "email": "individual@mail.com",
-  "cpf": "12345678900",
-  "whatsapp": "61981218195",
-  "product_ids": [32970420]
+  "phone": "61981218195",
+  "expiresAt": "2025-12-31T23:59:59.999Z",
+  "purchaseDate": "2024-10-30T23:27:00.000Z"
 }
 
 ### Testar matriculando em dois produtos
@@ -24,43 +23,22 @@ Content-Type: {{contentType}}
 {
   "store": "prof-didatica",
   "name": "Multi Produtos",
-  "email": "multi@mail.com",
-  "cpf": "12345678900",
-  "whatsapp": "61982482112",
+  "email": "tjgontijo@gmail.com",  
+  "phone": "61982482100",
+  "expiresAt": "2026-12-31T23:59:59.000Z",
   "product_ids": [37235525,30200121]
 }
 
-### Testar com Plano Trimestral
-POST {{host}}/api/v1/enroll HTTP/1.1
+
+### Transformar usuário em assinante
+POST {{host}}/api/v1/enroll/subscriber HTTP/1.1
 x-api-key: {{apiKey}}
 Content-Type: {{contentType}}
 
 {
   "store": "prof-didatica",
-  "name": "Plano Trimestral",
-  "email": "trimestral231123@mail.com",
-  "cpf": "12345678900",
-  "whatsapp": "61982482100",
-  "product_ids": [42643883]
+  "name": "Multi Produtos",
+  "email": "tjgontijo@gmail.com",
+  "phone": "61982482100",
+  "expiresAt": "2026-12-31T23:59:59.000Z"
 }
-
-### Testar com Plano Anual
-POST {{host}}/api/v1/enroll HTTP/1.1
-x-api-key: {{apiKey}}
-Content-Type: {{contentType}}
-
-{
-  "store": "prof-didatica",
-  "name": "Plano Anual",
-  "email": "anual@mail.com",
-  "cpf": "12345678900",
-  "whatsapp": "61982482114",
-  "product_ids": [42643885]
-}
-
-### Testar saúde
-GET {{host}}/api/health
-
-
-
-

@@ -1,7 +1,23 @@
 import { PrismaClient } from '@prisma/client';
-import { usersData } from './data-users';
 import { auth } from '@/lib/auth/auth';
 import { UserRole, type UserRoleType } from '@/types/user-role';
+
+const usersData = [
+    // {
+    //    name: "Thiago Gontijo",
+    //     email: "tjgontijo@gmail.com",
+    //     password: "Thi##123",
+    //     phone: "5561982482100",
+    //     role: UserRole.admin
+    // },
+    {
+        name: "Arilson Souza",
+        email: "arilson@arilsonsouza.com.br",
+        password: "123senha@",
+        phone: "5561992532101",
+        role: UserRole.admin
+    }
+]
 
 export async function seedUsers(prisma: PrismaClient) {
   console.log('🌱 Populando usuários...');
@@ -19,7 +35,6 @@ export async function seedUsers(prisma: PrismaClient) {
       }
 
       try {
-        // Criar usuário apenas com dados básicos
         await (auth.api.signUpEmail as unknown as (params: {body: Record<string, unknown>}) => Promise<unknown>)({
           body: {
             name: userData.name,
@@ -28,12 +43,11 @@ export async function seedUsers(prisma: PrismaClient) {
           }
         });
         
-        // Atualizar com dados adicionais após criação
         await prisma.user.update({
           where: { email: userData.email },
           data: { 
             role: userData.role as UserRoleType,
-            whatsapp: userData.whatsapp,
+            phone: userData.phone,
             emailVerified: true
           }
         });

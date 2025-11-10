@@ -10,6 +10,7 @@ import {
   Section,
   Text,
 } from '@react-email/components'
+import { pretty, render } from '@react-email/render'
 import * as React from 'react'
 
 interface MagicLinkEmailProps {
@@ -100,6 +101,34 @@ export const MagicLinkEmail = ({
 )
 
 export default MagicLinkEmail
+
+export async function generateMagicLinkEmail({
+  name = 'Usuário',
+  magicLink,
+  expiresIn = 20,
+}: MagicLinkEmailProps) {
+  const subject = '🔐 Seu link de acesso - Kadernim'
+
+  const text = [
+    `Olá ${name}!`,
+    '',
+    `Use o link a seguir para acessar sua conta: ${magicLink}`,
+    '',
+    `Este link expira em ${expiresIn} minutos. Não compartilhe com ninguém.`,
+    '',
+    'Precisa de ajuda?',
+    'WhatsApp: +55 11 4863-5262',
+    'E-mail: contato@kadernim.com.br',
+    'Endereço: Brasília - DF, Brasil',
+  ].join('\n')
+
+  const htmlRaw = await render(
+    React.createElement(MagicLinkEmail, { name, magicLink, expiresIn })
+  )
+  const html = await pretty(htmlRaw)
+
+  return { subject, text, html }
+}
 
 // Styles
 const main = {
