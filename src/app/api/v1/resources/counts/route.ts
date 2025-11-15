@@ -1,17 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { unstable_cache } from 'next/cache'
-import type { EducationLevel, Prisma, Subject } from '@prisma/client'
 
 import { auth } from '@/lib/auth/auth'
 import { prisma } from '@/lib/prisma'
 import { ResourceFilterSchema } from '@/lib/schemas/resource'
 import { buildResourceCacheTag } from '@/lib/helpers/cache'
 import { checkRateLimit } from '@/lib/helpers/rate-limit'
+import { getResourceCounts } from '@/server/services/resourceCountService'
+import type { SubscriptionContext, UserAccessContext } from '@/server/services/accessService'
 
 export async function GET(request: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: request.headers })
     const userId = session?.user?.id
+    const role = session?.user?.role ?? null
+    const isAdmin = role === 'admin'
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -45,6 +48,25 @@ export async function GET(request: NextRequest) {
     }
 
     const { tab, q, educationLevel, subject } = parsed.data
+    const filters = { q, educationLevel, subject }
+
+    const activeSubscription = await prisma.subscription.findFirst({
+      where: {
+        userId,
+        isActive: true,
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      },
+      select: { id: true },
+    })
+
+    const userContext: UserAccessContext = {
+      userId,
+      isAdmin,
+    }
+
+    const subscriptionContext: SubscriptionContext = {
+      hasActiveSubscription: Boolean(activeSubscription),
+    }
 
     const cacheKey = [
       'resources-count',
@@ -53,54 +75,19 @@ export async function GET(request: NextRequest) {
       q ?? '',
       educationLevel ?? '',
       subject ?? '',
+      `admin:${isAdmin ? 1 : 0}`,
+      `sub:${subscriptionContext.hasActiveSubscription ? 1 : 0}`,
     ]
 
     const fetchCount = unstable_cache(
       async () => {
-        const baseWhere: Prisma.ResourceWhereInput = {}
+        const counts = await getResourceCounts({
+          user: userContext,
+          subscription: subscriptionContext,
+          filters,
+        })
 
-        if (q) {
-          baseWhere.title = { contains: q, mode: 'insensitive' }
-        }
-
-        if (educationLevel) {
-          baseWhere.educationLevel = educationLevel as EducationLevel
-        }
-
-        if (subject) {
-          baseWhere.subject = subject as Subject
-        }
-
-        if (tab === 'mine') {
-          const count = await prisma.resource.count({
-            where: {
-              ...baseWhere,
-              accessEntries: {
-                some: {
-                  userId,
-                  OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-                },
-              },
-            },
-          })
-
-          return { tab, count }
-        }
-
-        if (tab === 'free') {
-          const count = await prisma.resource.count({
-            where: {
-              ...baseWhere,
-              isFree: true,
-            },
-          })
-
-          return { tab, count }
-        }
-
-        const count = await prisma.resource.count({ where: baseWhere })
-
-        return { tab, count }
+        return counts
       },
       cacheKey,
       {
@@ -109,9 +96,12 @@ export async function GET(request: NextRequest) {
       }
     )
 
-    const result = await fetchCount()
+    const counts = await fetchCount()
 
-    return NextResponse.json({ data: result })
+    const tabCount =
+      tab === 'mine' ? counts.mine : tab === 'free' ? counts.free : counts.all
+
+    return NextResponse.json({ data: { tab, count: tabCount } })
   } catch (error) {
     console.error('Erro ao contar recursos:', error)
     return NextResponse.json({ error: 'Erro ao contar recursos' }, { status: 500 })

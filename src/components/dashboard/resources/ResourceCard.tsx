@@ -2,12 +2,12 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { Lock } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { AspectRatio } from '@/components/ui/aspect-ratio'
 import { BadgeEducationLevel } from './BadgeEducationLevel'
 import { BadgeSubject } from './BadgeSubject'
 import { Separator } from '@/components/ui/separator'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 
 interface ResourceCardProps {
@@ -55,12 +55,12 @@ export function ResourceCard({
             {!isFree && hasAccess && <Badge variant="secondary">Liberado</Badge>}
           </div>
           {!hasAccess && (
-            <div className="pointer-events-none absolute inset-0 bg-black/40 flex items-center justify-center">
-              <div className="pointer-events-auto flex flex-col items-center gap-2">
-                <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-gray-900">Conteúdo exclusivo</span>
-                <Button size="sm" onClick={(e) => { e.preventDefault(); onSubscribe?.() }}>
-                  Assinar
-                </Button>
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/40">
+              <div className="flex flex-col items-center gap-2 text-white/90">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-black/60">
+                  <Lock className="h-5 w-5" aria-hidden="true" />
+                </div>
+                <span className="px-3 text-xs font-medium">Conteúdo exclusivo para assinantes</span>
               </div>
             </div>
           )}

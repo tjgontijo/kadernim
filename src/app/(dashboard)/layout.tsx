@@ -15,7 +15,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="flex min-h-screen flex-col bg-gray-50">
       <SystemHeader />
-      <main className="mx-auto flex-1 overflow-hidden px-6 py-4 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-7xl flex-1 overflow-hidden px-4 py-4 sm:px-4 lg:px-6">
         <AnimatePresence mode="wait">
           <motion.div
             key={pathname}

@@ -10,6 +10,11 @@ import {
   buildResourceCacheTag,
 } from '@/lib/helpers/cache'
 import { checkRateLimit } from '@/lib/helpers/rate-limit'
+import {
+  buildHasAccessConditionSql,
+  type SubscriptionContext,
+  type UserAccessContext,
+} from '@/server/services/accessService'
 
 type ResourceRow = {
   id: string
@@ -26,6 +31,8 @@ export async function GET(request: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: request.headers })
     const userId = session?.user?.id
+    const role = session?.user?.role
+    const isAdmin = role === 'admin'
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -74,7 +81,15 @@ export async function GET(request: NextRequest) {
       select: { id: true },
     })
 
-    const hasFullAccess = Boolean(activeSubscription)
+    const hasFullAccess = isAdmin || Boolean(activeSubscription)
+    const userContext: UserAccessContext = {
+      userId,
+      isAdmin,
+    }
+    const subscriptionContext: SubscriptionContext = {
+      hasActiveSubscription: Boolean(activeSubscription),
+    }
+    const hasAccessCondition = buildHasAccessConditionSql(userContext, subscriptionContext)
 
     const cacheKey = buildResourceCacheKey({
       userId,
@@ -101,15 +116,8 @@ export async function GET(request: NextRequest) {
         }
 
         if (tab === 'mine') {
-          whereConditions.push(Prisma.sql`${Prisma.sql`(
-            EXISTS(
-              SELECT 1
-              FROM "user_resource_access" ura
-              WHERE ura."resourceId" = r.id
-                AND ura."userId" = ${userId}
-                AND (ura."expiresAt" IS NULL OR ura."expiresAt" > NOW())
-            )
-          )`}`)
+          whereConditions.push(hasAccessCondition)
+          whereConditions.push(Prisma.sql`r."isFree" = false`)
         } else if (tab === 'free') {
           whereConditions.push(Prisma.sql`r."isFree" = true`)
         }
@@ -118,18 +126,6 @@ export async function GET(request: NextRequest) {
           whereConditions.length ? whereConditions : [Prisma.sql`TRUE`],
           ' AND '
         )
-
-        const hasAccessCondition = Prisma.sql`(
-          r."isFree"
-          OR ${hasFullAccess}
-          OR EXISTS(
-            SELECT 1
-            FROM "user_resource_access" ura
-            WHERE ura."resourceId" = r.id
-              AND ura."userId" = ${userId}
-              AND (ura."expiresAt" IS NULL OR ura."expiresAt" > NOW())
-          )
-        )`
 
         const rows = await prisma.$queryRaw<ResourceRow[]>(Prisma.sql`
           SELECT

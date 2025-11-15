@@ -23,11 +23,35 @@ export function ResourceTabs({ value, onValueChange, counts }: ResourceTabsProps
         aria-label="Filtrar por tipo de recurso"
       >
         <TabsTrigger
+          value="all"
+          className="
+            relative flex items-center justify-center
+            text-sm font-medium leading-none
+            text-muted-foreground
+            cursor-pointer
+            data-[state=active]:bg-background
+            data-[state=active]:text-foreground
+            data-[state=active]:shadow-sm
+            transition-colors
+            focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1
+            rounded-none first:rounded-l-lg last:rounded-r-lg
+          "
+        >
+          Todos
+          {typeof counts?.all === 'number' && (
+            <span className="absolute right-1 top-0 rounded-full bg-muted-foreground/15 px-2 py-[2px] text-[10px] font-medium text-muted-foreground">
+              {counts.all}
+            </span>
+          )}
+        </TabsTrigger>
+
+        <TabsTrigger
           value="mine"
           className="
             relative flex items-center justify-center
             text-sm font-medium leading-none
             text-muted-foreground
+            cursor-pointer
             data-[state=active]:bg-background
             data-[state=active]:text-foreground
             data-[state=active]:shadow-sm
@@ -50,6 +74,7 @@ export function ResourceTabs({ value, onValueChange, counts }: ResourceTabsProps
             relative flex items-center justify-center
             text-sm font-medium leading-none
             text-muted-foreground
+            cursor-pointer
             data-[state=active]:bg-background
             data-[state=active]:text-foreground
             data-[state=active]:shadow-sm
@@ -62,28 +87,6 @@ export function ResourceTabs({ value, onValueChange, counts }: ResourceTabsProps
           {typeof counts?.free === 'number' && (
             <span className="absolute right-1 top-0 rounded-full bg-muted-foreground/15 px-2 py-[2px] text-[10px] font-medium text-muted-foreground">
               {counts.free}
-            </span>
-          )}
-        </TabsTrigger>
-
-        <TabsTrigger
-          value="all"
-          className="
-            relative flex items-center justify-center
-            text-sm font-medium leading-none
-            text-muted-foreground
-            data-[state=active]:bg-background
-            data-[state=active]:text-foreground
-            data-[state=active]:shadow-sm
-            transition-colors
-            focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1
-            rounded-none first:rounded-l-lg last:rounded-r-lg
-          "
-        >
-          Todos
-          {typeof counts?.all === 'number' && (
-            <span className="absolute right-1 top-0 rounded-full bg-muted-foreground/15 px-2 py-[2px] text-[10px] font-medium text-muted-foreground">
-              {counts.all}
             </span>
           )}
         </TabsTrigger>

@@ -3,6 +3,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verifyDownloadToken } from '@/lib/download-token'
 import { checkRateLimit } from '@/lib/helpers/rate-limit'
+import {
+  computeHasAccessForResource,
+  type SubscriptionContext,
+  type UserAccessContext,
+} from '@/server/services/accessService'
 
 export const dynamic = 'force-dynamic'
 
@@ -47,13 +52,6 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
             isFree: true,
-            accessEntries: {
-              where: {
-                userId: payload.userId,
-                OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-              },
-              select: { id: true },
-            },
           },
         },
       },
@@ -63,16 +61,33 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Arquivo não encontrado' }, { status: 404 })
     }
 
-    const hasAccess =
-      file.resource.isFree ||
-      file.resource.accessEntries.length > 0 ||
-      (await prisma.subscription.count({
-        where: {
-          userId: payload.userId,
-          isActive: true,
-          OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-        },
-      })) > 0
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: { role: true },
+    })
+
+    const subscription = await prisma.subscription.findFirst({
+      where: {
+        userId: payload.userId,
+        isActive: true,
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      },
+      select: { id: true },
+    })
+
+    const userContext: UserAccessContext = {
+      userId: payload.userId,
+      isAdmin: user?.role === 'admin',
+    }
+
+    const subscriptionContext: SubscriptionContext = {
+      hasActiveSubscription: Boolean(subscription),
+    }
+
+    const hasAccess = await computeHasAccessForResource(userContext, subscriptionContext, {
+      resourceId: file.resource.id,
+      isFree: file.resource.isFree,
+    })
 
     if (!hasAccess) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

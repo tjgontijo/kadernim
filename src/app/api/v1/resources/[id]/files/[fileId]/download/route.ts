@@ -7,6 +7,11 @@ import {
   createDownloadToken,
   DOWNLOAD_TOKEN_DEFAULT_TTL_MS,
 } from '@/lib/download-token'
+import {
+  computeHasAccessForResource,
+  type SubscriptionContext,
+  type UserAccessContext,
+} from '@/server/services/accessService'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,6 +22,7 @@ export async function GET(
   try {
     const session = await auth.api.getSession({ headers: request.headers })
     const userId = session?.user?.id
+    const role = session?.user?.role ?? null
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -55,13 +61,6 @@ export async function GET(
           select: {
             id: true,
             isFree: true,
-            accessEntries: {
-              where: {
-                userId,
-                OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-              },
-              select: { id: true },
-            },
           },
         },
       },
@@ -71,16 +70,28 @@ export async function GET(
       return NextResponse.json({ error: 'Arquivo não encontrado' }, { status: 404 })
     }
 
-    const hasAccess =
-      file.resource.isFree ||
-      file.resource.accessEntries.length > 0 ||
-      (await prisma.subscription.count({
-        where: {
-          userId,
-          isActive: true,
-          OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-        },
-      })) > 0
+    const activeSubscription = await prisma.subscription.findFirst({
+      where: {
+        userId,
+        isActive: true,
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      },
+      select: { id: true },
+    })
+
+    const userContext: UserAccessContext = {
+      userId,
+      isAdmin: role === 'admin',
+    }
+
+    const subscriptionContext: SubscriptionContext = {
+      hasActiveSubscription: Boolean(activeSubscription),
+    }
+
+    const hasAccess = await computeHasAccessForResource(userContext, subscriptionContext, {
+      resourceId,
+      isFree: file.resource.isFree,
+    })
 
     if (!hasAccess) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

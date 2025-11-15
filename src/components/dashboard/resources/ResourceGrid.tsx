@@ -3,7 +3,6 @@
 import { forwardRef } from 'react'
 import { VirtuosoGrid } from 'react-virtuoso'
 import { ResourceCard } from './ResourceCard'
-import { Skeleton } from '@/components/ui/skeleton'
 
 interface Resource {
   id: string
@@ -17,8 +16,13 @@ interface Resource {
 }
 
 const ListContainer = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ style, ...props }, ref) => (
-    <div ref={ref} style={{ ...style }} {...props} />
+  ({ style, className, ...props }, ref) => (
+    <div
+      ref={ref}
+      style={{ ...style, width: '100%' }}
+      className={className ? `w-full ${className}` : 'w-full'}
+      {...props}
+    />
   )
 )
 ListContainer.displayName = 'ResourceGridList'
@@ -86,22 +90,6 @@ export function ResourceGrid({
           overscan={12}
           increaseViewportBy={{ top: 200, bottom: 400 }}
         />
-      )}
-
-      {/* Loading indicator */}
-      {isFetchingNextPage && (
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="space-y-3">
-              <Skeleton className="aspect-video w-full" />
-              <Skeleton className="h-4 w-3/4" />
-              <div className="flex gap-2">
-                <Skeleton className="h-6 w-20" />
-                <Skeleton className="h-6 w-20" />
-              </div>
-            </div>
-          ))}
-        </div>
       )}
     </div>
   )

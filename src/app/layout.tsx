@@ -4,6 +4,7 @@ import "./globals.css";
 import "./mobile.css"; // Importando estilos específicos para mobile
 import ServiceWorkerRegister from "@/components/pwa/ServiceWorkerRegister";
 import { ReactQueryProvider } from "@/providers/react-query-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 // Fonte Principal: Inter (para títulos e logos)
 const inter = Inter({
@@ -100,9 +101,12 @@ export default function RootLayout({
         <meta name="color-scheme" content="light dark" />
       </head>
       <body
-        className={`${inter.variable} ${poppins.variable} ${openSans.variable} ${nunitoSans.variable} antialiased`} suppressHydrationWarning>       
+        className={`${inter.variable} ${poppins.variable} ${openSans.variable} ${nunitoSans.variable} antialiased`} suppressHydrationWarning>
           <ServiceWorkerRegister />
-          <ReactQueryProvider>{children}</ReactQueryProvider>          
+          <ReactQueryProvider>
+            {children}
+            <Toaster />
+          </ReactQueryProvider>
       </body>
     </html>
   );

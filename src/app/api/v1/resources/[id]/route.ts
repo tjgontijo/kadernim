@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { ResourceDetailSchema } from '@/lib/schemas/resource'
 import { auth } from '@/lib/auth/auth'
+import {
+  computeHasAccessForResource,
+  type SubscriptionContext,
+  type UserAccessContext,
+} from '@/server/services/accessService'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,6 +17,7 @@ export async function GET(
   try {
     const session = await auth.api.getSession({ headers: req.headers })
     const userId = session?.user?.id
+    const role = session?.user?.role ?? null
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -50,32 +56,32 @@ export async function GET(
       )
     }
 
-    let hasAccess = resource.isFree
+    const activeSubscription = await prisma.subscription.findFirst({
+      where: {
+        userId,
+        isActive: true,
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      },
+      select: { id: true },
+    })
 
-    if (!hasAccess) {
-      const activeSubscription = await prisma.subscription.findFirst({
-        where: {
-          userId,
-          isActive: true,
-          OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-        },
-        select: { id: true },
-      })
-
-      hasAccess = Boolean(activeSubscription)
-
-      if (!hasAccess) {
-        const accessEntry = await prisma.userResourceAccess.findFirst({
-          where: {
-            userId,
-            resourceId: resource.id,
-            OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-          },
-          select: { id: true },
-        })
-        hasAccess = Boolean(accessEntry)
-      }
+    const userContext: UserAccessContext = {
+      userId,
+      isAdmin: role === 'admin',
     }
+
+    const subscriptionContext: SubscriptionContext = {
+      hasActiveSubscription: Boolean(activeSubscription),
+    }
+
+    const hasAccess = await computeHasAccessForResource(
+      userContext,
+      subscriptionContext,
+      {
+        resourceId: resource.id,
+        isFree: resource.isFree,
+      }
+    )
 
     const parsed = ResourceDetailSchema.parse({
       ...resource,

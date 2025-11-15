@@ -4,11 +4,11 @@ import { ChangeEvent, FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { AlertCircle, Mail } from 'lucide-react'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Mail } from 'lucide-react'
 import { authClient } from '@/lib/auth/auth-client'
 import { Spinner } from '@/components/ui/spinner'
 import { InstallPWA } from '@/components/pwa/InstallPWA'
+import { toast } from 'sonner'
 
 interface RequestOtpForm {
   email: string
@@ -96,11 +96,24 @@ export default function RequestOtpPage() {
       afterRequest = performance.now()
 
       if (error) {
-        const message = error.message ?? 'Não foi possível enviar o código. Tente novamente.'
+        const rawCode = (error.code ?? error.message ?? 'otp_send_error') as string
+        const normalized = rawCode.toLowerCase()
+
+        let message = 'Não foi possível enviar o código. Tente novamente.'
+
+        if (normalized.includes('user_not_found') || normalized === 'otp_send_error') {
+          message = 'Não encontramos nenhuma conta com esse e-mail.'
+        } else if (normalized.includes('email_not_delivered')) {
+          message = 'Não conseguimos entregar o e-mail agora. Tente novamente em alguns minutos.'
+        } else if (normalized.includes('otp_delivery_failed')) {
+          message = 'Tivemos um problema ao enviar o código. Tente novamente.'
+        }
+
         setStatus('error')
         setErrorMessage(message)
+        toast.error(message)
         outcome = 'error'
-        errorCode = error.code ?? 'otp_send_error'
+        errorCode = rawCode
         return
       }
 
@@ -110,13 +123,13 @@ export default function RequestOtpPage() {
       const message = 'Falha na comunicação com o servidor. Tente novamente.'
       setStatus('error')
       setErrorMessage(message)
+      toast.error(message)
       outcome = 'error'
       errorCode = cause instanceof Error ? cause.name ?? 'request_failed' : 'request_failed'
     } finally {
       if (afterRequest === start) {
         afterRequest = performance.now()
       }
-      setStatus('idle')
       emitLog()
     }
   }
@@ -144,14 +157,6 @@ export default function RequestOtpPage() {
           <p className="mb-6 text-center text-sm text-gray-600 dark:text-gray-300">
             Informe seu email para receber um código de verificação.
           </p>
-
-          {status === 'error' && errorMessage && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Não foi possível enviar o código</AlertTitle>
-              <AlertDescription>{errorMessage}</AlertDescription>
-            </Alert>
-          )}
 
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
