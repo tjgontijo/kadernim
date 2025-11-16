@@ -73,7 +73,7 @@ export const OtpEmail = ({
           <Section style={supportBox}>
             <Text style={supportTitle}>Precisa de ajuda?</Text>
             <Text style={supportText}>
-              📞 WhatsApp: <Link href="https://wa.me/551148635262" style={linkStyle}>+55 11 4863-5262</Link>
+              📞 WhatsApp: <Link href="https://wa.me/556198698704" style={linkStyle}>+55 61 9869-8704</Link>
             </Text>
             <Text style={supportText}>
               ✉️ E-mail: <Link href="mailto:contato@kadernim.com.br" style={linkStyle}>contato@kadernim.com.br</Link>
