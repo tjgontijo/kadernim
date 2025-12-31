@@ -34,17 +34,15 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     <ResourceProvider>
       <HeaderActionsProvider>
         <SidebarProvider>
-          <div className="flex min-h-screen w-full bg-background">
+          <div className="flex h-screen w-full bg-background overflow-hidden">
             <AdminSidebar user={user} />
 
-            <SidebarInset>
+            <SidebarInset className="flex flex-col h-full min-w-0">
               <AdminHeader />
 
-              <main className="flex-1 overflow-y-auto px-4 py-2">
+              <main className="flex-1 min-h-0 bg-muted/5">
                 <AdminContent user={user}>
-                  <div className="mx-auto w-full">
-                    {children}
-                  </div>
+                  {children}
                 </AdminContent>
               </main>
             </SidebarInset>

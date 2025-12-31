@@ -15,7 +15,7 @@
 
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+    scrollbar-color: oklch(0.85 0 0) transparent;
   }
 
   .scrollbar-thin::-webkit-scrollbar {
@@ -27,12 +27,58 @@
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: hsl(var(--muted-foreground) / 0.3);
+    background-color: oklch(0.85 0 0);
     border-radius: 3px;
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background-color: hsl(var(--muted-foreground) / 0.5);
+    background-color: oklch(0.75 0 0);
+  }
+
+  .dark .scrollbar-thin {
+    scrollbar-color: oklch(0.35 0 0) transparent;
+  }
+
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: oklch(0.35 0 0);
+  }
+
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: oklch(0.45 0 0);
+  }
+
+  .scrollbar-light {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(0.85 0 0) transparent;
+  }
+
+  .scrollbar-light::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-light::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-light::-webkit-scrollbar-thumb {
+    background-color: oklch(0.85 0 0);
+    border-radius: 3px;
+  }
+
+  .scrollbar-light::-webkit-scrollbar-thumb:hover {
+    background-color: oklch(0.75 0 0);
+  }
+
+  .dark .scrollbar-light {
+    scrollbar-color: oklch(0.35 0 0) transparent;
+  }
+
+  .dark .scrollbar-light::-webkit-scrollbar-thumb {
+    background-color: oklch(0.35 0 0);
+  }
+
+  .dark .scrollbar-light::-webkit-scrollbar-thumb:hover {
+    background-color: oklch(0.45 0 0);
   }
 
   .native-scroll {

@@ -14,7 +14,7 @@ print_box() {
 }
 
 print_box "🔄 Removendo diretórios e arquivos de desenvolvimento..."
-rm -rf .next .turbo node_modules/.cache prisma/generated || true
+rm -rf .next .turbo node_modules/.cache prisma/generated public/sw.js public/manifest.webmanifest || true
 
 print_box "🗑️ Limpando cache do npm..."
 npm cache clean --force

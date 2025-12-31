@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, SlidersHorizontal, Search, Filter, Calendar, ArrowUpDown } from 'lucide-react'
+import { Plus, SlidersHorizontal, Search, Filter, BookOpen, GraduationCap, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -24,10 +24,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useAdminResources, useDeleteAdminResource } from '@/hooks/useAdminResources'
+import { useAdminResources } from '@/hooks/useAdminResources'
 import { toast } from 'sonner'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   TemplateMainShell,
   TemplateMainHeader,
@@ -37,31 +44,32 @@ import {
   ResourcesCardView,
   ResourcesTableView,
 } from '@/components/dashboard/resources'
+import { EducationLevelLabels } from '@/constants/educationLevel'
+import { SubjectLabels } from '@/constants/subject'
 
-type SortBy = 'title' | 'createdAt' | 'updatedAt'
-type Order = 'asc' | 'desc'
+// Convert labels to options array
+const EDUCATION_LEVEL_OPTIONS = Object.entries(EducationLevelLabels).map(([value, label]) => ({
+  value,
+  label,
+}))
 
-const SORT_OPTIONS = [
-  { value: 'title', label: 'Título' },
-  { value: 'createdAt', label: 'Data de Criação' },
-  { value: 'updatedAt', label: 'Última Atualização' },
-]
-
-const ORDER_OPTIONS = [
-  { value: 'desc', label: 'Decrescente' },
-  { value: 'asc', label: 'Crescente' },
-]
+const SUBJECT_OPTIONS = Object.entries(SubjectLabels).map(([value, label]) => ({
+  value,
+  label,
+}))
 
 export default function AdminResourcesPage() {
   const router = useRouter()
   const [view, setView] = useState<ViewType>('list')
   const isMobile = useIsMobile()
   const [page, setPage] = useState(1)
-  const [limit] = useState(20)
-  const [sortBy, setSortBy] = useState<SortBy>('updatedAt')
-  const [order, setOrder] = useState<Order>('desc')
+  const [limit, setLimit] = useState(15)
   const [visibleColumns, setVisibleColumns] = useState<string[]>(['subject', 'educationLevel', 'isFree', 'createdAt'])
   const [isFreeOnly, setIsFreeOnly] = useState(false)
+
+  // Filters
+  const [educationLevel, setEducationLevel] = useState<string>('')
+  const [subject, setSubject] = useState<string>('')
 
   // Search with debounce
   const [searchInput, setSearchInput] = useState('')
@@ -102,8 +110,8 @@ export default function AdminResourcesPage() {
       page,
       limit,
       q: searchQuery,
-      sortBy,
-      order,
+      educationLevel: educationLevel || undefined,
+      subject: subject || undefined,
       isFree: isFreeOnly ? true : undefined,
     },
   })
@@ -116,11 +124,9 @@ export default function AdminResourcesPage() {
     )
   }
 
-
   const handleDeleteResource = (resourceId: string) => {
     if (!confirm('Tem certeza que deseja deletar este recurso?')) return
 
-    // Note: Using delete mutation inline for simplicity
     toast.info('Deletando recurso...')
     fetch(`/api/v1/admin/resources/${resourceId}`, { method: 'DELETE' })
       .then(res => {
@@ -141,13 +147,13 @@ export default function AdminResourcesPage() {
     router.push(`/admin/resources/${resourceId}/edit`)
   }
 
-  const handleSortByChange = (newSortBy: string) => {
-    setSortBy(newSortBy as SortBy)
+  const handleEducationLevelChange = (value: string) => {
+    setEducationLevel(value === educationLevel ? '' : value)
     setPage(1)
   }
 
-  const handleOrderChange = (newOrder: string) => {
-    setOrder(newOrder as Order)
+  const handleSubjectChange = (value: string) => {
+    setSubject(value === subject ? '' : value)
     setPage(1)
   }
 
@@ -156,14 +162,25 @@ export default function AdminResourcesPage() {
     setPage(1)
   }
 
-  const getSortLabel = () => {
-    const option = SORT_OPTIONS.find(o => o.value === sortBy)
-    return option?.label || 'Ordenar'
+  const clearFilters = () => {
+    setEducationLevel('')
+    setSubject('')
+    setIsFreeOnly(false)
+    setPage(1)
   }
 
-  const getOrderLabel = () => {
-    const option = ORDER_OPTIONS.find(o => o.value === order)
-    return option?.label || 'Ordem'
+  const hasActiveFilters = educationLevel || subject || isFreeOnly
+
+  const getEducationLevelLabel = () => {
+    if (!educationLevel) return 'Nível'
+    const option = EDUCATION_LEVEL_OPTIONS.find(o => o.value === educationLevel)
+    return option?.label || 'Nível'
+  }
+
+  const getSubjectLabel = () => {
+    if (!subject) return 'Disciplina'
+    const option = SUBJECT_OPTIONS.find(o => o.value === subject)
+    return option?.label || 'Disciplina'
   }
 
   if (error) {
@@ -186,8 +203,7 @@ export default function AdminResourcesPage() {
 
   return (
     <>
-
-      <TemplateMainShell className="flex flex-col h-[calc(100vh-2rem)]">
+      <TemplateMainShell className="flex flex-col h-full overflow-hidden">
 
         {/* MOBILE HEADER - Search + Filter Icon */}
         {isMobile && (
@@ -204,7 +220,10 @@ export default function AdminResourcesPage() {
 
             <Drawer>
               <DrawerTrigger asChild>
-                <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 rounded-full border-border">
+                <Button variant="outline" size="icon" className={cn(
+                  "h-10 w-10 shrink-0 rounded-full border-border",
+                  hasActiveFilters && "border-primary bg-primary/10"
+                )}>
                   <Filter className="h-4 w-4" />
                 </Button>
               </DrawerTrigger>
@@ -215,57 +234,57 @@ export default function AdminResourcesPage() {
                   </DrawerHeader>
 
                   <div className="px-6 py-4 space-y-6">
-                    {/* Ordenar por */}
+                    {/* Nível de Educação */}
                     <div className="space-y-3">
-                      <label className="text-sm font-semibold text-foreground">Ordenar por</label>
+                      <label className="text-sm font-semibold text-foreground">Nível de Educação</label>
                       <div className="grid grid-cols-2 gap-2">
-                        {SORT_OPTIONS.map((option) => (
+                        {EDUCATION_LEVEL_OPTIONS.map((option) => (
                           <label
                             key={option.value}
                             className={cn(
                               "flex items-center justify-center gap-2 h-9 px-3 rounded-md border text-xs font-medium transition-colors cursor-pointer",
-                              sortBy === option.value
+                              educationLevel === option.value
                                 ? "bg-primary/10 border-primary text-primary"
                                 : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
                             )}
                           >
                             <input
                               type="radio"
-                              name="sortBy"
+                              name="educationLevel"
                               value={option.value}
-                              checked={sortBy === option.value}
-                              onChange={(e) => handleSortByChange(e.target.value)}
+                              checked={educationLevel === option.value}
+                              onChange={(e) => handleEducationLevelChange(e.target.value)}
                               className="sr-only"
                             />
-                            <span>{option.label}</span>
+                            <span className="text-center">{option.label}</span>
                           </label>
                         ))}
                       </div>
                     </div>
 
-                    {/* Ordem */}
+                    {/* Disciplina */}
                     <div className="space-y-3">
-                      <label className="text-sm font-semibold text-foreground">Ordem</label>
-                      <div className="grid grid-cols-2 gap-2">
-                        {ORDER_OPTIONS.map((option) => (
+                      <label className="text-sm font-semibold text-foreground">Disciplina</label>
+                      <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                        {SUBJECT_OPTIONS.map((option) => (
                           <label
                             key={option.value}
                             className={cn(
                               "flex items-center justify-center gap-2 h-9 px-3 rounded-md border text-xs font-medium transition-colors cursor-pointer",
-                              order === option.value
+                              subject === option.value
                                 ? "bg-primary/10 border-primary text-primary"
                                 : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
                             )}
                           >
                             <input
                               type="radio"
-                              name="order"
+                              name="subject"
                               value={option.value}
-                              checked={order === option.value}
-                              onChange={(e) => handleOrderChange(e.target.value)}
+                              checked={subject === option.value}
+                              onChange={(e) => handleSubjectChange(e.target.value)}
                               className="sr-only"
                             />
-                            <span>{option.label}</span>
+                            <span className="text-center">{option.label}</span>
                           </label>
                         ))}
                       </div>
@@ -284,7 +303,12 @@ export default function AdminResourcesPage() {
                     </div>
                   </div>
 
-                  <DrawerFooter className="px-6 pb-8">
+                  <DrawerFooter className="px-6 pb-8 gap-2">
+                    {hasActiveFilters && (
+                      <Button variant="outline" className="w-full" onClick={clearFilters}>
+                        Limpar Filtros
+                      </Button>
+                    )}
                     <DrawerClose asChild>
                       <Button className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/90">
                         Aplicar Filtros
@@ -308,25 +332,40 @@ export default function AdminResourcesPage() {
               <DataToolbar
                 searchValue={searchInput}
                 onSearchChange={setSearchInput}
-                searchPlaceholder="Buscar por título, assunto..."
+                searchPlaceholder="Buscar por título ou descrição..."
                 filters={
                   <div className="flex items-center gap-2">
-                    {/* Sort By Dropdown */}
+                    {/* Education Level Dropdown */}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/20">
-                          <ArrowUpDown className="h-3 w-3" />
-                          <span>Ordenar: {getSortLabel()}</span>
+                        <button className={cn(
+                          "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                          educationLevel
+                            ? "border-primary/20 bg-primary/10 text-primary"
+                            : "border-border bg-muted/30 text-muted-foreground hover:bg-muted/50"
+                        )}>
+                          <GraduationCap className="h-3 w-3" />
+                          <span>{getEducationLevelLabel()}</span>
+                          {educationLevel && (
+                            <X
+                              className="h-3 w-3 ml-1 hover:text-destructive"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setEducationLevel('')
+                                setPage(1)
+                              }}
+                            />
+                          )}
                         </button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="w-48">
-                        <DropdownMenuLabel>Ordenar por</DropdownMenuLabel>
+                      <DropdownMenuContent align="start" className="w-56">
+                        <DropdownMenuLabel>Nível de Educação</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        {SORT_OPTIONS.map((option) => (
+                        {EDUCATION_LEVEL_OPTIONS.map((option) => (
                           <DropdownMenuCheckboxItem
                             key={option.value}
-                            checked={sortBy === option.value}
-                            onCheckedChange={() => handleSortByChange(option.value)}
+                            checked={educationLevel === option.value}
+                            onCheckedChange={() => handleEducationLevelChange(option.value)}
                           >
                             {option.label}
                           </DropdownMenuCheckboxItem>
@@ -334,25 +373,37 @@ export default function AdminResourcesPage() {
                       </DropdownMenuContent>
                     </DropdownMenu>
 
-                    {/* Order Dropdown */}
+                    {/* Subject Dropdown */}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <button className={cn(
                           "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-                          "border-border bg-muted/30 text-muted-foreground hover:bg-muted/50"
+                          subject
+                            ? "border-primary/20 bg-primary/10 text-primary"
+                            : "border-border bg-muted/30 text-muted-foreground hover:bg-muted/50"
                         )}>
-                          <Calendar className="h-3 w-3" />
-                          <span>Ordem: {getOrderLabel()}</span>
+                          <BookOpen className="h-3 w-3" />
+                          <span>{getSubjectLabel()}</span>
+                          {subject && (
+                            <X
+                              className="h-3 w-3 ml-1 hover:text-destructive"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setSubject('')
+                                setPage(1)
+                              }}
+                            />
+                          )}
                         </button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="w-48">
-                        <DropdownMenuLabel>Ordem</DropdownMenuLabel>
+                      <DropdownMenuContent align="start" className="w-56 max-h-72 overflow-y-auto scrollbar-light">
+                        <DropdownMenuLabel>Disciplina</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        {ORDER_OPTIONS.map((option) => (
+                        {SUBJECT_OPTIONS.map((option) => (
                           <DropdownMenuCheckboxItem
                             key={option.value}
-                            checked={order === option.value}
-                            onCheckedChange={() => handleOrderChange(option.value)}
+                            checked={subject === option.value}
+                            onCheckedChange={() => handleSubjectChange(option.value)}
                           >
                             {option.label}
                           </DropdownMenuCheckboxItem>
@@ -371,6 +422,19 @@ export default function AdminResourcesPage() {
                         Apenas gratuitos
                       </Label>
                     </div>
+
+                    {/* Clear filters */}
+                    {hasActiveFilters && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
+                        onClick={clearFilters}
+                      >
+                        <X className="h-3 w-3 mr-1" />
+                        Limpar
+                      </Button>
+                    )}
                   </div>
                 }
                 actions={
@@ -389,7 +453,7 @@ export default function AdminResourcesPage() {
                           checked={visibleColumns.includes('subject')}
                           onCheckedChange={() => toggleColumn('subject')}
                         >
-                          Assunto
+                          Disciplina
                         </DropdownMenuCheckboxItem>
                         <DropdownMenuCheckboxItem
                           checked={visibleColumns.includes('educationLevel')}
@@ -419,10 +483,10 @@ export default function AdminResourcesPage() {
         )}
 
         {/* CONTENT AREA */}
-        <div className={isMobile
-          ? "flex-1 overflow-y-scroll bg-muted/5 p-3 scrollbar-hide"
-          : "flex-1 overflow-y-auto bg-muted/5 p-6"
-        }>
+        <div className={cn(
+          "flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-border",
+          isMobile ? "p-3" : "p-6"
+        )}>
           {isLoading ? (
             <div className="flex items-center justify-center h-full">
               <p className="text-muted-foreground">Carregando recursos...</p>
@@ -461,13 +525,90 @@ export default function AdminResourcesPage() {
           )}
         </div>
 
+        {/* PAGINATION */}
+        <div className="border-t border-border bg-background px-6 py-3">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="text-xs text-muted-foreground whitespace-nowrap">
+                Mostrando <span className="font-medium">{resources.length}</span> de <span className="font-medium">{resourcesData?.pagination.total || 0}</span> recursos
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground whitespace-nowrap">Itens por página:</span>
+                <Select
+                  value={limit.toString()}
+                  onValueChange={(value) => {
+                    setLimit(Number(value))
+                    setPage(1)
+                  }}
+                >
+                  <SelectTrigger size="sm" className="h-8 w-[70px]">
+                    <SelectValue placeholder={limit.toString()} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[10, 15, 20, 50, 100].map((value) => (
+                      <SelectItem key={value} value={value.toString()}>
+                        {value}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 gap-1 text-xs"
+                onClick={() => setPage(prev => Math.max(1, prev - 1))}
+                disabled={page === 1 || isLoading}
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+                Anterior
+              </Button>
+
+              <div className="flex items-center gap-1 mx-1">
+                {Array.from({ length: Math.min(5, resourcesData?.pagination.totalPages || 0) }, (_, i) => {
+                  const pageNum = i + 1;
+                  return (
+                    <Button
+                      key={pageNum}
+                      variant={page === pageNum ? "default" : "ghost"}
+                      size="sm"
+                      className="h-8 w-8 text-xs p-0"
+                      onClick={() => setPage(pageNum)}
+                    >
+                      {pageNum}
+                    </Button>
+                  )
+                })}
+                {(resourcesData?.pagination.totalPages || 0) > 5 && (
+                  <span className="text-xs text-muted-foreground px-1">...</span>
+                )}
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 gap-1 text-xs"
+                onClick={() => setPage(prev => Math.min(resourcesData?.pagination.totalPages || 1, prev + 1))}
+                disabled={!resourcesData?.pagination.hasMore || isLoading}
+              >
+                Próximo
+                <ChevronRight className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+        </div>
+
       </TemplateMainShell>
 
       {/* FAB - Floating Action Button */}
       <Button
         onClick={handleCreateNew}
         size="icon"
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-2xl hover:shadow-primary/50 hover:scale-110 transition-all z-50"
+        className="fixed bottom-20 right-8 h-14 w-14 rounded-full shadow-2xl hover:shadow-primary/50 hover:scale-110 transition-all z-50"
       >
         <Plus className="h-6 w-6" />
       </Button>

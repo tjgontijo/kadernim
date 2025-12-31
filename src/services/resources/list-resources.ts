@@ -99,32 +99,32 @@ export async function listResourcesService(
         select: { id: true },
       },
       images: {
+        where: { order: 0 },
         take: 1,
-        orderBy: { order: 'asc' },
-        select: { cloudinaryPublicId: true },
+        select: { url: true, cloudinaryPublicId: true },
       },
     },
   })
 
-  // To maintain compatibility or as per requirement, we can construct a URL or just return the ID.
-  // Assuming frontend can handle cloudinary ID, or we construct a full URL here if needed.
-  // For now, let's map it to a 'thumbUrl' property using a helper or just returning the ID if frontend expects it.
-  // Wait, frontend likely expects a full URL if it was `thumbUrl`. The previous seed used full URLs.
-  // But now we are using Cloudinary. We should probably return `thumbUrl` as the full Cloudinary URL.
-  // I need to import `getImageUrl` from image-service or construct it.
-  // Let's import `getImageUrl` from '@/lib/cloudinary/image-service'.
+  // Helper to build optimized Cloudinary URL for thumbnails (80x80)
+  const buildThumbUrl = (image: { url: string | null; cloudinaryPublicId: string } | undefined): string | null => {
+    if (!image) return null
+    // Prefer stored url if available
+    if (image.url) return image.url
+    // Otherwise build optimized Cloudinary URL
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+    return `https://res.cloudinary.com/${cloudName}/image/upload/c_fill,w_80,h_80,q_auto,f_auto/${image.cloudinaryPublicId}`
+  }
 
   const data = resources.map((resource) => ({
     id: resource.id,
     title: resource.title,
     description: resource.description,
-    educationLevel: resource.educationLevel.slug,
-    subject: resource.subject.slug,
+    educationLevel: resource.educationLevel.name,
+    subject: resource.subject.name,
     externalId: resource.externalId,
     isFree: resource.isFree,
-    thumbUrl: resource.images[0]
-      ? `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/q_auto,f_auto/${resource.images[0].cloudinaryPublicId}`
-      : null,
+    thumbUrl: buildThumbUrl(resource.images[0]),
     fileCount: resource.files.length,
     accessCount: resource.accessEntries.length,
     createdAt: resource.createdAt,
