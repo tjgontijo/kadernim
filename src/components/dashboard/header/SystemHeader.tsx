@@ -3,8 +3,9 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { LogOut, Settings, User } from 'lucide-react'
+import { LogOut, Settings, User, ShieldCheck } from 'lucide-react'
 import { authClient } from '@/lib/auth/auth-client'
+import { UserRole } from '@/types/user-role'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -91,6 +92,18 @@ export function SystemHeader() {
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />
+
+            {session?.data?.user?.role === UserRole.admin && (
+              <>
+                <DropdownMenuItem asChild>
+                  <Link href="/admin" className="flex cursor-pointer items-center gap-2 cursor-pointer">
+                    <ShieldCheck className="h-4 w-4" />
+                    <span>Administração</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
+            )}
 
             <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer">
               <LogOut className="mr-2 h-4 w-4" />

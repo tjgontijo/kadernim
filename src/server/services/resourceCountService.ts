@@ -1,5 +1,5 @@
-import { Prisma } from '@prisma/client'
-
+import { Prisma as PrismaNamespace } from '@/lib/prisma'
+import type { Prisma } from '@/lib/prisma'
 import { prisma } from '@/lib/prisma'
 import type { ResourceFilter } from '@/lib/schemas/resource'
 
@@ -27,20 +27,22 @@ function buildBaseWhereSql(filters: Pick<ResourceFilter, 'q' | 'educationLevel' 
   const whereConditions: Prisma.Sql[] = []
 
   if (q) {
-    whereConditions.push(Prisma.sql`r."title" ILIKE ${`%${q}%`}`)
+    whereConditions.push(PrismaNamespace.sql`r."title" ILIKE ${`%${q}%`}`)
   }
 
   if (educationLevel) {
     whereConditions.push(
-      Prisma.sql`r."educationLevel" = CAST(${educationLevel} AS "EducationLevel")`
+      PrismaNamespace.sql`EXISTS (SELECT 1 FROM education_level el WHERE el.id = r."educationLevelId" AND el.slug = ${educationLevel})`
     )
   }
 
   if (subject) {
-    whereConditions.push(Prisma.sql`r."subject" = CAST(${subject} AS "Subject")`)
+    whereConditions.push(
+      PrismaNamespace.sql`EXISTS (SELECT 1 FROM subject s WHERE s.id = r."subjectId" AND s.slug = ${subject})`
+    )
   }
 
-  return Prisma.join(whereConditions.length ? whereConditions : [Prisma.sql`TRUE`], ' AND ')
+  return PrismaNamespace.join(whereConditions.length ? whereConditions : [PrismaNamespace.sql`TRUE`], ' AND ')
 }
 
 /**
@@ -57,14 +59,14 @@ export async function getResourceCounts({
 
   const [allRows, mineRows, freeRows] = await Promise.all([
     // Aba ALL: todo o catálogo filtrado (independente de acesso)
-    prisma.$queryRaw<{ count: bigint }[]>(Prisma.sql`
+    prisma.$queryRaw<{ count: bigint }[]>(PrismaNamespace.sql`
       SELECT COUNT(*)::bigint AS count
       FROM "resource" r
       WHERE ${baseWhere}
     `),
 
     // Aba MINE: apenas recursos nao gratuitos aos quais o usuário tem hasAccess = true
-    prisma.$queryRaw<{ count: bigint }[]>(Prisma.sql`
+    prisma.$queryRaw<{ count: bigint }[]>(PrismaNamespace.sql`
       SELECT COUNT(*)::bigint AS count
       FROM "resource" r
       WHERE ${baseWhere}
@@ -73,7 +75,7 @@ export async function getResourceCounts({
     `),
 
     // Aba FREE: apenas recursos gratuitos
-    prisma.$queryRaw<{ count: bigint }[]>(Prisma.sql`
+    prisma.$queryRaw<{ count: bigint }[]>(PrismaNamespace.sql`
       SELECT COUNT(*)::bigint AS count
       FROM "resource" r
       WHERE ${baseWhere}

@@ -1,5 +1,5 @@
-import { Prisma } from '@prisma/client'
-
+import { Prisma as PrismaNamespace } from '@/lib/prisma'
+import type { Prisma } from '@/lib/prisma'
 import { prisma } from '@/lib/prisma'
 import { ResourceFilter, ResourceSchema, type Resource } from '@/lib/schemas/resource'
 
@@ -30,7 +30,8 @@ type ResourceRow = {
   id: string
   title: string
   description: string | null
-  thumbUrl: string | null
+  cloudinaryPublicId: string | null
+  imageUrl: string | null
   educationLevel: string
   subject: string
   isFree: boolean
@@ -54,17 +55,17 @@ export async function getResourceList({
   const whereConditions: Prisma.Sql[] = []
 
   if (q) {
-    whereConditions.push(Prisma.sql`r."title" ILIKE ${`%${q}%`}`)
+    whereConditions.push(PrismaNamespace.sql`r."title" ILIKE ${`%${q}%`}`)
   }
 
   if (educationLevel) {
     whereConditions.push(
-      Prisma.sql`r."educationLevel" = CAST(${educationLevel} AS "EducationLevel")`
+      PrismaNamespace.sql`el.slug = ${educationLevel}`
     )
   }
 
   if (subject) {
-    whereConditions.push(Prisma.sql`r."subject" = CAST(${subject} AS "Subject")`)
+    whereConditions.push(PrismaNamespace.sql`s.slug = ${subject}`)
   }
 
   const hasAccessCondition = buildHasAccessConditionSql(user, subscription)
@@ -72,28 +73,31 @@ export async function getResourceList({
   if (tab === 'mine') {
     // Meus recursos: apenas itens em que hasAccess é true E nao sao gratuitos
     whereConditions.push(hasAccessCondition)
-    whereConditions.push(Prisma.sql`r."isFree" = false`)
+    whereConditions.push(PrismaNamespace.sql`r."isFree" = false`)
   } else if (tab === 'free') {
     // Gratuitos: apenas recursos isFree = true
-    whereConditions.push(Prisma.sql`r."isFree" = true`)
+    whereConditions.push(PrismaNamespace.sql`r."isFree" = true`)
   }
 
-  const whereClause = Prisma.join(
-    whereConditions.length ? whereConditions : [Prisma.sql`TRUE`],
+  const whereClause = PrismaNamespace.join(
+    whereConditions.length ? whereConditions : [PrismaNamespace.sql`TRUE`],
     ' AND '
   )
 
-  const rows = await prisma.$queryRaw<ResourceRow[]>(Prisma.sql`
+  const rows = await prisma.$queryRaw<ResourceRow[]>(PrismaNamespace.sql`
     SELECT
       r.id,
       r.title,
       r.description AS description,
-      r."thumbUrl" AS "thumbUrl",
-      r."educationLevel" AS "educationLevel",
-      r."subject" AS "subject",
+      (SELECT ri."cloudinaryPublicId" FROM "resource_image" ri WHERE ri."resourceId" = r.id ORDER BY ri."order" ASC LIMIT 1) AS "cloudinaryPublicId",
+      (SELECT ri.url FROM "resource_image" ri WHERE ri."resourceId" = r.id ORDER BY ri."order" ASC LIMIT 1) AS "imageUrl",
+      el.slug AS "educationLevel",
+      s.slug AS "subject",
       r."isFree" AS "isFree",
       ${hasAccessCondition} AS "hasAccess"
     FROM "resource" r
+    JOIN "education_level" el ON r."educationLevelId" = el.id
+    JOIN "subject" s ON r."subjectId" = s.id
     WHERE ${whereClause}
     ORDER BY
       CASE WHEN ${hasAccessCondition} THEN 1 ELSE 0 END DESC,
@@ -111,7 +115,7 @@ export async function getResourceList({
       id: row.id,
       title: row.title,
       description: row.description,
-      thumbUrl: row.thumbUrl,
+      thumbUrl: row.imageUrl || (row.cloudinaryPublicId ? `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${row.cloudinaryPublicId}` : null),
       educationLevel: row.educationLevel,
       subject: row.subject,
       isFree: row.isFree,

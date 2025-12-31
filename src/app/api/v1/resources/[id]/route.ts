@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { ResourceDetailSchema } from '@/lib/schemas/resource'
 import { auth } from '@/lib/auth/auth'
+import { CLOUDINARY_CLOUD_NAME } from '@/lib/cloudinary/config'
 import {
   computeHasAccessForResource,
   type SubscriptionContext,
@@ -35,9 +36,9 @@ export async function GET(
         id: true,
         title: true,
         description: true,
-        thumbUrl: true,
-        educationLevel: true,
-        subject: true,
+        // thumbUrl removed
+        educationLevel: { select: { slug: true } },
+        subject: { select: { slug: true } },
         isFree: true,
         files: {
           select: {
@@ -46,8 +47,18 @@ export async function GET(
             createdAt: true,
           },
         },
+        images: {
+          select: {
+            id: true,
+            cloudinaryPublicId: true,
+            alt: true,
+            order: true,
+            url: true,
+          },
+          orderBy: { order: 'asc' },
+        },
       },
-    })
+    }) as any
 
     if (!resource) {
       return NextResponse.json(
@@ -85,11 +96,25 @@ export async function GET(
 
     const parsed = ResourceDetailSchema.parse({
       ...resource,
+      educationLevel: resource.educationLevel.slug,
+      subject: resource.subject.slug,
       hasAccess,
-      files: resource.files.map((file) => ({
+      // Fallback construction until DB migration is done
+      thumbUrl: resource.images?.[0]
+        ? `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/c_scale,w_400,q_auto,f_auto/${resource.images[0].cloudinaryPublicId}`
+        : null,
+      files: resource.files.map((file: any) => ({
         id: file.id,
         name: file.name,
         createdAt: file.createdAt.toISOString(),
+      })),
+      images: resource.images.map((img: any) => ({
+        id: img.id,
+        cloudinaryPublicId: img.cloudinaryPublicId,
+        alt: img.alt,
+        order: img.order,
+        // Use DB url if exists, otherwise construct it
+        url: img.url || `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/c_limit,w_1200,q_auto,f_auto/${img.cloudinaryPublicId}`,
       })),
     })
 

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verifyDownloadToken } from '@/lib/download-token'
 import { checkRateLimit } from '@/lib/helpers/rate-limit'
+import { getFileUrl } from '@/lib/cloudinary/file-service'
 import {
   computeHasAccessForResource,
   type SubscriptionContext,
@@ -47,7 +48,7 @@ export async function GET(request: NextRequest) {
       },
       select: {
         id: true,
-        url: true,
+        cloudinaryPublicId: true,
         resource: {
           select: {
             id: true,
@@ -93,7 +94,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const response = NextResponse.redirect(file.url, 302)
+    const fileUrl = getFileUrl(file.cloudinaryPublicId)
+    const response = NextResponse.redirect(fileUrl, 302)
     response.headers.set('Cache-Control', 'private, no-store')
 
     return response

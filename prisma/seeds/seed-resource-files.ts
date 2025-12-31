@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import type { PrismaClient } from '../generated/prisma/client'
 
 interface ResourceFileSeedItem {
   externalId: number // referencia o Resource.externalId
@@ -653,9 +653,9 @@ export async function seedResourceFiles(prisma: PrismaClient) {
       continue
     }
 
-    // evitar duplicidade por (resourceId, name) ou (resourceId, url)
+    // evitar duplicidade por (resourceId, name)
     const exists = await prisma.resourceFile.findFirst({
-      where: { resourceId: resource.id, url: f.url },
+      where: { resourceId: resource.id, name: f.name },
       select: { id: true },
     })
 
@@ -664,10 +664,14 @@ export async function seedResourceFiles(prisma: PrismaClient) {
       continue
     }
 
+    // Gerar public_id a partir do nome do arquivo (sem extensão)
+    const nameWithoutExt = f.name.split('.').slice(0, -1).join('.')
+    const cloudinaryPublicId = `resources/${resource.id}/${nameWithoutExt}`
+
     await prisma.resourceFile.create({
       data: {
         name: f.name,
-        url: f.url,
+        cloudinaryPublicId,
         resourceId: resource.id,
       },
     })

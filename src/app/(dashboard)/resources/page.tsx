@@ -59,7 +59,7 @@ export default function ResourcesPage() {
 
   return (
     <div className="w-full space-y-6 sm:space-y-8">
-      
+
       {isCommonUser && (
         <section>
           <ResourceUpsellBanner onSubscribe={handleSubscribe} />
@@ -85,7 +85,6 @@ export default function ResourcesPage() {
           hasNextPage={hasNextPage}
           isLoading={isLoading}
           isFetchingNextPage={isFetchingNextPage}
-          onSubscribe={handleSubscribe}
         />
       </section>
     </div>

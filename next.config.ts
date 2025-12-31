@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
+  skipProxyUrlNormalize: true,
   async headers() {
     return [
       {
@@ -45,6 +46,12 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'king-assets.yampi.me',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
         port: '',
         pathname: '/**',
       },

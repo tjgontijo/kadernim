@@ -10,6 +10,11 @@ import { BadgeSubject } from '@/components/dashboard/resources/BadgeSubject'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import type { ResourceDetail } from '@/lib/schemas/resource'
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from '@/components/ui/carousel'
 
 export default function ResourceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const [resource, setResource] = useState<ResourceDetail | null>(null)
@@ -140,10 +145,26 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
         <ArrowLeft className="h-4 w-4" /> Voltar
       </Link>
 
-      {/* Imagem */}
+      {/* Carrossel de Imagens */}
       <div className="overflow-hidden rounded-xl bg-gray-100">
         <AspectRatio ratio={16 / 9}>
-          {resource.thumbUrl ? (
+          {resource.images && resource.images.length > 0 ? (
+            <Carousel className="w-full h-full">
+              <CarouselContent>
+                {resource.images.map((img) => (
+                  <CarouselItem key={img.id} className="relative w-full h-full aspect-video">
+                    <Image
+                      src={`https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/c_limit,w_1200,q_auto,f_auto/${img.cloudinaryPublicId}`}
+                      alt={img.alt || resource.title}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 80vw, 60vw"
+                    />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
+          ) : resource.thumbUrl ? (
             <Image
               src={resource.thumbUrl}
               alt={resource.title}
@@ -190,11 +211,10 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
 
       {downloadFeedback && (
         <div
-          className={`rounded-md border p-3 text-sm ${
-            downloadFeedback.type === 'error'
-              ? 'border-red-200 bg-red-50 text-red-700'
-              : 'border-blue-200 bg-blue-50 text-blue-700'
-          }`}
+          className={`rounded-md border p-3 text-sm ${downloadFeedback.type === 'error'
+            ? 'border-red-200 bg-red-50 text-red-700'
+            : 'border-blue-200 bg-blue-50 text-blue-700'
+            }`}
         >
           {downloadFeedback.text}
         </div>

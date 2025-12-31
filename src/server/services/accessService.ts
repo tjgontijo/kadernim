@@ -1,5 +1,5 @@
-import { Prisma } from '@prisma/client'
-
+import { Prisma as PrismaNamespace } from '@/lib/prisma'
+import type { Prisma } from '@/lib/prisma'
 import { prisma } from '@/lib/prisma'
 
 export type UserAccessContext = {
@@ -31,12 +31,12 @@ export function buildHasAccessConditionSql(
 ): Prisma.Sql {
   if (ctx.isAdmin) {
     // Admin sempre tem acesso
-    return Prisma.sql`TRUE`
+    return PrismaNamespace.sql`TRUE`
   }
 
   const hasFullAccess = subscription.hasActiveSubscription
 
-  return Prisma.sql`(
+  return PrismaNamespace.sql`(
     r."isFree"
     OR ${hasFullAccess}
     OR EXISTS(

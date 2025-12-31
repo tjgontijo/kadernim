@@ -56,7 +56,7 @@ export async function GET(
       select: {
         id: true,
         name: true,
-        url: true,
+        cloudinaryPublicId: true,
         resource: {
           select: {
             id: true,

@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { unstable_cache } from 'next/cache'
-import { Prisma } from '@prisma/client'
 
-import { prisma } from '@/lib/prisma'
+import { prisma, Prisma as PrismaNamespace } from '@/lib/prisma'
 import { auth } from '@/lib/auth/auth'
 import { ResourceFilterSchema } from '@/lib/schemas/resource'
 import {
@@ -50,7 +49,7 @@ export async function GET(request: NextRequest) {
     }
 
     const searchParams = request.nextUrl.searchParams
-    
+
     // Validar e parsear query params com Zod
     const parsed = ResourceFilterSchema.safeParse({
       page: searchParams.get('page') ?? undefined,
@@ -99,45 +98,47 @@ export async function GET(request: NextRequest) {
 
     const fetchResources = unstable_cache(
       async () => {
-        const whereConditions: Prisma.Sql[] = []
+        const whereConditions: PrismaNamespace.Sql[] = []
 
         if (q) {
-          whereConditions.push(Prisma.sql`r."title" ILIKE ${`%${q}%`}`)
+          whereConditions.push(PrismaNamespace.sql`r."title" ILIKE ${`%${q}%`}`)
         }
 
         if (educationLevel) {
           whereConditions.push(
-            Prisma.sql`r."educationLevel" = CAST(${educationLevel} AS "EducationLevel")`
+            PrismaNamespace.sql`el.slug = ${educationLevel}`
           )
         }
 
         if (subject) {
-          whereConditions.push(Prisma.sql`r."subject" = CAST(${subject} AS "Subject")`)
+          whereConditions.push(PrismaNamespace.sql`s.slug = ${subject}`)
         }
 
         if (tab === 'mine') {
           whereConditions.push(hasAccessCondition)
-          whereConditions.push(Prisma.sql`r."isFree" = false`)
+          whereConditions.push(PrismaNamespace.sql`r."isFree" = false`)
         } else if (tab === 'free') {
-          whereConditions.push(Prisma.sql`r."isFree" = true`)
+          whereConditions.push(PrismaNamespace.sql`r."isFree" = true`)
         }
 
-        const whereClause = Prisma.join(
-          whereConditions.length ? whereConditions : [Prisma.sql`TRUE`],
+        const whereClause = PrismaNamespace.join(
+          whereConditions.length ? whereConditions : [PrismaNamespace.sql`TRUE`],
           ' AND '
         )
 
-        const rows = await prisma.$queryRaw<ResourceRow[]>(Prisma.sql`
+        const rows = await prisma.$queryRaw<ResourceRow[]>(PrismaNamespace.sql`
           SELECT
             r.id,
             r.title,
             r."thumbUrl" AS "thumbUrl",
-            r."educationLevel" AS "educationLevel",
-            r."subject" AS "subject",
+            el.slug AS "educationLevel",
+            s.slug AS "subject",
             r.description AS description,
             r."isFree" AS "isFree",
             ${hasAccessCondition} AS "hasAccess"
           FROM "resource" r
+          JOIN "education_level" el ON r."educationLevelId" = el.id
+          JOIN "subject" s ON r."subjectId" = s.id
           WHERE ${whereClause}
           ORDER BY
             CASE WHEN ${hasAccessCondition} THEN 1 ELSE 0 END DESC,

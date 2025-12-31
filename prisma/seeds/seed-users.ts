@@ -1,9 +1,9 @@
-import { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '../generated/prisma/client';
 import { auth } from '@/lib/auth/auth';
 import { UserRole, type UserRoleType } from '@/types/user-role';
 
 const usersData = [
-    //{   name: "Thiago Gontijo", email: "tjgontijo@gmail.com", password: "Thi##123", phone: "5561982482100", role: UserRole.admin},
+    {   name: "Thiago Gontijo", email: "tjgontijo@gmail.com", password: "Thi##123", phone: "5561982482100", role: UserRole.admin},
     {   name: "Arilson Souza", email: "arilson@arilsonsouza.com.br", password: "123senha@", phone: "5561992532101", role: UserRole.user}
 ]
 

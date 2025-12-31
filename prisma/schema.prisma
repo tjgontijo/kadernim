@@ -1,12 +1,9 @@
 generator client {
-  provider = "prisma-client-js"
-  previewFeatures = ["postgresqlExtensions"]
+  provider = "prisma-client"
+  output   = "./generated/prisma"
 }
-
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
-  //directUrl = env("DIRECT_URL")
 }
 
 enum UserRole {
@@ -15,29 +12,23 @@ enum UserRole {
   admin
 }
 
-enum EducationLevel {
-  EARLY_CHILDHOOD_EDUCATION     // Educação Infantil
-  ELEMENTARY_SCHOOL_I           // Ensino Fundamental I
-  ELEMENTARY_SCHOOL_II          // Ensino Fundamental II
-  HIGH_SCHOOL                   // Ensino Médio
+model EducationLevel {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  slug      String     @unique
+  order     Int        @default(0)
+  resources Resource[]
+
+  @@map("education_level")
 }
 
-enum Subject {
-  PORTUGUESE           // Língua Portuguesa
-  MATHEMATICS          // Matemática
-  SCIENCE              // Ciências (geral, ensino fundamental)
-  HISTORY              // História
-  GEOGRAPHY            // Geografia
-  ENGLISH              // Língua Inglesa
-  ART                  // Arte / Educação Artística
-  PHYSICAL_EDUCATION   // Educação Física
-  PHILOSOPHY           // Filosofia
-  SOCIOLOGY            // Sociologia
-  BIOLOGY              // Biologia
-  CHEMISTRY            // Química
-  PHYSICS              // Física
-  IMPORTANT_DATE       // Data Importante
-  PLANNING             // Planejamento
+model Subject {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  slug      String     @unique
+  resources Resource[]
+
+  @@map("subject")
 }
 
 model User {
@@ -141,35 +132,74 @@ model Subscription {
 model Resource {
   id              String             @id @default(cuid())
   title           String
-  description     String?
-  thumbUrl        String?
-  educationLevel  EducationLevel
-  subject         Subject
+  description     String?  
+
+  educationLevelId String
+  educationLevel   EducationLevel    @relation(fields: [educationLevelId], references: [id])
+  
+  subjectId        String
+  subject          Subject           @relation(fields: [subjectId], references: [id])
+  
   externalId      Int             @unique
   isFree          Boolean         @default(false)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
+  images ResourceImage[]
   files ResourceFile[]
+  videos ResourceVideo[]
   accessEntries UserResourceAccess[]
 
-  @@index([educationLevel])
-  @@index([subject])
-  @@index([educationLevel, subject])
+  @@index([educationLevelId])
+  @@index([subjectId])
   @@index([title, id])
   @@map("resource")
 }
 
-model ResourceFile {
+model ResourceImage {
   id          String       @id @default(cuid())
-  name        String
-  url         String
   resourceId  String
   resource    Resource  @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  cloudinaryPublicId String
+  url         String?
+  alt         String?
+  order       Int @default(0)
+  createdAt   DateTime  @default(now())
+
+  @@index([resourceId, order])
+  @@map("resource_image")
+}
+
+model ResourceFile {
+  id          String       @id @default(cuid())
+  resourceId  String
+  resource    Resource  @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  name        String
+  cloudinaryPublicId String
+  fileType    String?
+  sizeBytes   Int?
   createdAt   DateTime  @default(now())
 
   @@index([resourceId])
   @@map("resource_file")
+}
+
+model ResourceVideo {
+  id          String       @id @default(cuid())
+  resourceId  String
+  resource    Resource  @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  title       String
+  cloudinaryPublicId String
+  thumbnail   String?
+  duration    Int?
+  order       Int @default(0)
+  createdAt   DateTime  @default(now())
+
+  @@index([resourceId, order])
+  @@map("resource_video")
 }
 
 model UserResourceAccess {

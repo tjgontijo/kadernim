@@ -8,11 +8,12 @@ x-api-key: {{apiKey}}
 Content-Type: {{contentType}}
 
 {
-  "name": "Nome do Assinante",
-  "email": "individual@mail.com",
-  "phone": "61981218195",
-  "expiresAt": "2025-12-31T23:59:59.999Z",
-  "purchaseDate": "2024-10-30T23:27:00.000Z"
+  "store": "prof-didatica",
+  "name": "Arilson Souza",
+  "email": "arilson@arilsonsouza.com.br",
+  "phone": "61992532101",
+  "expiresAt": "2026-12-31T23:59:59.000Z",
+  "product_ids": [37235525,30200121]
 }
 
 ### Testar matriculando em dois produtos

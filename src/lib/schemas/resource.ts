@@ -60,8 +60,19 @@ export const ResourceFileMetadataSchema = z.object({
 
 export type ResourceFileMetadata = z.infer<typeof ResourceFileMetadataSchema>
 
+export const ResourceImageSchema = z.object({
+  id: z.string(),
+  cloudinaryPublicId: z.string(),
+  url: z.string().optional(),
+  alt: z.string().nullable().optional(),
+  order: z.number(),
+})
+
+export type ResourceImage = z.infer<typeof ResourceImageSchema>
+
 export const ResourceDetailSchema = ResourceSchema.extend({
   files: z.array(ResourceFileMetadataSchema),
+  images: z.array(ResourceImageSchema),
 })
 
 export type ResourceDetail = z.infer<typeof ResourceDetailSchema>

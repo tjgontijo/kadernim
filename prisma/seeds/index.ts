@@ -1,9 +1,17 @@
-import { PrismaClient } from '@prisma/client';
+import 'dotenv/config';
+import { PrismaClient } from '../generated/prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 import { seedUsers } from './seed-users';
+import { seedTaxonomy } from './seed-taxonomy';
 import { seedResources } from './seed-resources';
 import { seedResourceFiles } from './seed-resource-files';
 
-const prisma = new PrismaClient();
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+const prisma = new PrismaClient({
+  adapter: new PrismaPg(pool),
+});
 
 async function cleanDatabase() {
   // Usar deleteMany para limpar cada tabela (mais seguro que TRUNCATE)
@@ -11,6 +19,8 @@ async function cleanDatabase() {
   try {
     await prisma.resourceFile.deleteMany()
     await prisma.resource.deleteMany()
+    await prisma.subject.deleteMany()
+    await prisma.educationLevel.deleteMany()
     await prisma.session.deleteMany()
     await prisma.account.deleteMany()
     await prisma.verification.deleteMany()
@@ -32,6 +42,7 @@ async function createInitialData() {
     console.log('✅ Banco de dados limpo.');
 
     await seedUsers(prisma);
+    await seedTaxonomy(prisma);
     await seedResources(prisma);
     await seedResourceFiles(prisma);
 
@@ -61,6 +72,8 @@ export async function main() {
   }
 }
 
-if (require.main === module) {
-  main();
-}
+// Run seed if this is the main module
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

@@ -40,7 +40,6 @@ interface ResourceGridProps {
   hasNextPage?: boolean
   isLoading?: boolean
   isFetchingNextPage?: boolean
-  onSubscribe?: () => void
 }
 
 export function ResourceGrid({
@@ -49,7 +48,6 @@ export function ResourceGrid({
   hasNextPage = false,
   isLoading = false,
   isFetchingNextPage = false,
-  onSubscribe,
 }: ResourceGridProps) {
   return (
     <div className="w-full">
@@ -79,7 +77,6 @@ export function ResourceGrid({
               subject={resource.subject}
               hasAccess={resource.hasAccess}
               isFree={resource.isFree}
-              onSubscribe={onSubscribe}
             />
           )}
           components={{

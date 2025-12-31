@@ -19,7 +19,6 @@ interface ResourceCardProps {
   subject: string
   hasAccess: boolean
   isFree: boolean
-  onSubscribe?: () => void
 }
 
 export function ResourceCard({
@@ -31,7 +30,6 @@ export function ResourceCard({
   subject,
   hasAccess,
   isFree,
-  onSubscribe,
 }: ResourceCardProps) {
   return (
     <Link href={`/resources/${id}`}>

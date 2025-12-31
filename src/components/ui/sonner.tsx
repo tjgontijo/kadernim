@@ -32,6 +32,11 @@ const Toaster = ({ ...props }: ToasterProps) => {
           "--border-radius": "var(--radius)",
         } as React.CSSProperties
       }
+      toastOptions={{
+        classNames: {
+          description: "!text-muted-foreground/80 !opacity-100",
+        },
+      }}
       {...props}
     />
   )

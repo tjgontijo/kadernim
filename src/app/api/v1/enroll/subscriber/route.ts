@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    await revalidateTag(buildResourceCacheTag(user.id))
+    await revalidateTag(buildResourceCacheTag(user.id), 'max')
 
     return NextResponse.json(
       {

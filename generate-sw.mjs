@@ -25,7 +25,7 @@ const swConfig = {
       },
     },
     {
-      urlPattern: ({ request }) => 
+      urlPattern: ({ request }) =>
         request.destination === 'script' || request.destination === 'style',
       handler: 'StaleWhileRevalidate',
       options: {
@@ -76,7 +76,13 @@ const swConfig = {
   ],
   // Configuração para offline fallback
   navigateFallback: '/offline',
-  navigateFallbackDenylist: [/^\/_/, /\/[^/?]+\.[^/]+$/, /^\/api\//],
+  navigateFallbackDenylist: [
+    /^\/_next/,
+    /^\/api\//,
+    /^\/login/,
+    /\?_rsc=/,
+    /\.[^/]+$/
+  ],
 };
 
 generateSW(swConfig).then(({ count, size }) => {
