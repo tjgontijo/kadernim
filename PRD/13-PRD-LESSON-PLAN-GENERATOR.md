@@ -616,7 +616,8 @@ model BnccSkill {
   id String @id @default(cuid())
 
   // Código oficial BNCC (fonte de verdade)
-  code String @unique // "EI03TS01", "EF05MA09", "EF67CI04"...
+  // ⚠️ NÃO é unique sozinho! Códigos como EF12LP01 cobrem múltiplos anos
+  code String // "EI03TS01", "EF05MA09", "EF12LP01", "EF15AR01"...
 
   // Etapa de ensino (slug do EducationLevel existente)
   educationLevelSlug String // "educacao-infantil" | "ensino-fundamental-1" | "ensino-fundamental-2"
@@ -656,6 +657,10 @@ model BnccSkill {
   @@index([searchVector], type: Gin)     // FTS
   @@index([embedding], type: IVFFlat)    // pgvector (opcional)
 
+  // ⚠️ IMPORTANTE: Unique compostos separados para EI e EF
+  @@unique([code, gradeSlug])   // EF: Permite duplicar EF12, EF15, etc por ano
+  @@unique([code, ageRange])    // EI: Previne duplicação por faixa etária
+
   @@map("bncc_skill")
 }
 ```
@@ -665,6 +670,15 @@ model BnccSkill {
 2. **IA consulta texto**: A IA faz buscas textuais/semânticas, não precisa de JOINs
 3. **Importação simples**: Mapeia direto da planilha BNCC sem lookups
 4. **Denormalizado = rápido**: Uma única query traz tudo que a IA precisa
+
+**Por que dois unique compostos?**
+- **EF usa `gradeSlug`**: Códigos como `EF12LP01` abrangem múltiplos anos
+  - `@@unique([code, gradeSlug])` permite `EF12LP01` + `ef1-1-ano` e `EF12LP01` + `ef1-2-ano`
+- **EI usa `ageRange`**: Previne duplicação por faixa etária
+  - `@@unique([code, ageRange])` garante `EI03TS01` + `ei-criancas-pequenas` único
+- **Queries simples**:
+  - EF: `WHERE code = 'EF12LP01' AND gradeSlug = 'ef1-1-ano'`
+  - EI: `WHERE code = 'EI03TS01' AND ageRange = 'ei-criancas-pequenas'`
 
 ### 5.2 Planos de Aula
 
@@ -857,13 +871,36 @@ GET /api/v1/bncc/grades?educationLevelSlug=ensino-fundamental-1
     ]
 
 GET /api/v1/bncc/subjects?educationLevelSlug=ensino-fundamental-1&gradeSlug=ef1-3-ano
-    Retorna disciplinas disponíveis para o ano selecionado
+    Retorna disciplinas/campos disponíveis conforme etapa
 
+    **Para EF (Ensino Fundamental):**
     Response: [
       { slug: "matematica", name: "Matemática" },
       { slug: "lingua-portuguesa", name: "Língua Portuguesa" },
-      ...
+      { slug: "ciencias", name: "Ciências" },
+      { slug: "historia", name: "História" },
+      { slug: "geografia", name: "Geografia" },
+      { slug: "arte", name: "Arte" },
+      { slug: "educacao-fisica", name: "Educação Física" },
+      { slug: "ensino-religioso", name: "Ensino Religioso" },
+      // EF1: 8 componentes (SEM língua-inglesa)
+      // EF2: 9 componentes (COM língua-inglesa)
     ]
+
+    **Para EI (Educação Infantil):**
+    Response: [
+      { slug: "ei-o-eu-o-outro-e-o-nos", name: "O eu, o outro e o nós" },
+      { slug: "ei-corpo-gestos-e-movimentos", name: "Corpo, gestos e movimentos" },
+      { slug: "ei-tracos-sons-cores-e-formas", name: "Traços, sons, cores e formas" },
+      { slug: "ei-escuta-fala-pensamento-e-imaginacao", name: "Escuta, fala, pensamento e imaginação" },
+      { slug: "ei-espacos-tempos-quantidades-relacoes-e-transformacoes", name: "Espaços, tempos, quantidades, relações e transformações" }
+      // EI: 5 campos de experiência (armazenados como Subject)
+    ]
+
+    **⚠️ IMPORTANTE ARQUITETURAL:**
+    - **EF:** Subjects = Componentes Curriculares (Matemática, etc)
+    - **EI:** Subjects = Campos de Experiência (para facilitar filtros de recursos)
+    - **BnccSkill.fieldOfExperience:** Também armazena campo de experiência (denormalizado)
 
 GET /api/v1/bncc/skills?educationLevelSlug=ensino-fundamental-1&gradeSlug=ef1-3-ano&subjectSlug=matematica&q=frações
     Busca habilidades BNCC com filtros + Full-Text Search
@@ -1325,6 +1362,27 @@ const subjectMap: Record<string, string> = {
   // ... completar
 }
 
+// Função auxiliar: Expandir códigos multi-ano (EF12, EF15, EF67, etc)
+function expandGrades(code: string, educationLevelSlug: string): string[] {
+  // Extrair anos do código (ex: "EF12LP01" → "12")
+  const match = code.match(/^E[IF](\d{2})/)
+  if (!match) return []
+
+  const yearCode = match[1]
+
+  // Códigos multi-ano conhecidos
+  const multiYearMap: Record<string, string[]> = {
+    '12': ['ef1-1-ano', 'ef1-2-ano'],                    // Anos 1-2
+    '15': ['ef1-1-ano', 'ef1-2-ano', 'ef1-3-ano', 'ef1-4-ano', 'ef1-5-ano'], // Anos 1-5
+    '35': ['ef1-3-ano', 'ef1-4-ano', 'ef1-5-ano'],       // Anos 3-5
+    '67': ['ef2-6-ano', 'ef2-7-ano'],                    // Anos 6-7
+    '69': ['ef2-6-ano', 'ef2-7-ano', 'ef2-8-ano', 'ef2-9-ano'], // Anos 6-9
+    '89': ['ef2-8-ano', 'ef2-9-ano'],                    // Anos 8-9
+  }
+
+  return multiYearMap[yearCode] || []
+}
+
 async function importBncc() {
   console.log('📚 Importando habilidades BNCC...')
 
@@ -1353,38 +1411,65 @@ async function importBncc() {
       // Detectar se é EI ou EF pelo código
       const isEI = row.codigo.startsWith('EI')
 
-      // Criar habilidade BNCC
-      await prisma.bnccSkill.upsert({
-        where: { code: row.codigo },
-        update: {
-          description: row.descricao,
-          comments: row.comentarios,
-          curriculumSuggestions: row.sugestoes,
-        },
-        create: {
-          code: row.codigo,
-          description: row.descricao,
-          educationLevelSlug,
+      // ⚠️ IMPORTANTE: Expandir códigos multi-ano (EF12, EF15, etc)
+      const gradesToImport = expandGrades(row.codigo, educationLevelSlug)
+      const finalGrades = gradesToImport.length > 0 ? gradesToImport : [gradeSlug]
 
-          // Campos específicos de EI
-          fieldOfExperience: isEI ? row.componente : null,
-          ageRange: isEI ? gradeSlug : null,
+      // Criar uma linha para cada ano do intervalo
+      for (const currentGradeSlug of finalGrades) {
+        if (!currentGradeSlug && !isEI) {
+          console.warn(`⚠️  gradeSlug ausente para ${row.codigo}`)
+          continue
+        }
 
-          // Campos específicos de EF
-          gradeSlug: !isEI ? gradeSlug : null,
-          subjectSlug: !isEI ? subjectSlug : null,
-          unitTheme: row.unidadeTematica,
-          knowledgeObject: row.objetoConhecimento,
+        // Criar habilidade BNCC
+        // ⚠️ Usar constraint correto: EI usa ageRange, EF usa gradeSlug
+        const uniqueWhere = isEI
+          ? {
+              code_ageRange: {
+                code: row.codigo,
+                ageRange: currentGradeSlug || ''
+              }
+            }
+          : {
+              code_gradeSlug: {
+                code: row.codigo,
+                gradeSlug: currentGradeSlug || ''
+              }
+            }
 
-          // Auxiliares
-          comments: row.comentarios,
-          curriculumSuggestions: row.sugestoes,
+        await prisma.bnccSkill.upsert({
+          where: uniqueWhere,
+          update: {
+            description: row.descricao,
+            comments: row.comentarios,
+            curriculumSuggestions: row.sugestoes,
+          },
+          create: {
+            code: row.codigo,
+            description: row.descricao,
+            educationLevelSlug,
 
-          // search_vector será criado automaticamente pelo trigger SQL
-        },
-      })
+            // Campos específicos de EI
+            fieldOfExperience: isEI ? row.componente : null,
+            ageRange: isEI ? currentGradeSlug : null,
 
-      imported++
+            // Campos específicos de EF
+            gradeSlug: !isEI ? currentGradeSlug : null,
+            subjectSlug: !isEI ? subjectSlug : null,
+            unitTheme: row.unidadeTematica,
+            knowledgeObject: row.objetoConhecimento,
+
+            // Auxiliares
+            comments: row.comentarios,
+            curriculumSuggestions: row.sugestoes,
+
+            // search_vector será criado automaticamente pelo trigger SQL
+          },
+        })
+
+        imported++
+      }
     } catch (error) {
       console.error(`❌ Erro ao importar ${row.codigo}:`, error)
       skipped++
@@ -1392,6 +1477,7 @@ async function importBncc() {
   }
 
   console.log(`✅ Importação concluída: ${imported} habilidades, ${skipped} puladas`)
+  console.log(`💡 Códigos multi-ano (EF12, EF15, etc) foram expandidos automaticamente`)
 }
 
 importBncc()
@@ -1535,96 +1621,422 @@ validateBncc()
 
 > **Dependências:** Ver [PRD-00: Infraestrutura](./00-INFRASTRUCTURE-DEPENDENCIES.md)
 
-### Fase 1: Base BNCC (1-2 dias)
-- [ ] Baixar planilha oficial BNCC do MEC
-- [ ] Criar migration: schema BnccSkill
-- [ ] Criar migration: trigger FTS (search_vector)
-- [ ] Criar script: `scripts/import-bncc.ts`
-- [ ] Criar script: `scripts/validate-bncc.ts`
-- [ ] Executar importação
-- [ ] Validar dados (contar por etapa/disciplina)
-- [ ] APIs de consulta BNCC:
-  - [ ] GET /api/v1/bncc/education-levels
-  - [ ] GET /api/v1/bncc/subjects
-  - [ ] GET /api/v1/bncc/skills (com FTS)
+---
 
-### Fase 2: Schema e Controle de Uso (1 dia)
-- [ ] Criar migration: LessonPlan model
-- [ ] Criar migration: LessonPlanUsage model
-- [ ] Criar Zod schema: LessonPlanContentSchema
-- [ ] Criar service: `getLessonPlanUsage(userId)`
-- [ ] Criar service: `incrementUsage(userId)`
-- [ ] API: GET /api/v1/lesson-plans/usage
+### ✅ PRÉ-REQUISITOS (Antes de Começar)
 
-### Fase 3: Geração com IA (2-3 dias)
-- [ ] Instalar Vercel AI SDK (`ai`, `@ai-sdk/openai`)
-- [ ] Configurar OPENAI_API_KEY no .env
-- [ ] Criar prompts: `lib/ai/prompts/lesson-plan.ts`
-- [ ] Criar service: `generateLessonPlan()`
-- [ ] API: POST /api/v1/lesson-plans
-  - [ ] Validação de assinante
-  - [ ] Verificação de limite mensal
-  - [ ] Buscar habilidades BNCC completas
-  - [ ] Gerar com IA (generateObject)
-  - [ ] Salvar no banco
-  - [ ] Incrementar usage
-- [ ] Testar com dados reais
+**Certifique-se de que está pronto:**
 
-### Fase 4: Wizard UI (3-4 dias)
-- [ ] Componente: `create-plan-drawer.tsx` (Vaul)
-- [ ] Componente: `wizard-steps.tsx` (indicador progresso)
-- [ ] Step 1: Seleção de etapa/ano/disciplina
-  - [ ] `step-stage.tsx`
-  - [ ] `step-year-subject.tsx`
-- [ ] Step 2: Tema e duração
-  - [ ] `step-theme.tsx`
-- [ ] Step 3: Seleção de habilidades BNCC
-  - [ ] `step-skills.tsx`
-  - [ ] `skill-selector.tsx` (com busca FTS)
-- [ ] Step 4: Revisão e geração
-  - [ ] `step-review.tsx`
-  - [ ] `generating-state.tsx` (loading)
-  - [ ] `success-state.tsx` (sucesso + downloads)
-- [ ] Hook: `useCreateLessonPlan()` (React Query mutation)
-- [ ] Hook: `useBnccSkills()` (busca com debounce)
-- [ ] Testar wizard completo
+- [x] **Taxonomia BNCC semeada** (`prisma/seeds/seed-taxonomy.ts`)
+  - 3 EducationLevels (EI, EF1, EF2)
+  - 12 Grades (3 EI + 5 EF1 + 4 EF2)
+  - 14 Subjects (5 EI + 9 EF)
+  - GradeSubject apenas para EF (EI não tem)
+  - **Validação:** EF1 tem 8 componentes (SEM inglês), EF2 tem 9 (COM inglês)
 
-### Fase 5: Exportação (2-3 dias)
-- [ ] Instalar dependências:
-  - [ ] `docx` (Word)
-  - [ ] `@react-pdf/renderer` (PDF)
-- [ ] Criar template: `lib/export/word-template.ts`
-- [ ] Criar template: `lib/export/pdf-template.tsx`
-- [ ] Service: `exportToWord(plan)`
-- [ ] Service: `exportToPdf(plan)`
-- [ ] API: GET /api/v1/lesson-plans/:id/download
-  - [ ] Validar ownership
-  - [ ] Gerar arquivo (Word ou PDF)
-  - [ ] Retornar com headers corretos
-- [ ] Testar downloads
+- [ ] **Seeds BNCC criados**
+  - `prisma/seeds/seed-bncc-infantil.ts` ✅ (criado)
+  - `prisma/seeds/seed-bncc-fundamental.ts` ✅ (criado)
+  - `prisma/seeds/index.ts` ✅ (integrado)
 
-### Fase 6: Lista e Histórico (2 dias)
-- [ ] Página: `app/(client)/lesson-plans/page.tsx`
-- [ ] Componente: `plan-list.tsx`
-- [ ] Componente: `plan-card.tsx`
-- [ ] Componente: `empty-state.tsx`
-- [ ] Componente: `usage-progress.tsx` (barra X/15)
-- [ ] API: GET /api/v1/lesson-plans (lista com paginação)
-- [ ] API: GET /api/v1/lesson-plans/:id
-- [ ] Hook: `useLessonPlans()`
-- [ ] Hook: `useLessonPlanUsage()`
-- [ ] Re-download de planos antigos
-- [ ] Testar lista vazia + com dados
+- [ ] **Dados BNCC baixados**
+  - TSV da Educação Infantil → `prisma/seeds/data/bncc_infantil.tsv`
+  - TSV do Ensino Fundamental → `prisma/seeds/data/bncc_fundamental.tsv`
 
-### Fase 7: Polimento e Otimizações (1-2 dias)
-- [ ] Otimizar prompts (testar qualidade dos planos)
-- [ ] Adicionar loading states em todos os steps
-- [ ] Validação de formulários (Zod)
-- [ ] Mensagens de erro amigáveis
-- [ ] Feedback de sucesso (toast/confetti?)
-- [ ] Responsividade mobile (80% do tráfego)
-- [ ] Testes end-to-end (Playwright?)
-- [ ] Monitoramento de custos (log de tokens)
+- [ ] **Arquitetura confirmada**
+  - EI NÃO usa Subject.slug (usa fieldOfExperience em BnccSkill)
+  - EF USA Subject.slug (Matemática, Português, etc)
+  - EF1 tem 8 componentes, EF2 tem 9 componentes
+
+**Quando tudo estiver ✅, prossiga para Fase 0.**
+
+---
+
+### 📦 Fase 0: Preparação e Setup (30 min - 1h)
+
+**Objetivo:** Configurar dependências e infraestrutura básica
+
+**Checklist:**
+- [ ] **Habilitar pgvector no Neon Database**
+  ```sql
+  -- No SQL Editor do Neon
+  CREATE EXTENSION IF NOT EXISTS vector;
+  ```
+- [ ] **Instalar dependências**
+  ```bash
+  npm install ai @ai-sdk/openai xlsx
+  npm install -D @types/xlsx
+  ```
+- [ ] **Configurar variáveis de ambiente** (.env)
+  ```env
+  OPENAI_API_KEY=sk-proj-...
+  ```
+- [ ] **Confirmar TSVs BNCC**
+  - Educação Infantil: `prisma/seeds/data/bncc_infantil.tsv`
+  - Ensino Fundamental: `prisma/seeds/data/bncc_fundamental.tsv`
+  - ⚠️ Se não tiver, baixar de: http://basenacionalcomum.mec.gov.br/
+
+**Bloqueadores:** Nenhum
+**Entrega:** Ambiente pronto para começar desenvolvimento
+
+---
+
+### 🗄️ Fase 1: Base de Dados BNCC (1-2 dias)
+
+**Objetivo:** Importar todas as habilidades BNCC para o banco de dados
+
+**Checklist:**
+- [ ] **1.1 - Schema Prisma**
+  - [ ] Criar model `BnccSkill` no `schema.prisma`
+  - [ ] Executar: `npx prisma migrate dev --name add_bncc_skill`
+  - [ ] Verificar migration criada
+
+- [ ] **1.2 - Trigger Full-Text Search**
+  - [ ] Criar migration SQL: `add_bncc_search_trigger.sql`
+  - [ ] Adicionar função `update_bncc_search_vector()`
+  - [ ] Adicionar trigger `BEFORE INSERT OR UPDATE`
+  - [ ] Executar: `npx prisma migrate deploy`
+
+- [ ] **1.3 - Executar Seeds BNCC**
+  - [ ] Verificar TSVs em `prisma/seeds/data/`
+  - [ ] Seeds já criados: `seed-bncc-infantil.ts` e `seed-bncc-fundamental.ts`
+  - [ ] Seeds já integrados em `index.ts`
+  - [ ] Executar: `npx prisma db seed`
+  - [ ] Verificar console: Deve importar EI + EF
+
+- [ ] **1.4 - Validação**
+  - [ ] Criar `scripts/validate-bncc.ts`
+  - [ ] Contar habilidades por etapa
+  - [ ] Contar habilidades por ano
+  - [ ] Verificar search_vector populado
+  - [ ] Testar busca FTS com "fração"
+  - [ ] Executar: `npx tsx scripts/validate-bncc.ts`
+
+**Bloqueadores:** Fase 0 concluída
+**Entrega:** ~1.500+ habilidades BNCC importadas e validadas
+
+---
+
+### 🔌 Fase 2: APIs de Consulta BNCC (1 dia)
+
+**Objetivo:** Endpoints para o wizard consumir
+
+**Checklist:**
+- [ ] **2.1 - GET /api/v1/bncc/education-levels**
+  - [ ] Retornar lista de EducationLevel (slug, name, order)
+  - [ ] Testar no Postman/Insomnia
+
+- [ ] **2.2 - GET /api/v1/bncc/grades?educationLevelSlug=...**
+  - [ ] Retornar grades filtrados por etapa
+  - [ ] Testar com `ensino-fundamental-1`
+  - [ ] Testar com `educacao-infantil`
+
+- [ ] **2.3 - GET /api/v1/bncc/subjects?educationLevelSlug=...&gradeSlug=...**
+  - [ ] Retornar subjects válidos para o grade (via GradeSubject)
+  - [ ] Testar com EF1 (deve retornar 8 disciplinas - SEM inglês)
+  - [ ] Testar com EF2 (deve retornar 9 disciplinas - COM inglês)
+  - [ ] Testar com EI (deve retornar 5 campos de experiência)
+
+- [ ] **2.4 - GET /api/v1/bncc/skills?...**
+  - [ ] Implementar query com FTS PostgreSQL
+  - [ ] Suportar filtros: educationLevelSlug, gradeSlug, subjectSlug, q (busca)
+  - [ ] Suportar bifurcação EI (ageRange + fieldOfExperience)
+  - [ ] Testar busca por "fração" (EF)
+  - [ ] Testar busca por "som" (EI)
+  - [ ] Limitar a 50 resultados
+
+**Bloqueadores:** Fase 1 concluída
+**Entrega:** APIs testadas e funcionando
+
+---
+
+### 📝 Fase 3: Schema de Planos + Controle de Uso (1 dia)
+
+**Objetivo:** Estrutura para salvar planos e limitar uso mensal
+
+**Checklist:**
+- [ ] **3.1 - Schema Prisma**
+  - [ ] Criar model `LessonPlan`
+  - [ ] Criar model `LessonPlanUsage`
+  - [ ] Executar migration
+  - [ ] Gerar Prisma Client
+
+- [ ] **3.2 - Zod Schema de Validação**
+  - [ ] Criar `lib/schemas/lesson-plan.ts`
+  - [ ] Implementar `LessonPlanContentSchema`
+  - [ ] Validar estrutura do JSON (identification, bnccSkills, objectives, etc)
+
+- [ ] **3.3 - Services de Controle**
+  - [ ] Criar `services/lesson-plans/get-usage.ts`
+  - [ ] Criar `services/lesson-plans/increment-usage.ts`
+  - [ ] Implementar lógica de year-month (YYYY-MM)
+
+- [ ] **3.4 - API de Uso**
+  - [ ] GET /api/v1/lesson-plans/usage
+  - [ ] Retornar: used, limit, remaining, resetsAt
+  - [ ] Testar com usuário autenticado
+
+**Bloqueadores:** Fase 0 concluída
+**Entrega:** Estrutura de dados pronta para receber planos
+
+---
+
+### 🤖 Fase 4: Geração com IA (2-3 dias)
+
+**Objetivo:** Endpoint que gera plano de aula usando OpenAI
+
+**Checklist:**
+- [ ] **4.1 - Prompts**
+  - [ ] Criar `lib/ai/prompts/lesson-plan.ts`
+  - [ ] Implementar `systemPrompt` (especialista em pedagogia)
+  - [ ] Implementar `buildUserPrompt()` (com habilidades BNCC)
+  - [ ] Revisar com professora real (se possível)
+
+- [ ] **4.2 - Service de Geração**
+  - [ ] Criar `services/lesson-plans/generate-content.ts`
+  - [ ] Implementar `generateLessonPlanContent()` com `generateObject()`
+  - [ ] Usar `gpt-4o-mini` (custo-benefício)
+  - [ ] Validar output com Zod schema
+  - [ ] Tratar erros da OpenAI
+
+- [ ] **4.3 - API POST /api/v1/lesson-plans**
+  - [ ] Validar autenticação (session)
+  - [ ] Validar assinante (role === 'subscriber' || 'admin')
+  - [ ] Verificar limite mensal (< 15)
+  - [ ] Buscar habilidades BNCC completas (códigos → objetos completos)
+  - [ ] Gerar conteúdo com IA
+  - [ ] Salvar no banco (LessonPlan)
+  - [ ] Incrementar uso (LessonPlanUsage)
+  - [ ] Retornar plano + URLs de download
+
+- [ ] **4.4 - Testes**
+  - [ ] Testar com EF (Matemática, 3º ano, frações)
+  - [ ] Testar com EI (Campo de experiência)
+  - [ ] Validar qualidade do plano gerado
+  - [ ] Verificar tempo de geração (~30s)
+  - [ ] Testar erro quando limite atingido
+
+**Bloqueadores:** Fase 2 e 3 concluídas
+**Entrega:** Geração de planos funcionando
+
+---
+
+### 🎨 Fase 5: Wizard UI - Base (2-3 dias)
+
+**Objetivo:** Interface do wizard (sem bifurcação ainda)
+
+**Checklist:**
+- [ ] **5.1 - Estrutura Base**
+  - [ ] Criar `create-plan-drawer.tsx` (Vaul Drawer)
+  - [ ] Criar `wizard-steps.tsx` (indicador de progresso)
+  - [ ] Implementar navegação (voltar/continuar)
+  - [ ] Implementar state management (useState ou zustand)
+
+- [ ] **5.2 - Step 1: Seleção de Etapa**
+  - [ ] Criar `step-stage.tsx`
+  - [ ] Buscar etapas de ensino (API)
+  - [ ] Renderizar cards grandes (mobile-friendly)
+  - [ ] Implementar seleção
+
+- [ ] **5.3 - Step 2: Tema + Duração**
+  - [ ] Criar `step-theme.tsx`
+  - [ ] Input de título do plano
+  - [ ] Seleção de número de aulas (1, 2, 3)
+  - [ ] Calcular duração total (aulas × 50min)
+
+- [ ] **5.4 - Step 4: Revisão**
+  - [ ] Criar `step-review.tsx`
+  - [ ] Mostrar resumo de tudo selecionado
+  - [ ] Botão "Editar" para cada seção
+  - [ ] Botão "Gerar Meu Plano"
+
+- [ ] **5.5 - Loading + Sucesso**
+  - [ ] Criar `generating-state.tsx` (loading animado)
+  - [ ] Criar `success-state.tsx` (com botões de download)
+  - [ ] Adicionar progress bar fake (UX)
+
+**Bloqueadores:** Fase 4 concluída
+**Entrega:** Wizard básico funcionando (sem bifurcação)
+
+---
+
+### 🔀 Fase 6: Bifurcação EI vs EF (2 dias)
+
+**Objetivo:** Implementar fluxos diferentes para EI e EF
+
+**Checklist:**
+- [ ] **6.1 - Step 1A: EI (Faixa Etária + Campo de Experiência)**
+  - [ ] Criar `step-ei-age-field.tsx`
+  - [ ] Buscar faixas etárias (Grades de EI)
+  - [ ] Buscar campos de experiência (Subjects de EI)
+  - [ ] Implementar seleção
+
+- [ ] **6.2 - Step 1B: EF (Ano + Disciplina)**
+  - [ ] Criar `step-ef-grade-subject.tsx`
+  - [ ] Buscar anos (Grades de EF)
+  - [ ] Buscar disciplinas (Subjects válidos para o Grade)
+  - [ ] Implementar seleção em grade (chips)
+
+- [ ] **6.3 - Lógica de Bifurcação**
+  - [ ] No drawer, detectar: `isEI = educationLevelSlug === 'educacao-infantil'`
+  - [ ] Renderizar Step 1A se EI, Step 1B se EF
+  - [ ] Ajustar labels do indicador de progresso
+
+- [ ] **6.4 - Step 3: Busca de Habilidades (com bifurcação)**
+  - [ ] Criar `step-skills.tsx` (wrapper)
+  - [ ] Criar `skill-selector-ei.tsx` (busca por ageRange + fieldOfExperience)
+  - [ ] Criar `skill-selector-ef.tsx` (busca por gradeSlug + subjectSlug)
+  - [ ] Implementar busca FTS com debounce
+  - [ ] Limitar seleção (1 a 3 habilidades)
+  - [ ] Mostrar contador "X de 3 selecionadas"
+
+- [ ] **6.5 - Hook de Busca**
+  - [ ] Criar `useBnccSkills.ts`
+  - [ ] Implementar switch EI/EF nos params
+  - [ ] Adicionar debounce (500ms)
+  - [ ] Cachear com React Query
+
+**Bloqueadores:** Fase 5 concluída
+**Entrega:** Wizard completo com bifurcação EI/EF
+
+---
+
+### 📥 Fase 7: Exportação (Word + PDF) (2-3 dias)
+
+**Objetivo:** Gerar arquivos .docx e .pdf para download
+
+**Checklist:**
+- [ ] **7.1 - Instalação**
+  - [ ] `npm install docx`
+  - [ ] `npm install @react-pdf/renderer`
+
+- [ ] **7.2 - Template Word**
+  - [ ] Criar `lib/export/word-template.ts`
+  - [ ] Implementar estrutura: Título, Identificação, Habilidades BNCC, Objetivos, Metodologia, Recursos, Avaliação
+  - [ ] Testar geração local
+  - [ ] Validar abertura no Word/Google Docs
+
+- [ ] **7.3 - Template PDF**
+  - [ ] Criar `lib/export/pdf-template.tsx`
+  - [ ] Implementar layout similar ao Word
+  - [ ] Testar geração local
+
+- [ ] **7.4 - Services**
+  - [ ] Criar `services/lesson-plans/export-word.ts`
+  - [ ] Criar `services/lesson-plans/export-pdf.ts`
+  - [ ] Retornar Buffer
+
+- [ ] **7.5 - API de Download**
+  - [ ] GET /api/v1/lesson-plans/:id/download?format=docx|pdf
+  - [ ] Validar ownership (apenas dono ou admin)
+  - [ ] Gerar arquivo
+  - [ ] Retornar com headers corretos (Content-Disposition, Content-Type)
+  - [ ] Testar download no navegador
+
+**Bloqueadores:** Fase 4 concluída
+**Entrega:** Download de planos funcionando
+
+---
+
+### 📚 Fase 8: Lista e Histórico (2 dias)
+
+**Objetivo:** Tela principal com lista de planos criados
+
+**Checklist:**
+- [ ] **8.1 - Página Principal**
+  - [ ] Criar `app/(client)/lesson-plans/page.tsx`
+  - [ ] Implementar layout responsivo
+  - [ ] Adicionar botão "Criar Novo Plano" (abre drawer)
+
+- [ ] **8.2 - Empty State**
+  - [ ] Criar `empty-state.tsx`
+  - [ ] Ilustração/ícone
+  - [ ] Texto motivacional
+  - [ ] Botão CTA: "Criar Meu Primeiro Plano"
+  - [ ] Mostrar "15 planos disponíveis este mês"
+
+- [ ] **8.3 - Lista de Planos**
+  - [ ] Criar `plan-list.tsx`
+  - [ ] Criar `plan-card.tsx`
+  - [ ] Mostrar: título, etapa, ano, disciplina, data, botões download
+  - [ ] Ordenar por data (mais recentes primeiro)
+  - [ ] Limitar a 20 planos
+
+- [ ] **8.4 - Barra de Uso**
+  - [ ] Criar `usage-progress.tsx`
+  - [ ] Mostrar: "Você criou X de 15 planos este mês"
+  - [ ] Progress bar visual
+  - [ ] Aviso quando próximo do limite
+
+- [ ] **8.5 - APIs**
+  - [ ] GET /api/v1/lesson-plans (lista)
+  - [ ] GET /api/v1/lesson-plans/:id (detalhes)
+
+- [ ] **8.6 - Hooks**
+  - [ ] Criar `useLessonPlans.ts` (React Query)
+  - [ ] Criar `useLessonPlanUsage.ts` (React Query)
+
+**Bloqueadores:** Fase 7 concluída
+**Entrega:** Tela de planos funcionando
+
+---
+
+### ✨ Fase 9: Polimento e Lançamento (1-2 dias)
+
+**Objetivo:** Ajustes finais e preparação para produção
+
+**Checklist:**
+- [ ] **9.1 - Otimização de Prompts**
+  - [ ] Testar com 5 temas diferentes (EF)
+  - [ ] Testar com 3 temas diferentes (EI)
+  - [ ] Validar qualidade com professora real
+  - [ ] Ajustar prompts se necessário
+
+- [ ] **9.2 - UX/UI**
+  - [ ] Revisar responsividade mobile (80% do tráfego)
+  - [ ] Adicionar loading states em todas as ações
+  - [ ] Adicionar toasts de sucesso/erro (sonner)
+  - [ ] Validar todos os formulários (Zod)
+  - [ ] Mensagens de erro amigáveis
+
+- [ ] **9.3 - Performance**
+  - [ ] Adicionar debounce na busca de habilidades
+  - [ ] Cachear listas de educationLevels, grades, subjects
+  - [ ] Otimizar queries SQL (EXPLAIN ANALYZE)
+
+- [ ] **9.4 - Monitoramento**
+  - [ ] Adicionar logging de tokens usados (custo)
+  - [ ] Adicionar analytics (planos criados, downloads)
+  - [ ] Configurar alertas (se custo > $50/mês)
+
+- [ ] **9.5 - Testes Finais**
+  - [ ] Testar fluxo completo EI (ponta a ponta)
+  - [ ] Testar fluxo completo EF (ponta a ponta)
+  - [ ] Testar limite mensal
+  - [ ] Testar re-download de plano antigo
+  - [ ] Testar no mobile (Chrome DevTools)
+
+**Bloqueadores:** Fase 8 concluída
+**Entrega:** Feature pronta para produção! 🚀
+
+---
+
+## 📊 Resumo de Tempo Estimado
+
+| Fase | Descrição | Tempo | Acumulado |
+|------|-----------|-------|-----------|
+| 0 | Preparação e Setup | 1h | 1h |
+| 1 | Base de Dados BNCC | 1-2 dias | 2 dias |
+| 2 | APIs de Consulta | 1 dia | 3 dias |
+| 3 | Schema + Controle de Uso | 1 dia | 4 dias |
+| 4 | Geração com IA | 2-3 dias | 7 dias |
+| 5 | Wizard UI - Base | 2-3 dias | 10 dias |
+| 6 | Bifurcação EI vs EF | 2 dias | 12 dias |
+| 7 | Exportação (Word/PDF) | 2-3 dias | 15 dias |
+| 8 | Lista e Histórico | 2 dias | 17 dias |
+| 9 | Polimento | 1-2 dias | **19 dias** |
+
+**Total:** ~3-4 semanas (trabalhando solo, full-time)
 
 ---
 
@@ -1679,4 +2091,52 @@ R: Sim, mas usa "Campos de Experiência" ao invés de disciplinas (conforme BNCC
 R: Prompts específicos + habilidades BNCC selecionadas + testes com professoras reais + iteração dos prompts.
 
 **P: E se a BNCC mudar?**
-R: Script de re-importação já contempla isso. Basta baixar nova planilha do MEC e executar `npm run import:bncc`.
+R: Seeds de re-importação já contemplam isso. Basta baixar novos TSVs do MEC e executar `npx prisma db seed`.
+
+---
+
+## 15. Checklist de Start Rápido
+
+### Antes de começar a codificar:
+
+```bash
+# 1. Confirmar taxonomia
+npx prisma studio
+# Verificar: 3 EducationLevels, 12 Grades, 14 Subjects
+# EF1 deve ter 8 GradeSubjects, EF2 deve ter 9
+
+# 2. Baixar dados BNCC (se ainda não tiver)
+# Colocar em:
+#   - prisma/seeds/data/bncc_infantil.tsv
+#   - prisma/seeds/data/bncc_fundamental.tsv
+
+# 3. Verificar seeds BNCC
+ls -la prisma/seeds/
+# Deve ter:
+#   - seed-bncc-infantil.ts ✅
+#   - seed-bncc-fundamental.ts ✅
+#   - index.ts (com imports) ✅
+
+# 4. Criar branch de feature
+git checkout -b feature/lesson-plan-generator
+
+# 5. Pronto para Fase 0!
+```
+
+### Primeira coisa a fazer (Fase 0):
+
+```bash
+# 1. Habilitar pgvector no Neon
+# No SQL Editor do Neon Console:
+CREATE EXTENSION IF NOT EXISTS vector;
+
+# 2. Instalar deps
+npm install ai @ai-sdk/openai
+
+# 3. Adicionar env
+echo "OPENAI_API_KEY=sk-proj-..." >> .env
+
+# 4. Começar implementação pela Fase 1!
+```
+
+**Boa sorte! 🚀**
