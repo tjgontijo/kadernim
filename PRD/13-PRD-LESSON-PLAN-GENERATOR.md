@@ -199,7 +199,7 @@ O wizard tem **dois fluxos diferentes** após a seleção da etapa:
 │  Para qual etapa de ensino?             │
 │                                         │
 │  ┌─────────────────────────────────┐    │
-│  │  💒                              │    │
+│  │  👶                              │    │
 │  │  Educação Infantil              │    │
 │  └─────────────────────────────────┘    │
 │                                         │
@@ -213,11 +213,6 @@ O wizard tem **dois fluxos diferentes** após a seleção da etapa:
 │  │  📖                              │    │
 │  │  Fundamental - Anos Finais      │    │
 │  │  (6º ao 9º ano)                 │    │
-│  └─────────────────────────────────┘    │
-│                                         │
-│  ┌─────────────────────────────────┐    │
-│  │  🎓                              │    │
-│  │  Ensino Médio                   │    │
 │  └─────────────────────────────────┘    │
 │                                         │
 ├─────────────────────────────────────────┤
@@ -640,11 +635,13 @@ model BnccSkill {
   curriculumSuggestions String? @db.Text
 
   // ===== BUSCA =====
-  // Full-Text Search (PostgreSQL)
-  searchVector Unsupported("tsvector")? // Gerado automaticamente por trigger SQL
+  // Full-Text Search (PostgreSQL) com unaccent
+  // Gerado automaticamente por trigger em reset-db.sh
+  searchVector Unsupported("tsvector")?
 
-  // Embeddings (opcional - para busca semântica futura)
-  embedding Unsupported("vector(1536)")? // OpenAI text-embedding-3-small
+  // Embeddings (OpenAI) - Opcional para busca semântica
+  // Gerado via script: npx tsx scripts/embed.ts
+  embedding Unsupported("vector(1536)")?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -654,8 +651,8 @@ model BnccSkill {
   @@index([gradeSlug])
   @@index([subjectSlug])
   @@index([code])
-  @@index([searchVector], type: Gin)     // FTS
-  @@index([embedding], type: IVFFlat)    // pgvector (opcional)
+  @@index([searchVector], type: Gin)     // FTS com GIN index
+  // @@index([embedding], type: IVFFlat) // Não suportado no schema - criar via SQL
 
   // ⚠️ IMPORTANTE: Unique compostos separados para EI e EF
   @@unique([code, gradeSlug])   // EF: Permite duplicar EF12, EF15, etc por ano
@@ -1483,65 +1480,153 @@ async function importBncc() {
 importBncc()
 ```
 
-### 10.3 Habilitando pgvector no Neon Database
+### 10.3 Extensões do PostgreSQL
 
-**O Neon suporta pgvector nativamente!** Basta executar no SQL Editor:
+**O script `reset-db.sh` já cria as extensões automaticamente:**
 
 ```sql
--- 1. Habilitar extensão pgvector
-CREATE EXTENSION IF NOT EXISTS vector;
+-- Extensões criadas automaticamente
+CREATE EXTENSION IF NOT EXISTS vector;    # pgvector - para embeddings
+CREATE EXTENSION IF NOT EXISTS unaccent;  # Remove acentos no FTS
 
--- 2. Verificar se foi instalada
-SELECT * FROM pg_extension WHERE extname = 'vector';
+# Cria trigger FTS
+CREATE OR REPLACE FUNCTION bncc_skill_search_vector_update() RETURNS trigger AS $$
+BEGIN
+  NEW."searchVector" :=
+    setweight(to_tsvector('portuguese', unaccent(coalesce(NEW."code", ''))), 'A') ||
+    setweight(to_tsvector('portuguese', unaccent(coalesce(NEW."description", ''))), 'A') ||
+    setweight(to_tsvector('portuguese', unaccent(coalesce(NEW."unitTheme", ''))), 'B') ||
+    setweight(to_tsvector('portuguese', unaccent(coalesce(NEW."knowledgeObject", ''))), 'B') ||
+    setweight(to_tsvector('portuguese', unaccent(coalesce(NEW."comments", ''))), 'C') ||
+    setweight(to_tsvector('portuguese', unaccent(coalesce(NEW."curriculumSuggestions", ''))), 'C');
+  RETURN NEW;
+END
+$$ LANGUAGE plpgsql;
+
+# Cria índice GIN
+CREATE INDEX IF NOT EXISTS bncc_skill_search_gin
+ON "bncc_skill" USING GIN ("searchVector");
 ```
 
-**Onde executar:**
-1. Acesse [Neon Console](https://console.neon.tech)
-2. Selecione seu projeto
-3. Vá em **SQL Editor**
-4. Execute o comando acima
-5. ✅ Pronto! Agora você pode usar o tipo `vector` no Prisma
+**✅ Não precisa fazer nada manualmente!**
 
 ---
 
-### 10.4 Full-Text Search (PostgreSQL)
+### 10.4 Características do FTS Implementado
 
-**Criar trigger para atualizar `search_vector` automaticamente:**
+**O que o trigger FTS faz:**
 
-```sql
--- Migration: create_bncc_search_trigger.sql
+1. **Usa `unaccent`** para remover acentos
+   - "matemática" encontra "matematica"
+   - "fração" encontra "fracao"
 
--- Função de trigger para FTS
-CREATE OR REPLACE FUNCTION update_bncc_search_vector()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.search_vector := to_tsvector('portuguese',
-    coalesce(NEW.code, '') || ' ' ||
-    coalesce(NEW.description, '') || ' ' ||
-    coalesce(NEW.unit_theme, '') || ' ' ||
-    coalesce(NEW.knowledge_object, '') || ' ' ||
-    coalesce(NEW.field_of_experience, '')
-  );
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+2. **Pesos diferentes por campo:**
+   - **Peso A** (mais importante): `code`, `description`
+   - **Peso B** (médio): `unitTheme`, `knowledgeObject`
+   - **Peso C** (menos): `comments`, `curriculumSuggestions`
 
--- Trigger executado ANTES de INSERT/UPDATE
-CREATE TRIGGER bncc_skill_search_vector_update
-  BEFORE INSERT OR UPDATE ON bncc_skill
-  FOR EACH ROW
-  EXECUTE FUNCTION update_bncc_search_vector();
+3. **Busca inteligente:**
+   ```sql
+   -- Busca com ranking automático
+   WHERE "searchVector" @@ websearch_to_tsquery('portuguese', 'fração')
+   ORDER BY ts_rank("searchVector", websearch_to_tsquery('portuguese', 'fração')) DESC
+   ```
 
--- Atualizar registros existentes (caso já tenha importado dados)
-UPDATE bncc_skill SET updated_at = NOW();
+4. **Atualização automática:**
+   - Trigger roda em BEFORE INSERT OR UPDATE
+   - Qualquer mudança no registro atualiza o searchVector
+
+**✅ Tudo gerenciado pelo `reset-db.sh`**
+
+---
+
+### 10.5 Embeddings (Opcional - Busca Semântica)
+
+**Quando usar embeddings:**
+- ✅ **Busca semântica**: "operações matemáticas" encontra "adição e subtração"
+- ✅ **Similaridade**: Encontrar habilidades relacionadas
+- ❌ **Não obrigatório para MVP**: FTS já funciona bem
+
+**Como gerar embeddings:**
+
+```bash
+# 1. Configurar .env
+OPENAI_API_KEY=sk-proj-...
+EMBED_MODEL=text-embedding-3-small  # Padrão
+EMBED_BATCH_SIZE=100                # Padrão
+
+# 2. Executar script
+npx tsx scripts/embed.ts
+
+# Exemplo de output:
+# 🔧 Backfill de embeddings
+#    Modelo: text-embedding-3-small
+#    Batch size: 100
+#    Delay entre batches: 1000ms
+#
+# 📊 Pendentes: 1,547 habilidades
+# 💰 Custo estimado: ~$0.0155 (773,500 tokens)
+# ⏱️  Tempo estimado: ~16 batches × 1000ms
+#
+# Batch #1: 100/100 salvos | Progresso: 100/1547 (6.5%) | Restam: 1447
+# ...
+# ✅ Concluído! 1547 embeddings gerados.
 ```
 
-**Como aplicar:**
-1. Crie uma migration Prisma: `npx prisma migrate dev --name add_bncc_search_trigger`
-2. Cole o SQL acima no arquivo de migration gerado
-3. Execute: `npx prisma migrate deploy`
+**Criar índice IVFFlat (depois de gerar embeddings):**
 
-### 10.5 Validação Pós-Importação
+```sql
+-- Executar no SQL Editor do Neon ou Prisma Studio
+CREATE INDEX IF NOT EXISTS bncc_skill_embedding_idx
+ON "bncc_skill"
+USING ivfflat (embedding vector_cosine_ops)
+WITH (lists = 100);
+
+-- Verificar índice criado
+SELECT indexname, indexdef
+FROM pg_indexes
+WHERE tablename = 'bncc_skill' AND indexname LIKE '%embedding%';
+```
+
+**Busca por similaridade (depois de criar índice):**
+
+```typescript
+// Exemplo: Encontrar habilidades similares
+const { embeddings } = await embed({
+  model: openai.embedding('text-embedding-3-small'),
+  value: 'operações matemáticas básicas'
+})
+
+const similar = await prisma.$queryRaw<Array<{
+  code: string
+  description: string
+  distance: number
+}>>`
+  SELECT
+    code,
+    description,
+    embedding <=> ${`[${embeddings[0].join(',')}]`}::vector(1536) as distance
+  FROM bncc_skill
+  WHERE grade_slug = 'ef1-3-ano'
+    AND subject_slug = 'matematica'
+  ORDER BY distance ASC
+  LIMIT 10
+`
+```
+
+**Custo estimado:**
+- **text-embedding-3-small**: $0.020 / 1M tokens
+- **1.500 habilidades**: ~$0.015 (uma vez)
+- **Manutenção**: Apenas novos registros
+
+**Decisão para MVP:**
+- ⏭️ **Pular embeddings inicialmente**
+- ✅ **Usar apenas FTS** (já é suficiente)
+- 🔮 **Adicionar embeddings depois** se necessário
+
+---
+
+### 10.6 Validação Pós-Importação
 
 ```typescript
 // scripts/validate-bncc.ts
@@ -1628,10 +1713,10 @@ validateBncc()
 **Certifique-se de que está pronto:**
 
 - [x] **Taxonomia BNCC semeada** (`prisma/seeds/seed-taxonomy.ts`)
-  - 3 EducationLevels (EI, EF1, EF2)
-  - 12 Grades (3 EI + 5 EF1 + 4 EF2)
-  - 14 Subjects (5 EI + 9 EF)
-  - GradeSubject apenas para EF (EI não tem)
+  - **3 EducationLevels:** EI, EF1, EF2 (não inclui Ensino Médio)
+  - **12 Grades:** 3 EI + 5 EF1 + 4 EF2
+  - **14 Subjects:** 5 campos EI + 9 componentes EF
+  - **GradeSubject:** Apenas para EF (EI não tem)
   - **Validação:** EF1 tem 8 componentes (SEM inglês), EF2 tem 9 (COM inglês)
 
 - [ ] **Seeds BNCC criados**
@@ -1648,36 +1733,43 @@ validateBncc()
   - EF USA Subject.slug (Matemática, Português, etc)
   - EF1 tem 8 componentes, EF2 tem 9 componentes
 
+- [ ] **Decisão sobre embeddings**
+  - ⏭️ **MVP sem embeddings** - usar apenas FTS (recomendado)
+  - 🔮 **Embeddings opcionais** - adicionar depois se necessário
+  - Script pronto: `scripts/embed.ts` (~$0.015, 15-20 min)
+
 **Quando tudo estiver ✅, prossiga para Fase 0.**
 
 ---
 
-### 📦 Fase 0: Preparação e Setup (30 min - 1h)
+### 📦 Fase 0: Preparação e Setup (15-30 min)
 
-**Objetivo:** Configurar dependências e infraestrutura básica
+**Objetivo:** Instalar dependências e confirmar dados BNCC
 
 **Checklist:**
-- [ ] **Habilitar pgvector no Neon Database**
-  ```sql
-  -- No SQL Editor do Neon
-  CREATE EXTENSION IF NOT EXISTS vector;
-  ```
-- [ ] **Instalar dependências**
+- [ ] **Instalar dependências de IA**
   ```bash
-  npm install ai @ai-sdk/openai xlsx
-  npm install -D @types/xlsx
+  npm install ai @ai-sdk/openai
   ```
 - [ ] **Configurar variáveis de ambiente** (.env)
   ```env
   OPENAI_API_KEY=sk-proj-...
   ```
-- [ ] **Confirmar TSVs BNCC**
+- [ ] **Confirmar TSVs BNCC existem**
   - Educação Infantil: `prisma/seeds/data/bncc_infantil.tsv`
   - Ensino Fundamental: `prisma/seeds/data/bncc_fundamental.tsv`
   - ⚠️ Se não tiver, baixar de: http://basenacionalcomum.mec.gov.br/
 
+**⚠️ IMPORTANTE:**
+- O script `scripts/reset-db.sh` JÁ configura tudo:
+  - Cria extensões (vector, unaccent)
+  - Cria trigger FTS automaticamente
+  - Cria índice GIN automaticamente
+  - Faz backfill do searchVector após seed
+- **Não precisa** fazer setup manual de banco!
+
 **Bloqueadores:** Nenhum
-**Entrega:** Ambiente pronto para começar desenvolvimento
+**Entrega:** Dependências instaladas e TSVs prontos
 
 ---
 
@@ -1691,18 +1783,24 @@ validateBncc()
   - [ ] Executar: `npx prisma migrate dev --name add_bncc_skill`
   - [ ] Verificar migration criada
 
-- [ ] **1.2 - Trigger Full-Text Search**
-  - [ ] Criar migration SQL: `add_bncc_search_trigger.sql`
-  - [ ] Adicionar função `update_bncc_search_vector()`
-  - [ ] Adicionar trigger `BEFORE INSERT OR UPDATE`
-  - [ ] Executar: `npx prisma migrate deploy`
+- [ ] **1.2 - Confirmar schema BnccSkill**
+  - [ ] Verificar que campo `embedding` foi removido (só FTS agora)
+  - [ ] Verificar índices: educationLevelSlug, gradeSlug, subjectSlug, code
+  - [ ] Verificar unique compostos: code_gradeSlug, code_ageRange
 
-- [ ] **1.3 - Executar Seeds BNCC**
+- [ ] **1.3 - Executar Script de Reset Completo**
   - [ ] Verificar TSVs em `prisma/seeds/data/`
-  - [ ] Seeds já criados: `seed-bncc-infantil.ts` e `seed-bncc-fundamental.ts`
-  - [ ] Seeds já integrados em `index.ts`
-  - [ ] Executar: `npx prisma db seed`
-  - [ ] Verificar console: Deve importar EI + EF
+  - [ ] Executar: `./scripts/reset-db.sh`
+  - [ ] O script faz TUDO:
+    - Drop/cria schema public
+    - Cria extensões (vector, unaccent)
+    - Aplica schema Prisma
+    - Cria trigger FTS automaticamente
+    - Cria índice GIN automaticamente
+    - Roda seeds (EI + EF)
+    - Faz backfill do searchVector
+    - Gera build
+  - [ ] Verificar console: Deve mostrar imports EI + EF
 
 - [ ] **1.4 - Validação**
   - [ ] Criar `scripts/validate-bncc.ts`
@@ -1712,8 +1810,23 @@ validateBncc()
   - [ ] Testar busca FTS com "fração"
   - [ ] Executar: `npx tsx scripts/validate-bncc.ts`
 
+- [ ] **1.5 - Embeddings (OPCIONAL - pode fazer depois)**
+  - [ ] Gerar embeddings: `npx tsx scripts/embed.ts`
+  - [ ] Aguardar conclusão (~15-20 min para 1.500 habilidades)
+  - [ ] Custo estimado: ~$0.015 (text-embedding-3-small)
+  - [ ] Criar índice IVFFlat (opcional - para busca semântica):
+    ```sql
+    -- No Prisma Studio ou SQL Editor do Neon
+    CREATE INDEX IF NOT EXISTS bncc_skill_embedding_idx
+    ON "bncc_skill"
+    USING ivfflat (embedding vector_cosine_ops)
+    WITH (lists = 100);
+    ```
+  - [ ] **Nota:** Embeddings não são obrigatórios para MVP
+  - [ ] FTS (Full-Text Search) já é suficiente para a busca
+
 **Bloqueadores:** Fase 0 concluída
-**Entrega:** ~1.500+ habilidades BNCC importadas e validadas
+**Entrega:** ~1.500+ habilidades BNCC importadas e validadas (com FTS obrigatório + embeddings opcional)
 
 ---
 
@@ -2126,17 +2239,23 @@ git checkout -b feature/lesson-plan-generator
 ### Primeira coisa a fazer (Fase 0):
 
 ```bash
-# 1. Habilitar pgvector no Neon
-# No SQL Editor do Neon Console:
-CREATE EXTENSION IF NOT EXISTS vector;
-
-# 2. Instalar deps
+# 1. Instalar dependências de IA
 npm install ai @ai-sdk/openai
 
-# 3. Adicionar env
+# 2. Configurar OpenAI
 echo "OPENAI_API_KEY=sk-proj-..." >> .env
 
-# 4. Começar implementação pela Fase 1!
+# 3. Garantir que TSVs existem
+ls -la prisma/seeds/data/bncc_*.tsv
+
+# 4. Rodar reset completo (faz tudo automaticamente!)
+./scripts/reset-db.sh
+
+# 5. Verificar no Prisma Studio
+npx prisma studio
+# Deve ter: bncc_skill populado com habilidades
+
+# 6. Começar implementação pela Fase 1 (APIs)!
 ```
 
 **Boa sorte! 🚀**
