@@ -6,6 +6,8 @@ import { seedUsers } from './seed-users';
 import { seedTaxonomy } from './seed-taxonomy';
 import { seedResources } from './seed-resources';
 import { seedResourceFiles } from './seed-resource-files';
+import { seedBnccSkillsInfantil } from './seed-bncc-infantil';
+import { seedBnccSkillsFundamental } from './seed-bncc-fundamental';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
@@ -19,6 +21,9 @@ async function cleanDatabase() {
   try {
     await prisma.resourceFile.deleteMany()
     await prisma.resource.deleteMany()
+    await prisma.bnccSkill.deleteMany()
+    await prisma.gradeSubject.deleteMany()
+    await prisma.grade.deleteMany()
     await prisma.subject.deleteMany()
     await prisma.educationLevel.deleteMany()
     await prisma.session.deleteMany()
@@ -43,6 +48,8 @@ async function createInitialData() {
 
     await seedUsers(prisma);
     await seedTaxonomy(prisma);
+    await seedBnccSkillsInfantil(prisma);
+    await seedBnccSkillsFundamental(prisma);
     await seedResources(prisma);
     await seedResourceFiles(prisma);
 
