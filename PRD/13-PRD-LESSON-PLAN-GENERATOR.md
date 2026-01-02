@@ -900,13 +900,14 @@ GET /api/v1/bncc/subjects?educationLevelSlug=ensino-fundamental-1&gradeSlug=ef1-
     - **BnccSkill.fieldOfExperience:** Também armazena campo de experiência (denormalizado)
 
 GET /api/v1/bncc/skills?educationLevelSlug=ensino-fundamental-1&gradeSlug=ef1-3-ano&subjectSlug=matematica&q=frações
-    Busca habilidades BNCC com filtros + Full-Text Search
+    Busca habilidades BNCC com filtros + Full-Text Search + Embeddings
 
     Query params:
     - educationLevelSlug (required): Slug da etapa
     - gradeSlug (required): Slug do ano/série
     - subjectSlug (required): Slug da disciplina
-    - q (optional): Termo de busca (usa FTS)
+    - q (optional): Termo de busca (usa FTS + embeddings para melhor relevância)
+    - searchMode (optional): "fts" | "semantic" | "hybrid" (padrão: "hybrid")
 
     Response: {
       skills: [
@@ -1540,12 +1541,13 @@ ON "bncc_skill" USING GIN ("searchVector");
 
 ---
 
-### 10.5 Embeddings (Opcional - Busca Semântica)
+### 10.5 Embeddings (Busca Semântica)
 
-**Quando usar embeddings:**
+**Por que usar embeddings no MVP:**
 - ✅ **Busca semântica**: "operações matemáticas" encontra "adição e subtração"
-- ✅ **Similaridade**: Encontrar habilidades relacionadas
-- ❌ **Não obrigatório para MVP**: FTS já funciona bem
+- ✅ **Similaridade**: Encontrar habilidades relacionadas mesmo com termos diferentes
+- ✅ **Melhor experiência**: Professoras não precisam usar termos exatos da BNCC
+- ✅ **Custo baixo**: ~$0.015 uma vez (menos de 2 centavos!)
 
 **Como gerar embeddings:**
 
@@ -1620,9 +1622,9 @@ const similar = await prisma.$queryRaw<Array<{
 - **Manutenção**: Apenas novos registros
 
 **Decisão para MVP:**
-- ⏭️ **Pular embeddings inicialmente**
-- ✅ **Usar apenas FTS** (já é suficiente)
-- 🔮 **Adicionar embeddings depois** se necessário
+- ✅ **Embeddings no MVP** - busca semântica desde o início
+- ✅ **FTS como fallback** - para buscas exatas e rápidas
+- 🎯 **Melhor de ambos** - combinar FTS + embeddings conforme necessidade
 
 ---
 
@@ -1733,10 +1735,10 @@ validateBncc()
   - EF USA Subject.slug (Matemática, Português, etc)
   - EF1 tem 8 componentes, EF2 tem 9 componentes
 
-- [ ] **Decisão sobre embeddings**
-  - ⏭️ **MVP sem embeddings** - usar apenas FTS (recomendado)
-  - 🔮 **Embeddings opcionais** - adicionar depois se necessário
+- [ ] **Embeddings confirmados**
+  - ✅ **MVP COM embeddings** - busca semântica + FTS
   - Script pronto: `scripts/embed.ts` (~$0.015, 15-20 min)
+  - Custo baixo e valor alto para experiência do usuário
 
 **Quando tudo estiver ✅, prossiga para Fase 0.**
 
@@ -1810,23 +1812,29 @@ validateBncc()
   - [ ] Testar busca FTS com "fração"
   - [ ] Executar: `npx tsx scripts/validate-bncc.ts`
 
-- [ ] **1.5 - Embeddings (OPCIONAL - pode fazer depois)**
-  - [ ] Gerar embeddings: `npx tsx scripts/embed.ts`
-  - [ ] Aguardar conclusão (~15-20 min para 1.500 habilidades)
-  - [ ] Custo estimado: ~$0.015 (text-embedding-3-small)
-  - [ ] Criar índice IVFFlat (opcional - para busca semântica):
+- [ ] **1.5 - Gerar Embeddings (Busca Semântica)**
+  - [ ] Configurar OpenAI no .env: `OPENAI_API_KEY=sk-proj-...`
+  - [ ] Executar: `npx tsx scripts/embed.ts`
+  - [ ] Aguardar conclusão (~15-20 min para ~1.900 habilidades)
+  - [ ] Custo: ~$0.015 (text-embedding-3-small)
+  - [ ] Verificar log de progresso (batch, percentual)
+
+- [ ] **1.6 - Criar Índice IVFFlat**
+  - [ ] Executar SQL no Neon Console ou Prisma Studio:
     ```sql
-    -- No Prisma Studio ou SQL Editor do Neon
     CREATE INDEX IF NOT EXISTS bncc_skill_embedding_idx
     ON "bncc_skill"
     USING ivfflat (embedding vector_cosine_ops)
     WITH (lists = 100);
     ```
-  - [ ] **Nota:** Embeddings não são obrigatórios para MVP
-  - [ ] FTS (Full-Text Search) já é suficiente para a busca
+  - [ ] Verificar índice criado:
+    ```sql
+    SELECT indexname FROM pg_indexes
+    WHERE tablename = 'bncc_skill' AND indexname LIKE '%embedding%';
+    ```
 
 **Bloqueadores:** Fase 0 concluída
-**Entrega:** ~1.500+ habilidades BNCC importadas e validadas (com FTS obrigatório + embeddings opcional)
+**Entrega:** ~1.900 habilidades BNCC importadas e validadas com FTS + Embeddings operacionais
 
 ---
 
@@ -1850,13 +1858,18 @@ validateBncc()
   - [ ] Testar com EF2 (deve retornar 9 disciplinas - COM inglês)
   - [ ] Testar com EI (deve retornar 5 campos de experiência)
 
-- [ ] **2.4 - GET /api/v1/bncc/skills?...**
-  - [ ] Implementar query com FTS PostgreSQL
+- [ ] **2.4 - GET /api/v1/bncc/skills?...** (Busca Híbrida)
+  - [ ] Implementar busca híbrida (FTS + Embeddings)
   - [ ] Suportar filtros: educationLevelSlug, gradeSlug, subjectSlug, q (busca)
   - [ ] Suportar bifurcação EI (ageRange + fieldOfExperience)
-  - [ ] Testar busca por "fração" (EF)
-  - [ ] Testar busca por "som" (EI)
+  - [ ] Implementar 3 modos:
+    - `searchMode=fts`: Apenas Full-Text Search (rápido)
+    - `searchMode=semantic`: Apenas embeddings (semântico)
+    - `searchMode=hybrid`: Combina ambos com peso (padrão)
+  - [ ] Testar busca por "fração" (EF) - deve encontrar variações
+  - [ ] Testar busca por "operações básicas" - deve encontrar adição, subtração
   - [ ] Limitar a 50 resultados
+  - [ ] Ordenar por relevância (ts_rank + vector distance)
 
 **Bloqueadores:** Fase 1 concluída
 **Entrega:** APIs testadas e funcionando
