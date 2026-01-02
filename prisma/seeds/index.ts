@@ -65,7 +65,7 @@ async function createInitialData() {
   }
 }
 
-// Exportar a função main para ser usada em seed.ts
+// Exportar a função main para ser chamada pelo Prisma
 export async function main() {
   try {
     await createInitialData();
@@ -78,9 +78,3 @@ export async function main() {
     console.log('🔌 Conexão com o banco de dados encerrada.');
   }
 }
-
-// Run seed if this is the main module
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
