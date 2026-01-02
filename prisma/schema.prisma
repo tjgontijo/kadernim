@@ -41,7 +41,6 @@ model Grade {
   @@map("grade")
 }
 
-
 model Subject {
   id        String          @id @default(cuid())
   name      String          @unique
@@ -253,4 +252,43 @@ model ResourceUserAccess {
   @@unique([userId, resourceId])
   @@index([userId, resourceId])
   @@map("resource_user_access")
+}
+
+
+model BnccSkill {
+  id String @id @default(cuid())
+
+  code String // nao pode ser @unique
+
+  educationLevelSlug String
+
+  fieldOfExperience String?
+  ageRange String?
+
+  gradeSlug String?
+  subjectSlug String?
+  unitTheme String?
+  knowledgeObject String?
+
+  description String @db.Text
+  comments String? @db.Text
+  curriculumSuggestions String? @db.Text
+
+  searchVector Unsupported("tsvector")?
+  embedding Unsupported("vector(1536)")?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([educationLevelSlug])
+  @@index([gradeSlug])
+  @@index([subjectSlug])
+  @@index([code])
+  @@index([searchVector], type: Gin)
+  @@index([embedding], type: IVFFlat)
+
+  @@unique([code, gradeSlug], name: "code_gradeSlug")
+  @@unique([code, ageRange], name: "code_ageRange")
+
+  @@map("bncc_skill")
 }
