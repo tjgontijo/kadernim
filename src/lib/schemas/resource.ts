@@ -1,9 +1,4 @@
 import { z } from 'zod'
-import { EducationLevelLabels } from '@/constants/educationLevel'
-import { SubjectLabels } from '@/constants/subject'
-
-const educationLevelValues = Object.keys(EducationLevelLabels)
-const subjectValues = Object.keys(SubjectLabels)
 
 export const ResourceFilterSchema = z.object({
   q: z
@@ -12,18 +7,8 @@ export const ResourceFilterSchema = z.object({
     .min(2, { message: 'query muito curta' })
     .max(100)
     .optional(),
-  educationLevel: z
-    .string()
-    .refine((v) => educationLevelValues.includes(v), {
-      message: 'educationLevel inválido',
-    })
-    .optional(),
-  subject: z
-    .string()
-    .refine((v) => subjectValues.includes(v), {
-      message: 'subject inválido',
-    })
-    .optional(),
+  educationLevel: z.string().optional(),
+  subject: z.string().optional(),
   tab: z.enum(['mine', 'free', 'all']).default('all'),
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(20),
@@ -36,16 +21,8 @@ export const ResourceSchema = z.object({
   title: z.string(),
   description: z.string().nullable().optional(),
   thumbUrl: z.string().nullable().optional(),
-  educationLevel: z
-    .string()
-    .refine((v) => educationLevelValues.includes(v), {
-      message: 'educationLevel inválido',
-    }),
-  subject: z
-    .string()
-    .refine((v) => subjectValues.includes(v), {
-      message: 'subject inválido',
-    }),
+  educationLevel: z.string(),
+  subject: z.string(),
   isFree: z.boolean(),
   hasAccess: z.boolean(),
 })

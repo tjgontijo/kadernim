@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { auth } from '@/lib/auth/auth'
+import { prisma } from '@/lib/db'
+import { auth } from '@/server/auth/auth'
 import { z } from 'zod'
 
 const ReorderImagesSchema = z.object({

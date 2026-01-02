@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, SlidersHorizontal, Search, Filter, BookOpen, GraduationCap, ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { Plus, SlidersHorizontal, Search, Filter, BookOpen, GraduationCap, ChevronLeft, ChevronRight, X, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -43,29 +43,26 @@ import {
   type ViewType,
   ResourcesCardView,
   ResourcesTableView,
-} from '@/components/dashboard/resources'
-import { EducationLevelLabels } from '@/constants/educationLevel'
-import { SubjectLabels } from '@/constants/subject'
+} from '@/components/client/resources'
+import { ResourceEditDrawer } from '@/components/client/resources/resource-edit-drawer'
+import { useResourceMeta } from '@/hooks/useResourceMeta'
 
-// Convert labels to options array
-const EDUCATION_LEVEL_OPTIONS = Object.entries(EducationLevelLabels).map(([value, label]) => ({
-  value,
-  label,
-}))
-
-const SUBJECT_OPTIONS = Object.entries(SubjectLabels).map(([value, label]) => ({
-  value,
-  label,
-}))
+// Options will be fetched from the API
 
 export default function AdminResourcesPage() {
   const router = useRouter()
   const [view, setView] = useState<ViewType>('list')
   const isMobile = useIsMobile()
+  const { data: metaData } = useResourceMeta()
+
+  const EDUCATION_LEVEL_OPTIONS = metaData?.educationLevels || []
+  const SUBJECT_OPTIONS = metaData?.subjects || []
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(15)
   const [visibleColumns, setVisibleColumns] = useState<string[]>(['subject', 'educationLevel', 'isFree', 'createdAt'])
   const [isFreeOnly, setIsFreeOnly] = useState(false)
+  const [resourceToEdit, setResourceToEdit] = useState<string | null>(null)
+  const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false)
 
   // Filters
   const [educationLevel, setEducationLevel] = useState<string>('')
@@ -140,11 +137,13 @@ export default function AdminResourcesPage() {
   }
 
   const handleViewResource = (resourceId: string) => {
-    router.push(`/admin/resources/${resourceId}/edit`)
+    setResourceToEdit(resourceId)
+    setIsEditDrawerOpen(true)
   }
 
   const handleEditResource = (resourceId: string) => {
-    router.push(`/admin/resources/${resourceId}/edit`)
+    setResourceToEdit(resourceId)
+    setIsEditDrawerOpen(true)
   }
 
   const handleEducationLevelChange = (value: string) => {
@@ -173,13 +172,13 @@ export default function AdminResourcesPage() {
 
   const getEducationLevelLabel = () => {
     if (!educationLevel) return 'Nível'
-    const option = EDUCATION_LEVEL_OPTIONS.find(o => o.value === educationLevel)
+    const option = EDUCATION_LEVEL_OPTIONS.find(o => o.key === educationLevel)
     return option?.label || 'Nível'
   }
 
   const getSubjectLabel = () => {
     if (!subject) return 'Disciplina'
-    const option = SUBJECT_OPTIONS.find(o => o.value === subject)
+    const option = SUBJECT_OPTIONS.find(o => o.key === subject)
     return option?.label || 'Disciplina'
   }
 
@@ -204,6 +203,8 @@ export default function AdminResourcesPage() {
   return (
     <>
       <TemplateMainShell className="flex flex-col h-full overflow-hidden">
+
+
 
         {/* MOBILE HEADER - Search + Filter Icon */}
         {isMobile && (
@@ -240,10 +241,10 @@ export default function AdminResourcesPage() {
                       <div className="grid grid-cols-2 gap-2">
                         {EDUCATION_LEVEL_OPTIONS.map((option) => (
                           <label
-                            key={option.value}
+                            key={option.key}
                             className={cn(
                               "flex items-center justify-center gap-2 h-9 px-3 rounded-md border text-xs font-medium transition-colors cursor-pointer",
-                              educationLevel === option.value
+                              educationLevel === option.key
                                 ? "bg-primary/10 border-primary text-primary"
                                 : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
                             )}
@@ -251,8 +252,8 @@ export default function AdminResourcesPage() {
                             <input
                               type="radio"
                               name="educationLevel"
-                              value={option.value}
-                              checked={educationLevel === option.value}
+                              value={option.key}
+                              checked={educationLevel === option.key}
                               onChange={(e) => handleEducationLevelChange(e.target.value)}
                               className="sr-only"
                             />
@@ -268,10 +269,10 @@ export default function AdminResourcesPage() {
                       <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
                         {SUBJECT_OPTIONS.map((option) => (
                           <label
-                            key={option.value}
+                            key={option.key}
                             className={cn(
                               "flex items-center justify-center gap-2 h-9 px-3 rounded-md border text-xs font-medium transition-colors cursor-pointer",
-                              subject === option.value
+                              subject === option.key
                                 ? "bg-primary/10 border-primary text-primary"
                                 : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/50"
                             )}
@@ -279,8 +280,8 @@ export default function AdminResourcesPage() {
                             <input
                               type="radio"
                               name="subject"
-                              value={option.value}
-                              checked={subject === option.value}
+                              value={option.key}
+                              checked={subject === option.key}
                               onChange={(e) => handleSubjectChange(e.target.value)}
                               className="sr-only"
                             />
@@ -324,7 +325,11 @@ export default function AdminResourcesPage() {
         {/* DESKTOP HEADER + TOOLBAR */}
         {!isMobile && (
           <>
-            <TemplateMainHeader>
+            <TemplateMainHeader
+              title="Recursos"
+              subtitle="Gerencie os recursos do sistema."
+              icon={BookOpen}
+            >
               <ViewSwitcher view={view} setView={setView} className="-ml-4 mt-2" />
             </TemplateMainHeader>
 
@@ -363,9 +368,9 @@ export default function AdminResourcesPage() {
                         <DropdownMenuSeparator />
                         {EDUCATION_LEVEL_OPTIONS.map((option) => (
                           <DropdownMenuCheckboxItem
-                            key={option.value}
-                            checked={educationLevel === option.value}
-                            onCheckedChange={() => handleEducationLevelChange(option.value)}
+                            key={option.key}
+                            checked={educationLevel === option.key}
+                            onCheckedChange={() => handleEducationLevelChange(option.key)}
                           >
                             {option.label}
                           </DropdownMenuCheckboxItem>
@@ -401,9 +406,9 @@ export default function AdminResourcesPage() {
                         <DropdownMenuSeparator />
                         {SUBJECT_OPTIONS.map((option) => (
                           <DropdownMenuCheckboxItem
-                            key={option.value}
-                            checked={subject === option.value}
-                            onCheckedChange={() => handleSubjectChange(option.value)}
+                            key={option.key}
+                            checked={subject === option.key}
+                            onCheckedChange={() => handleSubjectChange(option.key)}
                           >
                             {option.label}
                           </DropdownMenuCheckboxItem>
@@ -604,7 +609,6 @@ export default function AdminResourcesPage() {
 
       </TemplateMainShell>
 
-      {/* FAB - Floating Action Button */}
       <Button
         onClick={handleCreateNew}
         size="icon"
@@ -612,6 +616,13 @@ export default function AdminResourcesPage() {
       >
         <Plus className="h-6 w-6" />
       </Button>
+
+      <ResourceEditDrawer
+        resourceId={resourceToEdit}
+        open={isEditDrawerOpen}
+        onOpenChange={setIsEditDrawerOpen}
+        onSuccess={refetch}
+      />
     </>
   )
 }

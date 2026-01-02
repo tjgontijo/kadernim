@@ -4,6 +4,7 @@ import "./globals.css";
 import "./mobile.css"; // Importando estilos específicos para mobile
 import ServiceWorkerRegister from "@/components/pwa/ServiceWorkerRegister";
 import { ReactQueryProvider } from "@/providers/react-query-provider";
+import { ThemeProvider } from "@/providers/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 
 // Fonte Principal: Inter (para títulos e logos)
@@ -35,16 +36,9 @@ const nunitoSans = Nunito_Sans({
   display: "swap",
 });
 
-if (!process.env.NEXT_PUBLIC_APP_NAME) {
-  throw new Error('NEXT_PUBLIC_APP_NAME não está definido no .env')
-}
-
-if (!process.env.NEXT_PUBLIC_APP_DESCRIPTION) {
-  throw new Error('NEXT_PUBLIC_APP_DESCRIPTION não está definido no .env')
-}
-
-const appName = process.env.NEXT_PUBLIC_APP_NAME
-const appDescription = process.env.NEXT_PUBLIC_APP_DESCRIPTION
+// Env vars com valores padrão (evita erro de prerender)
+const appName = process.env.NEXT_PUBLIC_APP_NAME || 'Kadernim'
+const appDescription = process.env.NEXT_PUBLIC_APP_DESCRIPTION || 'App de bolso para toda professora moderna.'
 
 export const metadata: Metadata = {
   title: appName,
@@ -94,7 +88,7 @@ export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {  
+}>) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
@@ -102,11 +96,13 @@ export default function RootLayout({
       </head>
       <body
         className={`${inter.variable} ${poppins.variable} ${openSans.variable} ${nunitoSans.variable} antialiased`} suppressHydrationWarning>
-          <ServiceWorkerRegister />
+        <ServiceWorkerRegister />
+        <ThemeProvider>
           <ReactQueryProvider>
             {children}
             <Toaster />
           </ReactQueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

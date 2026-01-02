@@ -1,19 +1,13 @@
-import * as React from "react"
+/**
+ * @deprecated Este arquivo é mantido apenas para compatibilidade com código legado.
+ * Use `useBreakpoint()` de '@/hooks/use-breakpoint' ao invés.
+ * 
+ * @example
+ * // Antigo (deprecated)
+ * const isMobile = useIsMobile()
+ * 
+ * // Novo (recomendado)
+ * const { isMobile, isTablet, isDesktop, isAbove, isBelow } = useBreakpoint()
+ */
 
-const MOBILE_BREAKPOINT = 768
-
-export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
-
-  React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
-    const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    }
-    mql.addEventListener("change", onChange)
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    return () => mql.removeEventListener("change", onChange)
-  }, [])
-
-  return !!isMobile
-}
+export { useIsMobile, useBreakpoint } from './use-breakpoint'

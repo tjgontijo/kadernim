@@ -1,5 +1,5 @@
 import type { PrismaClient } from '../generated/prisma/client';
-import { auth } from '@/lib/auth/auth';
+import { auth } from '@/server/auth/auth';
 import { UserRole, type UserRoleType } from '@/types/user-role';
 
 const usersData = [

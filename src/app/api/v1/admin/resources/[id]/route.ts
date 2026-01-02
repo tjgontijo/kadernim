@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireRole } from '@/lib/auth/middleware'
+import { requirePermission } from '@/server/auth/middleware'
 import { UserRole } from '@/types/user-role'
-import { checkRateLimit } from '@/lib/helpers/rate-limit'
-import { prisma } from '@/lib/prisma'
+import { checkRateLimit } from '@/server/utils/rate-limit'
+import { prisma } from '@/lib/db'
 import {
   UpdateResourceSchema,
   ResourceDetailResponseSchema,
 } from '@/lib/schemas/admin/resources'
-import { getFileUrl } from '@/lib/cloudinary/file-service'
+import { getFileUrl } from '@/server/clients/cloudinary/file-client'
 
 /**
  * GET /api/v1/admin/resources/:id
@@ -19,8 +19,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Require admin role
-    const authResult = await requireRole(request, UserRole.admin)
+    // Require manage resources permission
+    const authResult = await requirePermission(request, 'manage:resources')
     if (authResult instanceof NextResponse) {
       return authResult
     }
@@ -95,22 +95,22 @@ export async function GET(
     }
 
     // Import URL helpers
-    const { getImageUrl } = await import('@/lib/cloudinary/image-service')
-    const { getVideoUrl } = await import('@/lib/cloudinary/video-service')
+    const { getImageUrl } = await import('@/server/clients/cloudinary/image-client')
+    const { getVideoUrl } = await import('@/server/clients/cloudinary/video-client')
 
     // Get stats
-    const totalUsers = await prisma.userResourceAccess.count({
+    const totalUsers = await prisma.resourceUserAccess.count({
       where: { resourceId: id },
     })
 
-    const accessGrants = await prisma.userResourceAccess.count({
+    const accessGrants = await prisma.resourceUserAccess.count({
       where: {
         resourceId: id,
         expiresAt: { not: null },
       },
     })
 
-    const subscriberAccess = await prisma.userResourceAccess.count({
+    const subscriberAccess = await prisma.resourceUserAccess.count({
       where: {
         resourceId: id,
         expiresAt: null,
@@ -198,8 +198,8 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Require admin role
-    const authResult = await requireRole(request, UserRole.admin)
+    // Require manage resources permission
+    const authResult = await requirePermission(request, 'manage:resources')
     if (authResult instanceof NextResponse) {
       return authResult
     }
@@ -278,18 +278,18 @@ export async function PUT(
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
 
-    const totalUsers = await prisma.userResourceAccess.count({
+    const totalUsers = await prisma.resourceUserAccess.count({
       where: { resourceId: id },
     })
 
-    const accessGrants = await prisma.userResourceAccess.count({
+    const accessGrants = await prisma.resourceUserAccess.count({
       where: {
         resourceId: id,
         expiresAt: { not: null },
       },
     })
 
-    const subscriberAccess = await prisma.userResourceAccess.count({
+    const subscriberAccess = await prisma.resourceUserAccess.count({
       where: {
         resourceId: id,
         expiresAt: null,
@@ -352,8 +352,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Require admin role
-    const authResult = await requireRole(request, UserRole.admin)
+    // Require manage resources permission
+    const authResult = await requirePermission(request, 'manage:resources')
     if (authResult instanceof NextResponse) {
       return authResult
     }

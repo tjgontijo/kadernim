@@ -17,19 +17,11 @@ interface DashboardStats {
 
 function useDashboardStats() {
   return useQuery<DashboardStats>({
-    queryKey: ['admin-dashboard-stats'],
+    queryKey: ['admin-(client)-stats'],
     queryFn: async () => {
-      const response = await fetch('/api/v1/admin/resources?limit=1')
+      const response = await fetch('/api/v1/admin/stats')
       if (!response.ok) throw new Error('Failed to fetch stats')
-      const data = await response.json()
-
-      return {
-        totalResources: data.pagination.total,
-        totalUsers: 0, // Placeholder - implement based on your API
-        totalAccessGrants: 0, // Placeholder - implement based on your API
-        freeResources: 0, // Placeholder - implement based on your API
-        paidResources: data.pagination.total, // Placeholder
-      }
+      return response.json()
     },
   })
 }
@@ -50,18 +42,8 @@ export default function AdminDashboardPage() {
         </Button>
       </HeaderActions>
 
-      <div className="space-y-6">
-        {/* Welcome Section */}
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Bem-vindo ao Admin Panel</h1>
-          <p className="text-muted-foreground mt-2">
-            Gerencie seus recursos, usuários e visualize estatísticas da plataforma
-          </p>
-        </div>
-
-        {/* Stats Grid */}
+      <div className="space-y-8">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {/* Total Resources */}
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
@@ -125,44 +107,6 @@ export default function AdminDashboardPage() {
             </CardContent>
           </Card>
         </div>
-
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Ações Rápidas</CardTitle>
-            <CardDescription>
-              Acesso rápido às funcionalidades mais usadas
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-2">
-              <Button asChild variant="outline" className="w-full">
-                <a href="/admin/resources">
-                  <BookOpen className="mr-2 h-4 w-4" />
-                  Gerenciar Recursos
-                </a>
-              </Button>
-              <Button asChild variant="outline" className="w-full">
-                <a href="/admin/users">
-                  <Users className="mr-2 h-4 w-4" />
-                  Gerenciar Usuários
-                </a>
-              </Button>
-              <Button asChild variant="outline" className="w-full">
-                <a href="/admin/organizations">
-                  <BarChart3 className="mr-2 h-4 w-4" />
-                  Organizações
-                </a>
-              </Button>
-              <Button asChild variant="outline" className="w-full">
-                <a href="/admin/analytics">
-                  <TrendingUp className="mr-2 h-4 w-4" />
-                  Analytics
-                </a>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </>
   )

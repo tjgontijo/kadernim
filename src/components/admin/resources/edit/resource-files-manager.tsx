@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { toast } from "sonner"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { DeleteConfirmDialog } from "@/components/admin/shared/delete-confirm-dialog"
+import { DeleteConfirmDialog } from "@/components/admin/crud/delete-confirm-dialog"
 import { cn } from "@/lib/utils"
 
 interface FileData {

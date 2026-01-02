@@ -17,7 +17,7 @@ import {
   Shield,
   Loader2
 } from "lucide-react"
-import { DeleteConfirmDialog } from "@/components/admin/shared/delete-confirm-dialog"
+import { DeleteConfirmDialog } from "@/components/admin/crud/delete-confirm-dialog"
 
 interface User {
   id: string

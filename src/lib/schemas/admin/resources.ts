@@ -1,9 +1,4 @@
 import { z } from 'zod'
-import { EducationLevelLabels } from '@/constants/educationLevel'
-import { SubjectLabels } from '@/constants/subject'
-
-const educationLevelValues = Object.keys(EducationLevelLabels)
-const subjectValues = Object.keys(SubjectLabels)
 
 // ============================================
 // CREATE RESOURCE SCHEMA
@@ -18,16 +13,8 @@ export const CreateResourceSchema = z.object({
     .trim()
     .optional()
     .nullable(),
-  educationLevel: z
-    .string()
-    .refine((v) => educationLevelValues.includes(v), {
-      message: 'Nível de educação inválido',
-    }),
-  subject: z
-    .string()
-    .refine((v) => subjectValues.includes(v), {
-      message: 'Matéria inválida',
-    }),
+  educationLevel: z.string().min(1, { message: 'Nível de educação é obrigatório' }),
+  subject: z.string().min(1, { message: 'Matéria é obrigatória' }),
   externalId: z.number()
     .int()
     .positive('externalId deve ser positivo'),
@@ -54,18 +41,8 @@ export const UpdateResourceSchema = z.object({
     .trim()
     .optional()
     .nullable(),
-  educationLevel: z
-    .string()
-    .refine((v) => educationLevelValues.includes(v), {
-      message: 'Nível de educação inválido',
-    })
-    .optional(),
-  subject: z
-    .string()
-    .refine((v) => subjectValues.includes(v), {
-      message: 'Matéria inválida',
-    })
-    .optional(),
+  educationLevel: z.string().optional(),
+  subject: z.string().optional(),
   isFree: z.boolean().optional(),
   thumbUrl: z.string()
     .url('thumbUrl deve ser uma URL válida')
@@ -86,18 +63,8 @@ export const ListResourcesFilterSchema = z.object({
     .trim()
     .max(100)
     .optional(),
-  educationLevel: z
-    .string()
-    .refine((v) => educationLevelValues.includes(v), {
-      message: 'educationLevel inválido',
-    })
-    .optional(),
-  subject: z
-    .string()
-    .refine((v) => subjectValues.includes(v), {
-      message: 'subject inválido',
-    })
-    .optional(),
+  educationLevel: z.string().optional(),
+  subject: z.string().optional(),
   isFree: z.boolean().optional(),
   sortBy: z.enum(['title', 'createdAt', 'updatedAt']).default('updatedAt'),
   order: z.enum(['asc', 'desc']).default('desc'),
@@ -109,7 +76,7 @@ export type ListResourcesFilter = z.infer<typeof ListResourcesFilterSchema>
 // BULK UPDATE SCHEMA
 // ============================================
 export const BulkUpdateResourcesSchema = z.object({
-  ids: z.array(z.string().cuid())
+  ids: z.array(z.string())
     .min(1, { message: 'Deve haver pelo menos 1 ID' })
     .max(100, { message: 'Máximo 100 IDs por operação' }),
   updates: UpdateResourceSchema.strict(),
@@ -121,7 +88,7 @@ export type BulkUpdateResourcesInput = z.infer<typeof BulkUpdateResourcesSchema>
 // BULK DELETE SCHEMA
 // ============================================
 export const BulkDeleteResourcesSchema = z.object({
-  ids: z.array(z.string().cuid())
+  ids: z.array(z.string())
     .min(1, { message: 'Deve haver pelo menos 1 ID' })
     .max(100, { message: 'Máximo 100 IDs por operação' }),
 })

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { uploadVideo, getVideoThumbnail } from '@/lib/cloudinary/video-service'
-import { createResourceVideo, getResourceVideos } from '@/services/resources/video-service'
-import { prisma } from '@/lib/prisma'
+import { uploadVideo, getVideoThumbnail } from '@/server/clients/cloudinary/video-client'
+import { createResourceVideo, getResourceVideos } from '@/services/resources/admin/video-service'
+import { prisma } from '@/lib/db'
 
 // GET /api/v1/admin/resources/[id]/videos
 export async function GET(

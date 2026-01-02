@@ -2,9 +2,9 @@ import { NextResponse, NextRequest } from 'next/server'
 import { revalidateTag } from 'next/cache'
 
 import { EnrollmentPayloadSchema } from '@/lib/schemas/enroll'
-import { prisma } from '@/lib/prisma'
-import { auth } from '@/lib/auth/auth'
-import { buildResourceCacheTag } from '@/lib/helpers/cache'
+import { prisma } from '@/lib/db'
+import { auth } from '@/server/auth/auth'
+import { buildResourceCacheTag } from '@/server/utils/cache'
 
 function validateApiKey(request: NextRequest) {
   const headerKey = request.headers.get('x-api-key')
@@ -46,11 +46,12 @@ export async function POST(request: NextRequest) {
     let user = await prisma.user.findUnique({ where: { email } })
 
     if (!user) {
+      const { randomPassword } = await import('@/lib/utils/password')
       await (auth.api.signUpEmail as unknown as (params: { body: Record<string, unknown> }) => Promise<unknown>)({
         body: {
           name,
           email,
-          password: crypto.randomUUID(),
+          password: randomPassword(),
         },
       })
 
@@ -88,7 +89,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const existing: { resourceId: string; expiresAt: Date | null }[] = await prisma.userResourceAccess.findMany({
+    const existing: { resourceId: string; expiresAt: Date | null }[] = await prisma.resourceUserAccess.findMany({
       where: {
         userId: user.id,
         resourceId: { in: resources.map((r) => r.id) },
@@ -109,7 +110,7 @@ export async function POST(request: NextRequest) {
             ? prev
             : expiresAt
 
-        return prisma.userResourceAccess.upsert({
+        return prisma.resourceUserAccess.upsert({
           where: {
             userId_resourceId: {
               userId: user.id,

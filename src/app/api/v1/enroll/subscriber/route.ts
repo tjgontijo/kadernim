@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import { prisma } from '@/lib/prisma'
-import { auth } from '@/lib/auth/auth'
-import { buildResourceCacheTag } from '@/lib/helpers/cache'
+import { prisma } from '@/lib/db'
+import { auth } from '@/server/auth/auth'
+import { buildResourceCacheTag } from '@/server/utils/cache'
 import { revalidateTag } from 'next/cache'
 import { z } from 'zod'
-import { normalizeWhatsApp, validateWhatsApp } from '@/lib/helpers/phone'
+import { normalizeWhatsApp, validateWhatsApp } from '@/lib/utils/phone'
 
 export const dynamic = 'force-dynamic'
 

@@ -1,5 +1,5 @@
-import { generateMagicLinkEmail } from '@/services/mail/templates/MagicLinkEmail'
-import { generateOtpEmail } from '@/services/mail/templates/OtpEmail'
+import { generateMagicLinkEmail } from '@/services/mail/templates/magic-link-email'
+import { generateOtpEmail } from '@/services/mail/templates/otp-email'
 
 import { DeliveryData, DeliveryType, EmailTemplate } from './types'
 

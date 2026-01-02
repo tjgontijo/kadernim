@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireRole } from '@/lib/auth/middleware'
+import { requirePermission } from '@/server/auth/middleware'
 import { UserRole } from '@/types/user-role'
-import { checkRateLimit } from '@/lib/helpers/rate-limit'
+import { checkRateLimit } from '@/server/utils/rate-limit'
 import { searchUsersService } from '@/services/users/search-users'
 
 /**
@@ -11,8 +11,8 @@ import { searchUsersService } from '@/services/users/search-users'
  */
 export async function GET(request: NextRequest) {
   try {
-    // Require admin role
-    const authResult = await requireRole(request, UserRole.admin)
+    // Require manage users permission
+    const authResult = await requirePermission(request, 'manage:users')
     if (authResult instanceof NextResponse) {
       return authResult
     }

@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireRole } from '@/lib/auth/middleware'
-import { UserRole } from '@/types/user-role'
-import { checkRateLimit } from '@/lib/helpers/rate-limit'
-import { prisma } from '@/lib/prisma'
-import { deleteFile } from '@/lib/cloudinary/file-service'
+import { requirePermission } from '@/server/auth/middleware'
+import { checkRateLimit } from '@/server/utils/rate-limit'
+import { prisma } from '@/lib/db'
+import { deleteFile } from '@/server/clients/cloudinary/file-client'
 
 /**
  * DELETE /api/v1/admin/resources/:id/files/:fileId
@@ -15,8 +14,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string; fileId: string }> }
 ) {
   try {
-    // Require admin role
-    const authResult = await requireRole(request, UserRole.admin)
+    // Require manage resources permission
+    const authResult = await requirePermission(request, 'manage:resources')
     if (authResult instanceof NextResponse) {
       return authResult
     }
@@ -58,7 +57,7 @@ export async function DELETE(
 
     // Delete file record from database
     console.log(`[DELETE FILE] Deleting from DB: ${fileId}`)
-    const { deleteFileService } = await import('@/services/resources/file-service')
+    const { deleteFileService } = await import('@/services/resources/admin/file-service')
     await deleteFileService(fileId, resourceId, userId)
 
     return new NextResponse(null, { status: 204 })

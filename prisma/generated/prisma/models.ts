@@ -9,7 +9,9 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/EducationLevel'
+export type * from './models/Grade'
 export type * from './models/Subject'
+export type * from './models/GradeSubject'
 export type * from './models/User'
 export type * from './models/Account'
 export type * from './models/Session'
@@ -20,5 +22,5 @@ export type * from './models/Resource'
 export type * from './models/ResourceImage'
 export type * from './models/ResourceFile'
 export type * from './models/ResourceVideo'
-export type * from './models/UserResourceAccess'
+export type * from './models/ResourceUserAccess'
 export type * from './commonInputTypes'

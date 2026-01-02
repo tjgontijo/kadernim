@@ -84,7 +84,7 @@ Access rules are computed dynamically in SQL:
 - Admin users → Always have access
 - Free resources (isFree=true) → Everyone can access
 - Active subscription → Can access non-free resources
-- Specific grants (UserResourceAccess) → Individual grants with optional expiration
+- Specific grants (resourceUserAccess) → Individual grants with optional expiration
 ```
 
 The `buildHasAccessConditionSql()` function encodes these as SQL WHERE conditions, enabling database-level filtering. **Always use this service** to determine resource access.
@@ -124,6 +124,11 @@ This creates/updates user accounts and grants resource access. **Critical:** Web
 
 #### 5. **Authentication (Better-Auth Framework)**
 
+**Architecture:**
+- **Server:** `src/server/auth/auth.ts` - Better-Auth config (secrets, plugins, database)
+- **Client:** `src/lib/auth/auth-client.ts` - React hooks (`useSession`, `signOut`, etc)
+- **Middleware:** `src/server/auth/middleware.ts` - Permission checks (`requirePermission`)
+
 Routes in `/api/v1/auth/[...all]`:
 - **Email/OTP** - Send code → Verify code → Create session
 - **Magic Link** - Send link → Click link → Create session
@@ -134,23 +139,94 @@ Routes in `/api/v1/auth/[...all]`:
 - React Query caches session with 5min stale time
 - Middleware validates on each request for document routes (not API routes)
 
+**Important:** Always import from correct location:
+- Server code: `import { auth } from '@/server/auth/auth'`
+- Client code: `import { authClient, useSession } from '@/lib/auth/auth-client'`
+
+#### 6. **Reusable CRUD Framework** (`src/components/admin/crud/`)
+
+Generic CRUD components for building admin interfaces consistently:
+
+**Components:**
+- `CrudPageShell` - Full page layout (header, search, pagination, filters)
+- `CrudDataView` - View switcher (list/cards/kanban)
+- `CrudListView` - Generic table with configurable columns
+- `CrudCardView` - Generic card grid with configurable layout
+- `CrudEditDrawer` - Slide-out drawer for create/edit forms
+
+**Features:**
+- View mode selection (list, cards, kanban planned)
+- Configurable per entity via `enabledViews` prop
+- Built-in pagination, search, filters
+- Responsive (mobile/desktop variants)
+- Type-safe with TypeScript generics
+
+**Usage example:**
+```typescript
+import { CrudPageShell, CrudListView, CrudCardView } from '@/components/admin/crud'
+
+<CrudPageShell
+  title="My Entity"
+  enabledViews={['list', 'cards']}
+  {...crudState}
+>
+  <CrudDataView
+    data={items}
+    view={view}
+    tableView={<CrudListView data={items} columns={columns} />}
+    cardView={<CrudCardView data={items} config={cardConfig} />}
+  />
+</CrudPageShell>
+```
+
+**Currently used in:** `admin/subjects` (testing), planned for `admin/resources` and `admin/users`
+
 ### Directory Structure
 
 **Key directories to know:**
 
+**Application & API:**
+- `src/app/((client))/` - Dashboard pages (resources, admin, etc)
 - `src/app/api/v1/` - API route handlers (organized by feature)
+
+**Components:**
+- `src/components/admin/crud/` - Reusable CRUD framework (page shell, views, drawers)
+- `src/components/(client)/` - Dashboard-specific UI components
+- `src/components/ui/` - Shadcn UI components (base design system)
+
+**Server-side Code:**
+- `src/server/auth/` - Better-Auth server config and middleware
+  - `index.ts` - Clean exports
+  - `auth.ts` - Better-Auth instance (with secrets, plugins)
+  - `middleware.ts` - Authentication middleware
 - `src/server/services/` - Business logic services (reusable, testable)
-- `src/components/dashboard/resources/` - Resource UI components
-- `src/lib/auth/` - Better-Auth config and plugins
-- `src/lib/schemas/` - Zod validation schemas (request/response)
+- `src/server/clients/` - External service clients (with API keys/secrets)
+  - `cloudinary/` - Cloudinary image/video/file clients
+- `src/server/utils/` - Server utilities (rate-limit, cache, etc)
+
+**Client-side & Shared:**
+- `src/lib/` - Shared code (works on both client and server)
+  - `db.ts` - Prisma client singleton (use this, don't create new instances)
+  - `auth/` - Client-side auth (React hooks, permissions, roles)
+    - `index.ts` - Clean exports
+    - `auth-client.ts` - Better-Auth React client
+    - `permissions.ts` - Permission system (CASL)
+    - `roles.ts` - Role definitions
+  - `schemas/` - Zod validation schemas (request/response)
+  - `utils/` - Shared utilities (password, phone, cn, etc)
 - `src/hooks/` - Custom React hooks (useResourcesSummaryQuery, useSessionQuery)
+- `src/services/` - Shared services (auth, delivery, resources, users)
+
+**Database:**
 - `prisma/schema.prisma` - Database schema (source of truth)
 - `prisma/seeds/` - Database seeding scripts
 
 **Important files:**
 
 - [src/middleware.ts](src/middleware.ts) - Route protection and session validation (Edge Runtime)
-- [src/lib/prisma.ts](src/lib/prisma.ts) - Prisma client singleton (use this, don't create new instances)
+- [src/lib/db.ts](src/lib/db.ts) - Prisma client singleton (use this, don't create new instances)
+- [src/server/auth/auth.ts](src/server/auth/auth.ts) - Better-Auth server configuration
+- [src/lib/auth/auth-client.ts](src/lib/auth/auth-client.ts) - Better-Auth React client (hooks)
 - [src/server/services/accessService.ts](src/server/services/accessService.ts) - Access control logic (ALWAYS use this for checking resource access)
 - [src/app/api/v1/resources/summary/route.ts](src/app/api/v1/resources/summary/route.ts) - Main data fetching endpoint
 
@@ -161,11 +237,11 @@ Key models:
 - **Subscription** - Active subscriptions with expiration tracking
 - **Resource** - Educational resources with metadata
 - **ResourceFile** - Attachments to resources
-- **UserResourceAccess** - Individual access grants (can expire)
+- **resourceUserAccess** - Individual access grants (can expire)
 - **Session** - Active auth sessions (managed by Better-Auth)
 - **Verification** - OTP/Magic link codes (managed by Better-Auth)
 
-**Important:** Always use Prisma Client (from `src/lib/prisma.ts`) for database queries.
+**Important:** Always use Prisma Client (from `src/lib/db.ts`) for database queries.
 
 ### Performance Considerations
 
@@ -198,3 +274,48 @@ Key models:
 3. **Why multi-layer caching?** - Balances freshness (stale-while-revalidate) with performance (instant responses)
 4. **Why webhook enrollment?** - Decouples e-commerce systems; scales to multiple platforms
 5. **Why Edge Runtime middleware?** - Fastest session validation (no cold starts)
+6. **Why separate `lib/` and `server/` for auth?** - Security (server secrets isolated), tree-shaking (client bundles exclude server code), Better-Auth best practices
+
+## Import Path Guidelines
+
+**Always use these correct import paths:**
+
+**Database (shared - works everywhere):**
+```typescript
+import { prisma } from '@/lib/db'
+```
+
+**Server-side imports (API routes, server components, middleware):**
+```typescript
+// Auth (can also use index exports)
+import { auth } from '@/server/auth'
+import { requirePermission } from '@/server/auth'
+
+// External clients
+import { uploadImage, deleteImage } from '@/server/clients/cloudinary'
+
+// Server utilities
+import { checkRateLimit, buildResourceCacheTag } from '@/server/utils'
+```
+
+**Client-side imports (React components, hooks):**
+```typescript
+// Auth (can also use index exports)
+import { authClient, useSession, ROLES, can } from '@/lib/auth'
+
+// Or specific imports
+import { authClient } from '@/lib/auth/auth-client'
+import { ROLES } from '@/lib/auth/roles'
+import { can } from '@/lib/auth/permissions'
+```
+
+**Shared imports (both client and server):**
+```typescript
+import { ResourceSchema } from '@/lib/schemas/admin/resources'
+import { formatPhone, hashPassword } from '@/lib/utils/phone'
+```
+
+**CRUD Framework:**
+```typescript
+import { CrudPageShell, CrudListView, CrudCardView } from '@/components/admin/crud'
+```

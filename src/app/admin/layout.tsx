@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react'
 import { redirect } from 'next/navigation'
 
-import { getServerSession } from '@/server/auth/session'
+import { getServerSession } from '@/services/auth/session-service'
 import { UserRole } from '@/types/user-role'
+import { isStaff } from '@/lib/auth/roles'
 
 import { AdminSidebar } from '@/components/admin/sidebar'
 import { AdminHeader } from '@/components/admin/header'
@@ -17,8 +18,8 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const session = await getServerSession()
   if (!session) redirect('/login/otp')
 
-  // Verifica se o usuário é admin
-  if (session.user.role !== UserRole.admin) {
+  // Permite apenas admin, manager e editor na área administrativa
+  if (!isStaff(session.user.role as any)) {
     redirect('/resources')
   }
 
@@ -34,13 +35,12 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     <ResourceProvider>
       <HeaderActionsProvider>
         <SidebarProvider>
-          <div className="flex h-screen w-full bg-background overflow-hidden">
+          <div className="flex h-screen w-full bg-muted/10 overflow-hidden">
             <AdminSidebar user={user} />
 
-            <SidebarInset className="flex flex-col h-full min-w-0">
-              <AdminHeader />
-
-              <main className="flex-1 min-h-0 bg-muted/5">
+            <SidebarInset className="flex flex-col min-h-0 h-full overflow-hidden">
+              {/* <AdminHeader /> */}
+              <main className="flex-1 overflow-hidden p-6">
                 <AdminContent user={user}>
                   {children}
                 </AdminContent>

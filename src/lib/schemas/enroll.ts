@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { validateWhatsApp, normalizeWhatsApp } from '@/lib/helpers/phone'
+import { validateWhatsApp, normalizeWhatsApp } from '@/lib/utils/phone'
 
 export const EnrollmentPayloadSchema = z
   .object({

@@ -253,7 +253,7 @@ export type ResourceWhereInput = {
   images?: Prisma.ResourceImageListRelationFilter
   files?: Prisma.ResourceFileListRelationFilter
   videos?: Prisma.ResourceVideoListRelationFilter
-  accessEntries?: Prisma.UserResourceAccessListRelationFilter
+  accessEntries?: Prisma.ResourceUserAccessListRelationFilter
 }
 
 export type ResourceOrderByWithRelationInput = {
@@ -271,7 +271,7 @@ export type ResourceOrderByWithRelationInput = {
   images?: Prisma.ResourceImageOrderByRelationAggregateInput
   files?: Prisma.ResourceFileOrderByRelationAggregateInput
   videos?: Prisma.ResourceVideoOrderByRelationAggregateInput
-  accessEntries?: Prisma.UserResourceAccessOrderByRelationAggregateInput
+  accessEntries?: Prisma.ResourceUserAccessOrderByRelationAggregateInput
 }
 
 export type ResourceWhereUniqueInput = Prisma.AtLeast<{
@@ -292,7 +292,7 @@ export type ResourceWhereUniqueInput = Prisma.AtLeast<{
   images?: Prisma.ResourceImageListRelationFilter
   files?: Prisma.ResourceFileListRelationFilter
   videos?: Prisma.ResourceVideoListRelationFilter
-  accessEntries?: Prisma.UserResourceAccessListRelationFilter
+  accessEntries?: Prisma.ResourceUserAccessListRelationFilter
 }, "id" | "externalId">
 
 export type ResourceOrderByWithAggregationInput = {
@@ -340,7 +340,7 @@ export type ResourceCreateInput = {
   images?: Prisma.ResourceImageCreateNestedManyWithoutResourceInput
   files?: Prisma.ResourceFileCreateNestedManyWithoutResourceInput
   videos?: Prisma.ResourceVideoCreateNestedManyWithoutResourceInput
-  accessEntries?: Prisma.UserResourceAccessCreateNestedManyWithoutResourceInput
+  accessEntries?: Prisma.ResourceUserAccessCreateNestedManyWithoutResourceInput
 }
 
 export type ResourceUncheckedCreateInput = {
@@ -356,7 +356,7 @@ export type ResourceUncheckedCreateInput = {
   images?: Prisma.ResourceImageUncheckedCreateNestedManyWithoutResourceInput
   files?: Prisma.ResourceFileUncheckedCreateNestedManyWithoutResourceInput
   videos?: Prisma.ResourceVideoUncheckedCreateNestedManyWithoutResourceInput
-  accessEntries?: Prisma.UserResourceAccessUncheckedCreateNestedManyWithoutResourceInput
+  accessEntries?: Prisma.ResourceUserAccessUncheckedCreateNestedManyWithoutResourceInput
 }
 
 export type ResourceUpdateInput = {
@@ -372,7 +372,7 @@ export type ResourceUpdateInput = {
   images?: Prisma.ResourceImageUpdateManyWithoutResourceNestedInput
   files?: Prisma.ResourceFileUpdateManyWithoutResourceNestedInput
   videos?: Prisma.ResourceVideoUpdateManyWithoutResourceNestedInput
-  accessEntries?: Prisma.UserResourceAccessUpdateManyWithoutResourceNestedInput
+  accessEntries?: Prisma.ResourceUserAccessUpdateManyWithoutResourceNestedInput
 }
 
 export type ResourceUncheckedUpdateInput = {
@@ -388,7 +388,7 @@ export type ResourceUncheckedUpdateInput = {
   images?: Prisma.ResourceImageUncheckedUpdateManyWithoutResourceNestedInput
   files?: Prisma.ResourceFileUncheckedUpdateManyWithoutResourceNestedInput
   videos?: Prisma.ResourceVideoUncheckedUpdateManyWithoutResourceNestedInput
-  accessEntries?: Prisma.UserResourceAccessUncheckedUpdateManyWithoutResourceNestedInput
+  accessEntries?: Prisma.ResourceUserAccessUncheckedUpdateManyWithoutResourceNestedInput
 }
 
 export type ResourceCreateManyInput = {
@@ -636,7 +636,7 @@ export type ResourceCreateWithoutEducationLevelInput = {
   images?: Prisma.ResourceImageCreateNestedManyWithoutResourceInput
   files?: Prisma.ResourceFileCreateNestedManyWithoutResourceInput
   videos?: Prisma.ResourceVideoCreateNestedManyWithoutResourceInput
-  accessEntries?: Prisma.UserResourceAccessCreateNestedManyWithoutResourceInput
+  accessEntries?: Prisma.ResourceUserAccessCreateNestedManyWithoutResourceInput
 }
 
 export type ResourceUncheckedCreateWithoutEducationLevelInput = {
@@ -651,7 +651,7 @@ export type ResourceUncheckedCreateWithoutEducationLevelInput = {
   images?: Prisma.ResourceImageUncheckedCreateNestedManyWithoutResourceInput
   files?: Prisma.ResourceFileUncheckedCreateNestedManyWithoutResourceInput
   videos?: Prisma.ResourceVideoUncheckedCreateNestedManyWithoutResourceInput
-  accessEntries?: Prisma.UserResourceAccessUncheckedCreateNestedManyWithoutResourceInput
+  accessEntries?: Prisma.ResourceUserAccessUncheckedCreateNestedManyWithoutResourceInput
 }
 
 export type ResourceCreateOrConnectWithoutEducationLevelInput = {
@@ -707,7 +707,7 @@ export type ResourceCreateWithoutSubjectInput = {
   images?: Prisma.ResourceImageCreateNestedManyWithoutResourceInput
   files?: Prisma.ResourceFileCreateNestedManyWithoutResourceInput
   videos?: Prisma.ResourceVideoCreateNestedManyWithoutResourceInput
-  accessEntries?: Prisma.UserResourceAccessCreateNestedManyWithoutResourceInput
+  accessEntries?: Prisma.ResourceUserAccessCreateNestedManyWithoutResourceInput
 }
 
 export type ResourceUncheckedCreateWithoutSubjectInput = {
@@ -722,7 +722,7 @@ export type ResourceUncheckedCreateWithoutSubjectInput = {
   images?: Prisma.ResourceImageUncheckedCreateNestedManyWithoutResourceInput
   files?: Prisma.ResourceFileUncheckedCreateNestedManyWithoutResourceInput
   videos?: Prisma.ResourceVideoUncheckedCreateNestedManyWithoutResourceInput
-  accessEntries?: Prisma.UserResourceAccessUncheckedCreateNestedManyWithoutResourceInput
+  accessEntries?: Prisma.ResourceUserAccessUncheckedCreateNestedManyWithoutResourceInput
 }
 
 export type ResourceCreateOrConnectWithoutSubjectInput = {
@@ -763,7 +763,7 @@ export type ResourceCreateWithoutImagesInput = {
   subject: Prisma.SubjectCreateNestedOneWithoutResourcesInput
   files?: Prisma.ResourceFileCreateNestedManyWithoutResourceInput
   videos?: Prisma.ResourceVideoCreateNestedManyWithoutResourceInput
-  accessEntries?: Prisma.UserResourceAccessCreateNestedManyWithoutResourceInput
+  accessEntries?: Prisma.ResourceUserAccessCreateNestedManyWithoutResourceInput
 }
 
 export type ResourceUncheckedCreateWithoutImagesInput = {
@@ -778,7 +778,7 @@ export type ResourceUncheckedCreateWithoutImagesInput = {
   updatedAt?: Date | string
   files?: Prisma.ResourceFileUncheckedCreateNestedManyWithoutResourceInput
   videos?: Prisma.ResourceVideoUncheckedCreateNestedManyWithoutResourceInput
-  accessEntries?: Prisma.UserResourceAccessUncheckedCreateNestedManyWithoutResourceInput
+  accessEntries?: Prisma.ResourceUserAccessUncheckedCreateNestedManyWithoutResourceInput
 }
 
 export type ResourceCreateOrConnectWithoutImagesInput = {
@@ -809,7 +809,7 @@ export type ResourceUpdateWithoutImagesInput = {
   subject?: Prisma.SubjectUpdateOneRequiredWithoutResourcesNestedInput
   files?: Prisma.ResourceFileUpdateManyWithoutResourceNestedInput
   videos?: Prisma.ResourceVideoUpdateManyWithoutResourceNestedInput
-  accessEntries?: Prisma.UserResourceAccessUpdateManyWithoutResourceNestedInput
+  accessEntries?: Prisma.ResourceUserAccessUpdateManyWithoutResourceNestedInput
 }
 
 export type ResourceUncheckedUpdateWithoutImagesInput = {
@@ -824,7 +824,7 @@ export type ResourceUncheckedUpdateWithoutImagesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   files?: Prisma.ResourceFileUncheckedUpdateManyWithoutResourceNestedInput
   videos?: Prisma.ResourceVideoUncheckedUpdateManyWithoutResourceNestedInput
-  accessEntries?: Prisma.UserResourceAccessUncheckedUpdateManyWithoutResourceNestedInput
+  accessEntries?: Prisma.ResourceUserAccessUncheckedUpdateManyWithoutResourceNestedInput
 }
 
 export type ResourceCreateWithoutFilesInput = {
@@ -839,7 +839,7 @@ export type ResourceCreateWithoutFilesInput = {
   subject: Prisma.SubjectCreateNestedOneWithoutResourcesInput
   images?: Prisma.ResourceImageCreateNestedManyWithoutResourceInput
   videos?: Prisma.ResourceVideoCreateNestedManyWithoutResourceInput
-  accessEntries?: Prisma.UserResourceAccessCreateNestedManyWithoutResourceInput
+  accessEntries?: Prisma.ResourceUserAccessCreateNestedManyWithoutResourceInput
 }
 
 export type ResourceUncheckedCreateWithoutFilesInput = {
@@ -854,7 +854,7 @@ export type ResourceUncheckedCreateWithoutFilesInput = {
   updatedAt?: Date | string
   images?: Prisma.ResourceImageUncheckedCreateNestedManyWithoutResourceInput
   videos?: Prisma.ResourceVideoUncheckedCreateNestedManyWithoutResourceInput
-  accessEntries?: Prisma.UserResourceAccessUncheckedCreateNestedManyWithoutResourceInput
+  accessEntries?: Prisma.ResourceUserAccessUncheckedCreateNestedManyWithoutResourceInput
 }
 
 export type ResourceCreateOrConnectWithoutFilesInput = {
@@ -885,7 +885,7 @@ export type ResourceUpdateWithoutFilesInput = {
   subject?: Prisma.SubjectUpdateOneRequiredWithoutResourcesNestedInput
   images?: Prisma.ResourceImageUpdateManyWithoutResourceNestedInput
   videos?: Prisma.ResourceVideoUpdateManyWithoutResourceNestedInput
-  accessEntries?: Prisma.UserResourceAccessUpdateManyWithoutResourceNestedInput
+  accessEntries?: Prisma.ResourceUserAccessUpdateManyWithoutResourceNestedInput
 }
 
 export type ResourceUncheckedUpdateWithoutFilesInput = {
@@ -900,7 +900,7 @@ export type ResourceUncheckedUpdateWithoutFilesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ResourceImageUncheckedUpdateManyWithoutResourceNestedInput
   videos?: Prisma.ResourceVideoUncheckedUpdateManyWithoutResourceNestedInput
-  accessEntries?: Prisma.UserResourceAccessUncheckedUpdateManyWithoutResourceNestedInput
+  accessEntries?: Prisma.ResourceUserAccessUncheckedUpdateManyWithoutResourceNestedInput
 }
 
 export type ResourceCreateWithoutVideosInput = {
@@ -915,7 +915,7 @@ export type ResourceCreateWithoutVideosInput = {
   subject: Prisma.SubjectCreateNestedOneWithoutResourcesInput
   images?: Prisma.ResourceImageCreateNestedManyWithoutResourceInput
   files?: Prisma.ResourceFileCreateNestedManyWithoutResourceInput
-  accessEntries?: Prisma.UserResourceAccessCreateNestedManyWithoutResourceInput
+  accessEntries?: Prisma.ResourceUserAccessCreateNestedManyWithoutResourceInput
 }
 
 export type ResourceUncheckedCreateWithoutVideosInput = {
@@ -930,7 +930,7 @@ export type ResourceUncheckedCreateWithoutVideosInput = {
   updatedAt?: Date | string
   images?: Prisma.ResourceImageUncheckedCreateNestedManyWithoutResourceInput
   files?: Prisma.ResourceFileUncheckedCreateNestedManyWithoutResourceInput
-  accessEntries?: Prisma.UserResourceAccessUncheckedCreateNestedManyWithoutResourceInput
+  accessEntries?: Prisma.ResourceUserAccessUncheckedCreateNestedManyWithoutResourceInput
 }
 
 export type ResourceCreateOrConnectWithoutVideosInput = {
@@ -961,7 +961,7 @@ export type ResourceUpdateWithoutVideosInput = {
   subject?: Prisma.SubjectUpdateOneRequiredWithoutResourcesNestedInput
   images?: Prisma.ResourceImageUpdateManyWithoutResourceNestedInput
   files?: Prisma.ResourceFileUpdateManyWithoutResourceNestedInput
-  accessEntries?: Prisma.UserResourceAccessUpdateManyWithoutResourceNestedInput
+  accessEntries?: Prisma.ResourceUserAccessUpdateManyWithoutResourceNestedInput
 }
 
 export type ResourceUncheckedUpdateWithoutVideosInput = {
@@ -976,7 +976,7 @@ export type ResourceUncheckedUpdateWithoutVideosInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.ResourceImageUncheckedUpdateManyWithoutResourceNestedInput
   files?: Prisma.ResourceFileUncheckedUpdateManyWithoutResourceNestedInput
-  accessEntries?: Prisma.UserResourceAccessUncheckedUpdateManyWithoutResourceNestedInput
+  accessEntries?: Prisma.ResourceUserAccessUncheckedUpdateManyWithoutResourceNestedInput
 }
 
 export type ResourceCreateWithoutAccessEntriesInput = {
@@ -1078,7 +1078,7 @@ export type ResourceUpdateWithoutEducationLevelInput = {
   images?: Prisma.ResourceImageUpdateManyWithoutResourceNestedInput
   files?: Prisma.ResourceFileUpdateManyWithoutResourceNestedInput
   videos?: Prisma.ResourceVideoUpdateManyWithoutResourceNestedInput
-  accessEntries?: Prisma.UserResourceAccessUpdateManyWithoutResourceNestedInput
+  accessEntries?: Prisma.ResourceUserAccessUpdateManyWithoutResourceNestedInput
 }
 
 export type ResourceUncheckedUpdateWithoutEducationLevelInput = {
@@ -1093,7 +1093,7 @@ export type ResourceUncheckedUpdateWithoutEducationLevelInput = {
   images?: Prisma.ResourceImageUncheckedUpdateManyWithoutResourceNestedInput
   files?: Prisma.ResourceFileUncheckedUpdateManyWithoutResourceNestedInput
   videos?: Prisma.ResourceVideoUncheckedUpdateManyWithoutResourceNestedInput
-  accessEntries?: Prisma.UserResourceAccessUncheckedUpdateManyWithoutResourceNestedInput
+  accessEntries?: Prisma.ResourceUserAccessUncheckedUpdateManyWithoutResourceNestedInput
 }
 
 export type ResourceUncheckedUpdateManyWithoutEducationLevelInput = {
@@ -1130,7 +1130,7 @@ export type ResourceUpdateWithoutSubjectInput = {
   images?: Prisma.ResourceImageUpdateManyWithoutResourceNestedInput
   files?: Prisma.ResourceFileUpdateManyWithoutResourceNestedInput
   videos?: Prisma.ResourceVideoUpdateManyWithoutResourceNestedInput
-  accessEntries?: Prisma.UserResourceAccessUpdateManyWithoutResourceNestedInput
+  accessEntries?: Prisma.ResourceUserAccessUpdateManyWithoutResourceNestedInput
 }
 
 export type ResourceUncheckedUpdateWithoutSubjectInput = {
@@ -1145,7 +1145,7 @@ export type ResourceUncheckedUpdateWithoutSubjectInput = {
   images?: Prisma.ResourceImageUncheckedUpdateManyWithoutResourceNestedInput
   files?: Prisma.ResourceFileUncheckedUpdateManyWithoutResourceNestedInput
   videos?: Prisma.ResourceVideoUncheckedUpdateManyWithoutResourceNestedInput
-  accessEntries?: Prisma.UserResourceAccessUncheckedUpdateManyWithoutResourceNestedInput
+  accessEntries?: Prisma.ResourceUserAccessUncheckedUpdateManyWithoutResourceNestedInput
 }
 
 export type ResourceUncheckedUpdateManyWithoutSubjectInput = {
@@ -1213,7 +1213,7 @@ export type ResourceCountOutputTypeCountVideosArgs<ExtArgs extends runtime.Types
  * ResourceCountOutputType without action
  */
 export type ResourceCountOutputTypeCountAccessEntriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.UserResourceAccessWhereInput
+  where?: Prisma.ResourceUserAccessWhereInput
 }
 
 
@@ -1303,7 +1303,7 @@ export type $ResourcePayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     images: Prisma.$ResourceImagePayload<ExtArgs>[]
     files: Prisma.$ResourceFilePayload<ExtArgs>[]
     videos: Prisma.$ResourceVideoPayload<ExtArgs>[]
-    accessEntries: Prisma.$UserResourceAccessPayload<ExtArgs>[]
+    accessEntries: Prisma.$ResourceUserAccessPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1714,7 +1714,7 @@ export interface Prisma__ResourceClient<T, Null = never, ExtArgs extends runtime
   images<T extends Prisma.Resource$imagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Resource$imagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ResourceImagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   files<T extends Prisma.Resource$filesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Resource$filesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ResourceFilePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   videos<T extends Prisma.Resource$videosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Resource$videosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ResourceVideoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  accessEntries<T extends Prisma.Resource$accessEntriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Resource$accessEntriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserResourceAccessPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  accessEntries<T extends Prisma.Resource$accessEntriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Resource$accessEntriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ResourceUserAccessPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2225,23 +2225,23 @@ export type Resource$videosArgs<ExtArgs extends runtime.Types.Extensions.Interna
  */
 export type Resource$accessEntriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the UserResourceAccess
+   * Select specific fields to fetch from the ResourceUserAccess
    */
-  select?: Prisma.UserResourceAccessSelect<ExtArgs> | null
+  select?: Prisma.ResourceUserAccessSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the UserResourceAccess
+   * Omit specific fields from the ResourceUserAccess
    */
-  omit?: Prisma.UserResourceAccessOmit<ExtArgs> | null
+  omit?: Prisma.ResourceUserAccessOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.UserResourceAccessInclude<ExtArgs> | null
-  where?: Prisma.UserResourceAccessWhereInput
-  orderBy?: Prisma.UserResourceAccessOrderByWithRelationInput | Prisma.UserResourceAccessOrderByWithRelationInput[]
-  cursor?: Prisma.UserResourceAccessWhereUniqueInput
+  include?: Prisma.ResourceUserAccessInclude<ExtArgs> | null
+  where?: Prisma.ResourceUserAccessWhereInput
+  orderBy?: Prisma.ResourceUserAccessOrderByWithRelationInput | Prisma.ResourceUserAccessOrderByWithRelationInput[]
+  cursor?: Prisma.ResourceUserAccessWhereUniqueInput
   take?: number
   skip?: number
-  distinct?: Prisma.UserResourceAccessScalarFieldEnum | Prisma.UserResourceAccessScalarFieldEnum[]
+  distinct?: Prisma.ResourceUserAccessScalarFieldEnum | Prisma.ResourceUserAccessScalarFieldEnum[]
 }
 
 /**

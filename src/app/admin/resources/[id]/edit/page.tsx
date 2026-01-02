@@ -29,13 +29,13 @@ import {
 } from '@/components/ui/dropdown-menu'
 import {
   TemplateMainShell,
-} from '@/components/dashboard/resources'
+} from '@/components/client/resources'
 import { ResourceDetailsForm } from '@/components/admin/resources/edit/resource-details-form'
 import { ResourceFilesManager } from '@/components/admin/resources/edit/resource-files-manager'
 import { ResourceAccessManager } from '@/components/admin/resources/edit/resource-access-manager'
 import { ResourceImagesManager } from '@/components/admin/resources/edit/resource-images-manager'
 import { ResourceVideosManager } from '@/components/admin/resources/edit/resource-videos-manager'
-import { DeleteConfirmDialog } from '@/components/admin/shared/delete-confirm-dialog'
+import { DeleteConfirmDialog } from '@/components/admin/crud/delete-confirm-dialog'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 

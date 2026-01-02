@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { unstable_cache } from 'next/cache'
 
-import { prisma, Prisma as PrismaNamespace } from '@/lib/prisma'
-import { auth } from '@/lib/auth/auth'
+import { prisma, Prisma as PrismaNamespace } from '@/lib/db'
+import { auth } from '@/server/auth/auth'
+import { isStaff } from '@/lib/auth/roles'
 import { ResourceFilterSchema } from '@/lib/schemas/resource'
 import {
   buildResourceCacheKey,
   buildResourceCacheTag,
-} from '@/lib/helpers/cache'
-import { checkRateLimit } from '@/lib/helpers/rate-limit'
+} from '@/server/utils/cache'
+import { checkRateLimit } from '@/server/utils/rate-limit'
 import {
   buildHasAccessConditionSql,
   type SubscriptionContext,
   type UserAccessContext,
-} from '@/server/services/accessService'
+} from '@/services/auth/access-service'
 
 type ResourceRow = {
   id: string
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest) {
     const session = await auth.api.getSession({ headers: request.headers })
     const userId = session?.user?.id
     const role = session?.user?.role
-    const isAdmin = role === 'admin'
+    const isAdmin = isStaff(role as any)
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

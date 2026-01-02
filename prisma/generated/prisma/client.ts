@@ -43,10 +43,20 @@ export { Prisma }
  */
 export type EducationLevel = Prisma.EducationLevelModel
 /**
+ * Model Grade
+ * 
+ */
+export type Grade = Prisma.GradeModel
+/**
  * Model Subject
  * 
  */
 export type Subject = Prisma.SubjectModel
+/**
+ * Model GradeSubject
+ * 
+ */
+export type GradeSubject = Prisma.GradeSubjectModel
 /**
  * Model User
  * 
@@ -98,7 +108,7 @@ export type ResourceFile = Prisma.ResourceFileModel
  */
 export type ResourceVideo = Prisma.ResourceVideoModel
 /**
- * Model UserResourceAccess
+ * Model ResourceUserAccess
  * 
  */
-export type UserResourceAccess = Prisma.UserResourceAccessModel
+export type ResourceUserAccess = Prisma.ResourceUserAccessModel

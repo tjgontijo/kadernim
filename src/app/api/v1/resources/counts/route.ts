@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { unstable_cache } from 'next/cache'
 
-import { auth } from '@/lib/auth/auth'
-import { prisma } from '@/lib/prisma'
+import { auth } from '@/server/auth/auth'
+import { prisma } from '@/lib/db'
 import { ResourceFilterSchema } from '@/lib/schemas/resource'
-import { buildResourceCacheTag } from '@/lib/helpers/cache'
-import { checkRateLimit } from '@/lib/helpers/rate-limit'
-import { getResourceCounts } from '@/server/services/resourceCountService'
-import type { SubscriptionContext, UserAccessContext } from '@/server/services/accessService'
+import { buildResourceCacheTag } from '@/server/utils/cache'
+import { checkRateLimit } from '@/server/utils/rate-limit'
+import { getResourceCounts } from '@/services/resources/catalog/count-service'
+import type { SubscriptionContext, UserAccessContext } from '@/services/auth/access-service'
 
 export async function GET(request: NextRequest) {
   try {

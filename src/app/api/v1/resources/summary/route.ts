@@ -1,16 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import { prisma } from '@/lib/prisma'
-import { auth } from '@/lib/auth/auth'
+import { prisma } from '@/lib/db'
+import { auth } from '@/server/auth/auth'
+import { isStaff } from '@/lib/auth/roles'
 import { ResourceFilterSchema } from '@/lib/schemas/resource'
-import { checkRateLimit } from '@/lib/helpers/rate-limit'
-import { buildResourceCacheKey } from '@/lib/helpers/cache'
+import { checkRateLimit } from '@/server/utils/rate-limit'
+import { buildResourceCacheKey } from '@/server/utils/cache'
 
-import { getResourceSummary } from '@/server/services/resourceSummaryService'
+import { getResourceSummary } from '@/services/resources/catalog/summary-service'
 import type {
   SubscriptionContext,
   UserAccessContext,
-} from '@/server/services/accessService'
+} from '@/services/auth/access-service'
 
 export async function GET(request: NextRequest) {
   try {
@@ -66,7 +67,7 @@ export async function GET(request: NextRequest) {
       select: { id: true },
     })
 
-    const isAdmin = role === 'admin'
+    const isAdmin = isStaff(role as any)
     const isSubscriber = Boolean(subscription)
 
     const userContext: UserAccessContext = {

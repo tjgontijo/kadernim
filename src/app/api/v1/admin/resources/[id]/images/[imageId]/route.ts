@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { deleteImage } from '@/lib/cloudinary/image-service'
-import { updateResourceImage, deleteResourceImage } from '@/services/resources/image-service'
-import { prisma } from '@/lib/prisma'
+import { deleteImage } from '@/server/clients/cloudinary/image-client'
+import { updateResourceImage, deleteResourceImage } from '@/services/resources/admin/image-service'
+import { prisma } from '@/lib/db'
 
 // PUT /api/v1/admin/resources/[id]/images/[imageId]
 export async function PUT(

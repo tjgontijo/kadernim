@@ -9,6 +9,8 @@ import {
   Building2,
   BarChart3,
   Settings,
+  Hash,
+  Tags,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -24,12 +26,15 @@ import {
   SidebarRail,
   useSidebar,
 } from '@/components/ui/sidebar'
-import { UserDropdownMenu } from './user-dropdown-menu'
+import { UserDropdownMenu } from './users/user-dropdown-menu'
+import { defineAbilitiesFor, PermissionAction, PermissionSubject } from '@/lib/auth/permissions'
+import { UserRoleType } from '@/types/user-role'
 
 type NavItem = {
   title: string
   href: string
   icon: string
+  permission?: { action: PermissionAction; subject: PermissionSubject }
 }
 
 interface AdminSidebarProps {
@@ -50,6 +55,8 @@ const ICON_MAP = {
   Building2,
   BarChart3,
   Settings,
+  Hash,
+  Tags,
 } as const
 
 export function AdminSidebar({ user }: AdminSidebarProps) {
@@ -59,17 +66,20 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
   const userName = user.name || 'Usuário'
   const userEmail = user.email || ''
   const userImage = user.image
+  const userRole = (user.role || 'user') as UserRoleType
+  const ability = defineAbilitiesFor(userRole)
 
-  // Nav items
+  // Nav items with permission requirements
   const platformItems: NavItem[] = [
     { title: 'Dashboard', href: '/admin', icon: 'LayoutDashboard' },
   ]
 
   const dataItems: NavItem[] = [
-    { title: 'Recursos', href: '/admin/resources', icon: 'BookOpen' },
-    { title: 'Usuários', href: '/admin/users', icon: 'Users' },
-    { title: 'Organizações', href: '/admin/organizations', icon: 'Building2' },
-    { title: 'Analytics', href: '/admin/analytics', icon: 'BarChart3' },
+    { title: 'Recursos', href: '/admin/resources', icon: 'BookOpen', permission: { action: 'read', subject: 'Resource' } },
+    { title: 'Matérias', href: '/admin/subjects', icon: 'Hash', permission: { action: 'read', subject: 'Subject' } },
+    { title: 'Usuários', href: '/admin/users', icon: 'Users', permission: { action: 'read', subject: 'User' } },
+    { title: 'Organizações', href: '/admin/organizations', icon: 'Building2', permission: { action: 'read', subject: 'Organization' } },
+    { title: 'Analytics', href: '/admin/analytics', icon: 'BarChart3', permission: { action: 'read', subject: 'Analytics' } },
   ]
 
   const configItems: NavItem[] = [
@@ -84,7 +94,7 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
   }
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" variant="inset">
       <SidebarHeader className="border-b">
         <SidebarMenu>
           <SidebarMenuItem>
@@ -112,20 +122,22 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
           <SidebarGroupLabel>Plataforma</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {platformItems.map((item) => {
-                const Icon = ICON_MAP[item.icon as keyof typeof ICON_MAP]
-                const isActive = pathname === item.href
-                return (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
-                      <Link href={item.href} onClick={handleNavClick}>
-                        {Icon && <Icon className="h-4 w-4" />}
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )
-              })}
+              {platformItems
+                .filter((item) => !item.permission || ability.can(item.permission.action, item.permission.subject))
+                .map((item) => {
+                  const Icon = ICON_MAP[item.icon as keyof typeof ICON_MAP]
+                  const isActive = pathname === item.href
+                  return (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
+                        <Link href={item.href} onClick={handleNavClick}>
+                          {Icon && <Icon className="h-4 w-4" />}
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -134,20 +146,22 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
           <SidebarGroupLabel>Dados</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {dataItems.map((item) => {
-                const Icon = ICON_MAP[item.icon as keyof typeof ICON_MAP]
-                const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
-                return (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
-                      <Link href={item.href} onClick={handleNavClick}>
-                        {Icon && <Icon className="h-4 w-4" />}
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )
-              })}
+              {dataItems
+                .filter((item) => !item.permission || ability.can(item.permission.action, item.permission.subject))
+                .map((item) => {
+                  const Icon = ICON_MAP[item.icon as keyof typeof ICON_MAP]
+                  const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
+                  return (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
+                        <Link href={item.href} onClick={handleNavClick}>
+                          {Icon && <Icon className="h-4 w-4" />}
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -156,20 +170,22 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
           <SidebarGroupLabel>Configurações</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {configItems.map((item) => {
-                const Icon = ICON_MAP[item.icon as keyof typeof ICON_MAP]
-                const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
-                return (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
-                      <Link href={item.href} onClick={handleNavClick}>
-                        {Icon && <Icon className="h-4 w-4" />}
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )
-              })}
+              {configItems
+                .filter((item) => !item.permission || ability.can(item.permission.action, item.permission.subject))
+                .map((item) => {
+                  const Icon = ICON_MAP[item.icon as keyof typeof ICON_MAP]
+                  const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
+                  return (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
+                        <Link href={item.href} onClick={handleNavClick}>
+                          {Icon && <Icon className="h-4 w-4" />}
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

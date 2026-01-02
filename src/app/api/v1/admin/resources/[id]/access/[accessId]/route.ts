@@ -1,21 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireRole } from '@/lib/auth/middleware'
-import { UserRole } from '@/types/user-role'
-import { checkRateLimit } from '@/lib/helpers/rate-limit'
-import { revokeAccessService } from '@/services/resources/access-service'
+import { requirePermission } from '@/server/auth/middleware'
+import { checkRateLimit } from '@/server/utils/rate-limit'
+import { revokeAccessService } from '@/services/resources/admin/access-service'
 
 /**
  * DELETE /api/v1/admin/resources/:id/access/:accessId
  * Revoke access to a resource
- * Admin only
  */
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; accessId: string }> }
 ) {
   try {
-    // Require admin role
-    const authResult = await requireRole(request, UserRole.admin)
+    // Require manage resources permission
+    const authResult = await requirePermission(request, 'manage:resources')
     if (authResult instanceof NextResponse) {
       return authResult
     }

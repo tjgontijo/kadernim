@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
-import { DeleteConfirmDialog } from '@/components/admin/shared/delete-confirm-dialog'
+import { DeleteConfirmDialog } from '@/components/admin/crud/delete-confirm-dialog'
 
 interface ResourceVideo {
     id: string

@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import { auth } from '@/lib/auth/auth'
-import { prisma } from '@/lib/prisma'
-import { checkRateLimit } from '@/lib/helpers/rate-limit'
+import { auth } from '@/server/auth/auth'
+import { prisma } from '@/lib/db'
+import { checkRateLimit } from '@/server/utils/rate-limit'
 import {
   createDownloadToken,
   DOWNLOAD_TOKEN_DEFAULT_TTL_MS,
-} from '@/lib/download-token'
+} from '@/services/auth/token-service'
 import {
   computeHasAccessForResource,
   type SubscriptionContext,
   type UserAccessContext,
-} from '@/server/services/accessService'
+} from '@/services/auth/access-service'
 
 export const dynamic = 'force-dynamic'
 

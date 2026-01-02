@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
   skipProxyUrlNormalize: true,
+  experimental: {
+    optimizePackageImports: ['@tanstack/react-query'],
+  },
   async headers() {
     return [
       {

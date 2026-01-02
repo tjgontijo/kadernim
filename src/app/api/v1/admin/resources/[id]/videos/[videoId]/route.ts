@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { deleteVideo } from '@/lib/cloudinary/video-service'
-import { updateResourceVideo, deleteResourceVideo } from '@/services/resources/video-service'
-import { prisma } from '@/lib/prisma'
+import { deleteVideo } from '@/server/clients/cloudinary/video-client'
+import { updateResourceVideo, deleteResourceVideo } from '@/services/resources/admin/video-service'
+import { prisma } from '@/lib/db'
 
 // PUT /api/v1/admin/resources/[id]/videos/[videoId]
 export async function PUT(

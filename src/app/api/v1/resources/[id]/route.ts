@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@/lib/db'
 import { ResourceDetailSchema } from '@/lib/schemas/resource'
-import { auth } from '@/lib/auth/auth'
-import { CLOUDINARY_CLOUD_NAME } from '@/lib/cloudinary/config'
+import { auth } from '@/server/auth/auth'
+import { isStaff } from '@/lib/auth/roles'
+import { CLOUDINARY_CLOUD_NAME } from '@/server/clients/cloudinary/config'
 import {
   computeHasAccessForResource,
   type SubscriptionContext,
   type UserAccessContext,
-} from '@/server/services/accessService'
+} from '@/services/auth/access-service'
 
 export const dynamic = 'force-dynamic'
 
@@ -78,7 +79,7 @@ export async function GET(
 
     const userContext: UserAccessContext = {
       userId,
-      isAdmin: role === 'admin',
+      isAdmin: isStaff(role as any),
     }
 
     const subscriptionContext: SubscriptionContext = {

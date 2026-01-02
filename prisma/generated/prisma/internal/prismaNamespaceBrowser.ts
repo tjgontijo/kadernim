@@ -52,7 +52,9 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   EducationLevel: 'EducationLevel',
+  Grade: 'Grade',
   Subject: 'Subject',
+  GradeSubject: 'GradeSubject',
   User: 'User',
   Account: 'Account',
   Session: 'Session',
@@ -63,7 +65,7 @@ export const ModelName = {
   ResourceImage: 'ResourceImage',
   ResourceFile: 'ResourceFile',
   ResourceVideo: 'ResourceVideo',
-  UserResourceAccess: 'UserResourceAccess'
+  ResourceUserAccess: 'ResourceUserAccess'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -92,6 +94,17 @@ export const EducationLevelScalarFieldEnum = {
 export type EducationLevelScalarFieldEnum = (typeof EducationLevelScalarFieldEnum)[keyof typeof EducationLevelScalarFieldEnum]
 
 
+export const GradeScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  order: 'order',
+  educationLevelId: 'educationLevelId'
+} as const
+
+export type GradeScalarFieldEnum = (typeof GradeScalarFieldEnum)[keyof typeof GradeScalarFieldEnum]
+
+
 export const SubjectScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -99,6 +112,15 @@ export const SubjectScalarFieldEnum = {
 } as const
 
 export type SubjectScalarFieldEnum = (typeof SubjectScalarFieldEnum)[keyof typeof SubjectScalarFieldEnum]
+
+
+export const GradeSubjectScalarFieldEnum = {
+  id: 'id',
+  gradeId: 'gradeId',
+  subjectId: 'subjectId'
+} as const
+
+export type GradeSubjectScalarFieldEnum = (typeof GradeSubjectScalarFieldEnum)[keyof typeof GradeSubjectScalarFieldEnum]
 
 
 export const UserScalarFieldEnum = {
@@ -243,7 +265,7 @@ export const ResourceVideoScalarFieldEnum = {
 export type ResourceVideoScalarFieldEnum = (typeof ResourceVideoScalarFieldEnum)[keyof typeof ResourceVideoScalarFieldEnum]
 
 
-export const UserResourceAccessScalarFieldEnum = {
+export const ResourceUserAccessScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   resourceId: 'resourceId',
@@ -252,7 +274,7 @@ export const UserResourceAccessScalarFieldEnum = {
   expiresAt: 'expiresAt'
 } as const
 
-export type UserResourceAccessScalarFieldEnum = (typeof UserResourceAccessScalarFieldEnum)[keyof typeof UserResourceAccessScalarFieldEnum]
+export type ResourceUserAccessScalarFieldEnum = (typeof ResourceUserAccessScalarFieldEnum)[keyof typeof ResourceUserAccessScalarFieldEnum]
 
 
 export const SortOrder = {

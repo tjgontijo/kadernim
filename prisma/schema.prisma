@@ -9,6 +9,8 @@ datasource db {
 enum UserRole {
   user
   subscriber
+  editor
+  manager
   admin
 }
 
@@ -17,18 +19,53 @@ model EducationLevel {
   name      String     @unique
   slug      String     @unique
   order     Int        @default(0)
+
+  grades  Grade[]
   resources Resource[]
 
   @@map("education_level")
 }
 
+model Grade {
+  id               String         @id @default(cuid())
+  name             String         // "3º Ano", "6º Ano", "5 anos"
+  slug             String         @unique
+  order            Int            @default(0)
+
+  educationLevelId String
+  educationLevel   EducationLevel @relation(fields: [educationLevelId], references: [id])
+
+  subjects         GradeSubject[]
+
+  @@index([educationLevelId])
+  @@map("grade")
+}
+
+
 model Subject {
-  id        String     @id @default(cuid())
-  name      String     @unique
-  slug      String     @unique
+  id        String          @id @default(cuid())
+  name      String          @unique
+  slug      String          @unique
+
+  grades    GradeSubject[]
   resources Resource[]
 
   @@map("subject")
+}
+
+model GradeSubject {
+  id        String  @id @default(cuid())
+
+  gradeId   String
+  subjectId String
+
+  grade     Grade   @relation(fields: [gradeId], references: [id], onDelete: Cascade)
+  subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@unique([gradeId, subjectId])
+  @@index([gradeId])
+  @@index([subjectId])
+  @@map("grade_subject")
 }
 
 model User {
@@ -46,7 +83,7 @@ model User {
   accounts     Account[]
   sessions     Session[]
   subscription Subscription?
-  resourceAccesses UserResourceAccess[]
+  resourceAccesses ResourceUserAccess[]
 
   @@map("user")
 }
@@ -148,7 +185,7 @@ model Resource {
   images ResourceImage[]
   files ResourceFile[]
   videos ResourceVideo[]
-  accessEntries UserResourceAccess[]
+  accessEntries ResourceUserAccess[]
 
   @@index([educationLevelId])
   @@index([subjectId])
@@ -202,7 +239,7 @@ model ResourceVideo {
   @@map("resource_video")
 }
 
-model UserResourceAccess {
+model ResourceUserAccess {
   id         String   @id @default(cuid())
   userId     String
   resourceId String
@@ -215,5 +252,5 @@ model UserResourceAccess {
 
   @@unique([userId, resourceId])
   @@index([userId, resourceId])
-  @@map("user_resource_access")
+  @@map("resource_user_access")
 }

@@ -208,6 +208,7 @@ export type EducationLevelWhereInput = {
   name?: Prisma.StringFilter<"EducationLevel"> | string
   slug?: Prisma.StringFilter<"EducationLevel"> | string
   order?: Prisma.IntFilter<"EducationLevel"> | number
+  grades?: Prisma.GradeListRelationFilter
   resources?: Prisma.ResourceListRelationFilter
 }
 
@@ -216,6 +217,7 @@ export type EducationLevelOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   order?: Prisma.SortOrder
+  grades?: Prisma.GradeOrderByRelationAggregateInput
   resources?: Prisma.ResourceOrderByRelationAggregateInput
 }
 
@@ -227,6 +229,7 @@ export type EducationLevelWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.EducationLevelWhereInput[]
   NOT?: Prisma.EducationLevelWhereInput | Prisma.EducationLevelWhereInput[]
   order?: Prisma.IntFilter<"EducationLevel"> | number
+  grades?: Prisma.GradeListRelationFilter
   resources?: Prisma.ResourceListRelationFilter
 }, "id" | "name" | "slug">
 
@@ -257,6 +260,7 @@ export type EducationLevelCreateInput = {
   name: string
   slug: string
   order?: number
+  grades?: Prisma.GradeCreateNestedManyWithoutEducationLevelInput
   resources?: Prisma.ResourceCreateNestedManyWithoutEducationLevelInput
 }
 
@@ -265,6 +269,7 @@ export type EducationLevelUncheckedCreateInput = {
   name: string
   slug: string
   order?: number
+  grades?: Prisma.GradeUncheckedCreateNestedManyWithoutEducationLevelInput
   resources?: Prisma.ResourceUncheckedCreateNestedManyWithoutEducationLevelInput
 }
 
@@ -273,6 +278,7 @@ export type EducationLevelUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   order?: Prisma.IntFieldUpdateOperationsInput | number
+  grades?: Prisma.GradeUpdateManyWithoutEducationLevelNestedInput
   resources?: Prisma.ResourceUpdateManyWithoutEducationLevelNestedInput
 }
 
@@ -281,6 +287,7 @@ export type EducationLevelUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   order?: Prisma.IntFieldUpdateOperationsInput | number
+  grades?: Prisma.GradeUncheckedUpdateManyWithoutEducationLevelNestedInput
   resources?: Prisma.ResourceUncheckedUpdateManyWithoutEducationLevelNestedInput
 }
 
@@ -351,6 +358,20 @@ export type IntFieldUpdateOperationsInput = {
   divide?: number
 }
 
+export type EducationLevelCreateNestedOneWithoutGradesInput = {
+  create?: Prisma.XOR<Prisma.EducationLevelCreateWithoutGradesInput, Prisma.EducationLevelUncheckedCreateWithoutGradesInput>
+  connectOrCreate?: Prisma.EducationLevelCreateOrConnectWithoutGradesInput
+  connect?: Prisma.EducationLevelWhereUniqueInput
+}
+
+export type EducationLevelUpdateOneRequiredWithoutGradesNestedInput = {
+  create?: Prisma.XOR<Prisma.EducationLevelCreateWithoutGradesInput, Prisma.EducationLevelUncheckedCreateWithoutGradesInput>
+  connectOrCreate?: Prisma.EducationLevelCreateOrConnectWithoutGradesInput
+  upsert?: Prisma.EducationLevelUpsertWithoutGradesInput
+  connect?: Prisma.EducationLevelWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.EducationLevelUpdateToOneWithWhereWithoutGradesInput, Prisma.EducationLevelUpdateWithoutGradesInput>, Prisma.EducationLevelUncheckedUpdateWithoutGradesInput>
+}
+
 export type EducationLevelCreateNestedOneWithoutResourcesInput = {
   create?: Prisma.XOR<Prisma.EducationLevelCreateWithoutResourcesInput, Prisma.EducationLevelUncheckedCreateWithoutResourcesInput>
   connectOrCreate?: Prisma.EducationLevelCreateOrConnectWithoutResourcesInput
@@ -365,11 +386,60 @@ export type EducationLevelUpdateOneRequiredWithoutResourcesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.EducationLevelUpdateToOneWithWhereWithoutResourcesInput, Prisma.EducationLevelUpdateWithoutResourcesInput>, Prisma.EducationLevelUncheckedUpdateWithoutResourcesInput>
 }
 
+export type EducationLevelCreateWithoutGradesInput = {
+  id?: string
+  name: string
+  slug: string
+  order?: number
+  resources?: Prisma.ResourceCreateNestedManyWithoutEducationLevelInput
+}
+
+export type EducationLevelUncheckedCreateWithoutGradesInput = {
+  id?: string
+  name: string
+  slug: string
+  order?: number
+  resources?: Prisma.ResourceUncheckedCreateNestedManyWithoutEducationLevelInput
+}
+
+export type EducationLevelCreateOrConnectWithoutGradesInput = {
+  where: Prisma.EducationLevelWhereUniqueInput
+  create: Prisma.XOR<Prisma.EducationLevelCreateWithoutGradesInput, Prisma.EducationLevelUncheckedCreateWithoutGradesInput>
+}
+
+export type EducationLevelUpsertWithoutGradesInput = {
+  update: Prisma.XOR<Prisma.EducationLevelUpdateWithoutGradesInput, Prisma.EducationLevelUncheckedUpdateWithoutGradesInput>
+  create: Prisma.XOR<Prisma.EducationLevelCreateWithoutGradesInput, Prisma.EducationLevelUncheckedCreateWithoutGradesInput>
+  where?: Prisma.EducationLevelWhereInput
+}
+
+export type EducationLevelUpdateToOneWithWhereWithoutGradesInput = {
+  where?: Prisma.EducationLevelWhereInput
+  data: Prisma.XOR<Prisma.EducationLevelUpdateWithoutGradesInput, Prisma.EducationLevelUncheckedUpdateWithoutGradesInput>
+}
+
+export type EducationLevelUpdateWithoutGradesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  order?: Prisma.IntFieldUpdateOperationsInput | number
+  resources?: Prisma.ResourceUpdateManyWithoutEducationLevelNestedInput
+}
+
+export type EducationLevelUncheckedUpdateWithoutGradesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  order?: Prisma.IntFieldUpdateOperationsInput | number
+  resources?: Prisma.ResourceUncheckedUpdateManyWithoutEducationLevelNestedInput
+}
+
 export type EducationLevelCreateWithoutResourcesInput = {
   id?: string
   name: string
   slug: string
   order?: number
+  grades?: Prisma.GradeCreateNestedManyWithoutEducationLevelInput
 }
 
 export type EducationLevelUncheckedCreateWithoutResourcesInput = {
@@ -377,6 +447,7 @@ export type EducationLevelUncheckedCreateWithoutResourcesInput = {
   name: string
   slug: string
   order?: number
+  grades?: Prisma.GradeUncheckedCreateNestedManyWithoutEducationLevelInput
 }
 
 export type EducationLevelCreateOrConnectWithoutResourcesInput = {
@@ -400,6 +471,7 @@ export type EducationLevelUpdateWithoutResourcesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   order?: Prisma.IntFieldUpdateOperationsInput | number
+  grades?: Prisma.GradeUpdateManyWithoutEducationLevelNestedInput
 }
 
 export type EducationLevelUncheckedUpdateWithoutResourcesInput = {
@@ -407,6 +479,7 @@ export type EducationLevelUncheckedUpdateWithoutResourcesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   order?: Prisma.IntFieldUpdateOperationsInput | number
+  grades?: Prisma.GradeUncheckedUpdateManyWithoutEducationLevelNestedInput
 }
 
 
@@ -415,10 +488,12 @@ export type EducationLevelUncheckedUpdateWithoutResourcesInput = {
  */
 
 export type EducationLevelCountOutputType = {
+  grades: number
   resources: number
 }
 
 export type EducationLevelCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  grades?: boolean | EducationLevelCountOutputTypeCountGradesArgs
   resources?: boolean | EducationLevelCountOutputTypeCountResourcesArgs
 }
 
@@ -435,6 +510,13 @@ export type EducationLevelCountOutputTypeDefaultArgs<ExtArgs extends runtime.Typ
 /**
  * EducationLevelCountOutputType without action
  */
+export type EducationLevelCountOutputTypeCountGradesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.GradeWhereInput
+}
+
+/**
+ * EducationLevelCountOutputType without action
+ */
 export type EducationLevelCountOutputTypeCountResourcesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ResourceWhereInput
 }
@@ -445,6 +527,7 @@ export type EducationLevelSelect<ExtArgs extends runtime.Types.Extensions.Intern
   name?: boolean
   slug?: boolean
   order?: boolean
+  grades?: boolean | Prisma.EducationLevel$gradesArgs<ExtArgs>
   resources?: boolean | Prisma.EducationLevel$resourcesArgs<ExtArgs>
   _count?: boolean | Prisma.EducationLevelCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["educationLevel"]>
@@ -472,6 +555,7 @@ export type EducationLevelSelectScalar = {
 
 export type EducationLevelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "order", ExtArgs["result"]["educationLevel"]>
 export type EducationLevelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  grades?: boolean | Prisma.EducationLevel$gradesArgs<ExtArgs>
   resources?: boolean | Prisma.EducationLevel$resourcesArgs<ExtArgs>
   _count?: boolean | Prisma.EducationLevelCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -481,6 +565,7 @@ export type EducationLevelIncludeUpdateManyAndReturn<ExtArgs extends runtime.Typ
 export type $EducationLevelPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "EducationLevel"
   objects: {
+    grades: Prisma.$GradePayload<ExtArgs>[]
     resources: Prisma.$ResourcePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -882,6 +967,7 @@ readonly fields: EducationLevelFieldRefs;
  */
 export interface Prisma__EducationLevelClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  grades<T extends Prisma.EducationLevel$gradesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EducationLevel$gradesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GradePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   resources<T extends Prisma.EducationLevel$resourcesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EducationLevel$resourcesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ResourcePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1301,6 +1387,30 @@ export type EducationLevelDeleteManyArgs<ExtArgs extends runtime.Types.Extension
    * Limit how many EducationLevels to delete.
    */
   limit?: number
+}
+
+/**
+ * EducationLevel.grades
+ */
+export type EducationLevel$gradesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Grade
+   */
+  select?: Prisma.GradeSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Grade
+   */
+  omit?: Prisma.GradeOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GradeInclude<ExtArgs> | null
+  where?: Prisma.GradeWhereInput
+  orderBy?: Prisma.GradeOrderByWithRelationInput | Prisma.GradeOrderByWithRelationInput[]
+  cursor?: Prisma.GradeWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.GradeScalarFieldEnum | Prisma.GradeScalarFieldEnum[]
 }
 
 /**

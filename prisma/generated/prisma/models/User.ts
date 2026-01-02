@@ -225,7 +225,7 @@ export type UserWhereInput = {
   accounts?: Prisma.AccountListRelationFilter
   sessions?: Prisma.SessionListRelationFilter
   subscription?: Prisma.XOR<Prisma.SubscriptionNullableScalarRelationFilter, Prisma.SubscriptionWhereInput> | null
-  resourceAccesses?: Prisma.UserResourceAccessListRelationFilter
+  resourceAccesses?: Prisma.ResourceUserAccessListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -242,7 +242,7 @@ export type UserOrderByWithRelationInput = {
   accounts?: Prisma.AccountOrderByRelationAggregateInput
   sessions?: Prisma.SessionOrderByRelationAggregateInput
   subscription?: Prisma.SubscriptionOrderByWithRelationInput
-  resourceAccesses?: Prisma.UserResourceAccessOrderByRelationAggregateInput
+  resourceAccesses?: Prisma.ResourceUserAccessOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -262,7 +262,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   accounts?: Prisma.AccountListRelationFilter
   sessions?: Prisma.SessionListRelationFilter
   subscription?: Prisma.XOR<Prisma.SubscriptionNullableScalarRelationFilter, Prisma.SubscriptionWhereInput> | null
-  resourceAccesses?: Prisma.UserResourceAccessListRelationFilter
+  resourceAccesses?: Prisma.ResourceUserAccessListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -311,7 +311,7 @@ export type UserCreateInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
-  resourceAccesses?: Prisma.UserResourceAccessCreateNestedManyWithoutUserInput
+  resourceAccesses?: Prisma.ResourceUserAccessCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -328,7 +328,7 @@ export type UserUncheckedCreateInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutUserInput
-  resourceAccesses?: Prisma.UserResourceAccessUncheckedCreateNestedManyWithoutUserInput
+  resourceAccesses?: Prisma.ResourceUserAccessUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -345,7 +345,7 @@ export type UserUpdateInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
-  resourceAccesses?: Prisma.UserResourceAccessUpdateManyWithoutUserNestedInput
+  resourceAccesses?: Prisma.ResourceUserAccessUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -362,7 +362,7 @@ export type UserUncheckedUpdateInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutUserNestedInput
-  resourceAccesses?: Prisma.UserResourceAccessUncheckedUpdateManyWithoutUserNestedInput
+  resourceAccesses?: Prisma.ResourceUserAccessUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -533,7 +533,7 @@ export type UserCreateWithoutAccountsInput = {
   banned?: boolean
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
-  resourceAccesses?: Prisma.UserResourceAccessCreateNestedManyWithoutUserInput
+  resourceAccesses?: Prisma.ResourceUserAccessCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAccountsInput = {
@@ -549,7 +549,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   banned?: boolean
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutUserInput
-  resourceAccesses?: Prisma.UserResourceAccessUncheckedCreateNestedManyWithoutUserInput
+  resourceAccesses?: Prisma.ResourceUserAccessUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAccountsInput = {
@@ -581,7 +581,7 @@ export type UserUpdateWithoutAccountsInput = {
   banned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
-  resourceAccesses?: Prisma.UserResourceAccessUpdateManyWithoutUserNestedInput
+  resourceAccesses?: Prisma.ResourceUserAccessUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -597,7 +597,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   banned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutUserNestedInput
-  resourceAccesses?: Prisma.UserResourceAccessUncheckedUpdateManyWithoutUserNestedInput
+  resourceAccesses?: Prisma.ResourceUserAccessUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutSessionsInput = {
@@ -613,7 +613,7 @@ export type UserCreateWithoutSessionsInput = {
   banned?: boolean
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutUserInput
-  resourceAccesses?: Prisma.UserResourceAccessCreateNestedManyWithoutUserInput
+  resourceAccesses?: Prisma.ResourceUserAccessCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -629,7 +629,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   banned?: boolean
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutUserInput
-  resourceAccesses?: Prisma.UserResourceAccessUncheckedCreateNestedManyWithoutUserInput
+  resourceAccesses?: Prisma.ResourceUserAccessUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -661,7 +661,7 @@ export type UserUpdateWithoutSessionsInput = {
   banned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   subscription?: Prisma.SubscriptionUpdateOneWithoutUserNestedInput
-  resourceAccesses?: Prisma.UserResourceAccessUpdateManyWithoutUserNestedInput
+  resourceAccesses?: Prisma.ResourceUserAccessUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -677,7 +677,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   banned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutUserNestedInput
-  resourceAccesses?: Prisma.UserResourceAccessUncheckedUpdateManyWithoutUserNestedInput
+  resourceAccesses?: Prisma.ResourceUserAccessUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutSubscriptionInput = {
@@ -693,7 +693,7 @@ export type UserCreateWithoutSubscriptionInput = {
   banned?: boolean
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  resourceAccesses?: Prisma.UserResourceAccessCreateNestedManyWithoutUserInput
+  resourceAccesses?: Prisma.ResourceUserAccessCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSubscriptionInput = {
@@ -709,7 +709,7 @@ export type UserUncheckedCreateWithoutSubscriptionInput = {
   banned?: boolean
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
-  resourceAccesses?: Prisma.UserResourceAccessUncheckedCreateNestedManyWithoutUserInput
+  resourceAccesses?: Prisma.ResourceUserAccessUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSubscriptionInput = {
@@ -741,7 +741,7 @@ export type UserUpdateWithoutSubscriptionInput = {
   banned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  resourceAccesses?: Prisma.UserResourceAccessUpdateManyWithoutUserNestedInput
+  resourceAccesses?: Prisma.ResourceUserAccessUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSubscriptionInput = {
@@ -757,7 +757,7 @@ export type UserUncheckedUpdateWithoutSubscriptionInput = {
   banned?: Prisma.BoolFieldUpdateOperationsInput | boolean
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
-  resourceAccesses?: Prisma.UserResourceAccessUncheckedUpdateManyWithoutUserNestedInput
+  resourceAccesses?: Prisma.ResourceUserAccessUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutResourceAccessesInput = {
@@ -885,7 +885,7 @@ export type UserCountOutputTypeCountSessionsArgs<ExtArgs extends runtime.Types.E
  * UserCountOutputType without action
  */
 export type UserCountOutputTypeCountResourceAccessesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.UserResourceAccessWhereInput
+  where?: Prisma.ResourceUserAccessWhereInput
 }
 
 
@@ -963,7 +963,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     accounts: Prisma.$AccountPayload<ExtArgs>[]
     sessions: Prisma.$SessionPayload<ExtArgs>[]
     subscription: Prisma.$SubscriptionPayload<ExtArgs> | null
-    resourceAccesses: Prisma.$UserResourceAccessPayload<ExtArgs>[]
+    resourceAccesses: Prisma.$ResourceUserAccessPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1373,7 +1373,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   accounts<T extends Prisma.User$accountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$accountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   sessions<T extends Prisma.User$sessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   subscription<T extends Prisma.User$subscriptionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$subscriptionArgs<ExtArgs>>): Prisma.Prisma__SubscriptionClient<runtime.Types.Result.GetResult<Prisma.$SubscriptionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-  resourceAccesses<T extends Prisma.User$resourceAccessesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$resourceAccessesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserResourceAccessPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  resourceAccesses<T extends Prisma.User$resourceAccessesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$resourceAccessesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ResourceUserAccessPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1872,23 +1872,23 @@ export type User$subscriptionArgs<ExtArgs extends runtime.Types.Extensions.Inter
  */
 export type User$resourceAccessesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the UserResourceAccess
+   * Select specific fields to fetch from the ResourceUserAccess
    */
-  select?: Prisma.UserResourceAccessSelect<ExtArgs> | null
+  select?: Prisma.ResourceUserAccessSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the UserResourceAccess
+   * Omit specific fields from the ResourceUserAccess
    */
-  omit?: Prisma.UserResourceAccessOmit<ExtArgs> | null
+  omit?: Prisma.ResourceUserAccessOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.UserResourceAccessInclude<ExtArgs> | null
-  where?: Prisma.UserResourceAccessWhereInput
-  orderBy?: Prisma.UserResourceAccessOrderByWithRelationInput | Prisma.UserResourceAccessOrderByWithRelationInput[]
-  cursor?: Prisma.UserResourceAccessWhereUniqueInput
+  include?: Prisma.ResourceUserAccessInclude<ExtArgs> | null
+  where?: Prisma.ResourceUserAccessWhereInput
+  orderBy?: Prisma.ResourceUserAccessOrderByWithRelationInput | Prisma.ResourceUserAccessOrderByWithRelationInput[]
+  cursor?: Prisma.ResourceUserAccessWhereUniqueInput
   take?: number
   skip?: number
-  distinct?: Prisma.UserResourceAccessScalarFieldEnum | Prisma.UserResourceAccessScalarFieldEnum[]
+  distinct?: Prisma.ResourceUserAccessScalarFieldEnum | Prisma.ResourceUserAccessScalarFieldEnum[]
 }
 
 /**

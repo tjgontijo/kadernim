@@ -15,6 +15,7 @@ Sistema administrativo para **visualizar, filtrar, editar e gerenciar usuários*
 - Listagem de usuários com paginação e filtros
 - Visualização em tabela (desktop) e cards (mobile)
 - Ações: editar role, banir/desbanir, gerenciar assinatura
+- Upload de avatar com compressão no navegador (browser-image-compression) e armazenamento no Cloudinary
 - Filtros por role, status de assinatura, email verificado, banido
 
 **Acesso:** Apenas usuários com `role: admin`
@@ -40,7 +41,7 @@ model User {
   accounts         Account[]
   sessions         Session[]
   subscription     Subscription?
-  resourceAccesses UserResourceAccess[]
+  resourceAccesses resourceUserAccess[]
 }
 
 enum UserRole {
@@ -79,7 +80,7 @@ src/
 │       └── [id]/
 │           └── route.ts                    # GET, PATCH, DELETE
 │
-├── components/dashboard/users/
+├── components/(client)/users/
 │   ├── index.ts                            # Barrel exports
 │   ├── users-table-view.tsx                # Visualização tabela (desktop)
 │   └── users-card-view.tsx                 # Visualização cards (mobile)
@@ -160,6 +161,16 @@ src/
 ### 4.3 DELETE /api/v1/admin/users/[id] (Deletar)
 
 **Response:** 204 No Content
+
+### 4.4 POST /api/v1/admin/users/[id]/avatar (Upload Avatar)
+
+**Headers:** `Content-Type: multipart/form-data`
+**Body:** `file: File`
+
+**Processo:**
+1. Recebe arquivo
+2. Upload para Cloudinary via `uploadImage`
+3. Atualiza `image` no banco com a URL do Cloudinary
 
 ---
 
@@ -419,7 +430,7 @@ export function useDeleteAdminUser(userId: string) {
 
 ## 8. Componentes UI
 
-### 8.1 Estrutura de Export (`components/dashboard/users/index.ts`)
+### 8.1 Estrutura de Export (`components/(client)/users/index.ts`)
 
 ```typescript
 export { UsersCardView } from './users-card-view'
@@ -544,9 +555,9 @@ const STATUS_OPTIONS = [
 1. [ ] `src/hooks/useAdminUsers.ts`
 
 ### Fase 3: Componentes (Estimativa: 1.5h)
-1. [ ] `src/components/dashboard/users/users-table-view.tsx`
-2. [ ] `src/components/dashboard/users/users-card-view.tsx`
-3. [ ] `src/components/dashboard/users/index.ts`
+1. [ ] `src/components/(client)/users/users-table-view.tsx`
+2. [ ] `src/components/(client)/users/users-card-view.tsx`
+3. [ ] `src/components/(client)/users/index.ts`
 
 ### Fase 4: Página (Estimativa: 1h)
 1. [ ] `src/app/admin/users/page.tsx` (baseada em resources/page.tsx)
@@ -570,7 +581,23 @@ const STATUS_OPTIONS = [
 
 ---
 
-## 12. Aprovação
+## 12. Padrões Next.js 16 e Otimizações
+
+- **Params Asíncronos**: Seguir o padrão de `params: Promise<{ id: string }>` em rotas e páginas.
+- **Image Cloudinary**: Utilizar `next-cloudinary` para exibição otimizada.
+- **Compressão de Imagem**: Utilizar `browser-image-compression` antes do upload:
+  ```typescript
+  const options = {
+    maxSizeMB: 0.5,
+    maxWidthOrHeight: 512, // Avatares não precisam ser grandes
+    useWebWorker: true
+  }
+  const compressedFile = await imageCompression(file, options)
+  ```
+
+---
+
+## 13. Aprovação
 
 **Pronto para implementação?** ☐ Sim ☐ Não ☐ Com mudanças
 

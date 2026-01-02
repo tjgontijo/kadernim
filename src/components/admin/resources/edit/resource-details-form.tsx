@@ -30,8 +30,7 @@ import {
   UpdateResourceSchema,
   type UpdateResourceInput,
 } from '@/lib/schemas/admin/resources'
-import { EducationLevelLabels } from '@/constants/educationLevel'
-import { SubjectLabels } from '@/constants/subject'
+import { useResourceMeta } from '@/hooks/useResourceMeta'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
@@ -47,6 +46,7 @@ interface ResourceDetailsFormProps {
 }
 
 export function ResourceDetailsForm({ resource }: ResourceDetailsFormProps) {
+  const { data: metaData } = useResourceMeta()
   const queryClient = useQueryClient()
   const form = useForm<UpdateResourceInput>({
     resolver: zodResolver(UpdateResourceSchema),
@@ -194,9 +194,9 @@ export function ResourceDetailsForm({ resource }: ResourceDetailsFormProps) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent className="max-h-80">
-                          {Object.entries(EducationLevelLabels).map(([key, label]) => (
-                            <SelectItem key={key} value={key} className="py-3">
-                              {label}
+                          {(metaData?.educationLevels || []).map((level) => (
+                            <SelectItem key={level.key} value={level.key} className="py-3">
+                              {level.label}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -219,9 +219,9 @@ export function ResourceDetailsForm({ resource }: ResourceDetailsFormProps) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent className="max-h-80">
-                          {Object.entries(SubjectLabels).map(([key, label]) => (
-                            <SelectItem key={key} value={key} className="py-3">
-                              {label}
+                          {(metaData?.subjects || []).map((subject) => (
+                            <SelectItem key={subject.key} value={subject.key} className="py-3">
+                              {subject.label}
                             </SelectItem>
                           ))}
                         </SelectContent>

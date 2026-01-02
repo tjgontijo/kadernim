@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import { prisma } from '@/lib/prisma'
-import { verifyDownloadToken } from '@/lib/download-token'
-import { checkRateLimit } from '@/lib/helpers/rate-limit'
-import { getFileUrl } from '@/lib/cloudinary/file-service'
+import { prisma } from '@/lib/db'
+import { verifyDownloadToken } from '@/services/auth/token-service'
+import { checkRateLimit } from '@/server/utils/rate-limit'
+import { getFileUrl } from '@/server/clients/cloudinary/file-client'
+import { isStaff } from '@/lib/auth/roles'
 import {
   computeHasAccessForResource,
   type SubscriptionContext,
   type UserAccessContext,
-} from '@/server/services/accessService'
+} from '@/services/auth/access-service'
 
 export const dynamic = 'force-dynamic'
 
@@ -78,7 +79,7 @@ export async function GET(request: NextRequest) {
 
     const userContext: UserAccessContext = {
       userId: payload.userId,
-      isAdmin: user?.role === 'admin',
+      isAdmin: isStaff(user?.role as any),
     }
 
     const subscriptionContext: SubscriptionContext = {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { uploadImage, deleteImage } from '@/lib/cloudinary/image-service'
-import { createResourceImage, getResourceImages } from '@/services/resources/image-service'
-import { prisma } from '@/lib/prisma'
+import { uploadImage, deleteImage } from '@/server/clients/cloudinary/image-client'
+import { createResourceImage, getResourceImages } from '@/services/resources/admin/image-service'
+import { prisma } from '@/lib/db'
 
 // GET /api/v1/admin/resources/[id]/images
 export async function GET(

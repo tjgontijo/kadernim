@@ -1,6 +1,6 @@
 import { performance } from 'node:perf_hooks'
 
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@/lib/db'
 import { resendProvider } from '@/services/mail/resend'
 import { sendTextMessage } from '@/services/whatsapp/uazapi/send-message'
 import { getEmailTemplate } from './get-email'

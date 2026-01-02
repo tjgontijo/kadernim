@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireRole } from '@/lib/auth/middleware'
-import { UserRole } from '@/types/user-role'
-import { checkRateLimit } from '@/lib/helpers/rate-limit'
-import { prisma } from '@/lib/prisma'
-import { uploadFile, getFileUrl } from '@/lib/cloudinary/file-service'
+import { requirePermission } from '@/server/auth/middleware'
+import { checkRateLimit } from '@/server/utils/rate-limit'
+import { prisma } from '@/lib/db'
+import { uploadFile, getFileUrl } from '@/server/clients/cloudinary/file-client'
 
 /**
  * POST /api/v1/admin/resources/:id/files
@@ -16,8 +15,8 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Require admin role
-    const authResult = await requireRole(request, UserRole.admin)
+    // Require manage resources permission
+    const authResult = await requirePermission(request, 'manage:resources')
     if (authResult instanceof NextResponse) {
       return authResult
     }
@@ -67,7 +66,7 @@ export async function POST(
     const uploadResult = await uploadFile(file, resourceId)
 
     // Create file record in database
-    const { createFileService } = await import('@/services/resources/file-service')
+    const { createFileService } = await import('@/services/resources/admin/file-service')
     const fileRecord = await createFileService({
       resourceId,
       name: uploadResult.fileName,

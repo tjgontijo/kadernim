@@ -17,8 +17,7 @@ import {
 import { toast } from 'sonner'
 import { CreateResourceSchema, UpdateResourceSchema } from '@/lib/schemas/admin/resources'
 import { useCreateAdminResource, useUpdateAdminResource } from '@/hooks/useAdminResources'
-import { EducationLevelLabels } from '@/constants/educationLevel'
-import { SubjectLabels } from '@/constants/subject'
+import { useResourceMeta } from '@/hooks/useResourceMeta'
 
 interface ResourceDialogProps {
   open: boolean
@@ -31,6 +30,7 @@ export function ResourceDialog({ open, onOpenChange, resourceId, onSuccess }: Re
   const isEditing = !!resourceId
   const createMutation = useCreateAdminResource()
   const updateMutation = useUpdateAdminResource(resourceId || '')
+  const { data: metaData } = useResourceMeta()
 
   const form = useForm({
     resolver: zodResolver(isEditing ? UpdateResourceSchema : CreateResourceSchema),
@@ -129,9 +129,9 @@ export function ResourceDialog({ open, onOpenChange, resourceId, onSuccess }: Re
                 <SelectValue placeholder="Selecione um nível" />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(EducationLevelLabels).map(([key, label]) => (
-                  <SelectItem key={key} value={key}>
-                    {label}
+                {(metaData?.educationLevels || []).map((level) => (
+                  <SelectItem key={level.key} value={level.key}>
+                    {level.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -153,9 +153,9 @@ export function ResourceDialog({ open, onOpenChange, resourceId, onSuccess }: Re
                 <SelectValue placeholder="Selecione uma matéria" />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(SubjectLabels).map(([key, label]) => (
-                  <SelectItem key={key} value={key}>
-                    {label}
+                {(metaData?.subjects || []).map((subject) => (
+                  <SelectItem key={subject.key} value={subject.key}>
+                    {subject.label}
                   </SelectItem>
                 ))}
               </SelectContent>
