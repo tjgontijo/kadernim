@@ -84,6 +84,21 @@ UPDATE "bncc_skill"
 SET "updatedAt" = now();
 SQL
 
+print_box "🎯 Criando índice IVFFlat para embeddings..."
+npx prisma db execute --stdin <<'SQL'
+CREATE INDEX IF NOT EXISTS bncc_skill_embedding_idx
+ON "bncc_skill"
+USING ivfflat (embedding vector_cosine_ops)
+WITH (lists = 100);
+
+-- Verificar índice criado
+SELECT
+  indexname,
+  LEFT(indexdef, 80) || '...' as definition
+FROM pg_indexes
+WHERE tablename = 'bncc_skill' AND indexname LIKE '%embedding%';
+SQL
+
 print_box "🚀 Criando build da Aplicação..."
 npm run build || { echo "❌ Erro ao gerar o build"; exit 1; }
 
