@@ -42,10 +42,13 @@ async function main() {
   const MODEL = process.env.EMBED_MODEL ?? 'text-embedding-3-small'
   const DELAY_MS = Number(process.env.EMBED_DELAY_MS ?? 1000) // Delay entre batches (evita rate limit)
 
-  // Contar total de pendentes
-  const totalPending = await prisma.bnccSkill.count({
-    where: { embedding: null }
-  })
+  // Contar total de pendentes (embedding é Unsupported, precisa usar raw SQL)
+  const [{ count }] = await prisma.$queryRaw<[{ count: bigint }]>`
+    SELECT COUNT(*) as count
+    FROM "bncc_skill"
+    WHERE "embedding" IS NULL
+  `
+  const totalPending = Number(count)
 
   if (totalPending === 0) {
     console.log('✅ Nenhum embedding pendente. Tudo pronto!')
@@ -71,22 +74,34 @@ async function main() {
   let batchNumber = 0
 
   while (true) {
-    const rows = await prisma.bnccSkill.findMany({
-      where: { embedding: null },
-      select: {
-        id: true,
-        code: true,
-        educationLevelSlug: true,
-        fieldOfExperience: true,
-        ageRange: true,
-        gradeSlug: true,
-        subjectSlug: true,
-        unitTheme: true,
-        knowledgeObject: true,
-        description: true,
-      },
-      take: BATCH,
-    })
+    // Buscar registros sem embedding (embedding é Unsupported, precisa usar raw SQL)
+    const rows = await prisma.$queryRaw<Array<{
+      id: string
+      code: string
+      educationLevelSlug: string
+      fieldOfExperience: string | null
+      ageRange: string | null
+      gradeSlug: string | null
+      subjectSlug: string | null
+      unitTheme: string | null
+      knowledgeObject: string | null
+      description: string
+    }>>`
+      SELECT
+        id,
+        code,
+        "educationLevelSlug",
+        "fieldOfExperience",
+        "ageRange",
+        "gradeSlug",
+        "subjectSlug",
+        "unitTheme",
+        "knowledgeObject",
+        description
+      FROM "bncc_skill"
+      WHERE "embedding" IS NULL
+      LIMIT ${BATCH}
+    `
 
     if (rows.length === 0) {
       console.log(``)
