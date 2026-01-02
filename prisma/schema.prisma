@@ -28,7 +28,7 @@ model EducationLevel {
 
 model Grade {
   id               String         @id @default(cuid())
-  name             String         // "3º Ano", "6º Ano", "5 anos"
+  name             String
   slug             String         @unique
   order            Int            @default(0)
 
@@ -36,6 +36,8 @@ model Grade {
   educationLevel   EducationLevel @relation(fields: [educationLevelId], references: [id])
 
   subjects         GradeSubject[]
+  
+  resources ResourceGrade[]
 
   @@index([educationLevelId])
   @@map("grade")
@@ -165,31 +167,21 @@ model Subscription {
   @@map("subscription")
 }
 
-model Resource {
-  id              String             @id @default(cuid())
-  title           String
-  description     String?  
+model ResourceGrade {
+  id         String   @id @default(cuid())
 
-  educationLevelId String
-  educationLevel   EducationLevel    @relation(fields: [educationLevelId], references: [id])
-  
-  subjectId        String
-  subject          Subject           @relation(fields: [subjectId], references: [id])
-  
-  externalId      Int             @unique
-  isFree          Boolean         @default(false)
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  resourceId String
+  gradeId    String
 
-  images ResourceImage[]
-  files ResourceFile[]
-  videos ResourceVideo[]
-  accessEntries ResourceUserAccess[]
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  grade      Grade    @relation(fields: [gradeId], references: [id], onDelete: Cascade)
 
-  @@index([educationLevelId])
-  @@index([subjectId])
-  @@index([title, id])
-  @@map("resource")
+  // evita duplicar o mesmo vínculo
+  @@unique([resourceId, gradeId])
+  @@index([resourceId])
+  @@index([gradeId])
+
+  @@map("resource_grade")
 }
 
 model ResourceImage {
@@ -254,6 +246,34 @@ model ResourceUserAccess {
   @@map("resource_user_access")
 }
 
+model Resource {
+  id              String             @id @default(cuid())
+  title           String
+  description     String?  
+
+  educationLevelId String
+  educationLevel   EducationLevel    @relation(fields: [educationLevelId], references: [id])
+  
+  subjectId        String
+  subject          Subject           @relation(fields: [subjectId], references: [id])
+  
+  externalId      Int             @unique
+  isFree          Boolean         @default(false)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  images ResourceImage[]
+  files ResourceFile[]
+  videos ResourceVideo[]
+  accessEntries ResourceUserAccess[]
+  grades ResourceGrade[]
+
+
+  @@index([educationLevelId])
+  @@index([subjectId])
+  @@index([title, id])
+  @@map("resource")
+}
 
 model BnccSkill {
   id String @id @default(cuid())
@@ -274,6 +294,7 @@ model BnccSkill {
   comments String? @db.Text
   curriculumSuggestions String? @db.Text
 
+  // Full-Text Search (criado automaticamente por trigger - ver reset-db.sh)
   searchVector Unsupported("tsvector")?
   embedding Unsupported("vector(1536)")?
 
@@ -284,8 +305,7 @@ model BnccSkill {
   @@index([gradeSlug])
   @@index([subjectSlug])
   @@index([code])
-  @@index([searchVector], type: Gin)
-  @@index([embedding], type: IVFFlat)
+  @@index([searchVector], type: Gin)  
 
   @@unique([code, gradeSlug], name: "code_gradeSlug")
   @@unique([code, ageRange], name: "code_ageRange")
