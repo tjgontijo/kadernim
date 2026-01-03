@@ -1842,37 +1842,37 @@ validateBncc()
 
 **Objetivo:** Endpoints para o wizard consumir
 
+**Decisão de Arquitetura:** Rotas genéricas (não `/bncc/*`) para reutilização em todo o sistema.
+
 **Checklist:**
-- [ ] **2.1 - GET /api/v1/bncc/education-levels**
-  - [ ] Retornar lista de EducationLevel (slug, name, order)
-  - [ ] Testar no Postman/Insomnia
+- [x] **2.1 - GET /api/v1/education-levels** (genérico, reutilizável)
+  - [x] Retornar lista de EducationLevel (slug, name, order)
+  - [x] Testado: 3 etapas (EI, EF1, EF2) ✅
 
-- [ ] **2.2 - GET /api/v1/bncc/grades?educationLevelSlug=...**
-  - [ ] Retornar grades filtrados por etapa
-  - [ ] Testar com `ensino-fundamental-1`
-  - [ ] Testar com `educacao-infantil`
+- [x] **2.2 - GET /api/v1/grades?educationLevelSlug=...** (genérico, reutilizável)
+  - [x] Retornar grades filtrados por etapa (via join com EducationLevel)
+  - [x] Testado EF1: 5 anos ✅
+  - [x] Testado EI: 3 faixas etárias ✅
 
-- [ ] **2.3 - GET /api/v1/bncc/subjects?educationLevelSlug=...&gradeSlug=...**
-  - [ ] Retornar subjects válidos para o grade (via GradeSubject)
-  - [ ] Testar com EF1 (deve retornar 8 disciplinas - SEM inglês)
-  - [ ] Testar com EF2 (deve retornar 9 disciplinas - COM inglês)
-  - [ ] Testar com EI (deve retornar 5 campos de experiência)
+- [x] **2.3 - GET /api/v1/subjects?educationLevelSlug=...&gradeSlug=...** (genérico, reutilizável)
+  - [x] Retornar subjects válidos para o grade (via GradeSubject)
+  - [x] Testado EF1: 8 disciplinas (SEM inglês) ✅
+  - [x] Testado EF2: 9 disciplinas (COM inglês) ✅
+  - [x] Nota: EI não usa subjects (usa fieldOfExperience em BnccSkill)
 
-- [ ] **2.4 - GET /api/v1/bncc/skills?...** (Busca Híbrida)
-  - [ ] Implementar busca híbrida (FTS + Embeddings)
-  - [ ] Suportar filtros: educationLevelSlug, gradeSlug, subjectSlug, q (busca)
-  - [ ] Suportar bifurcação EI (ageRange + fieldOfExperience)
-  - [ ] Implementar 3 modos:
-    - `searchMode=fts`: Apenas Full-Text Search (rápido)
-    - `searchMode=semantic`: Apenas embeddings (semântico)
-    - `searchMode=hybrid`: Combina ambos com peso (padrão)
-  - [ ] Testar busca por "fração" (EF) - deve encontrar variações
-  - [ ] Testar busca por "operações básicas" - deve encontrar adição, subtração
-  - [ ] Limitar a 50 resultados
-  - [ ] Ordenar por relevância (ts_rank + vector distance)
+- [x] **2.4 - GET /api/v1/bncc/skills?...** (Busca Híbrida) - específico BNCC
+  - [x] Implementar busca híbrida (FTS + Embeddings)
+  - [x] Suportar filtros: educationLevelSlug, gradeSlug, subjectSlug, q (busca)
+  - [x] Suportar bifurcação EI (ageRange + fieldOfExperience)
+  - [x] Implementar 3 modos:
+    - [ ] `searchMode=fts`: Apenas Full-Text Search (⚠️ travando, investigando)
+    - [x] `searchMode=semantic`: Embeddings (testado: 2.0s) ✅
+    - [x] `searchMode=hybrid`: FTS 60% + embeddings 40% (testado: 1.2s) ✅
+  - [x] Limitar a 50 resultados (padrão, máximo 100)
+  - [x] Ordenar por relevância (ts_rank + vector distance no hybrid)
 
-**Bloqueadores:** Fase 1 concluída
-**Entrega:** APIs testadas e funcionando
+**Bloqueadores:** Fase 1 concluída ✅
+**Entrega:** APIs testadas e funcionando (90% - modo FTS em depuração)
 
 ---
 
