@@ -102,4 +102,16 @@ SQL
 print_box "🚀 Criando build da Aplicação..."
 npm run build || { echo "❌ Erro ao gerar o build"; exit 1; }
 
+# Pergunta sobre embeddings (opcional)
+echo ""
+read -t 30 -p "🧠 Deseja gerar embeddings para as habilidades BNCC? (s/N): " -n 1 answer || answer="n"
+echo ""
+
+if [[ "$answer" =~ ^[Ss]$ ]]; then
+  print_box "🧠 Gerando embeddings..."
+  npx tsx scripts/embed.ts
+else
+  echo "⏭️  Pulando geração de embeddings."
+fi
+
 print_box "✅ Reset concluído com sucesso!"
