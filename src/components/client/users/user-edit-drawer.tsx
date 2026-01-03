@@ -18,6 +18,7 @@ import {
     DrawerContent,
     DrawerHeader,
     DrawerTitle,
+    DrawerDescription,
     DrawerFooter,
     DrawerClose,
 } from '@/components/ui/drawer'
@@ -244,6 +245,7 @@ export function UserEditDrawer({ user, open, onOpenChange, onSuccess }: UserEdit
                                 </Button>
                             </DrawerClose>
                         </div>
+                        <DrawerDescription className="sr-only">Formulário para edição dos dados cadastrais, avatar e níveis de acesso do usuário.</DrawerDescription>
                     </DrawerHeader>
 
                     <Tabs defaultValue="info" className="flex-1 flex flex-col overflow-hidden">
