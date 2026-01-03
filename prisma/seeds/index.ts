@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { PrismaClient } from '../generated/prisma/client';
+import { PrismaClient } from '@db/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import { seedUsers } from './seed-users';
@@ -78,3 +78,5 @@ export async function main() {
     console.log('🔌 Conexão com o banco de dados encerrada.');
   }
 }
+
+main();
