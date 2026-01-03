@@ -143,8 +143,8 @@ async function searchWithFTS(params: SearchParams) {
   const whereParams: any[] = [];
   let paramIndex = 1;
 
-  // Busca FTS (obrigatória)
-  whereConditions.push(`"searchVector" @@ plainto_tsquery('portuguese', $${paramIndex})`);
+  // Busca FTS (obrigatória) - usa unaccent para ignorar acentos
+  whereConditions.push(`"searchVector" @@ plainto_tsquery('portuguese', unaccent($${paramIndex}))`);
   whereParams.push(q);
   paramIndex++;
 
@@ -196,7 +196,7 @@ async function searchWithFTS(params: SearchParams) {
       description,
       comments,
       "curriculumSuggestions",
-      ts_rank("searchVector", plainto_tsquery('portuguese', $1)) as rank
+      ts_rank("searchVector", plainto_tsquery('portuguese', unaccent($1))) as rank
     FROM "bncc_skill"
     ${whereClause}
     ORDER BY rank DESC
@@ -340,8 +340,8 @@ async function searchHybrid(params: SearchParams) {
   const whereParams: any[] = [];
   let paramIndex = 3; // $1 = vector, $2 = q
 
-  // FTS: deve ter correspondência
-  whereConditions.push(`"searchVector" @@ plainto_tsquery('portuguese', $2)`);
+  // FTS: deve ter correspondência - usa unaccent para ignorar acentos
+  whereConditions.push(`"searchVector" @@ plainto_tsquery('portuguese', unaccent($2))`);
 
   // Filtros opcionais
   if (educationLevelSlug) {
@@ -392,7 +392,7 @@ async function searchHybrid(params: SearchParams) {
       comments,
       "curriculumSuggestions",
       (
-        ts_rank("searchVector", plainto_tsquery('portuguese', $2)) * 0.6 +
+        ts_rank("searchVector", plainto_tsquery('portuguese', unaccent($2))) * 0.6 +
         (1 - (embedding <=> $1::vector(1536))) * 0.4
       ) as hybrid_score
     FROM "bncc_skill"
