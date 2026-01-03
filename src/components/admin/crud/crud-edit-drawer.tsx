@@ -8,6 +8,7 @@ import {
     DrawerContent,
     DrawerHeader,
     DrawerTitle,
+    DrawerDescription,
     DrawerFooter,
     DrawerClose,
 } from '@/components/ui/drawer'
@@ -44,7 +45,7 @@ export function CrudEditDrawer({
         <Drawer open={open} onOpenChange={onOpenChange} shouldScaleBackground={false}>
             <DrawerContent className="h-[100dvh] max-h-none rounded-none border-none bg-background data-[vaul-drawer-direction=bottom]:mt-0 data-[vaul-drawer-direction=bottom]:max-h-none will-change-transform transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]">
                 <div className={cn("mx-auto w-full flex flex-col h-full overflow-hidden", maxWidth)}>
-                    <DrawerHeader className="border-b pb-4 shrink-0 px-6 pt-6">
+                    <DrawerHeader className="border-b pb-4 shrink-0 px-6 pt-6 text-left">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4 min-w-0">
                                 {Icon && (
@@ -52,14 +53,16 @@ export function CrudEditDrawer({
                                         <Icon className="h-5 w-5 text-primary" />
                                     </div>
                                 )}
-                                <div className="flex flex-col min-w-0 text-left">
-                                    <DrawerTitle className="text-xl font-bold tracking-tight truncate flex items-center gap-2">
+                                <div className="flex flex-col min-w-0">
+                                    <DrawerTitle className="text-xl font-bold tracking-tight truncate">
                                         {title}
                                     </DrawerTitle>
-                                    {subtitle && (
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 mt-1">
+                                    {subtitle ? (
+                                        <DrawerDescription className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 mt-1">
                                             {subtitle}
-                                        </p>
+                                        </DrawerDescription>
+                                    ) : (
+                                        <DrawerDescription className="sr-only">Formulário de edição do sistema.</DrawerDescription>
                                     )}
                                 </div>
                             </div>
