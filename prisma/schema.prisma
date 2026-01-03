@@ -85,6 +85,8 @@ model User {
   sessions     Session[]
   subscription Subscription?
   resourceAccesses ResourceUserAccess[]
+  lessonPlans  LessonPlan[]
+  lessonPlanUsage LessonPlanUsage[]
 
   @@map("user")
 }
@@ -311,4 +313,59 @@ model BnccSkill {
   @@unique([code, ageRange], name: "code_ageRange")
 
   @@map("bncc_skill")
+}
+
+model LessonPlan {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Identificação do plano
+  title           String  // Tema da aula (ex: "Frações básicas e suas representações")
+  numberOfClasses Int     // 1, 2 ou 3 aulas
+  duration        Int     // Calculado: numberOfClasses * 50 (minutos)
+
+  // Contexto pedagógico (slugs para flexibilidade)
+  educationLevelSlug String  // "educacao-infantil", "ensino-fundamental-1", etc
+
+  // Bifurcação EI vs EF
+  gradeSlug          String? // EF: "ef1-3-ano", "ef2-6-ano", etc
+  subjectSlug        String? // EF: "matematica", "lingua-portuguesa", etc
+  ageRange           String? // EI: "4-5-anos", etc
+  fieldOfExperience  String? // EI: "O eu, o outro e o nós", etc
+
+  // Habilidades BNCC selecionadas
+  bnccSkillCodes String[] // Array de códigos BNCC (ex: ["EF03MA09", "EF03MA10"])
+
+  // Conteúdo completo do plano (JSON estruturado)
+  content Json // { identification, bnccSkills, objectives, methodology, resources, evaluation }
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([educationLevelSlug])
+  @@index([gradeSlug])
+  @@index([subjectSlug])
+  @@map("lesson_plan")
+}
+
+model LessonPlanUsage {
+  id String @id @default(cuid())
+
+  userId    String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  yearMonth String // "YYYY-MM" (ex: "2026-01", "2026-02")
+  count     Int    @default(0) // Quantos planos criados nesse mês
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, yearMonth])
+  @@index([userId])
+  @@index([yearMonth])
+  @@map("lesson_plan_usage")
 }
