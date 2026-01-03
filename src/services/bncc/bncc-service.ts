@@ -144,11 +144,15 @@ export class BnccService {
         const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
 
         const query = `
-      SELECT *, (
-        COALESCE(CASE WHEN "searchVector" @@ plainto_tsquery('portuguese', unaccent($2))
-          THEN ts_rank("searchVector", plainto_tsquery('portuguese', unaccent($2))) * 0.4 ELSE 0 END, 0) +
-        (1 - (embedding <=> $1::vector(1536))) * 0.6
-      ) as relevance
+      SELECT
+        id, code, "educationLevelSlug", "fieldOfExperience", "ageRange",
+        "gradeSlug", "subjectSlug", "unitTheme", "knowledgeObject",
+        description, comments, "curriculumSuggestions", "createdAt", "updatedAt",
+        (
+          COALESCE(CASE WHEN "searchVector" @@ plainto_tsquery('portuguese', unaccent($2))
+            THEN ts_rank("searchVector", plainto_tsquery('portuguese', unaccent($2))) * 0.4 ELSE 0 END, 0) +
+          (1 - (embedding <=> $1::vector(1536))) * 0.6
+        ) as relevance
       FROM "bncc_skill"
       ${whereClause}
       ORDER BY relevance DESC
@@ -176,7 +180,11 @@ export class BnccService {
         if (fieldOfExperience) { whereConditions.push(`"fieldOfExperience" = $${pIdx}`); whereParams.push(fieldOfExperience); pIdx++; }
 
         const query = `
-      SELECT *, ts_rank("searchVector", plainto_tsquery('portuguese', unaccent($1))) as relevance
+      SELECT
+        id, code, "educationLevelSlug", "fieldOfExperience", "ageRange",
+        "gradeSlug", "subjectSlug", "unitTheme", "knowledgeObject",
+        description, comments, "curriculumSuggestions", "createdAt", "updatedAt",
+        ts_rank("searchVector", plainto_tsquery('portuguese', unaccent($1))) as relevance
       FROM "bncc_skill"
       WHERE ${whereConditions.join(' AND ')}
       ORDER BY relevance DESC
@@ -211,7 +219,11 @@ export class BnccService {
         const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
 
         const query = `
-      SELECT *, 1 - (embedding <=> $1::vector(1536)) as relevance
+      SELECT
+        id, code, "educationLevelSlug", "fieldOfExperience", "ageRange",
+        "gradeSlug", "subjectSlug", "unitTheme", "knowledgeObject",
+        description, comments, "curriculumSuggestions", "createdAt", "updatedAt",
+        1 - (embedding <=> $1::vector(1536)) as relevance
       FROM "bncc_skill"
       ${whereClause}
       ORDER BY relevance DESC
