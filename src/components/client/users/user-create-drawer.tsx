@@ -14,6 +14,7 @@ import {
     DrawerContent,
     DrawerHeader,
     DrawerTitle,
+    DrawerDescription,
     DrawerFooter,
     DrawerClose,
 } from '@/components/ui/drawer'
@@ -115,9 +116,9 @@ export function UserCreateDrawer({ open, onOpenChange, onSuccess }: UserCreateDr
                                 </Button>
                             </DrawerClose>
                         </div>
-                        <p className="text-sm text-muted-foreground mt-2">
+                        <DrawerDescription className="text-sm text-muted-foreground mt-2">
                             O usuário fará login via código OTP enviado por email/WhatsApp.
-                        </p>
+                        </DrawerDescription>
                     </DrawerHeader>
 
                     <div className="flex-1 overflow-y-auto p-6 space-y-6">
