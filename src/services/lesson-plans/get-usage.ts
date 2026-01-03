@@ -3,7 +3,7 @@ import { prisma } from '@/lib/db';
 /**
  * Constantes de controle de uso
  */
-export const LESSON_PLAN_MONTHLY_LIMIT = 15; // Limite de planos por mês
+export const LESSON_PLAN_MONTHLY_LIMIT = 30; // Limite de planos por mês
 
 /**
  * Busca o uso mensal de planos de aula do usuário
