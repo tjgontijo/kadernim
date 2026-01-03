@@ -18,6 +18,7 @@ import {
     DrawerContent,
     DrawerHeader,
     DrawerTitle,
+    DrawerDescription,
     DrawerFooter,
     DrawerClose,
 } from '@/components/ui/drawer'
@@ -147,6 +148,7 @@ export function ResourceEditDrawer({ resourceId, open, onOpenChange, onSuccess }
                                 </DrawerClose>
                             </div>
                         </div>
+                        <DrawerDescription className="sr-only">Editor completo para gerenciamento de detalhes, arquivos, imagens, vídeos e permissões do recurso no catálogo.</DrawerDescription>
                     </DrawerHeader>
 
                     {isLoading ? (
@@ -229,8 +231,8 @@ export function ResourceEditDrawer({ resourceId, open, onOpenChange, onSuccess }
                         </Tabs>
                     )}
                 </div>
-            </DrawerContent>
-        </Drawer>
+            </DrawerContent >
+        </Drawer >
     )
 }
 
