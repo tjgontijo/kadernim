@@ -1,6 +1,6 @@
 import { generateObject } from 'ai';
 import { openai } from '@ai-sdk/openai';
-import { systemPrompt, buildUserPrompt } from '@/lib/ai/prompts/lesson-plan';
+import { systemPromptEI, systemPromptEF, buildUserPrompt } from '@/lib/ai/prompts/lesson-plan';
 import { LessonPlanContentSchema, type BnccSkillDetail, type LessonPlanContent } from '@/lib/schemas/lesson-plan';
 
 /**
@@ -30,16 +30,19 @@ export async function generateLessonPlanContent(
   params: GenerateLessonPlanParams
 ): Promise<LessonPlanContent> {
   try {
-    // Construir prompt do usuário
+    const isEI = params.educationLevelSlug === 'educacao-infantil';
+
+    // Selecionar prompts específicos por nível
+    const systemPromptSelected = isEI ? systemPromptEI : systemPromptEF;
     const userPrompt = buildUserPrompt(params);
 
     // Gerar conteúdo estruturado
     const { object } = await generateObject({
-      model: openai('gpt-4o-mini'), // Custo-benefício ótimo
-      system: systemPrompt,
+      model: openai('gpt-4o-mini'),
+      system: systemPromptSelected,
       prompt: userPrompt,
       schema: LessonPlanContentSchema,
-      temperature: 0.7, // Criatividade moderada (0 = determinístico, 1 = muito criativo)
+      temperature: 0.7,
     });
 
     // O objeto já vem validado pelo Zod schema

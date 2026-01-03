@@ -23,6 +23,41 @@ export async function GET(request: Request) {
     const educationLevelSlug = searchParams.get('educationLevelSlug');
     const gradeSlug = searchParams.get('gradeSlug');
 
+    // Educação Infantil: retornar Campos de Experiência únicos da tabela bncc_skill
+    if (educationLevelSlug === 'educacao-infantil') {
+      const fieldsOfExperience = await prisma.bnccSkill.findMany({
+        where: {
+          educationLevelSlug: 'educacao-infantil',
+          fieldOfExperience: { not: null },
+        },
+        select: {
+          fieldOfExperience: true,
+        },
+        distinct: ['fieldOfExperience'],
+      });
+
+      // Mapear para formato compatível com frontend (slug baseado no nome)
+      const uniqueFields = fieldsOfExperience
+        .filter((f) => f.fieldOfExperience)
+        .map((f) => {
+          const name = f.fieldOfExperience!;
+          const slug = name
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)/g, '');
+
+          return { slug, name };
+        })
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+      return NextResponse.json({
+        success: true,
+        data: uniqueFields,
+      });
+    }
+
     // Se gradeSlug foi informado, buscar via GradeSubject (disciplinas válidas para o ano)
     if (gradeSlug) {
       const gradeSubjects = await prisma.gradeSubject.findMany({

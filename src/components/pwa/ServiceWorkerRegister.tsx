@@ -5,7 +5,7 @@ import { useEffect } from "react"
 export default function ServiceWorkerRegister() {
   useEffect(() => {
     if (process.env.NODE_ENV !== "production") {
-      console.info("[pwa] Service Worker não registrado em desenvolvimento")
+      // console.info("[pwa] Service Worker não registrado em desenvolvimento")
       return
     }
 

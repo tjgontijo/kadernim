@@ -5,136 +5,112 @@ import type { BnccSkillDetail } from '@/lib/schemas/lesson-plan';
  *
  * Define o papel e expertise da IA
  */
-export const systemPrompt = `Você é um especialista em pedagogia brasileira com profundo conhecimento da BNCC (Base Nacional Comum Curricular).
+/**
+ * System Prompt - Especialista em Educação Infantil (EI)
+ */
+export const systemPromptEI = `Você é um especialista em Educação Infantil brasileira com profundo conhecimento da BNCC.
+Sua missão é criar planos de aula pedagogicamente impecáveis para bebês e crianças pequenas.
 
-Sua missão é criar planos de aula de alta qualidade, pedagogicamente sólidos e alinhados às habilidades BNCC fornecidas.
-
-## Princípios pedagógicos que você segue:
-
-1. **Alinhamento BNCC**: Cada atividade deve desenvolver diretamente as habilidades selecionadas
-2. **Metodologias ativas**: Priorize aprendizagem por investigação, problematização e protagonismo do estudante
-3. **Diferenciação**: Sempre sugira adaptações para estudantes com diferentes ritmos de aprendizagem
-4. **Contextualização**: Use exemplos da realidade dos estudantes brasileiros
-5. **Avaliação formativa**: Foque no processo de aprendizagem, não apenas no produto final
-6. **Sequência didática**: Organize atividades com início (motivação), meio (desenvolvimento) e fim (consolidação)
-
-## Estrutura que você deve seguir:
-
-- **Objetivos**: Claros, mensuráveis, iniciando com verbos de ação (identificar, compreender, aplicar...)
-- **Metodologia**: Detalhada o suficiente para um professor executar sem dúvidas
-- **Recursos**: Realistas e acessíveis para escolas públicas brasileiras
-- **Avaliação**: Diversificada (observação, registro, produção, autoavaliação)
-
-## Tom e linguagem:
-
-- Profissional, mas acessível
-- Direto e prático
-- Evite jargões pedagógicos excessivos
-- Use português brasileiro formal
-
-## Importante:
-
-- NÃO invente habilidades BNCC além das fornecidas
-- NÃO crie atividades genéricas - sejam específicas ao tema
-- NÃO esqueça de adaptar para a faixa etária (Educação Infantil é lúdica, Fundamental é mais estruturado)`;
+## DIRETRIZES PARA EDUCAÇÃO INFANTIL:
+- **Terminologia OBRIGATÓRIA**: 
+  - USE "Conteúdos das experiências" ou "Tema central". NUNCA use "Objeto de Conhecimento".
+  - USE "Direitos de Aprendizagem e Desenvolvimento": **Conviver, Brincar, Participar, Explorar, Expressar, Conhecer-se**. Escolha os mais relevantes. NUNCA use "Competências".
+  - Habilidades são "Objetivos de aprendizagem e desenvolvimento".
+- **Metodologia**: Adeque a linguagem à faixa etária. 
+  - Para bebês (**EI01**): NUNCA use "roda de conversa", "explicar" ou "questionar". Use termos como "interação mediada", "observação", "estimulação", "acolhimento", "exploração sensorial".
+  - Foque em brincadeiras, interações e experiências sensoriais.
+- **Avaliação**: Use linguagem de observação pedagógica e registro (ex: "Observação das iniciativas...", "Registro das formas de interação..."). NUNCA use termos de julgamento ou verificação de performance.
+- **Referências**: NUNCA cite componentes curriculares como "Educação Física". Use "Material pedagógico da Educação Infantil" e cite a BNCC.
+- **Formato**: NUNCA coloque prefixos como "1.", "1 -" nos campos de texto do JSON.`;
 
 /**
- * Constrói o prompt do usuário com contexto completo
+ * System Prompt - Especialista em Ensino Fundamental (EF)
  */
-export function buildUserPrompt(params: {
+export const systemPromptEF = `Você é um especialista em Ensino Fundamental brasileiro com profundo conhecimento da BNCC.
+Sua missão é criar planos de aula pedagogicamente impecáveis do 1º ao 9º ano.
+
+## DIRETRIZES PARA ENSINO FUNDAMENTAL:
+- **Terminologia**: Use "Objeto de Conhecimento" (Substantivo sem verbos).
+- **Competências**: Use "Competências Gerais" ou "Específicas" com número e texto oficial.
+- **Metodologia**: Use verbos no infinitivo (Ler, interpretar, resolver). Campo "step" é o título da fase (ex: "Prática guiada"). SEM NÚMEROS.
+- **Avaliação**: Foco na verificação do alcance dos objetivos de aprendizagem.
+- **Referências**: Cite componentes curriculares (ex: Matemática, História) e a BNCC.
+- **Formato**: NUNCA coloque prefixos como "1.", "1 -" nos campos de texto do JSON.`;
+
+export const systemPrompt = systemPromptEF; // Fallback ou para compatibilidade temporária
+
+/**
+ * Constrói o prompt do usuário com contexto completo e enriquecido
+ */
+/**
+ * Constrói o prompt para Educação Infantil
+ */
+export function buildUserPromptEI(params: {
   title: string;
-  educationLevelSlug: string;
-  gradeSlug?: string;
-  subjectSlug?: string;
   ageRange?: string;
   fieldOfExperience?: string;
   numberOfClasses: number;
   bnccSkills: BnccSkillDetail[];
 }): string {
-  const {
-    title,
-    educationLevelSlug,
-    gradeSlug,
-    subjectSlug,
-    ageRange,
-    fieldOfExperience,
-    numberOfClasses,
-    bnccSkills,
-  } = params;
+  const { title, ageRange, fieldOfExperience, numberOfClasses, bnccSkills } = params;
 
-  // Detectar se é Educação Infantil ou Ensino Fundamental
-  const isEI = educationLevelSlug === 'educacao-infantil';
+  const skillsFormatted = bnccSkills.map((skill, i) =>
+    `${i + 1}. **${skill.code}**: ${skill.description}\nCampo: ${skill.fieldOfExperience || fieldOfExperience}`
+  ).join('\n\n');
 
-  // Formatar contexto pedagógico
-  let context = '';
-  if (isEI) {
-    context = `**Educação Infantil**
-- Faixa etária: ${ageRange || 'Não especificado'}
-- Campo de experiência: ${fieldOfExperience || 'Não especificado'}`;
-  } else {
-    context = `**Ensino Fundamental**
-- Ano: ${gradeSlug || 'Não especificado'}
-- Componente curricular: ${subjectSlug || 'Não especificado'}`;
-  }
+  return `Gere um Plano de Aula de Educação Infantil (JSON).
 
-  // Formatar habilidades BNCC
-  const skillsFormatted = bnccSkills
-    .map((skill, index) => {
-      let skillText = `${index + 1}. **${skill.code}**
-   Descrição: ${skill.description}`;
+TEMA: "${title}"
+FAIXA ETÁRIA: ${ageRange}
+CAMPO DE EXPERIÊNCIA: ${fieldOfExperience}
+DURAÇÃO: ${numberOfClasses} aula(s).
 
-      if (skill.unitTheme) {
-        skillText += `\n   Unidade temática: ${skill.unitTheme}`;
-      }
-      if (skill.knowledgeObject) {
-        skillText += `\n   Objeto de conhecimento: ${skill.knowledgeObject}`;
-      }
-      if (skill.fieldOfExperience) {
-        skillText += `\n   Campo de experiência: ${skill.fieldOfExperience}`;
-      }
-
-      return skillText;
-    })
-    .join('\n\n');
-
-  // Calcular duração total
-  const durationMinutes = numberOfClasses * 50;
-
-  // Montar prompt final
-  return `Crie um plano de aula completo com as seguintes características:
-
-## Tema
-"${title}"
-
-## Contexto
-${context}
-
-## Duração
-${numberOfClasses} aula(s) de 50 minutos cada = ${durationMinutes} minutos totais
-
-## Habilidades BNCC a desenvolver
+HABILIDADES (OBJETIVOS DE APRENDIZAGEM) BNCC:
 ${skillsFormatted}
 
----
-
-**Instruções específicas:**
-
-${
-  isEI
-    ? `- Como é Educação Infantil, use linguagem lúdica e atividades práticas/concretas
-- Priorize brincadeiras, jogos, experimentação e expressão
-- Não use avaliação formal - foque em observação e registro
-- Sugira materiais simples e manipuláveis`
-    : `- Como é Ensino Fundamental, estruture com início, desenvolvimento e conclusão claros
-- Inclua momentos de explicação, prática guiada e prática independente
-- Sugira atividades escritas e/ou práticas adequadas à idade
-- Inclua critérios de avaliação mensuráveis`
+ESTRUTURA JSON:
+1. "knowledgeObject": Tema central da experiência.
+2. "competencies": APENAS os Direitos de Aprendizagem envolvidos.
+3. "methodology": Foco em interação e exploração. Se EI01 (bebês), use linguagem sensorial e de acolhimento.
+4. "evaluation": Foco em observação e registro.`;
 }
 
-- Seja específico nas atividades (não apenas "discutir o tema", mas "perguntar X, Y, Z")
-- Sugira perguntas-chave para estimular o pensamento crítico
-- Inclua adaptações para estudantes com dificuldades
-- Use recursos acessíveis (não presuma tecnologia avançada)
+/**
+ * Constrói o prompt para Ensino Fundamental
+ */
+export function buildUserPromptEF(params: {
+  title: string;
+  gradeSlug?: string;
+  subjectSlug?: string;
+  numberOfClasses: number;
+  bnccSkills: BnccSkillDetail[];
+}): string {
+  const { title, gradeSlug, subjectSlug, numberOfClasses, bnccSkills } = params;
 
-Gere o plano completo seguindo a estrutura JSON fornecida.`;
+  const skillsFormatted = bnccSkills.map((skill, i) =>
+    `${i + 1}. **${skill.code}**: ${skill.description}\nObjeto: ${skill.knowledgeObject || ''}`
+  ).join('\n\n');
+
+  return `Gere um Plano de Aula de Ensino Fundamental (JSON).
+
+TEMA: "${title}"
+ANO: ${gradeSlug}
+COMPONENTE: ${subjectSlug}
+DURAÇÃO: ${numberOfClasses} aula(s).
+
+HABILIDADES BNCC:
+${skillsFormatted}
+
+ESTRUTURA JSON:
+1. "knowledgeObject": Objeto de conhecimento oficial da BNCC.
+2. "competencies": Competências Gerais/Específicas BNCC.
+3. "methodology": Sequência didática com verbos no infinitivo.
+4. "evaluation": Critérios de verificação de aprendizagem.`;
+}
+
+export function buildUserPrompt(params: any): string {
+  if (params.educationLevelSlug === 'educacao-infantil') {
+    return buildUserPromptEI(params);
+  }
+  return buildUserPromptEF(params);
 }

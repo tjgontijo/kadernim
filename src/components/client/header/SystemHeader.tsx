@@ -49,18 +49,22 @@ export function SystemHeader() {
         {/* Logo */}
         <Link href="/resources" className="flex items-center gap-2">
           <Image
-            src="/images/system/logo_transparent.png"
+            src="/images/icons/icon.png"
             alt="Kadernim"
             width={40}
             height={40}
             className="h-16 w-16"
+            priority
           />
         </Link>
 
         {/* Avatar + Menu com shadcn */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="rounded-full transition-transform hover:scale-110 focus:outline-none cursor-pointer">
+            <button
+              className="rounded-full transition-transform hover:scale-110 focus:outline-none cursor-pointer"
+              suppressHydrationWarning
+            >
               <Avatar className="h-10 w-10">
                 <AvatarImage
                   src={session?.data?.user?.image || undefined}

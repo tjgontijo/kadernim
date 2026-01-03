@@ -7,6 +7,62 @@ import { incrementLessonPlanUsage } from '@/services/lesson-plans/increment-usag
 import { generateLessonPlanContent } from '@/services/lesson-plans/generate-content';
 
 /**
+ * GET /api/v1/lesson-plans
+ *
+ * Lista planos do usuário (ordenados por criação DESC)
+ */
+export async function GET(request: NextRequest) {
+  try {
+    // 1. Verificar autenticação
+    const session = await auth.api.getSession({
+      headers: await (async () => {
+        const h = new Headers();
+        const { headers } = await import('next/headers');
+        const headersList = await headers();
+        headersList.forEach((value, key) => {
+          h.append(key, value);
+        });
+        return h;
+      })(),
+    });
+
+    if (!session?.user) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Não autenticado',
+        },
+        { status: 401 }
+      );
+    }
+
+    // 2. Buscar planos do banco
+    const plans = await prisma.lessonPlan.findMany({
+      where: {
+        userId: session.user.id,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: plans,
+    });
+  } catch (error) {
+    console.error('[GET /api/v1/lesson-plans] Error:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Erro ao listar planos de aula',
+      },
+      { status: 500 }
+    );
+  }
+}
+
+/**
  * POST /api/v1/lesson-plans
  *
  * Cria um novo plano de aula com geração por IA
@@ -110,7 +166,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 5. Buscar habilidades BNCC completas do banco
+    // 5. Buscar habilidades BNCC completas do banco (com contexto enriquecido)
     const bnccSkills = await prisma.bnccSkill.findMany({
       where: {
         code: {
@@ -123,6 +179,8 @@ export async function POST(request: NextRequest) {
         unitTheme: true,
         knowledgeObject: true,
         fieldOfExperience: true,
+        comments: true,
+        curriculumSuggestions: true,
       },
     });
 
@@ -136,13 +194,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Mapear para BnccSkillDetail
+    // Mapear para BnccSkillDetail (enriquecido)
     const skillDetails: BnccSkillDetail[] = bnccSkills.map((skill) => ({
       code: skill.code,
       description: skill.description,
-      unitTheme: skill.unitTheme || undefined,
-      knowledgeObject: skill.knowledgeObject || undefined,
-      fieldOfExperience: skill.fieldOfExperience || undefined,
+      unitTheme: skill.unitTheme || '',
+      knowledgeObject: skill.knowledgeObject || '',
+      fieldOfExperience: skill.fieldOfExperience || '',
+      comments: skill.comments || '',
+      curriculumSuggestions: skill.curriculumSuggestions || '',
     }));
 
     // 6. Gerar conteúdo com IA

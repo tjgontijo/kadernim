@@ -15,55 +15,47 @@ export const LessonPlanIdentificationSchema = z.object({
   date: z.string().optional(), // Data prevista (YYYY-MM-DD)
 }).optional();
 
-// 2. Habilidade BNCC completa (enriquecida) - NÃO usado na geração IA
-// Mantido para compatibilidade com o banco de dados
+// 2. Habilidade BNCC completa (enriquecida) - Usado para contextualizar o prompt da IA
 export const BnccSkillDetailSchema = z.object({
   code: z.string(), // EF03MA09
   description: z.string(), // Descrição completa da habilidade
   unitTheme: z.string().default(''), // Unidade temática (EF)
   knowledgeObject: z.string().default(''), // Objeto de conhecimento (EF)
   fieldOfExperience: z.string().default(''), // Campo de experiência (EI)
-});
-
-// 3. Objetivos de aprendizagem
-export const LessonPlanObjectivesSchema = z.object({
-  general: z.string(), // Objetivo geral da aula
-  specific: z.array(z.string()).min(1).max(5), // Objetivos específicos (1-5)
-});
-
-// 4. Metodologia (desenvolvimento)
-// TODOS OS CAMPOS OBRIGATÓRIOS para compatibilidade com OpenAI strict schema
-export const LessonPlanMethodologySchema = z.object({
-  warmUp: z.string(), // Introdução/Aquecimento (5-10 min) - OBRIGATÓRIO
-  development: z.string(), // Desenvolvimento principal (30-40 min)
-  closing: z.string(), // Fechamento/Síntese (5-10 min) - OBRIGATÓRIO
-  differentiation: z.string(), // Diferenciação pedagógica (alunos com dificuldades) - OBRIGATÓRIO
-});
-
-// 5. Recursos didáticos
-// TODOS OS CAMPOS OBRIGATÓRIOS para compatibilidade com OpenAI strict schema
-export const LessonPlanResourcesSchema = z.object({
-  materials: z.array(z.string()), // Materiais necessários - OBRIGATÓRIO (pode ser vazio [])
-  spaces: z.array(z.string()), // Espaços utilizados (sala, pátio, etc) - OBRIGATÓRIO (pode ser vazio [])
-  technology: z.array(z.string()), // Recursos tecnológicos - OBRIGATÓRIO (pode ser vazio [])
-});
-
-// 6. Avaliação
-// TODOS OS CAMPOS OBRIGATÓRIOS para compatibilidade com OpenAI strict schema
-export const LessonPlanEvaluationSchema = z.object({
-  criteria: z.array(z.string()).min(1).max(5), // Critérios de avaliação (1-5)
-  instruments: z.array(z.string()), // Instrumentos (observação, registro, etc) - OBRIGATÓRIO (pode ser vazio [])
-  feedback: z.string(), // Como dar feedback aos alunos - OBRIGATÓRIO
+  comments: z.string().default(''), // Comentários pedagógicos da BNCC
+  curriculumSuggestions: z.string().default(''), // Sugestões curriculares
 });
 
 // Schema completo do conteúdo do plano (gerado por IA)
-// identification e bnccSkills foram removidos pois não precisam ser gerados pela IA
-// (bnccSkills já vem do input do usuário)
 export const LessonPlanContentSchema = z.object({
-  objectives: LessonPlanObjectivesSchema,
-  methodology: LessonPlanMethodologySchema,
-  resources: LessonPlanResourcesSchema,
-  evaluation: LessonPlanEvaluationSchema,
+  // 2. Objeto de conhecimento (Substantivo, sem verbo)
+  knowledgeObject: z.string().describe('Conteúdo/tema central, expresso como substantivo, sem verbos'),
+
+  // 4. Objetivos de aprendizagem (Verbo no infinitivo, observável)
+  objectives: z.array(z.string()).min(1).max(5).describe('Objetivos claros iniciando com verbos no infinitivo'),
+
+  // 5. Competências (Número e resumo)
+  competencies: z.array(z.string()).min(1).max(5).describe('Competências gerais ou específicas da BNCC envolvidas'),
+
+  // 6. Metodologia (Passo a passo, verbos no infinitivo)
+  methodology: z.array(
+    z.object({
+      step: z.string(),
+      description: z.string(),
+    })
+  ).min(3).describe('Sequência didática passo a passo com verbos no infinitivo'),
+
+  // 7. Recursos didáticos (Lista objetiva)
+  resources: z.array(z.string()).min(1).describe('Materiais necessários para a aula'),
+
+  // 8. Avaliação (Como e quando)
+  evaluation: z.string().describe('Critérios e instrumentos de avaliação relacionados aos objetivos'),
+
+  // 9. Adequações e inclusão (Estratégias concretas)
+  adaptations: z.string().describe('Estratégias para alunos com necessidades específicas ou dificuldades'),
+
+  // 10. Referências (BNCC e materiais)
+  references: z.array(z.string()).min(1).describe('Fontes legais e materiais didáticos utilizados'),
 });
 
 // Schema para criação de plano (usado na API POST)
@@ -106,10 +98,6 @@ export const LessonPlanResponseSchema = z.object({
 // Types inferidos
 export type LessonPlanIdentification = z.infer<typeof LessonPlanIdentificationSchema>;
 export type BnccSkillDetail = z.infer<typeof BnccSkillDetailSchema>;
-export type LessonPlanObjectives = z.infer<typeof LessonPlanObjectivesSchema>;
-export type LessonPlanMethodology = z.infer<typeof LessonPlanMethodologySchema>;
-export type LessonPlanResources = z.infer<typeof LessonPlanResourcesSchema>;
-export type LessonPlanEvaluation = z.infer<typeof LessonPlanEvaluationSchema>;
 export type LessonPlanContent = z.infer<typeof LessonPlanContentSchema>;
 export type CreateLessonPlan = z.infer<typeof CreateLessonPlanSchema>;
 export type LessonPlanResponse = z.infer<typeof LessonPlanResponseSchema>;
