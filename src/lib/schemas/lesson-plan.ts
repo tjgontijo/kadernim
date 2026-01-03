@@ -6,21 +6,23 @@ import { z } from 'zod';
  * Estrutura baseada em boas práticas pedagógicas BNCC
  */
 
-// 1. Identificação do plano
+// 1. Identificação do plano (REMOVIDO da geração IA - preenchido pelo usuário)
+// Mantido para compatibilidade futura, mas não usado na geração
 export const LessonPlanIdentificationSchema = z.object({
   school: z.string().optional(), // Nome da escola
   teacher: z.string().optional(), // Nome do professor
   class: z.string().optional(), // Turma (ex: "3º Ano A")
   date: z.string().optional(), // Data prevista (YYYY-MM-DD)
-});
+}).optional();
 
-// 2. Habilidade BNCC completa (enriquecida)
+// 2. Habilidade BNCC completa (enriquecida) - NÃO usado na geração IA
+// Mantido para compatibilidade com o banco de dados
 export const BnccSkillDetailSchema = z.object({
   code: z.string(), // EF03MA09
   description: z.string(), // Descrição completa da habilidade
-  unitTheme: z.string().optional(), // Unidade temática (EF)
-  knowledgeObject: z.string().optional(), // Objeto de conhecimento (EF)
-  fieldOfExperience: z.string().optional(), // Campo de experiência (EI)
+  unitTheme: z.string().default(''), // Unidade temática (EF)
+  knowledgeObject: z.string().default(''), // Objeto de conhecimento (EF)
+  fieldOfExperience: z.string().default(''), // Campo de experiência (EI)
 });
 
 // 3. Objetivos de aprendizagem
@@ -30,34 +32,37 @@ export const LessonPlanObjectivesSchema = z.object({
 });
 
 // 4. Metodologia (desenvolvimento)
+// TODOS OS CAMPOS OBRIGATÓRIOS para compatibilidade com OpenAI strict schema
 export const LessonPlanMethodologySchema = z.object({
-  warmUp: z.string().optional(), // Introdução/Aquecimento (5-10 min)
+  warmUp: z.string(), // Introdução/Aquecimento (5-10 min) - OBRIGATÓRIO
   development: z.string(), // Desenvolvimento principal (30-40 min)
-  closing: z.string().optional(), // Fechamento/Síntese (5-10 min)
-  differentiation: z.string().optional(), // Diferenciação pedagógica (alunos com dificuldades)
+  closing: z.string(), // Fechamento/Síntese (5-10 min) - OBRIGATÓRIO
+  differentiation: z.string(), // Diferenciação pedagógica (alunos com dificuldades) - OBRIGATÓRIO
 });
 
 // 5. Recursos didáticos
+// TODOS OS CAMPOS OBRIGATÓRIOS para compatibilidade com OpenAI strict schema
 export const LessonPlanResourcesSchema = z.object({
-  materials: z.array(z.string()).optional(), // Materiais necessários
-  spaces: z.array(z.string()).optional(), // Espaços utilizados (sala, pátio, etc)
-  technology: z.array(z.string()).optional(), // Recursos tecnológicos
+  materials: z.array(z.string()), // Materiais necessários - OBRIGATÓRIO (pode ser vazio [])
+  spaces: z.array(z.string()), // Espaços utilizados (sala, pátio, etc) - OBRIGATÓRIO (pode ser vazio [])
+  technology: z.array(z.string()), // Recursos tecnológicos - OBRIGATÓRIO (pode ser vazio [])
 });
 
 // 6. Avaliação
+// TODOS OS CAMPOS OBRIGATÓRIOS para compatibilidade com OpenAI strict schema
 export const LessonPlanEvaluationSchema = z.object({
   criteria: z.array(z.string()).min(1).max(5), // Critérios de avaliação (1-5)
-  instruments: z.array(z.string()).optional(), // Instrumentos (observação, registro, etc)
-  feedback: z.string().optional(), // Como dar feedback aos alunos
+  instruments: z.array(z.string()), // Instrumentos (observação, registro, etc) - OBRIGATÓRIO (pode ser vazio [])
+  feedback: z.string(), // Como dar feedback aos alunos - OBRIGATÓRIO
 });
 
-// Schema completo do conteúdo do plano
+// Schema completo do conteúdo do plano (gerado por IA)
+// identification e bnccSkills foram removidos pois não precisam ser gerados pela IA
+// (bnccSkills já vem do input do usuário)
 export const LessonPlanContentSchema = z.object({
-  identification: LessonPlanIdentificationSchema.optional(),
-  bnccSkills: z.array(BnccSkillDetailSchema).min(1).max(3), // 1-3 habilidades
   objectives: LessonPlanObjectivesSchema,
   methodology: LessonPlanMethodologySchema,
-  resources: LessonPlanResourcesSchema.optional(),
+  resources: LessonPlanResourcesSchema,
   evaluation: LessonPlanEvaluationSchema,
 });
 
