@@ -1947,112 +1947,143 @@ validateBncc()
 
 ---
 
-### 🎨 Fase 5: Wizard UI - Base (2-3 dias)
+### 🎨 Fase 5: Wizard UI - Quiz Style (2-3 dias)
 
-**Objetivo:** Interface do wizard (sem bifurcação ainda)
+**Objetivo:** Interface de wizard no formato quiz/inlead (uma pergunta por tela)
+
+**UX/UI Guidelines:**
+- ✅ **Uma pergunta por tela** - Foco total em cada decisão
+- ✅ **Seleção única → Avança automaticamente** - Sem botão "Continuar"
+- ✅ **Múltipla seleção → Botão "Continuar"** - Para confirmar escolhas
+- ✅ **Input de texto → Botão "Continuar"** - Para tema/título
+- ✅ **Progress indicator** - "3 de 7" no topo
+- ✅ **Transições suaves** - Animação entre perguntas (framer-motion)
+- ✅ **Voltar permitido** - Seta no topo esquerdo
 
 **Checklist:**
 - [ ] **5.1 - Estrutura Base**
-  - [ ] Criar `create-plan-drawer.tsx` (Vaul Drawer)
-  - [ ] Criar `wizard-steps.tsx` (indicador de progresso)
-  - [ ] Implementar navegação (voltar/continuar)
-  - [ ] Implementar state management (useState ou zustand)
+  - [ ] Criar `create-plan-drawer.tsx` (Vaul Drawer full-screen)
+  - [ ] Criar `quiz-progress.tsx` (indicador "X de 7")
+  - [ ] Criar `quiz-question.tsx` (container com animação)
+  - [ ] Implementar state management (useState para wizard state)
+  - [ ] Implementar navegação com histórico (voltar/avançar)
+  - [ ] Adicionar transições (framer-motion: slide in/out)
 
-- [ ] **5.2 - Step 1: Seleção de Etapa**
-  - [ ] Criar `step-stage.tsx`
-  - [ ] Buscar etapas de ensino (API)
-  - [ ] Renderizar cards grandes (mobile-friendly)
-  - [ ] Implementar seleção
+- [ ] **5.2 - Componentes Reutilizáveis**
+  - [ ] Criar `single-choice.tsx`
+    - Cards grandes (mobile-friendly)
+    - Auto-avança ao clicar
+    - Feedback visual (pulse/scale)
+  - [ ] Criar `multiple-choice.tsx`
+    - Checkboxes com contador "X de 3"
+    - Botão "Continuar" habilitado quando válido
+    - Validação de mínimo/máximo
+  - [ ] Criar `text-input-question.tsx`
+    - Input grande e claro
+    - Botão "Continuar" habilitado quando preenchido
+    - Auto-focus
 
-- [ ] **5.3 - Step 2: Tema + Duração**
-  - [ ] Criar `step-theme.tsx`
-  - [ ] Input de título do plano
-  - [ ] Seleção de número de aulas (1, 2, 3)
-  - [ ] Calcular duração total (aulas × 50min)
+- [ ] **5.3 - Pergunta 1: Etapa de Ensino**
+  - [ ] Criar `question-education-level.tsx`
+  - [ ] Buscar etapas via API (GET /api/v1/bncc/education-levels)
+  - [ ] Renderizar como SingleChoice
+  - [ ] Texto: "Para qual etapa de ensino?"
+  - [ ] Opções: "Educação Infantil", "Ensino Fundamental I", "Ensino Fundamental II"
 
-- [ ] **5.4 - Step 4: Revisão**
-  - [ ] Criar `step-review.tsx`
-  - [ ] Mostrar resumo de tudo selecionado
-  - [ ] Botão "Editar" para cada seção
-  - [ ] Botão "Gerar Meu Plano"
+- [ ] **5.4 - Pergunta 2: Ano/Faixa Etária** (bifurca aqui)
+  - [ ] Criar `question-grade.tsx`
+  - [ ] Buscar anos via API (GET /api/v1/bncc/grades?educationLevelSlug=...)
+  - [ ] Renderizar como SingleChoice
+  - [ ] Texto EI: "Qual faixa etária?"
+  - [ ] Texto EF: "Para qual ano?"
+  - [ ] Auto-avança ao selecionar
 
-- [ ] **5.5 - Loading + Sucesso**
-  - [ ] Criar `generating-state.tsx` (loading animado)
-  - [ ] Criar `success-state.tsx` (com botões de download)
-  - [ ] Adicionar progress bar fake (UX)
+- [ ] **5.5 - Pergunta 3: Disciplina/Campo**
+  - [ ] Criar `question-subject.tsx`
+  - [ ] Buscar disciplinas via API (GET /api/v1/bncc/subjects?...)
+  - [ ] Renderizar como SingleChoice
+  - [ ] Texto EI: "Qual campo de experiência?"
+  - [ ] Texto EF: "Qual disciplina?"
+  - [ ] Auto-avança ao selecionar
+
+- [ ] **5.6 - Pergunta 4: Tema da Aula**
+  - [ ] Criar `question-theme.tsx`
+  - [ ] Renderizar como TextInputQuestion
+  - [ ] Texto: "Qual o tema da aula?"
+  - [ ] Placeholder: "Ex: Frações básicas e suas representações"
+  - [ ] Validação: mínimo 5 caracteres
+  - [ ] Botão "Continuar"
+
+- [ ] **5.7 - Pergunta 5: Duração**
+  - [ ] Criar `question-duration.tsx`
+  - [ ] Renderizar como SingleChoice
+  - [ ] Texto: "Quantas aulas?"
+  - [ ] Opções: "1 aula (50 min)", "2 aulas (100 min)", "3 aulas (150 min)"
+  - [ ] Auto-avança ao selecionar
+
+- [ ] **5.8 - Pergunta 6: Habilidades BNCC**
+  - [ ] Criar `question-skills.tsx`
+  - [ ] Input de busca com debounce (500ms)
+  - [ ] Buscar via API (GET /api/v1/bncc/skills?q=...)
+  - [ ] Renderizar como MultipleChoice
+  - [ ] Texto: "Selecione até 3 habilidades BNCC"
+  - [ ] Mostrar cards com código + descrição
+  - [ ] Contador "X de 3 selecionadas"
+  - [ ] Validação: mínimo 1, máximo 3
+  - [ ] Botão "Continuar" (só ativo quando 1-3 selecionadas)
+
+- [ ] **5.9 - Pergunta 7: Revisão Final**
+  - [ ] Criar `question-review.tsx`
+  - [ ] Mostrar resumo editável:
+    - Etapa + Ano + Disciplina (com botão "Editar")
+    - Tema (com botão "Editar")
+    - Duração (com botão "Editar")
+    - Habilidades (lista com botão "Editar")
+  - [ ] Botão "Gerar Meu Plano" (grande e destacado)
+
+- [ ] **5.10 - Estados de Loading e Sucesso**
+  - [ ] Criar `question-generating.tsx`
+    - Animação de loading
+    - Progress bar fake (0% → 100% em ~30s)
+    - Textos motivacionais ("Analisando habilidades BNCC...", "Criando objetivos...", etc)
+  - [ ] Criar `question-success.tsx`
+    - Animação de sucesso (confetti/checkmark)
+    - Preview do plano gerado
+    - Botões: "Baixar Word", "Baixar PDF", "Criar Outro Plano"
 
 **Bloqueadores:** Fase 4 concluída
-**Entrega:** Wizard básico funcionando (sem bifurcação)
+**Entrega:** Wizard completo no formato quiz (uma pergunta por tela, auto-avança em seleção única)
+
+**Nota:** A bifurcação EI vs EF está embutida nas perguntas 2 e 3 (textos diferentes baseados em `educationLevelSlug`).
 
 ---
 
-### 🔀 Fase 6: Bifurcação EI vs EF (2 dias)
-
-**Objetivo:** Implementar fluxos diferentes para EI e EF
-
-**Checklist:**
-- [ ] **6.1 - Step 1A: EI (Faixa Etária + Campo de Experiência)**
-  - [ ] Criar `step-ei-age-field.tsx`
-  - [ ] Buscar faixas etárias (Grades de EI)
-  - [ ] Buscar campos de experiência (Subjects de EI)
-  - [ ] Implementar seleção
-
-- [ ] **6.2 - Step 1B: EF (Ano + Disciplina)**
-  - [ ] Criar `step-ef-grade-subject.tsx`
-  - [ ] Buscar anos (Grades de EF)
-  - [ ] Buscar disciplinas (Subjects válidos para o Grade)
-  - [ ] Implementar seleção em grade (chips)
-
-- [ ] **6.3 - Lógica de Bifurcação**
-  - [ ] No drawer, detectar: `isEI = educationLevelSlug === 'educacao-infantil'`
-  - [ ] Renderizar Step 1A se EI, Step 1B se EF
-  - [ ] Ajustar labels do indicador de progresso
-
-- [ ] **6.4 - Step 3: Busca de Habilidades (com bifurcação)**
-  - [ ] Criar `step-skills.tsx` (wrapper)
-  - [ ] Criar `skill-selector-ei.tsx` (busca por ageRange + fieldOfExperience)
-  - [ ] Criar `skill-selector-ef.tsx` (busca por gradeSlug + subjectSlug)
-  - [ ] Implementar busca FTS com debounce
-  - [ ] Limitar seleção (1 a 3 habilidades)
-  - [ ] Mostrar contador "X de 3 selecionadas"
-
-- [ ] **6.5 - Hook de Busca**
-  - [ ] Criar `useBnccSkills.ts`
-  - [ ] Implementar switch EI/EF nos params
-  - [ ] Adicionar debounce (500ms)
-  - [ ] Cachear com React Query
-
-**Bloqueadores:** Fase 5 concluída
-**Entrega:** Wizard completo com bifurcação EI/EF
-
----
-
-### 📥 Fase 7: Exportação (Word + PDF) (2-3 dias)
+### 📥 Fase 6: Exportação (Word + PDF) (2-3 dias)
 
 **Objetivo:** Gerar arquivos .docx e .pdf para download
 
 **Checklist:**
-- [ ] **7.1 - Instalação**
+- [ ] **6.1 - Instalação**
   - [ ] `npm install docx`
   - [ ] `npm install @react-pdf/renderer`
 
-- [ ] **7.2 - Template Word**
+- [ ] **6.2 - Template Word**
   - [ ] Criar `lib/export/word-template.ts`
   - [ ] Implementar estrutura: Título, Identificação, Habilidades BNCC, Objetivos, Metodologia, Recursos, Avaliação
   - [ ] Testar geração local
   - [ ] Validar abertura no Word/Google Docs
 
-- [ ] **7.3 - Template PDF**
+- [ ] **6.3 - Template PDF**
   - [ ] Criar `lib/export/pdf-template.tsx`
   - [ ] Implementar layout similar ao Word
   - [ ] Testar geração local
 
-- [ ] **7.4 - Services**
+- [ ] **6.4 - Services**
   - [ ] Criar `services/lesson-plans/export-word.ts`
   - [ ] Criar `services/lesson-plans/export-pdf.ts`
   - [ ] Retornar Buffer
 
-- [ ] **7.5 - API de Download**
+- [ ] **6.5 - API de Download**
   - [ ] GET /api/v1/lesson-plans/:id/download?format=docx|pdf
   - [ ] Validar ownership (apenas dono ou admin)
   - [ ] Gerar arquivo
@@ -2064,85 +2095,85 @@ validateBncc()
 
 ---
 
-### 📚 Fase 8: Lista e Histórico (2 dias)
+### 📚 Fase 7: Lista e Histórico (2 dias)
 
 **Objetivo:** Tela principal com lista de planos criados
 
 **Checklist:**
-- [ ] **8.1 - Página Principal**
+- [ ] **7.1 - Página Principal**
   - [ ] Criar `app/(client)/lesson-plans/page.tsx`
   - [ ] Implementar layout responsivo
   - [ ] Adicionar botão "Criar Novo Plano" (abre drawer)
 
-- [ ] **8.2 - Empty State**
+- [ ] **7.2 - Empty State**
   - [ ] Criar `empty-state.tsx`
   - [ ] Ilustração/ícone
   - [ ] Texto motivacional
   - [ ] Botão CTA: "Criar Meu Primeiro Plano"
   - [ ] Mostrar "15 planos disponíveis este mês"
 
-- [ ] **8.3 - Lista de Planos**
+- [ ] **7.3 - Lista de Planos**
   - [ ] Criar `plan-list.tsx`
   - [ ] Criar `plan-card.tsx`
   - [ ] Mostrar: título, etapa, ano, disciplina, data, botões download
   - [ ] Ordenar por data (mais recentes primeiro)
   - [ ] Limitar a 20 planos
 
-- [ ] **8.4 - Barra de Uso**
+- [ ] **7.4 - Barra de Uso**
   - [ ] Criar `usage-progress.tsx`
   - [ ] Mostrar: "Você criou X de 15 planos este mês"
   - [ ] Progress bar visual
   - [ ] Aviso quando próximo do limite
 
-- [ ] **8.5 - APIs**
+- [ ] **7.5 - APIs**
   - [ ] GET /api/v1/lesson-plans (lista)
   - [ ] GET /api/v1/lesson-plans/:id (detalhes)
 
-- [ ] **8.6 - Hooks**
+- [ ] **7.6 - Hooks**
   - [ ] Criar `useLessonPlans.ts` (React Query)
   - [ ] Criar `useLessonPlanUsage.ts` (React Query)
 
-**Bloqueadores:** Fase 7 concluída
+**Bloqueadores:** Fase 6 concluída
 **Entrega:** Tela de planos funcionando
 
 ---
 
-### ✨ Fase 9: Polimento e Lançamento (1-2 dias)
+### ✨ Fase 8: Polimento e Lançamento (1-2 dias)
 
 **Objetivo:** Ajustes finais e preparação para produção
 
 **Checklist:**
-- [ ] **9.1 - Otimização de Prompts**
+- [ ] **8.1 - Otimização de Prompts**
   - [ ] Testar com 5 temas diferentes (EF)
   - [ ] Testar com 3 temas diferentes (EI)
   - [ ] Validar qualidade com professora real
   - [ ] Ajustar prompts se necessário
 
-- [ ] **9.2 - UX/UI**
+- [ ] **8.2 - UX/UI**
   - [ ] Revisar responsividade mobile (80% do tráfego)
   - [ ] Adicionar loading states em todas as ações
   - [ ] Adicionar toasts de sucesso/erro (sonner)
   - [ ] Validar todos os formulários (Zod)
   - [ ] Mensagens de erro amigáveis
 
-- [ ] **9.3 - Performance**
+- [ ] **8.3 - Performance**
   - [ ] Adicionar debounce na busca de habilidades
   - [ ] Cachear listas de educationLevels, grades, subjects
   - [ ] Otimizar queries SQL (EXPLAIN ANALYZE)
 
-- [ ] **9.4 - Monitoramento**
+- [ ] **8.4 - Monitoramento**
   - [ ] Adicionar logging de tokens usados (custo)
   - [ ] Adicionar analytics (planos criados, downloads)
   - [ ] Configurar alertas (se custo > $50/mês)
 
-- [ ] **9.5 - Testes Finais**
+- [ ] **8.5 - Testes Finais**
   - [ ] Testar fluxo completo EI (ponta a ponta)
   - [ ] Testar fluxo completo EF (ponta a ponta)
   - [ ] Testar limite mensal
   - [ ] Testar re-download de plano antigo
   - [ ] Testar no mobile (Chrome DevTools)
 
-**Bloqueadores:** Fase 8 concluída
+**Bloqueadores:** Fase 7 concluída
 **Entrega:** Feature pronta para produção! 🚀
 
 ---
@@ -2156,13 +2187,14 @@ validateBncc()
 | 2 | APIs de Consulta | 1 dia | 3 dias |
 | 3 | Schema + Controle de Uso | 1 dia | 4 dias |
 | 4 | Geração com IA | 2-3 dias | 7 dias |
-| 5 | Wizard UI - Base | 2-3 dias | 10 dias |
-| 6 | Bifurcação EI vs EF | 2 dias | 12 dias |
-| 7 | Exportação (Word/PDF) | 2-3 dias | 15 dias |
-| 8 | Lista e Histórico | 2 dias | 17 dias |
-| 9 | Polimento | 1-2 dias | **19 dias** |
+| 5 | Wizard UI Quiz-Style | 2-3 dias | 10 dias |
+| 6 | Exportação (Word/PDF) | 2-3 dias | 13 dias |
+| 7 | Lista e Histórico | 2 dias | 15 dias |
+| 8 | Polimento | 1-2 dias | **17 dias** |
 
-**Total:** ~3-4 semanas (trabalhando solo, full-time)
+**Total:** ~3 semanas (trabalhando solo, full-time)
+
+**Nota:** A Fase 6 (Bifurcação EI vs EF) foi integrada na Fase 5 (wizard quiz-style), economizando ~2 dias.
 
 ---
 
