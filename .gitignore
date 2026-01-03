@@ -31,8 +31,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files
 .env
+.env*.local
 
 # vercel
 .vercel
@@ -41,4 +42,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-prisma/generated/prisma
+# prisma generated
+prisma/generated/
+
+# PWA service worker (gerado no build)
+public/sw.js
+public/sw.js.map
+public/workbox-*.js
+public/workbox-*.js.map
