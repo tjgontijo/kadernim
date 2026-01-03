@@ -1865,14 +1865,20 @@ validateBncc()
   - [x] Suportar filtros: educationLevelSlug, gradeSlug, subjectSlug, q (busca)
   - [x] Suportar bifurcação EI (ageRange + fieldOfExperience)
   - [x] Implementar 3 modos:
-    - [ ] `searchMode=fts`: Apenas Full-Text Search (⚠️ travando, investigando)
+    - [x] `searchMode=fts`: Full-Text Search com unaccent (testado: 362ms) ✅
     - [x] `searchMode=semantic`: Embeddings (testado: 2.0s) ✅
     - [x] `searchMode=hybrid`: FTS 60% + embeddings 40% (testado: 1.2s) ✅
   - [x] Limitar a 50 resultados (padrão, máximo 100)
   - [x] Ordenar por relevância (ts_rank + vector distance no hybrid)
 
 **Bloqueadores:** Fase 1 concluída ✅
-**Entrega:** APIs testadas e funcionando (90% - modo FTS em depuração)
+**Entrega:** APIs testadas e funcionando (100% ✅)
+
+**Debug realizado (FTS):**
+- Problema identificado: searchVector usava `unaccent()`, mas queries não
+- Solução: Adicionar `unaccent($1)` em todas as queries FTS e hybrid
+- Testado com acentos: "fração", "multiplicação", "adição", "operações" ✅
+- Performance: FTS (362ms) < Hybrid (1.2s) < Semantic (2.0s)
 
 ---
 
@@ -1881,29 +1887,29 @@ validateBncc()
 **Objetivo:** Estrutura para salvar planos e limitar uso mensal
 
 **Checklist:**
-- [ ] **3.1 - Schema Prisma**
-  - [ ] Criar model `LessonPlan`
-  - [ ] Criar model `LessonPlanUsage`
-  - [ ] Executar migration
-  - [ ] Gerar Prisma Client
+- [x] **3.1 - Schema Prisma**
+  - [x] Criar model `LessonPlan` (slugs, bifurcação EI/EF, content JSON) ✅
+  - [x] Criar model `LessonPlanUsage` (userId + yearMonth unique) ✅
+  - [x] Executar db push ✅
+  - [x] Gerar Prisma Client ✅
 
-- [ ] **3.2 - Zod Schema de Validação**
-  - [ ] Criar `lib/schemas/lesson-plan.ts`
-  - [ ] Implementar `LessonPlanContentSchema`
-  - [ ] Validar estrutura do JSON (identification, bnccSkills, objectives, etc)
+- [x] **3.2 - Zod Schema de Validação**
+  - [x] Criar `lib/schemas/lesson-plan.ts` ✅
+  - [x] Implementar `LessonPlanContentSchema` (completo com 6 seções) ✅
+  - [x] Validar estrutura: identification, bnccSkills, objectives, methodology, resources, evaluation ✅
 
-- [ ] **3.3 - Services de Controle**
-  - [ ] Criar `services/lesson-plans/get-usage.ts`
-  - [ ] Criar `services/lesson-plans/increment-usage.ts`
-  - [ ] Implementar lógica de year-month (YYYY-MM)
+- [x] **3.3 - Services de Controle**
+  - [x] Criar `services/lesson-plans/get-usage.ts` (getLessonPlanUsage, canCreateLessonPlan) ✅
+  - [x] Criar `services/lesson-plans/increment-usage.ts` (upsert atômico) ✅
+  - [x] Implementar lógica year-month (YYYY-MM) com reset automático ✅
+  - [x] Limite configurado: 15 planos/mês ✅
 
-- [ ] **3.4 - API de Uso**
-  - [ ] GET /api/v1/lesson-plans/usage
-  - [ ] Retornar: used, limit, remaining, resetsAt
-  - [ ] Testar com usuário autenticado
+- [x] **3.4 - API de Uso**
+  - [x] GET /api/v1/lesson-plans/usage (com autenticação better-auth) ✅
+  - [x] Retornar: used, limit, remaining, resetsAt, yearMonth ✅
 
-**Bloqueadores:** Fase 0 concluída
-**Entrega:** Estrutura de dados pronta para receber planos
+**Bloqueadores:** Fase 0 concluída ✅
+**Entrega:** Estrutura de dados pronta para receber planos (100% ✅)
 
 ---
 
