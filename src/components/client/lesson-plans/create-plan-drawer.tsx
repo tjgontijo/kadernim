@@ -6,6 +6,7 @@ import { ArrowLeft, X, Sparkles } from 'lucide-react';
 import { Drawer, DrawerContent, DrawerClose, DrawerHeader, DrawerTitle, DrawerDescription } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { useDownloadFile } from '@/hooks/use-download-file';
 import { QuizProgress } from './quiz-progress';
 import { QuestionEducationLevel } from './questions/question-education-level';
 import { QuestionGrade } from './questions/question-grade';
@@ -133,17 +134,20 @@ export function CreatePlanDrawer({ open, onOpenChange }: CreatePlanDrawerProps) 
     onOpenChange(false);
   };
 
+  const { downloadFile } = useDownloadFile();
+
   const handleDownload = (format: 'docx' | 'pdf') => {
     if (!wizardState.planId) return;
     const url = `/api/v1/lesson-plans/${wizardState.planId}/export/${format}`;
-    window.open(url, '_blank');
+    const filename = `plano-de-aula-${wizardState.title?.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 30) || 'novo'}.${format}`;
+    downloadFile(url, { filename });
   };
 
   const canGoBack = history.length > 1 && currentStep !== 'generating' && currentStep !== 'success';
 
   return (
     <Drawer open={open} onOpenChange={handleClose} shouldScaleBackground={false}>
-      <DrawerContent className="h-[100dvh] max-h-none rounded-none border-none bg-background">
+      <DrawerContent className="!mt-0 !inset-0 h-[100vh] max-h-none rounded-none border-none bg-background">
         <DrawerHeader className="sr-only">
           <DrawerTitle>Criar Plano de Aula</DrawerTitle>
           <DrawerDescription>
