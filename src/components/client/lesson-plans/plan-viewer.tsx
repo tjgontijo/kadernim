@@ -22,7 +22,9 @@ import {
     Users,
     Link as LinkIcon,
     SendHorizontal,
-    MoreVertical
+    MoreVertical,
+    Share2,
+    Loader2
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -30,6 +32,7 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,6 +41,7 @@ import { Separator } from '@/components/ui/separator';
 import { type LessonPlanResponse, type LessonPlanContent } from '@/lib/schemas/lesson-plan';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useDownloadFile } from '@/hooks/use-download-file';
 
 interface PlanViewerProps {
     plan: LessonPlanResponse;
@@ -105,10 +109,22 @@ function formatSubject(subjectSlug: string | undefined): string {
 
 export function PlanViewer({ plan, bnccSkillDescriptions = [] }: PlanViewerProps) {
     const content = plan.content as unknown as LessonPlanContent;
+    const { downloadFile, shareFile, downloading, isMobile, canShare } = useDownloadFile();
 
     const handleDownload = (format: 'docx' | 'pdf') => {
         const url = `/api/v1/lesson-plans/${plan.id}/export/${format}`;
-        window.open(url, '_blank');
+        const filename = `plano-de-aula-${plan.title.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 30)}.${format}`;
+        downloadFile(url, { filename });
+    };
+
+    const handleShare = (format: 'docx' | 'pdf') => {
+        const url = `/api/v1/lesson-plans/${plan.id}/export/${format}`;
+        const filename = `plano-de-aula-${plan.title.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 30)}.${format}`;
+        shareFile(url, {
+            filename,
+            title: plan.title,
+            text: `Plano de Aula BNCC - ${plan.title}`,
+        });
     };
 
     // Formatar contexto com terminologia BNCC
@@ -157,19 +173,66 @@ export function PlanViewer({ plan, bnccSkillDescriptions = [] }: PlanViewerProps
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full hover:bg-muted/50">
-                            <SendHorizontal className="h-5 w-5 text-primary rotate-[-45deg] translate-y-[-1px]" />
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-10 w-10 rounded-full hover:bg-muted/50"
+                            disabled={downloading !== null}
+                        >
+                            {downloading !== null ? (
+                                <Loader2 className="h-5 w-5 text-primary animate-spin" />
+                            ) : (
+                                <SendHorizontal className="h-5 w-5 text-primary rotate-[-45deg] translate-y-[-1px]" />
+                            )}
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48 rounded-xl shadow-xl border-border/50">
-                        <DropdownMenuItem onClick={() => handleDownload('pdf')} className="cursor-pointer gap-2 py-3 font-medium">
-                            <Eye className="h-4 w-4 text-muted-foreground" />
+                    <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-xl border-border/50">
+                        <DropdownMenuItem
+                            onClick={() => handleDownload('pdf')}
+                            disabled={downloading !== null}
+                            className="cursor-pointer gap-2 py-3 font-medium"
+                        >
+                            {downloading?.includes('/pdf') ? (
+                                <Loader2 className="h-4 w-4 text-muted-foreground animate-spin" />
+                            ) : (
+                                <Eye className="h-4 w-4 text-muted-foreground" />
+                            )}
                             Visualizar PDF
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDownload('docx')} className="cursor-pointer gap-2 py-3 font-medium">
-                            <Download className="h-4 w-4 text-muted-foreground" />
+                        <DropdownMenuItem
+                            onClick={() => handleDownload('docx')}
+                            disabled={downloading !== null}
+                            className="cursor-pointer gap-2 py-3 font-medium"
+                        >
+                            {downloading?.includes('/docx') ? (
+                                <Loader2 className="h-4 w-4 text-muted-foreground animate-spin" />
+                            ) : (
+                                <Download className="h-4 w-4 text-muted-foreground" />
+                            )}
                             Exportar para Word
                         </DropdownMenuItem>
+
+                        {canShare && (
+                            <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                    onClick={() => handleShare('pdf')}
+                                    disabled={downloading !== null}
+                                    className="cursor-pointer gap-2 py-3 font-medium"
+                                >
+                                    <Share2 className="h-4 w-4 text-muted-foreground" />
+                                    Compartilhar PDF
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() => handleShare('docx')}
+                                    disabled={downloading !== null}
+                                    className="cursor-pointer gap-2 py-3 font-medium"
+                                >
+                                    <Share2 className="h-4 w-4 text-muted-foreground" />
+                                    Compartilhar Word
+                                </DropdownMenuItem>
+                            </>
+                        )}
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
