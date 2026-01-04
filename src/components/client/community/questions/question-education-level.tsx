@@ -7,13 +7,14 @@ import { QuizCard } from '@/components/quiz/QuizCard';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface Option {
+    id: string;
     slug: string;
     name: string;
 }
 
 interface QuestionEducationLevelProps {
     value?: string;
-    onSelect: (slug: string, name: string) => void;
+    onSelect: (id: string, name: string, slug: string) => void;
 }
 
 // Icons mapping consistent with Lesson Plans
@@ -38,6 +39,12 @@ export function QuestionEducationLevel({ value, onSelect }: QuestionEducationLev
             .finally(() => setLoading(false));
     }, []);
 
+    const handleSelect = (option: Option) => {
+        setTimeout(() => {
+            onSelect(option.id || option.slug, option.name, option.slug);
+        }, 400);
+    };
+
     return (
         <QuizStep
             title="Qual é a etapa de ensino?"
@@ -54,8 +61,8 @@ export function QuestionEducationLevel({ value, onSelect }: QuestionEducationLev
                             key={option.slug}
                             title={option.name}
                             icon={EDUCATION_ICONS[option.slug] || GraduationCap}
-                            selected={value === option.slug}
-                            onClick={() => onSelect(option.slug, option.name)}
+                            selected={value === (option.id || option.slug)}
+                            onClick={() => handleSelect(option)}
                         />
                     ))
                 )}

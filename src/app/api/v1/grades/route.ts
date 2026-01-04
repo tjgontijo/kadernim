@@ -21,12 +21,13 @@ export async function GET(request: Request) {
     const grades = await prisma.grade.findMany({
       where: educationLevelSlug
         ? {
-            educationLevel: {
-              slug: educationLevelSlug,
-            },
-          }
+          educationLevel: {
+            slug: educationLevelSlug,
+          },
+        }
         : undefined,
       select: {
+        id: true,
         slug: true,
         name: true,
         order: true,
@@ -43,6 +44,7 @@ export async function GET(request: Request) {
 
     // Formatar resposta com educationLevelSlug plano
     const formattedGrades = grades.map((grade) => ({
+      id: grade.id,
       slug: grade.slug,
       name: grade.name,
       order: grade.order,

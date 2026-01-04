@@ -11,6 +11,7 @@ export async function GET() {
   try {
     const educationLevels = await prisma.educationLevel.findMany({
       select: {
+        id: true,
         slug: true,
         name: true,
         order: true,

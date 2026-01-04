@@ -29,8 +29,8 @@ export function QuizLayout({
     // but usually they stay for consistency.
 
     return (
-        <Drawer open={open} onOpenChange={onClose} shouldScaleBackground={false}>
-            <DrawerContent className="!mt-0 !inset-0 h-[100vh] max-h-none rounded-none border-none bg-background flex flex-col overflow-hidden">
+        <Drawer open={open} onOpenChange={onClose} shouldScaleBackground={false} direction="bottom">
+            <DrawerContent className="!mt-0 !top-0 !bottom-0 !inset-0 !h-screen !max-h-screen rounded-none border-none bg-background flex flex-col overflow-hidden [&>div:first-child]:hidden">
                 <DrawerHeader className="sr-only">
                     <DrawerTitle>{title}</DrawerTitle>
                     <DrawerDescription>Wizard em formato de quiz.</DrawerDescription>
