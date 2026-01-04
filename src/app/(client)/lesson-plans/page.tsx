@@ -22,6 +22,7 @@ import { useLessonPlanUsage } from '@/hooks/use-lesson-plan-usage';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { PageHeader } from '@/components/client/shared/page-header';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
@@ -41,6 +42,12 @@ interface FilterOption {
 
 export default function LessonPlansPage() {
   const { isMobile } = useBreakpoint();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
 
@@ -208,174 +215,139 @@ export default function LessonPlansPage() {
   );
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header Section */}
-      <div className="mb-6 mt-2 max-w-7xl mx-auto w-full px-3 sm:px-0">
-        {!isMobile ? (
-          /* Desktop Hero Card - Touched up for simplicity */
-          <div className="bg-card border border-border/50 rounded-[24px] p-6 shadow-sm flex flex-col gap-6 md:flex-row md:items-center md:justify-between relative overflow-hidden">
-            <div className="absolute -right-16 -top-16 h-64 w-64 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-            <div className="flex items-center gap-5 relative z-10">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-inner text-2xl font-bold border border-primary/20">
-                <GraduationCap size={32} strokeWidth={1.5} />
-              </div>
-              <div>
-                <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground flex items-center gap-3">
-                  Meus Planos de Aula
-                  <Sparkles className="h-5 w-5 text-primary hidden sm:block animate-pulse" />
-                </h1>
-                <p className="text-base text-muted-foreground font-medium mt-0.5">
-                  Gerencie sua biblioteca de planos de aula inteligentes.
-                </p>
-              </div>
-            </div>
-            <Button
-              onClick={() => setDrawerOpen(true)}
-              size="lg"
-              className="rounded-xl h-14 px-8 text-base font-bold shadow-lg shadow-primary/10 hover:shadow-primary/20 hover:scale-[1.01] active:scale-95 transition-all relative z-10"
-            >
-              <Plus className="h-5 w-5 mr-2" strokeWidth={2.5} />
-              Criar Plano
-            </Button>
-          </div>
-        ) : (
-          /* Mobile Condensed Header - Familiar & Traditional */
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20">
-                  <GraduationCap size={20} />
-                </div>
-                <div>
-                  <h1 className="text-lg font-bold tracking-tight text-foreground leading-tight">Meus Planos</h1>
-                  <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Biblioteca</p>
-                </div>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setDrawerOpen(true)}
-                className="h-9 px-4 rounded-lg text-xs font-bold border-primary/20 text-primary hover:bg-primary/5"
-              >
-                Criar Plano
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
+    <div className="flex flex-col h-full space-y-4">
+      {/* Padronized Header */}
+      <PageHeader
+        icon={GraduationCap}
+        title={<>Meus <span className="text-primary italic">Planos</span></>}
+        action={
+          <Button
+            onClick={() => setDrawerOpen(true)}
+            size="lg"
+            className="h-11 sm:h-14 px-6 sm:px-8 rounded-2xl bg-primary text-primary-foreground font-black shadow-xl shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-1 transition-all group"
+          >
+            <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2 group-hover:rotate-90 transition-transform" />
+            Criar Plano
+          </Button>
+        }
+      />
 
       {/* Toolbar Section - Responsive Layout */}
       <div className="mb-6 max-w-7xl mx-auto w-full px-3 sm:px-0">
-        {!isMobile ? (
-          /* Desktop Toolbar Card */
-          <div className="bg-muted/10 p-5 rounded-[24px] border border-border/50 backdrop-blur-sm">
-            <div className="flex flex-col xl:flex-row gap-5 xl:items-center">
-              {renderFilters()}
+        {mounted && (
+          <>
+            {!isMobile ? (
+              /* Desktop Toolbar Card */
+              <div className="bg-muted/10 p-5 rounded-[24px] border border-border/50 backdrop-blur-sm">
+                <div className="flex flex-col xl:flex-row gap-5 xl:items-center">
+                  {renderFilters()}
 
-              <div className="hidden xl:block h-8 w-[1px] bg-border/50 mx-2" />
+                  <div className="hidden xl:block h-8 w-[1px] bg-border/50 mx-2" />
 
-              {!isLoadingUsage && usage ? (
-                <div className="flex items-center gap-8 justify-between flex-1">
-                  <div className="flex flex-col gap-2 flex-1 max-w-[220px]">
-                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                      <span>Uso Mensal</span>
-                      <span className="text-primary">{usage.used} <span className="text-muted-foreground/50 mx-0.5">/</span> {usage.limit}</span>
-                    </div>
-                    <Progress value={usage.percentage} className="h-1.5 bg-background shadow-inner" />
-                  </div>
-
-                  <div className="flex items-center gap-8">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/5 text-primary border border-primary/10 shadow-sm">
-                        <CalendarClock className="h-5 w-5" />
+                  {!isLoadingUsage && usage ? (
+                    <div className="flex items-center gap-8 justify-between flex-1">
+                      <div className="flex flex-col gap-2 flex-1 max-w-[220px]">
+                        <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                          <span>Uso Mensal</span>
+                          <span className="text-primary">{usage.used} <span className="text-muted-foreground/50 mx-0.5">/</span> {usage.limit}</span>
+                        </div>
+                        <Progress value={usage.percentage} className="h-1.5 bg-background shadow-inner" />
                       </div>
-                      <div className="flex flex-col">
-                        <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground leading-none mb-1.5">Renovação</span>
-                        <span className="text-xs font-extrabold text-foreground leading-none">
-                          {usage.resetsAt ? format(new Date(usage.resetsAt), "dd 'de' MMM", { locale: ptBR }) : '--'}
-                        </span>
+
+                      <div className="flex items-center gap-8">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/5 text-primary border border-primary/10 shadow-sm">
+                            <CalendarClock className="h-5 w-5" />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground leading-none mb-1.5">Renovação</span>
+                            <span className="text-xs font-extrabold text-foreground leading-none">
+                              {usage.resetsAt ? format(new Date(usage.resetsAt), "dd 'de' MMM", { locale: ptBR }) : '--'}
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              ) : (
-                /* Desktop Usage Skeleton */
-                <div className="flex items-center gap-8 justify-between flex-1 animate-pulse">
-                  <div className="flex flex-col gap-2 flex-1 max-w-[220px]">
-                    <Skeleton className="h-2 w-24 mb-1" />
-                    <Skeleton className="h-1.5 w-full rounded-full" />
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Skeleton className="h-10 w-10 rounded-xl" />
-                    <div className="flex flex-col gap-1.5">
-                      <Skeleton className="h-2 w-16" />
-                      <Skeleton className="h-3 w-12" />
+                  ) : (
+                    /* Desktop Usage Skeleton */
+                    <div className="flex items-center gap-8 justify-between flex-1 animate-pulse">
+                      <div className="flex flex-col gap-2 flex-1 max-w-[220px]">
+                        <Skeleton className="h-2 w-24 mb-1" />
+                        <Skeleton className="h-1.5 w-full rounded-full" />
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="h-10 w-10 rounded-xl" />
+                        <div className="flex flex-col gap-1.5">
+                          <Skeleton className="h-2 w-16" />
+                          <Skeleton className="h-3 w-12" />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        ) : (
-          /* Mobile Toolbar - Ultra Minimalist & Clean */
-          <div className="flex items-center justify-between px-1 min-h-[40px]">
-            {/* Usage Info - Minimalist Row */}
-            {!isLoadingUsage && usage ? (
-              <div className="flex items-center gap-4 text-[11px] font-medium text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <div className="relative h-1.5 w-10 bg-muted/40 rounded-full overflow-hidden">
-                    <div
-                      className="absolute left-0 top-0 h-full bg-primary/70 rounded-full"
-                      style={{ width: `${usage.percentage}%` }}
-                    />
-                  </div>
-                  <span className="font-bold text-foreground">
-                    {usage.used}<span className="text-muted-foreground/50 font-medium">/{usage.limit}</span>
-                  </span>
-                </div>
-
-                <div className="h-3 w-[1px] bg-border/50" />
-
-                <div className="flex items-center gap-1.5">
-                  <CalendarClock size={13} className="text-muted-foreground/60" />
-                  <span>{usage.resetsAt ? format(new Date(usage.resetsAt), "dd/MM") : '--'}</span>
+                  )}
                 </div>
               </div>
             ) : (
-              /* Mobile Usage Skeleton */
-              <div className="flex items-center gap-3 animate-pulse">
-                <Skeleton className="h-1.5 w-10 rounded-full" />
-                <Skeleton className="h-3 w-8" />
-                <div className="h-3 w-[1px] bg-border/30" />
-                <Skeleton className="h-3 w-12" />
+              /* Mobile Toolbar - Ultra Minimalist & Clean */
+              <div className="flex items-center justify-between px-1 min-h-[40px]">
+                {/* Usage Info - Minimalist Row */}
+                {!isLoadingUsage && usage ? (
+                  <div className="flex items-center gap-4 text-[11px] font-medium text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <div className="relative h-1.5 w-10 bg-muted/40 rounded-full overflow-hidden">
+                        <div
+                          className="absolute left-0 top-0 h-full bg-primary/70 rounded-full"
+                          style={{ width: `${usage.percentage}%` }}
+                        />
+                      </div>
+                      <span className="font-bold text-foreground">
+                        {usage.used}<span className="text-muted-foreground/50 font-medium">/{usage.limit}</span>
+                      </span>
+                    </div>
+
+                    <div className="h-3 w-[1px] bg-border/50" />
+
+                    <div className="flex items-center gap-1.5">
+                      <CalendarClock size={13} className="text-muted-foreground/60" />
+                      <span>{usage.resetsAt ? format(new Date(usage.resetsAt), "dd/MM") : '--'}</span>
+                    </div>
+                  </div>
+                ) : (
+                  /* Mobile Usage Skeleton */
+                  <div className="flex items-center gap-3 animate-pulse">
+                    <Skeleton className="h-1.5 w-10 rounded-full" />
+                    <Skeleton className="h-3 w-8" />
+                    <div className="h-3 w-[1px] bg-border/30" />
+                    <Skeleton className="h-3 w-12" />
+                  </div>
+                )}
+
+                {/* Filter - Ultra Discrete */}
+                <Drawer open={filterDrawerOpen} onOpenChange={setFilterDrawerOpen}>
+                  <DrawerTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-10 w-10 rounded-full opacity-60 hover:opacity-100 transition-opacity"
+                    >
+                      <SlidersHorizontal size={18} />
+                      {activeFiltersCount > 0 && (
+                        <span className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-primary" />
+                      )}
+                    </Button>
+                  </DrawerTrigger>
+                  <DrawerContent className="rounded-t-[24px]">
+                    <DrawerHeader className="pb-4">
+                      <DrawerTitle className="text-base font-bold text-center">Filtrar Biblioteca</DrawerTitle>
+                      <DrawerDescription className="sr-only">Ajuste os filtros para organizar seus planos de aula.</DrawerDescription>
+                    </DrawerHeader>
+                    <div className="px-4 pb-8">
+                      {renderFilters(true)}
+                    </div>
+                  </DrawerContent>
+                </Drawer>
               </div>
             )}
-
-            {/* Filter - Ultra Discrete */}
-            <Drawer open={filterDrawerOpen} onOpenChange={setFilterDrawerOpen}>
-              <DrawerTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-10 w-10 rounded-full opacity-60 hover:opacity-100 transition-opacity"
-                >
-                  <SlidersHorizontal size={18} />
-                  {activeFiltersCount > 0 && (
-                    <span className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-primary" />
-                  )}
-                </Button>
-              </DrawerTrigger>
-              <DrawerContent className="rounded-t-[24px]">
-                <DrawerHeader className="pb-4">
-                  <DrawerTitle className="text-base font-bold text-center">Filtrar Biblioteca</DrawerTitle>
-                  <DrawerDescription className="sr-only">Ajuste os filtros para organizar seus planos de aula.</DrawerDescription>
-                </DrawerHeader>
-                <div className="px-4 pb-8">
-                  {renderFilters(true)}
-                </div>
-              </DrawerContent>
-            </Drawer>
-          </div>
+          </>
         )}
       </div>
 
