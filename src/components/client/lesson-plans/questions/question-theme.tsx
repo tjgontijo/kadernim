@@ -37,6 +37,9 @@ type Step = 'input' | 'selection';
  * - Skeleton loading durante fetch de temas
  * - Click para preencher automaticamente
  */
+import { QuizStep } from '@/components/quiz/QuizStep';
+import { QuizCard } from '@/components/quiz/QuizCard';
+
 export function QuestionTheme({
   value,
   onChange,
@@ -53,33 +56,24 @@ export function QuestionTheme({
   const [themes, setThemes] = useState<string[]>([]);
   const [loadingThemes, setLoadingThemes] = useState(true);
 
-  // Carregar temas dinâmicos da BNCC ao montar
   useEffect(() => {
     async function fetchThemes() {
       try {
         setLoadingThemes(true);
-
-        const params = new URLSearchParams({
-          educationLevelSlug,
-        });
-
+        const params = new URLSearchParams({ educationLevelSlug });
         if (gradeSlug) params.append('gradeSlug', gradeSlug);
         if (subjectSlug) params.append('subjectSlug', subjectSlug);
-
         const response = await fetch(`/api/v1/bncc/themes?${params}`);
         const data = await response.json();
-
         if (data.success && data.data.themes.length > 0) {
           setThemes(data.data.themes);
         }
       } catch (error) {
         console.error('Error fetching themes:', error);
-        // Mantém vazio em caso de erro
       } finally {
         setLoadingThemes(false);
       }
     }
-
     fetchThemes();
   }, [educationLevelSlug, gradeSlug, subjectSlug]);
 
@@ -88,9 +82,7 @@ export function QuestionTheme({
       toast.error('Digite pelo menos 3 caracteres');
       return;
     }
-
     setIsRefining(true);
-
     try {
       const response = await fetch('/api/v1/lesson-plans/refine-theme', {
         method: 'POST',
@@ -103,13 +95,8 @@ export function QuestionTheme({
           seed: regenerateCount,
         }),
       });
-
       const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.error || 'Erro ao refinar tema');
-      }
-
+      if (!data.success) throw new Error(data.error || 'Erro ao refinar tema');
       setRefinedThemes(data.data.refined);
       setStep('selection');
     } catch (error) {
@@ -131,48 +118,46 @@ export function QuestionTheme({
     onChange(theme);
     setTimeout(() => {
       onContinue();
-    }, 300);
+    }, 400);
   };
 
-  // Etapa 1: Input do tema bruto
   if (step === 'input') {
     return (
-      <QuizQuestion
+      <QuizStep
         title="Qual o tema da aula?"
-        description="Digite uma ideia simples, vamos refinar para você"
+        description="Digite uma ideia simples, vamos refinar para você."
       >
-        <div className="flex flex-col gap-4">
-          {/* Instruções e exemplos dinâmicos */}
-          <div className="p-4 bg-muted/50 rounded-xl border border-border">
-            <p className="text-sm text-muted-foreground mb-3">
-              Com base na sua seleção, sugerimos temas relacionados à BNCC:
+        <div className="flex flex-col gap-6">
+          <div className="p-6 bg-primary/5 rounded-[32px] border-2 border-primary/10">
+            <p className="text-xs font-black uppercase tracking-widest text-primary mb-4 flex items-center gap-2">
+              <Sparkles className="h-4 w-4 fill-current" />
+              Sugestões BNCC
             </p>
 
             {loadingThemes ? (
-              <div className="space-y-2">
-                <div className="h-4 bg-muted-foreground/20 rounded animate-pulse" />
-                <div className="h-4 bg-muted-foreground/20 rounded animate-pulse w-5/6" />
-                <div className="h-4 bg-muted-foreground/20 rounded animate-pulse w-4/6" />
+              <div className="space-y-3">
+                <div className="h-4 bg-primary/10 rounded-full animate-pulse w-full" />
+                <div className="h-4 bg-primary/10 rounded-full animate-pulse w-5/6" />
+                <div className="h-4 bg-primary/10 rounded-full animate-pulse w-4/6" />
               </div>
             ) : themes.length > 0 ? (
-              <div className="space-y-2">
+              <div className="flex flex-wrap gap-2">
                 {themes.map((theme, index) => (
                   <motion.button
                     key={index}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: index * 0.05 }}
                     onClick={() => setRawTheme(theme)}
-                    className="flex items-start gap-2 text-left hover:text-primary transition-colors group w-full"
+                    className="px-4 py-2 rounded-full bg-background border border-border/50 text-sm font-semibold hover:border-primary hover:text-primary transition-all"
                   >
-                    <span className="text-primary mt-0.5 opacity-50 group-hover:opacity-100">•</span>
-                    <span className="text-sm font-medium">{theme}</span>
+                    {theme}
                   </motion.button>
                 ))}
               </div>
             ) : (
               <p className="text-sm text-muted-foreground italic">
-                Nenhuma sugestão disponível. Digite livremente o tema da aula.
+                Nenhuma sugestão disponível. Digite livremente.
               </p>
             )}
           </div>
@@ -181,105 +166,72 @@ export function QuestionTheme({
             value={rawTheme}
             onChange={setRawTheme}
             onContinue={handleRefine}
-            placeholder="Digite o tema da aula aqui..."
+            placeholder="Digite o tema aqui..."
             minLength={3}
             maxLength={100}
             autoFocus
             isLoading={isRefining}
-            loadingText="Refinando tema..."
+            loadingText="Refinando com IA..."
           />
         </div>
-      </QuizQuestion>
+      </QuizStep>
     );
   }
 
-  // Etapa 2: Loading
   if (isRefining && refinedThemes.length === 0) {
     return (
-      <QuizQuestion title="Refinando tema..." description="Criando versões profissionais">
-        <div className="flex flex-col items-center justify-center gap-6 py-12">
-          <div className="relative">
-            <div className="p-4 bg-primary/10 rounded-2xl">
-              <Sparkles className="h-10 w-10 text-primary animate-pulse" />
-            </div>
-          </div>
-          <p className="text-sm text-muted-foreground">Aguarde alguns segundos...</p>
-        </div>
-      </QuizQuestion>
+      <div className="h-full flex flex-col items-center justify-center space-y-6">
+        <RotateCw className="h-16 w-16 text-primary animate-spin" />
+        <h2 className="text-2xl font-black">Refinando seu tema...</h2>
+      </div>
     );
   }
 
-  // Etapa 3: Seleção de tema refinado
   return (
-    <QuizQuestion title="Escolha a melhor versão:" description={`Tema original: "${rawTheme}"`}>
-      <div className="flex flex-col gap-3">
-        {/* Temas refinados */}
+    <QuizStep
+      title="Escolha a melhor versão"
+      description={`Refinamos sua ideia: "${rawTheme}"`}
+    >
+      <div className="grid grid-cols-1 gap-4">
         {refinedThemes.map((theme, index) => (
-          <motion.button
+          <QuizCard
             key={`${theme.version}-${regenerateCount}-${index}`}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            title={theme.text}
+            description={`Versão ${theme.version === 'short' ? 'curta' : theme.version === 'medium' ? 'média' : 'descritiva'}`}
+            icon={FileText}
+            selected={value === theme.text}
             onClick={() => handleSelectTheme(theme.text)}
-            className="flex items-start gap-4 p-4 rounded-xl border-2 border-border bg-card hover:border-primary hover:bg-primary/5 transition-all text-left"
-          >
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 shrink-0">
-              <FileText className="h-5 w-5 text-primary" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold leading-relaxed">{theme.text}</p>
-              <p className="text-xs text-muted-foreground mt-1 capitalize">
-                Versão {theme.version === 'short' ? 'curta' : theme.version === 'medium' ? 'média' : 'descritiva'}
-              </p>
-            </div>
-          </motion.button>
+          />
         ))}
 
-        {/* Opção: usar tema original */}
-        <motion.button
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+        <button
           onClick={() => handleSelectTheme(rawTheme)}
-          className="flex items-start gap-4 p-4 rounded-xl border-2 border-dashed border-border bg-muted/50 hover:border-primary hover:bg-muted transition-all text-left"
+          className="p-6 rounded-[24px] border-2 border-dashed border-border/50 hover:border-primary/30 hover:bg-muted/30 transition-all text-left group"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted shrink-0">
-            <FileText className="h-5 w-5 text-muted-foreground" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-muted-foreground">
-              Usar tema original: "{rawTheme}"
-            </p>
-          </div>
-        </motion.button>
+          <p className="text-xs font-black uppercase tracking-widest text-muted-foreground/50 mb-1 group-hover:text-primary/50 transition-colors">
+            Manter original
+          </p>
+          <p className="font-bold text-muted-foreground group-hover:text-foreground transition-colors">
+            {rawTheme}
+          </p>
+        </button>
 
-        {/* Botão regenerar */}
-        <div className="mt-4 flex justify-center">
+        <div className="pt-4">
           <Button
             onClick={handleRegenerate}
             disabled={isRefining}
-            variant="outline"
-            size="default"
-            className="gap-2"
+            variant="ghost"
+            className="w-full h-12 rounded-xl font-bold gap-2"
           >
             {isRefining ? (
-              <>
-                <Spinner className="h-4 w-4" />
-                Gerando novos temas...
-              </>
+              <RotateCw className="h-4 w-4 animate-spin" />
             ) : (
-              <>
-                <RotateCw className="h-4 w-4" />
-                Gerar novos temas
-              </>
+              <RotateCw className="h-4 w-4" />
             )}
+            Gerar novas opções
           </Button>
         </div>
       </div>
-    </QuizQuestion>
+    </QuizStep>
   );
 }
