@@ -1,10 +1,9 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Spinner } from '@/components/ui/spinner';
+import { QuizAction } from '@/components/quiz/QuizAction';
+import { cn } from '@/lib/utils';
+import { Loader2 } from 'lucide-react';
 
 interface TextInputQuestionProps {
   value: string;
@@ -15,20 +14,10 @@ interface TextInputQuestionProps {
   maxLength?: number;
   multiline?: boolean;
   autoFocus?: boolean;
-  isLoading?: boolean; // Estado de processamento
-  loadingText?: string; // Texto customizado durante loading
+  isLoading?: boolean;
+  loadingText?: string;
 }
 
-/**
- * TextInputQuestion - Input de texto com validação
- *
- * Características:
- * - Auto-focus no mount
- * - Validação de comprimento mínimo/máximo
- * - Botão "Continuar" só ativo quando válido
- * - Suporte para textarea (multiline)
- * - Contador de caracteres
- */
 export function TextInputQuestion({
   value,
   onChange,
@@ -47,7 +36,6 @@ export function TextInputQuestion({
   const isValid = value.length >= minLength && value.length <= maxLength;
   const charCount = value.length;
 
-  // Auto-focus no mount
   useEffect(() => {
     if (autoFocus) {
       setTimeout(() => {
@@ -56,11 +44,10 @@ export function TextInputQuestion({
         } else {
           inputRef.current?.focus();
         }
-      }, 300); // Delay para aguardar animação
+      }, 300);
     }
   }, [autoFocus, multiline]);
 
-  // Enter para continuar (só em input simples)
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!multiline && e.key === 'Enter' && isValid) {
       e.preventDefault();
@@ -69,58 +56,63 @@ export function TextInputQuestion({
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* Input ou Textarea */}
-      {multiline ? (
-        <Textarea
-          ref={textareaRef}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          maxLength={maxLength}
-          className="min-h-[120px] text-base resize-none"
-          onKeyDown={handleKeyDown}
-        />
-      ) : (
-        <Input
-          ref={inputRef}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          maxLength={maxLength}
-          className="h-12 text-base"
-          onKeyDown={handleKeyDown}
-        />
-      )}
-
-      {/* Contador de caracteres */}
-      <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
-        <span>
-          {charCount < minLength
-            ? `Mínimo de ${minLength} caracteres`
-            : `${charCount}/${maxLength} caracteres`}
-        </span>
-        {!multiline && isValid && (
-          <span className="text-primary">Pressione Enter para continuar</span>
+    <div className="flex flex-col gap-6">
+      <div className="relative">
+        {multiline ? (
+          <textarea
+            ref={textareaRef}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            maxLength={maxLength}
+            className={cn(
+              "w-full min-h-[160px] bg-muted/30 border-2 border-border/50 rounded-[32px] p-6 text-lg font-medium outline-none transition-all",
+              "focus:border-primary focus:bg-background ring-0 placeholder:text-muted-foreground/50",
+              "scrollbar-none"
+            )}
+            onKeyDown={handleKeyDown}
+          />
+        ) : (
+          <input
+            ref={inputRef}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            maxLength={maxLength}
+            className={cn(
+              "w-full h-16 bg-muted/30 border-2 border-border/50 rounded-[24px] px-6 text-lg font-bold outline-none transition-all",
+              "focus:border-primary focus:bg-background ring-0 placeholder:text-muted-foreground/50"
+            )}
+            onKeyDown={handleKeyDown}
+          />
         )}
+
+        <div className="absolute bottom-4 right-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">
+          {charCount}/{maxLength}
+        </div>
       </div>
 
-      {/* Botão Continuar */}
-      <Button
-        onClick={onContinue}
-        disabled={!isValid || isLoading}
-        size="lg"
-        className="w-full"
-      >
-        {isLoading ? (
-          <>
-            <Spinner className="h-4 w-4 mr-2" />
-            {loadingText}
-          </>
-        ) : (
-          'Continuar'
+      <div className="flex flex-col gap-4">
+        {charCount > 0 && charCount < minLength && (
+          <p className="text-xs font-bold text-destructive text-center animate-in fade-in slide-in-from-top-1">
+            Faltam {minLength - charCount} caracteres...
+          </p>
         )}
-      </Button>
+
+        <QuizAction
+          label={isLoading ? loadingText : 'Continuar'}
+          onClick={onContinue}
+          disabled={!isValid || isLoading}
+          icon={isLoading ? Loader2 : undefined}
+          className={cn(isLoading && "opacity-80")}
+        />
+
+        {!multiline && isValid && !isLoading && (
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/30 text-center">
+            Pressione Enter para continuar
+          </p>
+        )}
+      </div>
     </div>
   );
 }
