@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Plus, Sparkles, Filter, X, SlidersHorizontal, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useBreakpoint } from '@/hooks/use-breakpoint'
 import { VoteProgress } from '@/components/client/community/vote-progress'
 import { RequestCard } from '@/components/client/community/request-card'
 import { CreateRequestDrawer } from '@/components/client/community/create-request-drawer'
+import { EmptyState as CommunityEmptyState } from '@/components/client/community/empty-state'
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -20,15 +21,21 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCommunityUsage } from '@/hooks/use-community-usage'
 import { triggerConfetti } from '@/lib/utils/confetti'
+import { PageHeader } from '@/components/client/shared/page-header'
 
 export default function CommunityPage() {
     const { isMobile, isDesktop } = useBreakpoint()
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
     const queryClient = useQueryClient()
     const [filterDrawerOpen, setFilterDrawerOpen] = useState(false)
     const [createDrawerOpen, setCreateDrawerOpen] = useState(false)
     const { data: usage, isLoading: isLoadingUsage } = useCommunityUsage()
 
-    // 1. Fetch Requests (Infinite Query)
+    // ... (keep mutations and query logic same)
     const {
         data,
         isLoading,
@@ -79,40 +86,34 @@ export default function CommunityPage() {
     }, [data])
 
     return (
-        <div className="w-full max-w-7xl mx-auto space-y-8 pb-20">
-            {/* Header Section */}
-            <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-4 sm:px-0">
-                <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-primary font-black uppercase tracking-[0.2em] text-[10px] sm:text-xs">
-                        <Sparkles className="h-4 w-4 fill-current" />
-                        Pedidos da Comunidade
+        <div className="w-full max-w-7xl mx-auto space-y-6 pb-20">
+            <header className="flex items-center justify-between gap-4 px-4 sm:px-0 py-4 sm:py-6">
+                <div className="flex items-center gap-3">
+                    <div className="flex h-10 sm:h-12 w-10 sm:w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary border border-primary/20 shadow-sm">
+                        <Sparkles className="h-5 sm:h-6 w-5 sm:w-6 fill-current" />
                     </div>
-                    <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-foreground">
-                        O que você quer que a gente <span className="text-primary italic">produza?</span>
-                    </h1>
-                    <p className="text-muted-foreground text-sm sm:text-lg font-medium max-w-2xl">
-                        Sugerido por professores, validado pela comunidade. Os 10 temas mais votados todos os meses entram em produção oficial.
-                    </p>
+                    <div className="flex flex-col">
+                        <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground leading-tight">
+                            Pedidos da <span className="text-primary italic">Comunidade</span>
+                        </h1>
+                    </div>
                 </div>
 
                 <Button
                     size="lg"
                     onClick={() => setCreateDrawerOpen(true)}
-                    className="h-14 px-8 rounded-2xl bg-primary text-primary-foreground font-black shadow-xl shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-1 transition-all group"
+                    className="h-10 sm:h-12 px-4 sm:px-6 rounded-xl bg-primary text-primary-foreground font-black shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all group shrink-0"
                 >
-                    <Plus className="h-5 w-5 mr-2 group-hover:rotate-90 transition-transform" />
-                    Sugerir Material
+                    <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 group-hover:rotate-90 transition-transform" />
+                    Sugerir
                 </Button>
             </header>
 
-            {/* Stats Section */}
-            <section className="px-4 sm:px-0">
-                {isLoadingUsage ? (
-                    <Skeleton className="h-24 w-full rounded-3xl" />
-                ) : (
-                    <VoteProgress used={usage?.used || 0} total={usage?.limit || 5} />
-                )}
-            </section>
+            {!isLoadingUsage && usage && (
+                <section className="px-4 sm:px-0">
+                    <VoteProgress used={usage.used} total={usage.limit} />
+                </section>
+            )}
 
             {/* Filters Bar */}
             <section className="flex items-center justify-between gap-4 py-2 border-b border-border/40 px-4 sm:px-0">
@@ -121,27 +122,31 @@ export default function CommunityPage() {
                     <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">Votação de Fevereiro</span>
                 </div>
 
-                {isMobile ? (
-                    <Drawer open={filterDrawerOpen} onOpenChange={setFilterDrawerOpen}>
-                        <DrawerTrigger asChild>
-                            <Button variant="outline" size="sm" className="rounded-xl font-bold h-10 border-border/50">
-                                <Filter className="h-4 w-4 mr-2" />
-                                Filtros
-                            </Button>
-                        </DrawerTrigger>
-                        <DrawerContent className="rounded-t-[32px] p-6">
-                            <DrawerHeader>
-                                <DrawerTitle className="text-2xl font-black">Filtrar Pedidos</DrawerTitle>
-                            </DrawerHeader>
-                            <div className="py-6 space-y-6">
-                                {/* Filter UI here */}
+                {mounted && (
+                    <>
+                        {isMobile ? (
+                            <Drawer open={filterDrawerOpen} onOpenChange={setFilterDrawerOpen}>
+                                <DrawerTrigger asChild>
+                                    <Button variant="outline" size="sm" className="rounded-xl font-bold h-10 border-border/50">
+                                        <Filter className="h-4 w-4 mr-2" />
+                                        Filtros
+                                    </Button>
+                                </DrawerTrigger>
+                                <DrawerContent className="rounded-t-[32px] p-6">
+                                    <DrawerHeader>
+                                        <DrawerTitle className="text-2xl font-black">Filtrar Pedidos</DrawerTitle>
+                                    </DrawerHeader>
+                                    <div className="py-6 space-y-6">
+                                        {/* Filter UI here */}
+                                    </div>
+                                </DrawerContent>
+                            </Drawer>
+                        ) : (
+                            <div className="flex items-center gap-3">
+                                {/* Desktop Filters here */}
                             </div>
-                        </DrawerContent>
-                    </Drawer>
-                ) : (
-                    <div className="flex items-center gap-3">
-                        {/* Desktop Filters here */}
-                    </div>
+                        )}
+                    </>
                 )}
             </section>
 
@@ -164,14 +169,8 @@ export default function CommunityPage() {
                         />
                     ))
                 ) : (
-                    <div className="col-span-full py-20 flex flex-col items-center justify-center text-center space-y-4">
-                        <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center">
-                            <Sparkles className="h-10 w-10 text-muted-foreground opacity-20" />
-                        </div>
-                        <div className="space-y-1">
-                            <h3 className="text-xl font-bold">Nenhum pedido encontrado</h3>
-                            <p className="text-muted-foreground text-sm">Que tal ser a primeira pessoa a sugerir algo este mês?</p>
-                        </div>
+                    <div className="col-span-full py-10">
+                        <CommunityEmptyState onCreateClick={() => setCreateDrawerOpen(true)} />
                     </div>
                 )}
             </section>
