@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { GraduationCap, Baby, School } from 'lucide-react';
-import { QuizQuestion } from '../quiz-question';
-import { SingleChoice, type ChoiceOption } from '../single-choice';
-import { Spinner } from '@/components/ui/spinner';
+import { QuizStep } from '@/components/quiz/QuizStep';
+import { QuizCard } from '@/components/quiz/QuizCard';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface EducationLevel {
   slug: string;
@@ -62,48 +62,38 @@ export function QuestionEducationLevel({ value, onSelect }: QuestionEducationLev
   const handleSelect = (slug: string) => {
     const selected = levels.find((l) => l.slug === slug);
     if (selected) {
-      // Auto-avança após seleção
       setTimeout(() => {
         onSelect(slug, selected.name);
-      }, 600);
+      }, 400); // Reduzido delay para sensação de rapidez
     }
   };
 
-  // Estado de loading
-  if (loading) {
-    return (
-      <QuizQuestion title="Para qual etapa de ensino?">
-        <div className="flex items-center justify-center py-12">
-          <Spinner />
-        </div>
-      </QuizQuestion>
-    );
-  }
-
-  // Estado de erro
-  if (error) {
-    return (
-      <QuizQuestion title="Para qual etapa de ensino?">
-        <div className="text-center py-12">
-          <p className="text-destructive">{error}</p>
-        </div>
-      </QuizQuestion>
-    );
-  }
-
-  // Mapear para opções do SingleChoice
-  const options: ChoiceOption[] = levels.map((level) => ({
-    value: level.slug,
-    label: level.name,
-    icon: EDUCATION_ICONS[level.slug],
-  }));
-
   return (
-    <QuizQuestion
+    <QuizStep
       title="Para qual etapa de ensino?"
       description="Selecione a etapa que você deseja planejar"
     >
-      <SingleChoice options={options} value={value} onSelect={handleSelect} />
-    </QuizQuestion>
+      <div className="grid grid-cols-1 gap-4">
+        {loading ? (
+          Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-24 rounded-[24px]" />
+          ))
+        ) : error ? (
+          <div className="text-center py-12">
+            <p className="text-destructive font-bold">{error}</p>
+          </div>
+        ) : (
+          levels.map((level) => (
+            <QuizCard
+              key={level.slug}
+              title={level.name}
+              icon={EDUCATION_ICONS[level.slug] || GraduationCap}
+              selected={value === level.slug}
+              onClick={() => handleSelect(level.slug)}
+            />
+          ))
+        )}
+      </div>
+    </QuizStep>
   );
 }
