@@ -3,10 +3,8 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, RotateCw, FileText } from 'lucide-react';
-import { QuizQuestion } from '../quiz-question';
-import { TextInputQuestion } from '../text-input-question';
+import { QuizTextInput } from '@/components/client/quiz/QuizTextInput';
 import { Button } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
 import { toast } from 'sonner';
 
 interface RefinedTheme {
@@ -39,6 +37,8 @@ type Step = 'input' | 'selection';
  */
 import { QuizStep } from '@/components/client/quiz/QuizStep';
 import { QuizCard } from '@/components/client/quiz/QuizCard';
+
+import { QuizChoice, type QuizOption } from '@/components/client/quiz/QuizChoice';
 
 export function QuestionTheme({
   value,
@@ -116,9 +116,7 @@ export function QuestionTheme({
 
   const handleSelectTheme = (theme: string) => {
     onChange(theme);
-    setTimeout(() => {
-      onContinue();
-    }, 400);
+    onContinue();
   };
 
   if (step === 'input') {
@@ -162,7 +160,7 @@ export function QuestionTheme({
             )}
           </div>
 
-          <TextInputQuestion
+          <QuizTextInput
             value={rawTheme}
             onChange={setRawTheme}
             onContinue={handleRefine}
@@ -187,41 +185,42 @@ export function QuestionTheme({
     );
   }
 
+  const refinedOptions: QuizOption[] = [
+    ...refinedThemes.map((theme) => ({
+      id: theme.text,
+      slug: theme.text,
+      name: theme.text,
+      description: `Versão ${theme.version === 'short' ? 'curta' : theme.version === 'medium' ? 'média' : 'descritiva'}`,
+      icon: FileText
+    })),
+    {
+      id: 'original',
+      slug: 'original',
+      name: rawTheme,
+      description: 'Manter texto original',
+      icon: Sparkles
+    }
+  ];
+
   return (
     <QuizStep
       title="Escolha a melhor versão"
       description={`Refinamos sua ideia: "${rawTheme}"`}
     >
-      <div className="grid grid-cols-1 gap-4">
-        {refinedThemes.map((theme, index) => (
-          <QuizCard
-            key={`${theme.version}-${regenerateCount}-${index}`}
-            title={theme.text}
-            description={`Versão ${theme.version === 'short' ? 'curta' : theme.version === 'medium' ? 'média' : 'descritiva'}`}
-            icon={FileText}
-            selected={value === theme.text}
-            onClick={() => handleSelectTheme(theme.text)}
-          />
-        ))}
+      <div className="space-y-6">
+        <QuizChoice
+          options={refinedOptions}
+          value={value}
+          onSelect={(opt) => handleSelectTheme(opt.slug === 'original' ? rawTheme : opt.slug)}
+          autoAdvance={true}
+        />
 
-        <button
-          onClick={() => handleSelectTheme(rawTheme)}
-          className="p-6 rounded-[24px] border-2 border-dashed border-border/50 hover:border-primary/30 hover:bg-muted/30 transition-all text-left group"
-        >
-          <p className="text-xs font-black uppercase tracking-widest text-muted-foreground/50 mb-1 group-hover:text-primary/50 transition-colors">
-            Manter original
-          </p>
-          <p className="font-bold text-muted-foreground group-hover:text-foreground transition-colors">
-            {rawTheme}
-          </p>
-        </button>
-
-        <div className="pt-4">
+        <div className="pt-2">
           <Button
             onClick={handleRegenerate}
             disabled={isRefining}
             variant="ghost"
-            className="w-full h-12 rounded-xl font-bold gap-2"
+            className="w-full h-14 rounded-2xl font-black gap-2 uppercase tracking-widest text-[10px]"
           >
             {isRefining ? (
               <RotateCw className="h-4 w-4 animate-spin" />

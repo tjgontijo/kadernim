@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react';
 import { GraduationCap, Baby, School } from 'lucide-react';
 import { QuizStep } from '@/components/client/quiz/QuizStep';
-import { QuizCard } from '@/components/client/quiz/QuizCard';
-import { Skeleton } from '@/components/ui/skeleton';
 
 interface Option {
     id: string;
@@ -16,6 +14,8 @@ interface QuestionEducationLevelProps {
     value?: string;
     onSelect: (id: string, name: string, slug: string) => void;
 }
+
+import { QuizChoice, type QuizOption } from '@/components/client/quiz/QuizChoice';
 
 // Icons mapping consistent with Lesson Plans
 const EDUCATION_ICONS: Record<string, any> = {
@@ -39,34 +39,25 @@ export function QuestionEducationLevel({ value, onSelect }: QuestionEducationLev
             .finally(() => setLoading(false));
     }, []);
 
-    const handleSelect = (option: Option) => {
-        setTimeout(() => {
-            onSelect(option.id || option.slug, option.name, option.slug);
-        }, 400);
-    };
+    const quizOptions: QuizOption[] = options.map(opt => ({
+        id: opt.id || opt.slug,
+        slug: opt.slug,
+        name: opt.name,
+        icon: EDUCATION_ICONS[opt.slug] || GraduationCap
+    }));
 
     return (
         <QuizStep
             title="Qual é a etapa de ensino?"
             description="Selecione para qual etapa devemos produzir este material."
         >
-            <div className="grid grid-cols-1 gap-4">
-                {loading ? (
-                    Array.from({ length: 3 }).map((_, i) => (
-                        <Skeleton key={i} className="h-24 rounded-[24px]" />
-                    ))
-                ) : (
-                    options.map((option) => (
-                        <QuizCard
-                            key={option.slug}
-                            title={option.name}
-                            icon={EDUCATION_ICONS[option.slug] || GraduationCap}
-                            selected={value === (option.id || option.slug)}
-                            onClick={() => handleSelect(option)}
-                        />
-                    ))
-                )}
-            </div>
+            <QuizChoice
+                options={quizOptions}
+                value={value}
+                onSelect={(opt) => onSelect(opt.id, opt.name, opt.slug)}
+                loading={loading}
+                autoAdvance={true}
+            />
         </QuizStep>
     );
 }

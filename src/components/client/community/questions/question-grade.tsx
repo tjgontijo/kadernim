@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { QuizStep } from '@/components/client/quiz/QuizStep';
-import { QuizCard } from '@/components/client/quiz/QuizCard';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Calendar, Baby, Users } from 'lucide-react';
 
 interface Grade {
@@ -17,6 +15,8 @@ interface QuestionGradeProps {
     value?: string;
     onSelect: (id: string, name: string, slug: string) => void;
 }
+
+import { QuizChoice, type QuizOption } from '@/components/client/quiz/QuizChoice';
 
 // Ícones por tipo de grade
 const GRADE_ICONS: Record<string, any> = {
@@ -53,34 +53,25 @@ export function QuestionGrade({
         fetchGrades();
     }, [educationLevelSlug]);
 
-    const handleSelect = (grade: Grade) => {
-        setTimeout(() => {
-            onSelect(grade.id || grade.slug, grade.name, grade.slug);
-        }, 400);
-    };
+    const quizOptions: QuizOption[] = grades.map(grade => ({
+        id: grade.id || grade.slug,
+        slug: grade.slug,
+        name: grade.name,
+        icon: GRADE_ICONS[grade.slug] || Calendar
+    }));
 
     return (
         <QuizStep
             title={isEI ? 'Qual faixa etária?' : 'Qual ano/série?'}
             description={isEI ? 'Selecione a faixa etária das crianças.' : 'Selecione o ano escolar.'}
         >
-            <div className="grid grid-cols-1 gap-4">
-                {loading ? (
-                    Array.from({ length: 5 }).map((_, i) => (
-                        <Skeleton key={i} className="h-20 rounded-[24px]" />
-                    ))
-                ) : (
-                    grades.map((grade) => (
-                        <QuizCard
-                            key={grade.slug}
-                            title={grade.name}
-                            icon={GRADE_ICONS[grade.slug] || Calendar}
-                            selected={value === (grade.id || grade.slug)}
-                            onClick={() => handleSelect(grade)}
-                        />
-                    ))
-                )}
-            </div>
+            <QuizChoice
+                options={quizOptions}
+                value={value}
+                onSelect={(opt) => onSelect(opt.id, opt.name, opt.slug)}
+                loading={loading}
+                autoAdvance={true}
+            />
         </QuizStep>
     );
 }

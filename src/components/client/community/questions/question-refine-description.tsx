@@ -26,6 +26,8 @@ const TYPE_ICONS: Record<string, any> = {
     pedagogy: GraduationCap,
 };
 
+import { QuizChoice, type QuizOption } from '@/components/client/quiz/QuizChoice';
+
 export function QuestionRefineDescription({
     rawDescription,
     educationLevelName,
@@ -70,68 +72,46 @@ export function QuestionRefineDescription({
 
     if (loading) {
         return (
-            <div className="h-full flex flex-col items-center justify-center space-y-6">
+            <div className="h-full flex flex-col items-center justify-center space-y-8 py-12">
                 <Loader2 className="h-16 w-16 text-primary animate-spin" />
-                <h2 className="text-2xl font-black text-center">IA estruturando sua ideia...</h2>
-                <p className="text-muted-foreground text-center px-8">
-                    Estamos organizando o formato, usabilidade e pedagogia do seu pedido.
-                </p>
+                <div className="space-y-2 text-center">
+                    <h2 className="text-3xl font-black">Estruturando ideias...</h2>
+                    <p className="text-muted-foreground font-medium">
+                        Organizando o formato e a pedagogia do seu pedido.
+                    </p>
+                </div>
             </div>
         );
     }
 
-    if (error) {
-        return (
-            <QuizStep
-                title="Não foi possível refinar"
-                description={error}
-            >
-                <button
-                    onClick={() => onSelect(rawDescription)}
-                    className="w-full p-6 rounded-[24px] border-2 border-primary bg-primary/5 text-left"
-                >
-                    <p className="text-xs font-black uppercase tracking-widest text-primary mb-2">
-                        Continuar com meu texto
-                    </p>
-                    <p className="font-bold text-foreground line-clamp-3">
-                        "{rawDescription}"
-                    </p>
-                </button>
-            </QuizStep>
-        );
-    }
+    const quizOptions: QuizOption[] = [
+        ...refinements.map(ref => ({
+            id: ref.text,
+            slug: ref.text,
+            name: ref.label,
+            description: ref.text,
+            icon: TYPE_ICONS[ref.type] || Layout
+        })),
+        {
+            id: 'original',
+            slug: 'original',
+            name: 'Manter meu texto original',
+            description: rawDescription,
+            icon: ArrowRight
+        }
+    ];
 
     return (
         <QuizStep
             title="Como quer seu material?"
-            description="Escolha a estrutura que melhor descreve seu pedido."
+            description={error || "Escolha a estrutura que melhor descreve seu pedido."}
         >
-            <div className="flex flex-col gap-4">
-                {refinements.map((ref, index) => (
-                    <QuizCard
-                        key={index}
-                        title={ref.label}
-                        description={ref.text}
-                        icon={TYPE_ICONS[ref.type] || Layout}
-                        onClick={() => onSelect(ref.text)}
-                    />
-                ))}
-
-                <button
-                    onClick={() => onSelect(rawDescription)}
-                    className="p-6 rounded-[24px] border-2 border-dashed border-border/50 hover:border-primary/30 hover:bg-muted/30 transition-all text-left group mt-4"
-                >
-                    <div className="flex items-center justify-between mb-1">
-                        <p className="text-xs font-black uppercase tracking-widest text-muted-foreground/50 group-hover:text-primary/50 transition-colors">
-                            Manter meu texto original
-                        </p>
-                        <ArrowRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-primary/50 transition-all" />
-                    </div>
-                    <p className="font-medium text-muted-foreground group-hover:text-foreground transition-colors line-clamp-3 italic">
-                        "{rawDescription}"
-                    </p>
-                </button>
-            </div>
+            <QuizChoice
+                options={quizOptions}
+                value="" // no selection by default
+                onSelect={(opt) => onSelect(opt.slug === 'original' ? rawDescription : opt.slug)}
+                autoAdvance={true}
+            />
         </QuizStep>
     );
 }

@@ -23,6 +23,9 @@ const TYPE_ICONS: Record<string, any> = {
     creative: Sparkles,
 };
 
+import { QuizChoice, type QuizOption } from '@/components/client/quiz/QuizChoice';
+import { QuizTextInput } from '@/components/client/quiz/QuizTextInput';
+
 export function QuestionSelectTitle({
     description,
     onSelect,
@@ -30,6 +33,7 @@ export function QuestionSelectTitle({
     const [titles, setTitles] = useState<TitleOption[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [customTitle, setCustomTitle] = useState('');
 
     useEffect(() => {
         async function fetchTitles() {
@@ -59,12 +63,14 @@ export function QuestionSelectTitle({
 
     if (loading) {
         return (
-            <div className="h-full flex flex-col items-center justify-center space-y-6">
+            <div className="h-full flex flex-col items-center justify-center space-y-8 py-12">
                 <Loader2 className="h-16 w-16 text-primary animate-spin" />
-                <h2 className="text-2xl font-black text-center">Criando títulos...</h2>
-                <p className="text-muted-foreground text-center px-8">
-                    Gerando 3 opções de título para você escolher.
-                </p>
+                <div className="space-y-2 text-center">
+                    <h2 className="text-3xl font-black">Criando títulos...</h2>
+                    <p className="text-muted-foreground font-medium">
+                        Gerando 3 opções de título para você escolher.
+                    </p>
+                </div>
             </div>
         );
     }
@@ -75,38 +81,37 @@ export function QuestionSelectTitle({
                 title="Qual será o título?"
                 description={error}
             >
-                <div className="space-y-4">
-                    <input
-                        type="text"
-                        className="w-full h-14 bg-muted/50 border-2 border-border/50 rounded-2xl px-5 font-bold focus:border-primary focus:ring-0 transition-all outline-none"
-                        placeholder="Digite o título do seu pedido..."
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter' && e.currentTarget.value.length >= 5) {
-                                onSelect(e.currentTarget.value);
-                            }
-                        }}
-                    />
-                </div>
+                <QuizTextInput
+                    value={customTitle}
+                    onChange={setCustomTitle}
+                    onContinue={() => onSelect(customTitle)}
+                    placeholder="Digite o título do seu pedido..."
+                    minLength={5}
+                    maxLength={100}
+                />
             </QuizStep>
         );
     }
+
+    const quizOptions: QuizOption[] = titles.map(title => ({
+        id: title.text,
+        slug: title.text,
+        name: title.text,
+        description: title.label,
+        icon: TYPE_ICONS[title.type] || Type
+    }));
 
     return (
         <QuizStep
             title="Qual será o título?"
             description="Escolha o título que melhor representa seu pedido."
         >
-            <div className="flex flex-col gap-4">
-                {titles.map((title, index) => (
-                    <QuizCard
-                        key={index}
-                        title={title.text}
-                        description={title.label}
-                        icon={TYPE_ICONS[title.type] || Type}
-                        onClick={() => onSelect(title.text)}
-                    />
-                ))}
-            </div>
+            <QuizChoice
+                options={quizOptions}
+                value=""
+                onSelect={(opt) => onSelect(opt.slug)}
+                autoAdvance={true}
+            />
         </QuizStep>
     );
 }

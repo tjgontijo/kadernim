@@ -105,7 +105,7 @@ export async function getResourceList({
     FROM "resource" r
     JOIN "education_level" el ON r."educationLevelId" = el.id
     JOIN "subject" s ON r."subjectId" = s.id
-    ${PrismaNamespace.join(joins, ' ')}
+    ${joins.length ? PrismaNamespace.join(joins, ' ') : PrismaNamespace.sql``}
     WHERE ${whereClause}
     ORDER BY
       CASE WHEN ${hasAccessCondition} THEN 1 ELSE 0 END DESC,

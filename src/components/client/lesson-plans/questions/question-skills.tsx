@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { QuizQuestion } from '../quiz-question';
-import { MultipleChoice, type MultipleChoiceOption } from '../multiple-choice';
+import { QuizChoice, type QuizOption } from '@/components/client/quiz/QuizChoice';
 import { Spinner } from '@/components/ui/spinner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -36,6 +35,9 @@ interface QuestionSkillsProps {
  * - Botão "Ver todos" para expandir lista completa
  * - Loading states informativos
  */
+import { QuizStep } from '@/components/client/quiz/QuizStep';
+import { Loader2 } from 'lucide-react';
+
 export function QuestionSkills({
   educationLevelSlug,
   gradeSlug,
@@ -53,7 +55,6 @@ export function QuestionSkills({
   const [showAll, setShowAll] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Buscar sugestões (com tema) ou todos (sem tema)
   useEffect(() => {
     async function fetchSuggestedSkills() {
       try {
@@ -62,16 +63,15 @@ export function QuestionSkills({
 
         const params = new URLSearchParams({
           educationLevelSlug,
-          limit: theme ? '20' : '50', // 20 sugestões ou 50 total
+          limit: theme ? '20' : '50',
         });
 
         if (gradeSlug) params.append('gradeSlug', gradeSlug);
         if (subjectSlug) params.append('subjectSlug', subjectSlug);
 
-        // Se temos tema, fazer busca híbrida
         if (theme) {
           params.append('q', theme);
-          params.append('searchMode', 'hybrid'); // FTS + embeddings
+          params.append('searchMode', 'hybrid');
         }
 
         const response = await fetch(`/api/v1/bncc/skills?${params}`);
@@ -84,8 +84,6 @@ export function QuestionSkills({
 
         if (data.success) {
           setSuggestedSkills(data.data);
-
-          // Se não temos tema, sugestões = todos
           if (!theme) {
             setAllSkills(data.data);
           }
@@ -103,7 +101,6 @@ export function QuestionSkills({
     fetchSuggestedSkills();
   }, [educationLevelSlug, gradeSlug, subjectSlug, theme]);
 
-  // Pre-carregar todos os códigos em background (se temos tema)
   useEffect(() => {
     if (!theme || allSkills.length > 0) return;
 
@@ -118,7 +115,6 @@ export function QuestionSkills({
 
         if (gradeSlug) params.append('gradeSlug', gradeSlug);
         if (subjectSlug) params.append('subjectSlug', subjectSlug);
-        // SEM tema - busca completa
 
         const response = await fetch(`/api/v1/bncc/skills?${params}`);
         const data = await response.json();
@@ -133,13 +129,11 @@ export function QuestionSkills({
       }
     }
 
-    // Delay de 500ms para não competir com busca de sugestões
     const timer = setTimeout(fetchAllSkills, 500);
     return () => clearTimeout(timer);
   }, [educationLevelSlug, gradeSlug, subjectSlug, theme, allSkills.length]);
 
   const handleSelectionChange = (selectedCodes: string[]) => {
-    // Buscar nas skills atuais (sugeridas ou todas)
     const currentSkills = showAll ? allSkills : suggestedSkills;
 
     const updatedDetails = selectedCodes.map((code) => {
@@ -153,216 +147,173 @@ export function QuestionSkills({
     onSelect(selectedCodes, updatedDetails);
   };
 
-  // Loading state com mensagem contextual
   if (loadingSuggested) {
     return (
-      <QuizQuestion
-        title="Selecione até 3 habilidades BNCC"
-        description={theme ? `Buscando habilidades sobre "${theme}"...` : 'Carregando habilidades disponíveis...'}
-      >
-        <div className="flex flex-col items-center justify-center py-12 gap-4">
-          <div className="relative">
-            <Spinner className="h-8 w-8" />
-            {theme && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2 }}
-                className="absolute -top-1 -right-1"
-              >
-                <Search className="h-4 w-4 text-primary" />
-              </motion.div>
-            )}
-          </div>
-
+      <div className="h-full flex flex-col items-center justify-center space-y-10 py-12 px-6">
+        <div className="relative">
+          <Loader2 className="h-20 w-20 text-primary animate-spin" />
           {theme && (
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="text-center space-y-2"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+              className="absolute -top-2 -right-2 p-2 bg-primary rounded-full"
             >
-              <p className="text-sm font-medium text-primary">
-                Analisando habilidades BNCC
-              </p>
-              <p className="text-xs text-muted-foreground max-w-sm">
-                Estamos usando inteligência artificial para encontrar as habilidades mais relevantes para o tema escolhido
-              </p>
+              <Search className="h-5 w-5 text-primary-foreground" />
             </motion.div>
           )}
         </div>
-      </QuizQuestion>
+
+        <div className="space-y-4 text-center">
+          <h2 className="text-4xl font-black">Buscando BNCC...</h2>
+          <p className="text-muted-foreground font-semibold max-w-sm mx-auto leading-relaxed">
+            {theme
+              ? `Analisando habilidades relevantes para "${theme}"`
+              : 'Preparando lista de habilidades disponíveis'}
+          </p>
+        </div>
+      </div>
     );
   }
 
-  // Error state
   if (error) {
     return (
-      <QuizQuestion
-        title="Selecione até 3 habilidades BNCC"
-        description="Ocorreu um erro ao carregar as habilidades"
+      <QuizStep
+        title="Ops! Algo deu errado"
+        description={error}
       >
         <div className="text-center py-8">
-          <p className="text-destructive text-sm">{error}</p>
+          <Button onClick={() => window.location.reload()}>Tentar novamente</Button>
         </div>
-      </QuizQuestion>
+      </QuizStep>
     );
   }
 
-  // Empty state - sugestões vazias mas há códigos disponíveis
   if (suggestedSkills.length === 0 && !loadingSuggested && allSkills.length > 0 && theme) {
-    // Caso especial: busca não retornou resultados, mas temos códigos disponíveis
-    // Automaticamente expande para mostrar todos
     if (!showAll) {
       setTimeout(() => setShowAll(true), 100);
     }
   }
 
-  // Empty state completo - nenhuma habilidade disponível
   if (suggestedSkills.length === 0 && allSkills.length === 0 && !loadingSuggested && !loadingAll) {
     return (
-      <QuizQuestion
-        title="Selecione até 3 habilidades BNCC"
-        description="Nenhuma habilidade encontrada"
+      <QuizStep
+        title="Nenhuma habilidade"
+        description="Não encontramos habilidades BNCC para este filtro."
       >
-        <Alert>
-          <Info className="h-4 w-4" />
-          <AlertDescription>
-            Não encontramos habilidades BNCC para esta combinação.
-            Tente voltar e ajustar suas seleções.
+        <Alert className="rounded-2xl border-2">
+          <Info className="h-5 w-5" />
+          <AlertDescription className="font-medium">
+            Tente retornar e ajustar a série ou disciplina selecionada.
           </AlertDescription>
         </Alert>
-      </QuizQuestion>
+      </QuizStep>
     );
   }
 
-  // Determinar quais skills mostrar
   const displayedSkills = showAll ? allSkills : suggestedSkills;
   const hiddenCount = Math.max(0, allSkills.length - suggestedSkills.length);
 
-  // Mapear skills para opções do MultipleChoice
-  const options: MultipleChoiceOption[] = displayedSkills.map((skill) => ({
-    value: skill.code,
-    label: skill.code,
-    description: truncateText(skill.description, 120),
-  }));
 
   return (
-    <QuizQuestion
-      title="Selecione até 3 habilidades BNCC"
+    <QuizStep
+      title="Quais habilidades?"
       description={
         showAll
-          ? `${displayedSkills.length} habilidades disponíveis`
+          ? `${displayedSkills.length} habilidades em ordem alfabética`
           : theme
-          ? 'Sugestões baseadas no tema escolhido'
-          : `${displayedSkills.length} habilidades disponíveis`
+            ? 'Sugestões baseadas no seu tema'
+            : `${displayedSkills.length} habilidades disponíveis`
       }
     >
-      <div className="flex flex-col gap-4">
-        {/* Header de sugestões (se temos tema e não estamos mostrando todos) */}
+      <div className="flex flex-col gap-6">
         {!showAll && theme && suggestedSkills.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="p-4 bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 rounded-xl"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="p-5 bg-primary/5 border-2 border-primary/10 rounded-[28px] relative overflow-hidden group"
           >
-            <div className="flex items-start gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg shrink-0">
-                <Sparkles className="h-4 w-4 text-primary" />
+            <div className="absolute top-0 right-0 p-3">
+              <Sparkles className="h-5 w-5 text-primary/30 group-hover:text-primary transition-colors" />
+            </div>
+            <div className="flex items-start gap-4 pr-8">
+              <div className="p-3 bg-primary/10 rounded-2xl shrink-0">
+                <Search className="h-5 w-5 text-primary" />
               </div>
-              <div className="text-sm space-y-1">
-                <p className="font-semibold text-primary">
-                  Sugestões inteligentes
-                </p>
-                <p className="text-muted-foreground leading-relaxed">
-                  Selecionamos as {suggestedSkills.length} habilidades mais relevantes para{' '}
-                  <span className="font-medium text-foreground">"{theme}"</span>
-                </p>
-              </div>
+              <p className="text-sm font-bold text-primary leading-snug">
+                Filtramos as {suggestedSkills.length} habilidades que mais combinam com o seu tema.
+              </p>
             </div>
           </motion.div>
         )}
 
-        {/* Aviso quando busca não encontrou sugestões específicas */}
-        {showAll && theme && suggestedSkills.length === 0 && allSkills.length > 0 && (
-          <Alert>
-            <Info className="h-4 w-4" />
-            <AlertDescription className="text-sm">
-              Não encontramos sugestões específicas para "{theme}".
-              Mostrando todas as {allSkills.length} habilidades disponíveis para você escolher.
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {/* Lista de habilidades */}
         <AnimatePresence mode="wait">
           <motion.div
             key={showAll ? 'all' : 'suggested'}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
+            transition={{ duration: 0.3 }}
           >
-            <MultipleChoice
-              options={options}
-              values={values}
-              onSelect={handleSelectionChange}
+            <QuizChoice
+              options={displayedSkills.map(skill => ({
+                id: skill.code,
+                slug: skill.code,
+                name: skill.code,
+                description: truncateText(skill.description, 120)
+              }))}
+              value={values}
+              onSelect={(opt) => {
+                const selected = values.includes(opt.slug);
+                const newValues = selected
+                  ? values.filter(v => v !== opt.slug)
+                  : [...values, opt.slug];
+                handleSelectionChange(newValues);
+              }}
+              multiple={true}
+              minSelection={1}
+              maxSelection={3}
+              showCounter={true}
               onContinue={onContinue}
-              min={1}
-              max={3}
+              continueLabel="Revisar Aula"
             />
           </motion.div>
         </AnimatePresence>
 
-        {/* Botão "Ver todos" / "Ver sugestões" - sempre disponível quando há tema */}
-        {theme && suggestedSkills.length > 0 && (
+        {theme && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
           >
             {!showAll ? (
               <Button
-                variant="outline"
-                className="w-full h-auto py-4 flex flex-col items-center gap-2 hover:bg-muted/50 transition-all"
+                variant="ghost"
+                className="w-full h-14 rounded-2xl font-black gap-2 uppercase tracking-widest text-[10px] text-muted-foreground/60 hover:text-primary"
                 onClick={() => setShowAll(true)}
                 disabled={loadingAll}
               >
-                <div className="flex items-center gap-2">
-                  {loadingAll ? (
-                    <Spinner className="h-4 w-4" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4" />
-                  )}
-                  <span className="font-medium">
-                    {loadingAll ? 'Carregando...' : 'Ver lista completa (ordem alfabética)'}
-                  </span>
-                </div>
-                {!loadingAll && hiddenCount > 0 && (
-                  <span className="text-xs text-muted-foreground">
-                    {hiddenCount} habilidade{hiddenCount !== 1 ? 's' : ''} a mais disponível{hiddenCount !== 1 ? 'is' : ''}
-                  </span>
+                {loadingAll ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
                 )}
-                {!loadingAll && hiddenCount === 0 && (
-                  <span className="text-xs text-muted-foreground">
-                    Mesmos {allSkills.length} código{allSkills.length !== 1 ? 's' : ''}, mas em ordem alfabética
-                  </span>
-                )}
+                {loadingAll ? 'Carregando lista completa...' : `Ver todos (${allSkills.length})`}
               </Button>
             ) : (
               <Button
                 variant="ghost"
-                className="w-full"
+                className="w-full h-12 rounded-xl font-bold gap-2 text-primary"
                 onClick={() => setShowAll(false)}
               >
-                <ChevronUp className="h-4 w-4 mr-2" />
-                Voltar para sugestões (ordem de relevância)
+                <ChevronUp className="h-4 w-4" />
+                Voltar para sugestões
               </Button>
             )}
           </motion.div>
         )}
       </div>
-    </QuizQuestion>
+    </QuizStep>
   );
 }
 

@@ -9,49 +9,45 @@ interface QuestionDurationProps {
   onSelect: (numberOfClasses: number) => void;
 }
 
-const DURATION_OPTIONS = [
+
+import { QuizChoice, type QuizOption } from '@/components/client/quiz/QuizChoice';
+
+const DURATION_OPTIONS: QuizOption[] = [
   {
-    value: '1',
-    label: '1 aula',
+    id: '1',
+    slug: '1',
+    name: '1 aula',
     description: '50 minutos',
+    icon: Clock
   },
   {
-    value: '2',
-    label: '2 aulas',
+    id: '2',
+    slug: '2',
+    name: '2 aulas',
     description: '100 minutos',
+    icon: Clock
   },
   {
-    value: '3',
-    label: '3 aulas',
+    id: '3',
+    slug: '3',
+    name: '3 aulas',
     description: '150 minutos',
+    icon: Clock
   },
 ];
 
 export function QuestionDuration({ value, onSelect }: QuestionDurationProps) {
-  const handleSelect = (selectedValue: string) => {
-    const numberOfClasses = parseInt(selectedValue, 10);
-    setTimeout(() => {
-      onSelect(numberOfClasses);
-    }, 400);
-  };
-
   return (
     <QuizStep
       title="Quantas aulas?"
       description="Cada aula tem aproximadamente 50 minutos."
     >
-      <div className="grid grid-cols-1 gap-4">
-        {DURATION_OPTIONS.map((option) => (
-          <QuizCard
-            key={option.value}
-            title={option.label}
-            description={option.description}
-            icon={Clock}
-            selected={value?.toString() === option.value}
-            onClick={() => handleSelect(option.value)}
-          />
-        ))}
-      </div>
+      <QuizChoice
+        options={DURATION_OPTIONS}
+        value={value?.toString()}
+        onSelect={(opt) => onSelect(parseInt(opt.slug, 10))}
+        autoAdvance={true}
+      />
     </QuizStep>
   );
 }

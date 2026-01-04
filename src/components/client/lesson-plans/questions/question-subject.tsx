@@ -27,6 +27,8 @@ interface QuestionSubjectProps {
   onSelect: (slug: string, name: string) => void;
 }
 
+import { QuizChoice, type QuizOption } from '@/components/client/quiz/QuizChoice';
+
 // Ícones por disciplina/campo
 const SUBJECT_ICONS: Record<string, typeof BookOpen> = {
   'lingua-portuguesa': BookOpen,
@@ -63,34 +65,24 @@ export function QuestionSubject({
         const response = await fetch(
           `/api/v1/subjects?educationLevelSlug=${educationLevelSlug}&gradeSlug=${gradeSlug}`
         );
-        if (!response.ok) {
-          throw new Error('Erro ao carregar disciplinas/campos');
-        }
+        if (!response.ok) throw new Error('Erro ao carregar disciplinas/campos');
         const data = await response.json();
-        if (data.success) {
-          setSubjects(data.data);
-        } else {
-          throw new Error(data.error || 'Erro desconhecido');
-        }
+        if (data.success) setSubjects(data.data);
       } catch (err) {
-        console.error('Error fetching subjects:', err);
         setError(err instanceof Error ? err.message : 'Erro ao carregar');
       } finally {
         setLoading(false);
       }
     }
-
     fetchSubjects();
   }, [educationLevelSlug, gradeSlug]);
 
-  const handleSelect = (slug: string) => {
-    const selected = subjects.find((s) => s.slug === slug);
-    if (selected) {
-      setTimeout(() => {
-        onSelect(slug, selected.name);
-      }, 400);
-    }
-  };
+  const quizOptions: QuizOption[] = subjects.map(subject => ({
+    id: subject.slug,
+    slug: subject.slug,
+    name: subject.name,
+    icon: SUBJECT_ICONS[subject.slug] || BookOpen
+  }));
 
   return (
     <QuizStep
@@ -101,27 +93,19 @@ export function QuestionSubject({
           : 'Selecione o componente curricular para este plano'
       }
     >
-      <div className="grid grid-cols-1 gap-4">
-        {loading ? (
-          Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-24 rounded-[24px]" />
-          ))
-        ) : error ? (
-          <div className="text-center py-12">
-            <p className="text-destructive font-bold">{error}</p>
-          </div>
-        ) : (
-          subjects.map((subject) => (
-            <QuizCard
-              key={subject.slug}
-              title={subject.name}
-              icon={SUBJECT_ICONS[subject.slug] || BookOpen}
-              selected={value === subject.slug}
-              onClick={() => handleSelect(subject.slug)}
-            />
-          ))
-        )}
-      </div>
+      {error ? (
+        <div className="text-center py-12">
+          <p className="text-destructive font-bold">{error}</p>
+        </div>
+      ) : (
+        <QuizChoice
+          options={quizOptions}
+          value={value}
+          onSelect={(opt) => onSelect(opt.slug, opt.name)}
+          loading={loading}
+          autoAdvance={true}
+        />
+      )}
     </QuizStep>
   );
 }
