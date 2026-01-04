@@ -2,12 +2,13 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { LogOut, Settings, User, ShieldCheck, Sun, Moon, Monitor } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { authClient } from '@/lib/auth/auth-client'
 import { UserRole } from '@/types/user-role'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { cn } from '@/lib/utils'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +26,7 @@ import { useSessionQuery } from '@/hooks/useSessionQuery'
 export function SystemHeader() {
   const { data: session } = useSessionQuery()
   const router = useRouter()
+  const pathname = usePathname()
   const { setTheme } = useTheme()
 
   const handleLogout = async () => {
@@ -57,6 +59,37 @@ export function SystemHeader() {
             priority
           />
         </Link>
+
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center gap-8">
+          <Link
+            href="/lesson-plans"
+            className={cn(
+              "text-sm font-bold transition-colors hover:text-primary",
+              pathname.startsWith('/lesson-plans') ? "text-primary" : "text-muted-foreground"
+            )}
+          >
+            Planos
+          </Link>
+          <Link
+            href="/resources"
+            className={cn(
+              "text-sm font-bold transition-colors hover:text-primary",
+              pathname.startsWith('/resources') ? "text-primary" : "text-muted-foreground"
+            )}
+          >
+            Recursos
+          </Link>
+          <Link
+            href="/community"
+            className={cn(
+              "text-sm font-bold transition-colors hover:text-primary",
+              pathname.startsWith('/community') ? "text-primary" : "text-muted-foreground"
+            )}
+          >
+            Pedidos
+          </Link>
+        </nav>
 
         {/* Avatar + Menu com shadcn */}
         <DropdownMenu>
