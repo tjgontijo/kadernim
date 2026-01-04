@@ -48,7 +48,7 @@ export function QuestionEducationLevel({ value, onSelect }: QuestionEducationLev
     return (
         <QuizStep
             title="Qual é a etapa de ensino?"
-            description="Selecione para qual nível de alunos devemos produzir este material."
+            description="Selecione para qual etapa devemos produzir este material."
         >
             <div className="grid grid-cols-1 gap-4">
                 {loading ? (

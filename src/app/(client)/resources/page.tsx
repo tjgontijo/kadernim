@@ -8,14 +8,15 @@ import { ResourceTabs } from '@/components/client/resources/ResourceTabs'
 import { ResourceUpsellBanner } from '@/components/client/resources/ResourceUpsellBanner'
 import { useResourcesSummaryQuery } from '@/hooks/useResourcesSummaryQuery'
 import { useSessionQuery } from '@/hooks/useSessionQuery'
-import { PageHeader } from '@/components/client/shared/page-header'
-import { BookOpen, Sparkles } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { PageScaffold } from '@/components/client/shared/page-scaffold'
 
 interface Filters {
   q?: string
   educationLevel?: string
+  grade?: string
   subject?: string
 }
 
@@ -62,39 +63,40 @@ export default function ResourcesPage() {
   }
 
   return (
-    <div className="w-full space-y-4">
-      <PageHeader
-        icon={BookOpen}
+    <PageScaffold>
+      {/* LINHA 1: Identidade & Ação (Modelo: Título | Botão Discreto) */}
+      <PageScaffold.Header
         title={<>Explorar <span className="text-primary italic">Materiais</span></>}
         action={
-          <Button asChild variant="outline" className="h-10 sm:h-11 px-4 sm:px-5 rounded-2xl border-primary/20 text-primary hover:bg-primary/5 font-bold transition-all group">
+          <Button asChild variant="outline" className="h-10 sm:h-12 px-4 sm:px-6 rounded-2xl border-primary/20 text-primary hover:bg-primary/5 font-bold transition-all group shrink-0">
             <Link href="/community">
-              <Sparkles className="h-4 w-4 mr-2 group-hover:rotate-12 transition-transform" />
+              <Sparkles className="h-4 w-4 mr-1 group-hover:rotate-12 transition-transform" />
               Fazer Pedido
             </Link>
           </Button>
         }
       />
 
-      {isCommonUser && (
-        <section>
+      {/* LINHA 2: Destaque Visual (Seletor de Recursos + Banner condicional) */}
+      <PageScaffold.Highlight className="space-y-4">
+        {isCommonUser && (
           <ResourceUpsellBanner onSubscribe={handleSubscribe} />
-        </section>
-      )}
+        )}
 
-      <section>
-        <ResourceFilters onFiltersChange={handleFiltersChange} tab={tab} />
-      </section>
-
-      <section>
         <ResourceTabs
           value={tab}
           onValueChange={setTab}
           counts={counts}
         />
-      </section>
+      </PageScaffold.Highlight>
 
-      <section className="pt-2">
+      {/* LINHA 3: Controle e Busca (Filtro query | Botão Drawer) */}
+      <PageScaffold.Controls>
+        <ResourceFilters onFiltersChange={handleFiltersChange} tab={tab} />
+      </PageScaffold.Controls>
+
+      {/* Listagem de Grid */}
+      <section className="px-4 sm:px-0">
         <ResourceGrid
           items={items}
           fetchNextPage={fetchNextPage}
@@ -103,6 +105,6 @@ export default function ResourcesPage() {
           isFetchingNextPage={isFetchingNextPage}
         />
       </section>
-    </div>
+    </PageScaffold>
   )
 }

@@ -12,7 +12,7 @@ import {
 export interface ResourceCountsParams {
   user: UserAccessContext
   subscription: SubscriptionContext
-  filters: Pick<ResourceFilter, 'q' | 'educationLevel' | 'subject'>
+  filters: Pick<ResourceFilter, 'q' | 'educationLevel' | 'grade' | 'subject'>
 }
 
 export interface ResourceCountsResult {
@@ -21,8 +21,8 @@ export interface ResourceCountsResult {
   free: number
 }
 
-function buildBaseWhereSql(filters: Pick<ResourceFilter, 'q' | 'educationLevel' | 'subject'>): Prisma.Sql {
-  const { q, educationLevel, subject } = filters
+function buildBaseWhereSql(filters: Pick<ResourceFilter, 'q' | 'educationLevel' | 'grade' | 'subject'>): Prisma.Sql {
+  const { q, educationLevel, grade, subject } = filters
 
   const whereConditions: Prisma.Sql[] = []
 
@@ -33,6 +33,16 @@ function buildBaseWhereSql(filters: Pick<ResourceFilter, 'q' | 'educationLevel' 
   if (educationLevel) {
     whereConditions.push(
       PrismaNamespace.sql`EXISTS (SELECT 1 FROM education_level el WHERE el.id = r."educationLevelId" AND el.slug = ${educationLevel})`
+    )
+  }
+
+  if (grade) {
+    whereConditions.push(
+      PrismaNamespace.sql`EXISTS (
+        SELECT 1 FROM "resource_grade" rg 
+        JOIN "grade" g ON g.id = rg."gradeId" 
+        WHERE rg."resourceId" = r.id AND g.slug = ${grade}
+      )`
     )
   }
 

@@ -45,6 +45,7 @@ export async function GET(request: NextRequest) {
       limit: searchParams.get('limit') ?? undefined,
       q: searchParams.get('q') ?? undefined,
       educationLevel: searchParams.get('educationLevel') ?? undefined,
+      grade: searchParams.get('grade') ?? undefined,
       subject: searchParams.get('subject') ?? undefined,
       tab: searchParams.get('tab') ?? undefined,
     })

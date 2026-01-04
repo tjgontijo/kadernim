@@ -5,6 +5,7 @@ import type { Resource } from '@/lib/schemas/resource'
 interface Filters {
   q?: string
   educationLevel?: string
+  grade?: string
   subject?: string
 }
 
@@ -59,6 +60,9 @@ export function useResourcesSummaryQuery({
       }
       if (filters.educationLevel) {
         params.set('educationLevel', filters.educationLevel)
+      }
+      if (filters.grade) {
+        params.set('grade', filters.grade)
       }
       if (filters.subject) {
         params.set('subject', filters.subject)

@@ -20,6 +20,10 @@ export async function GET(request: NextRequest) {
             votingMonth: searchParams.get('votingMonth') ?? undefined,
             educationLevelId: searchParams.get('educationLevelId') ?? undefined,
             subjectId: searchParams.get('subjectId') ?? undefined,
+            q: searchParams.get('q') ?? undefined,
+            educationLevelSlug: searchParams.get('educationLevelSlug') ?? undefined,
+            gradeSlug: searchParams.get('gradeSlug') ?? undefined,
+            subjectSlug: searchParams.get('subjectSlug') ?? undefined,
         })
 
         if (!parsed.success) {

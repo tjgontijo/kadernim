@@ -8,6 +8,7 @@ export const ResourceFilterSchema = z.object({
     .max(100)
     .optional(),
   educationLevel: z.string().optional(),
+  grade: z.string().optional(),
   subject: z.string().optional(),
   tab: z.enum(['mine', 'free', 'all']).default('all'),
   page: z.coerce.number().int().positive().default(1),

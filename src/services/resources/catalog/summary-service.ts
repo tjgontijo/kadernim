@@ -32,7 +32,7 @@ export async function getResourceSummary({
   filters,
   userMeta,
 }: ResourceSummaryParams): Promise<ResourceSummaryResult> {
-  const { q, educationLevel, subject } = filters
+  const { q, educationLevel, grade, subject } = filters
 
   const [listResult, countsResult, metaResult] = await Promise.all([
     getResourceList({
@@ -43,10 +43,10 @@ export async function getResourceSummary({
     getResourceCounts({
       user,
       subscription,
-      filters: { q, educationLevel, subject },
+      filters: { q, educationLevel, grade, subject },
     }),
     getResourceMeta({
-      filters: { educationLevel, subject },
+      filters: { educationLevel, grade, subject },
       user: userMeta,
     }),
   ])

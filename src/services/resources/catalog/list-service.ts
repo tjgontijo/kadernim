@@ -47,12 +47,13 @@ export async function getResourceList({
   subscription,
   filters,
 }: ResourceListParams): Promise<ResourceListResult> {
-  const { page, limit, q, educationLevel, subject, tab } = filters
+  const { page, limit, q, educationLevel, grade, subject, tab } = filters
 
   const limitPlusOne = limit + 1
   const offset = (page - 1) * limit
 
   const whereConditions: Prisma.Sql[] = []
+  const joins: Prisma.Sql[] = []
 
   if (q) {
     whereConditions.push(PrismaNamespace.sql`r."title" ILIKE ${`%${q}%`}`)
@@ -62,6 +63,12 @@ export async function getResourceList({
     whereConditions.push(
       PrismaNamespace.sql`el.slug = ${educationLevel}`
     )
+  }
+
+  if (grade) {
+    joins.push(PrismaNamespace.sql`JOIN "resource_grade" rg ON rg."resourceId" = r.id`)
+    joins.push(PrismaNamespace.sql`JOIN "grade" g ON g.id = rg."gradeId"`)
+    whereConditions.push(PrismaNamespace.sql`g.slug = ${grade}`)
   }
 
   if (subject) {
@@ -98,6 +105,7 @@ export async function getResourceList({
     FROM "resource" r
     JOIN "education_level" el ON r."educationLevelId" = el.id
     JOIN "subject" s ON r."subjectId" = s.id
+    ${PrismaNamespace.join(joins, ' ')}
     WHERE ${whereClause}
     ORDER BY
       CASE WHEN ${hasAccessCondition} THEN 1 ELSE 0 END DESC,

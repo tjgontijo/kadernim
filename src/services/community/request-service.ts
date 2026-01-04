@@ -10,7 +10,12 @@ const MAX_REQUESTS_PER_MONTH = 1
  * Lists community requests with pagination and filters.
  */
 export async function getCommunityRequests(filters: CommunityFilters & { currentUserId?: string }) {
-    const { page, limit, status, votingMonth, educationLevelId, subjectId, currentUserId } = filters
+    const {
+        page, limit, status, votingMonth,
+        educationLevelId, subjectId,
+        educationLevelSlug, gradeSlug, subjectSlug,
+        q, currentUserId
+    } = filters
     const skip = (page - 1) * limit
     const currentMonth = votingMonth || getCurrentYearMonth()
 
@@ -21,6 +26,18 @@ export async function getCommunityRequests(filters: CommunityFilters & { current
     if (status) where.status = status
     if (educationLevelId) where.educationLevelId = educationLevelId
     if (subjectId) where.subjectId = subjectId
+
+    // Slugs Filters (Cascading)
+    if (educationLevelSlug) where.educationLevel = { slug: educationLevelSlug }
+    if (gradeSlug) where.grade = { slug: gradeSlug }
+    if (subjectSlug) where.subject = { slug: subjectSlug }
+
+    if (q) {
+        where.OR = [
+            { title: { contains: q, mode: 'insensitive' } },
+            { description: { contains: q, mode: 'insensitive' } },
+        ]
+    }
 
     const [items, total] = await Promise.all([
         prisma.communityRequest.findMany({

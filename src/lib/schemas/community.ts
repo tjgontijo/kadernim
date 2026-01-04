@@ -20,12 +20,17 @@ export const CommunityRequestSchema = z.object({
 
 export const CommunityFilterSchema = z.object({
     page: z.coerce.number().default(1),
-    limit: z.coerce.number().default(20),
+    limit: z.coerce.number().default(12),
     status: CommunityRequestStatusSchema.optional(),
     votingMonth: z.string().regex(/^\d{4}-\d{2}$/).optional(),
     educationLevelId: z.string().optional(),
     subjectId: z.string().optional(),
+    educationLevelSlug: z.string().optional(),
+    gradeSlug: z.string().optional(),
+    subjectSlug: z.string().optional(),
+    q: z.string().optional(),
 })
+
 
 export type CommunityRequestInput = z.infer<typeof CommunityRequestSchema>
 export type CommunityFilters = z.infer<typeof CommunityFilterSchema>

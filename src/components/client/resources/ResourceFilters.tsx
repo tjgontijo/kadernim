@@ -2,15 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
 import {
   Select,
   SelectContent,
@@ -18,209 +9,228 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { Filter, Search, X } from 'lucide-react'
-import { useResourceMeta } from '@/hooks/useResourceMeta'
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer'
+import { Filter } from 'lucide-react'
 import type { ResourceTab } from './ResourceTabs'
+import { SearchInput } from '../shared/search-input'
+
+interface FilterOption {
+  slug: string
+  name: string
+}
 
 interface ResourceFiltersProps {
-  onFiltersChange: (filters: { q?: string; educationLevel?: string; subject?: string }) => void
+  onFiltersChange: (filters: { q?: string; educationLevel?: string; grade?: string; subject?: string }) => void
   tab?: ResourceTab
 }
 
-// Metadata will be fetched via hook
-
 export function ResourceFilters({ onFiltersChange, tab = 'all' }: ResourceFiltersProps) {
-  const { data: metaData } = useResourceMeta()
-  const educationLevels = metaData?.educationLevels || []
-  const subjects = metaData?.subjects || []
-
   const [isOpen, setIsOpen] = useState(false)
-  const [educationLevel, setEducationLevel] = useState<string>('')
-  const [subject, setSubject] = useState<string>('')
+  const [level, setLevel] = useState<string>('all')
+  const [grade, setGrade] = useState<string>('all')
+  const [subject, setSubject] = useState<string>('all')
   const [query, setQuery] = useState<string>('')
 
-  const activeFiltersCount = useMemo(
-    () => [educationLevel, subject].filter(Boolean).length,
-    [educationLevel, subject]
-  )
+  // Opções para os dropdowns
+  const [levels, setLevels] = useState<FilterOption[]>([])
+  const [grades, setGrades] = useState<FilterOption[]>([])
+  const [subjects, setSubjects] = useState<FilterOption[]>([])
+
+  // Carregar Etapas ao montar
+  useEffect(() => {
+    fetch('/api/v1/education-levels')
+      .then(res => res.json())
+      .then(data => { if (data.success) setLevels(data.data); });
+  }, [])
+
+  // Carregar Anos quando Etapa mudar
+  useEffect(() => {
+    if (level === 'all') {
+      setGrades([]);
+      setGrade('all');
+      return;
+    }
+    fetch(`/api/v1/grades?educationLevelSlug=${level}`)
+      .then(res => res.json())
+      .then(data => { if (data.success) setGrades(data.data); });
+
+    setGrade('all');
+    setSubject('all');
+  }, [level])
+
+  // Carregar Disciplinas quando Ano mudar
+  useEffect(() => {
+    if (grade === 'all' && level === 'all') {
+      setSubjects([]);
+      setSubject('all');
+      return;
+    }
+
+    const params = new URLSearchParams();
+    if (level !== 'all') params.append('educationLevelSlug', level);
+    if (grade !== 'all') params.append('gradeSlug', grade);
+
+    fetch(`/api/v1/subjects?${params.toString()}`)
+      .then(res => res.json())
+      .then(data => { if (data.success) setSubjects(data.data); });
+
+    setSubject('all');
+  }, [grade, level])
+
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (level !== 'all') count++;
+    if (grade !== 'all') count++;
+    if (subject !== 'all') count++;
+    return count;
+  }, [level, grade, subject])
 
   const placeholder =
     tab === 'mine'
       ? 'Buscar nos seus recursos'
       : tab === 'free'
         ? 'Buscar recursos gratuitos'
-        : 'Buscar por título'
+        : 'Buscar materiais...'
 
   const handleApply = () => {
-    const filters = {
+    onFiltersChange({
       q: query || undefined,
-      educationLevel: educationLevel || undefined,
-      subject: subject || undefined,
-    }
-    onFiltersChange(filters)
+      educationLevel: level === 'all' ? undefined : level,
+      grade: grade === 'all' ? undefined : grade,
+      subject: subject === 'all' ? undefined : subject,
+    })
     setIsOpen(false)
   }
 
   const handleClear = () => {
-    // Garante que o callback receba filtros limpos imediatamente
-    const clearedFilters = {
+    setLevel('all')
+    setGrade('all')
+    setSubject('all')
+    onFiltersChange({
       q: query || undefined,
       educationLevel: undefined,
+      grade: undefined,
       subject: undefined,
-    }
-    onFiltersChange(clearedFilters)
-
-    // Agora limpa o estado local e fecha o painel
-    setEducationLevel('')
-    setSubject('')
+    })
     setIsOpen(false)
   }
 
   // Debounce apenas da busca
   useEffect(() => {
     const id = setTimeout(() => {
-      onFiltersChange({ q: query || undefined })
+      onFiltersChange({
+        q: query || undefined,
+        educationLevel: level === 'all' ? undefined : level,
+        grade: grade === 'all' ? undefined : grade,
+        subject: subject === 'all' ? undefined : subject,
+      })
     }, 450)
     return () => clearTimeout(id)
-  }, [query, onFiltersChange])
+  }, [query])
 
   return (
-    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+    <Drawer open={isOpen} onOpenChange={setIsOpen}>
       <div className="flex items-center gap-2 w-full">
-        <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={placeholder}
-            aria-label="Pesquisar recursos"
-            className="pl-9 pr-9 h-10 text-sm"
-          />
-          {query && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setQuery('')}
-              aria-label="Limpar busca"
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 rounded-md hover:bg-muted"
-            >
-              <X className="h-4 w-4 text-muted-foreground" />
-            </Button>
-          )}
-        </div>
+        <SearchInput
+          placeholder={placeholder}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onClear={() => setQuery('')}
+          aria-label="Pesquisar recursos"
+        />
 
-        <SheetTrigger asChild>
+        <DrawerTrigger asChild>
           <Button
             variant="outline"
             size="icon"
             aria-label="Abrir filtros"
-            className="h-10 w-10 rounded-md shrink-0 relative"
+            className="h-11 sm:h-12 w-11 sm:w-12 rounded-2xl border-border/50 shrink-0 relative"
           >
-            <Filter className="h-4 w-4" />
+            <Filter className="h-4 w-4 text-foreground/70" />
             {activeFiltersCount > 0 && (
               <span
-                className="absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground"
+                className="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full bg-primary text-[10px] font-black text-primary-foreground shadow-lg shadow-primary/20 ring-2 ring-background"
                 aria-label={`${activeFiltersCount} filtros ativos`}
               >
                 {activeFiltersCount}
               </span>
             )}
           </Button>
-        </SheetTrigger>
+        </DrawerTrigger>
       </div>
 
-      <SheetContent side="bottom" className="max-h-[70vh] rounded-t-3xl px-6">
-        <div className="flex h-full flex-col">
-          <SheetHeader className="border-b py-4">
-            <SheetTitle className="text-lg">Filtrar recursos</SheetTitle>
-            <SheetDescription className="text-sm text-muted-foreground">
-              Ajuste sua busca por nível de ensino, disciplina ou palavras-chave.
-            </SheetDescription>
-          </SheetHeader>
+      <DrawerContent className="rounded-t-[32px] p-6 max-h-[85vh]">
+        <DrawerHeader>
+          <DrawerTitle className="text-2xl font-black text-center">Filtrar Materiais</DrawerTitle>
+          <DrawerDescription className="text-center font-medium">Ajuste os filtros para encontrar o material ideal.</DrawerDescription>
+        </DrawerHeader>
 
-          <div className="flex-1 space-y-6 overflow-y-auto py-6">
-            <div className="space-y-3">
-              <label className="text-xs font-semibold uppercase text-muted-foreground">
-                Nível de ensino
-              </label>
-              <Select value={educationLevel} onValueChange={setEducationLevel}>
-                <SelectTrigger className="h-10 w-full text-sm">
-                  <SelectValue placeholder="Selecione um nível" />
+        <div className="py-6 space-y-6 overflow-y-auto">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Etapa de Ensino</label>
+              <Select value={level} onValueChange={setLevel}>
+                <SelectTrigger className="h-14 w-full bg-muted/30 border-border/50 rounded-2xl text-sm font-bold">
+                  <SelectValue placeholder="Todas as Etapas" />
                 </SelectTrigger>
-                <SelectContent>
-                  {educationLevels.map((level) => (
-                    <SelectItem key={level.key} value={level.key}>
-                      {level.label}
-                    </SelectItem>
-                  ))}
+                <SelectContent className="rounded-2xl border-border/50">
+                  <SelectItem value="all">Todas as Etapas</SelectItem>
+                  {levels.map((l: FilterOption) => <SelectItem key={l.slug} value={l.slug}>{l.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="space-y-3">
-              <label className="text-xs font-semibold uppercase text-muted-foreground">
-                Disciplina
-              </label>
-              <Select value={subject} onValueChange={setSubject}>
-                <SelectTrigger className="h-10 w-full text-sm">
-                  <SelectValue placeholder="Selecione uma disciplina" />
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Ano / Série</label>
+              <Select value={grade} onValueChange={setGrade} disabled={level === 'all'}>
+                <SelectTrigger className="h-14 w-full bg-muted/30 border-border/50 rounded-2xl text-sm font-bold">
+                  <SelectValue placeholder={level === 'educacao-infantil' ? 'Faixa Etária' : 'Ano/Série'} />
                 </SelectTrigger>
-                <SelectContent>
-                  {subjects.map((subj) => (
-                    <SelectItem key={subj.key} value={subj.key}>
-                      {subj.label}
-                    </SelectItem>
-                  ))}
+                <SelectContent className="rounded-2xl border-border/50">
+                  <SelectItem value="all">Todos os Anos</SelectItem>
+                  {grades.map((g: FilterOption) => <SelectItem key={g.slug} value={g.slug}>{g.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
 
-            {activeFiltersCount > 0 && (
-              <div className="space-y-3 rounded-lg border border-blue-100 bg-blue-50 p-4">
-                <p className="text-xs font-semibold text-blue-900">Filtros ativos</p>
-                <div className="flex flex-wrap gap-2">
-                  {educationLevel && (
-                    <Badge
-                      variant="secondary"
-                      className="cursor-pointer gap-1 text-xs hover:bg-blue-200"
-                      onClick={() => setEducationLevel('')}
-                    >
-                      {educationLevels.find((l) => l.key === educationLevel)?.label}
-                      <X className="h-3 w-3" />
-                    </Badge>
-                  )}
-                  {subject && (
-                    <Badge
-                      variant="secondary"
-                      className="cursor-pointer gap-1 text-xs hover:bg-blue-200"
-                      onClick={() => setSubject('')}
-                    >
-                      {subjects.find((s) => s.key === subject)?.label}
-                      <X className="h-3 w-3" />
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            )}
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Componente / Campo</label>
+              <Select value={subject} onValueChange={setSubject} disabled={grade === 'all' && level !== 'educacao-infantil'}>
+                <SelectTrigger className="h-14 w-full bg-muted/30 border-border/50 rounded-2xl text-sm font-bold">
+                  <SelectValue placeholder={level === 'educacao-infantil' ? 'Campo de Exp.' : 'Componente'} />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl border-border/50">
+                  <SelectItem value="all">Todos os Componentes</SelectItem>
+                  {subjects.map((s: FilterOption) => <SelectItem key={s.slug} value={s.slug}>{s.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <div className="flex gap-3 border-t pb-8 pt-6">
+          <div className="flex gap-3 pt-4 pb-2">
             <Button
               variant="outline"
-              className="h-10 flex-1 text-sm"
+              className="h-14 flex-1 rounded-2xl font-bold"
               onClick={handleClear}
-              disabled={activeFiltersCount === 0}
             >
               Limpar
             </Button>
-            <Button className="h-10 flex-1 text-sm" onClick={handleApply}>
-              Aplicar
+            <Button
+              className="h-14 flex-1 rounded-2xl bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20"
+              onClick={handleApply}
+            >
+              Ver Materiais
             </Button>
           </div>
         </div>
-      </SheetContent>
-    </Sheet>
+      </DrawerContent>
+    </Drawer>
   )
 }

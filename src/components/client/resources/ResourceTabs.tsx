@@ -32,7 +32,7 @@ const TABS_CONFIG: TabConfig[] = [
   },
   {
     value: 'mine',
-    label: 'Meus Recursos',
+    label: 'Meus Materiais',
     mobileLabel: 'Meus',
     icon: Target,
     color: 'text-blue-600 dark:text-blue-400',
@@ -78,7 +78,7 @@ export function ResourceTabs<T extends ResourceTab = DefaultTab>({
     <div
       className="relative w-full bg-muted/50 rounded-2xl p-1 backdrop-blur-sm border border-border/50"
       role="tablist"
-      aria-label="Filtrar por tipo de recurso"
+      aria-label="Filtrar por tipo de material"
     >
       {/* Slider animado - segue a tab ativa */}
       <div
@@ -121,7 +121,7 @@ export function ResourceTabs<T extends ResourceTab = DefaultTab>({
               className={cn(
                 // Base
                 'relative z-10 flex flex-col items-center justify-center',
-                'min-h-[60px] md:min-h-[56px] px-3 py-2 min-w-[90px]',
+                'min-h-[48px] md:min-h-[44px] px-3 py-1.5 min-w-[80px]',
                 'rounded-xl transition-colors duration-200',
                 'focus-visible:outline-none focus-visible:ring-2',
                 'focus-visible:ring-ring focus-visible:ring-offset-2',
@@ -152,7 +152,7 @@ export function ResourceTabs<T extends ResourceTab = DefaultTab>({
                     'text-xs font-bold tabular-nums',
                     isActive ? 'text-primary' : 'text-muted-foreground/70'
                   )}
-                  aria-label={`${count} recursos`}
+                  aria-label={`${count} materiais`}
                 >
                   {count}
                 </span>

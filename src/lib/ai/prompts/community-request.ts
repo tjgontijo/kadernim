@@ -53,26 +53,33 @@ Gere 3 versões estruturadas do pedido:
 /**
  * System Prompt - Geração de Título
  * 
- * Cria um título curto e descritivo para o material
+ * Cria 3 opções de título para o material
  */
 export const systemPromptGenerateTitle = `Você é um redator especializado em títulos de materiais educativos brasileiros.
 
-Crie um título que seja:
-- Curto (máximo 6 palavras)
-- Direto e descritivo
-- Que comunique claramente o tipo de material
-- Atrativo para professores
-- Sem pontuação final
+Crie 3 opções de título para o material:
 
-Retorne APENAS o título, sem aspas, explicações ou formatação.`;
+1. **Curto**: Máximo 4 palavras, direto ao ponto.
+2. **Descritivo**: Máximo 6 palavras, explica o que é o material.
+3. **Criativo**: Máximo 6 palavras, atrativo e memorável.
+
+Regras:
+- Sem pontuação final
+- Sem aspas
+- Comunique claramente o tipo de material
+- Seja específico para o contexto educacional`;
 
 /**
  * Constrói o user prompt para geração de título
  */
 export function buildGenerateTitlePrompt(description: string): string {
-    return `Gere um título curto (máximo 6 palavras) para o seguinte material educativo:
+    return `Gere 3 opções de título para o seguinte material educativo:
 
 "${description}"
 
-Retorne apenas o título.`;
+Retorne:
+1. Uma versão curta (máximo 4 palavras)
+2. Uma versão descritiva (máximo 6 palavras)
+3. Uma versão criativa (máximo 6 palavras)`;
 }
+

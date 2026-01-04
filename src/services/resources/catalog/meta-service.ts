@@ -8,7 +8,7 @@ export interface ResourceMetaUser {
 }
 
 export interface ResourceMetaParams {
-  filters: Pick<ResourceFilter, 'educationLevel' | 'subject'>
+  filters: Pick<ResourceFilter, 'educationLevel' | 'grade' | 'subject'>
   user: ResourceMetaUser
 }
 

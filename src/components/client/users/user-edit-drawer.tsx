@@ -448,7 +448,7 @@ export function UserEditDrawer({ user, open, onOpenChange, onSuccess }: UserEdit
                                 <div className="p-6 pb-2 shrink-0">
                                     <div className="relative group">
                                         <Input
-                                            placeholder="Buscar recursos por título ou matéria..."
+                                            placeholder="Buscar materiais por título ou componente..."
                                             className="h-14 pl-12 bg-muted/30 border-muted-foreground/5 focus:border-primary/30 focus:ring-4 focus:ring-primary/5 rounded-2xl font-bold text-base transition-all"
                                             value={resourceSearch}
                                             onChange={(e) => setResourceSearch(e.target.value)}

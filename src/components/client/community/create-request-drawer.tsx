@@ -16,6 +16,7 @@ import { QuestionEducationLevel } from './questions/question-education-level';
 import { QuestionGrade } from './questions/question-grade';
 import { QuestionSubject } from './questions/question-subject';
 import { QuestionRefineDescription } from './questions/question-refine-description';
+import { QuestionSelectTitle } from './questions/question-select-title';
 
 /**
  * Wizard state interface - Segue a mesma estrutura do Plano de Aula
@@ -44,7 +45,7 @@ export type CommunityStep =
     | 'subject'
     | 'description'
     | 'refine'
-    | 'title-generating'
+    | 'select-title'
     | 'review'
     | 'submitting'
     | 'success';
@@ -79,31 +80,14 @@ export function CreateRequestDrawer({ open, onOpenChange }: CreateRequestDrawerP
         }
     };
 
-    // Gera título com IA e avança para review
-    const handleGenerateTitle = async (description: string) => {
-        setWizardState((prev) => ({ ...prev, selectedDescription: description }));
-        setCurrentStep('title-generating');
+    // Avança para seleção de título após escolher descrição
+    const handleDescriptionSelected = (description: string) => {
+        goToNextStep('select-title', { selectedDescription: description });
+    };
 
-        try {
-            const response = await fetch('/api/v1/community/generate-title', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ description }),
-            });
-            const data = await response.json();
-
-            if (data.success) {
-                goToNextStep('review', { title: data.data.title });
-            } else {
-                const fallbackTitle = description.split(' ').slice(0, 5).join(' ') + '...';
-                goToNextStep('review', { title: fallbackTitle });
-                toast.error('Não foi possível gerar título automaticamente');
-            }
-        } catch (error) {
-            console.error('Title generation error:', error);
-            const fallbackTitle = description.split(' ').slice(0, 5).join(' ') + '...';
-            goToNextStep('review', { title: fallbackTitle });
-        }
+    // Após selecionar título, avança para review
+    const handleTitleSelected = (title: string) => {
+        goToNextStep('review', { title });
     };
 
     const handleSubmit = async () => {
@@ -145,7 +129,7 @@ export function CreateRequestDrawer({ open, onOpenChange }: CreateRequestDrawerP
     const canGoBack = history.length > 1 &&
         currentStep !== 'submitting' &&
         currentStep !== 'success' &&
-        currentStep !== 'title-generating';
+        currentStep !== 'select-title';
 
     return (
         <QuizLayout
@@ -201,7 +185,7 @@ export function CreateRequestDrawer({ open, onOpenChange }: CreateRequestDrawerP
                             educationLevelSlug={wizardState.educationLevelSlug || ''}
                             gradeSlug={wizardState.gradeSlug}
                             value={wizardState.subjectId}
-                            onSelect={(id, name, slug) =>
+                            onSelect={(id: string, name: string, slug: string) =>
                                 goToNextStep('description', {
                                     subjectId: id,
                                     subjectName: name,
@@ -210,6 +194,7 @@ export function CreateRequestDrawer({ open, onOpenChange }: CreateRequestDrawerP
                             }
                         />
                     )}
+
 
                     {/* 4. Descrição Livre */}
                     {currentStep === 'description' && (
@@ -244,16 +229,16 @@ export function CreateRequestDrawer({ open, onOpenChange }: CreateRequestDrawerP
                             educationLevelName={wizardState.educationLevelName || ''}
                             subjectName={wizardState.subjectName || ''}
                             gradeNames={[wizardState.gradeName || '']}
-                            onSelect={handleGenerateTitle}
+                            onSelect={handleDescriptionSelected}
                         />
                     )}
 
-                    {/* 6. Gerando Título */}
-                    {currentStep === 'title-generating' && (
-                        <div className="h-full flex flex-col items-center justify-center space-y-6">
-                            <Loader2 className="h-16 w-16 text-primary animate-spin" />
-                            <h2 className="text-2xl font-black text-center">Criando título...</h2>
-                        </div>
+                    {/* 6. Seleção de Título */}
+                    {currentStep === 'select-title' && (
+                        <QuestionSelectTitle
+                            description={wizardState.selectedDescription || wizardState.rawDescription || ''}
+                            onSelect={handleTitleSelected}
+                        />
                     )}
 
                     {/* 7. Revisão Final */}
@@ -339,7 +324,7 @@ function getStepNumber(step: CommunityStep): number {
         'subject': 3,
         'description': 4,
         'refine': 5,
-        'title-generating': 6,
+        'select-title': 6,
         'review': 7,
         'submitting': 7,
         'success': 7,
