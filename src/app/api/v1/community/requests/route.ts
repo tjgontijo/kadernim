@@ -14,12 +14,12 @@ export async function GET(request: NextRequest) {
 
         const searchParams = request.nextUrl.searchParams
         const parsed = CommunityFilterSchema.safeParse({
-            page: searchParams.get('page'),
-            limit: searchParams.get('limit'),
-            status: searchParams.get('status'),
-            votingMonth: searchParams.get('votingMonth'),
-            educationLevelId: searchParams.get('educationLevelId'),
-            subjectId: searchParams.get('subjectId'),
+            page: searchParams.get('page') ?? undefined,
+            limit: searchParams.get('limit') ?? undefined,
+            status: searchParams.get('status') ?? undefined,
+            votingMonth: searchParams.get('votingMonth') ?? undefined,
+            educationLevelId: searchParams.get('educationLevelId') ?? undefined,
+            subjectId: searchParams.get('subjectId') ?? undefined,
         })
 
         if (!parsed.success) {
