@@ -11,9 +11,9 @@ import {
   Music,
   Heart,
 } from 'lucide-react';
-import { QuizQuestion } from '../quiz-question';
-import { SingleChoice, type ChoiceOption } from '../single-choice';
-import { Spinner } from '@/components/ui/spinner';
+import { QuizStep } from '@/components/quiz/QuizStep';
+import { QuizCard } from '@/components/quiz/QuizCard';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Subject {
   slug: string;
@@ -45,13 +45,6 @@ const SUBJECT_ICONS: Record<string, typeof BookOpen> = {
   'espacos-tempos-quantidades-relacoes-e-transformacoes': Calculator,
 };
 
-/**
- * Question 3: Disciplina/Campo de Experiência
- *
- * Bifurca baseado na etapa:
- * - EI: Campos de experiência
- * - EF: Disciplinas
- */
 export function QuestionSubject({
   educationLevelSlug,
   gradeSlug,
@@ -95,38 +88,12 @@ export function QuestionSubject({
     if (selected) {
       setTimeout(() => {
         onSelect(slug, selected.name);
-      }, 600);
+      }, 400);
     }
   };
 
-  if (loading) {
-    return (
-      <QuizQuestion title={isEI ? 'Qual campo de experiência?' : 'Qual componente curricular?'}>
-        <div className="flex items-center justify-center py-12">
-          <Spinner />
-        </div>
-      </QuizQuestion>
-    );
-  }
-
-  if (error) {
-    return (
-      <QuizQuestion title={isEI ? 'Qual campo de experiência?' : 'Qual componente curricular?'}>
-        <div className="text-center py-12">
-          <p className="text-destructive">{error}</p>
-        </div>
-      </QuizQuestion>
-    );
-  }
-
-  const options: ChoiceOption[] = subjects.map((subject) => ({
-    value: subject.slug,
-    label: subject.name,
-    icon: SUBJECT_ICONS[subject.slug] || BookOpen,
-  }));
-
   return (
-    <QuizQuestion
+    <QuizStep
       title={isEI ? 'Qual campo de experiência?' : 'Qual componente curricular?'}
       description={
         isEI
@@ -134,7 +101,27 @@ export function QuestionSubject({
           : 'Selecione o componente curricular para este plano'
       }
     >
-      <SingleChoice options={options} value={value} onSelect={handleSelect} />
-    </QuizQuestion>
+      <div className="grid grid-cols-1 gap-4">
+        {loading ? (
+          Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-24 rounded-[24px]" />
+          ))
+        ) : error ? (
+          <div className="text-center py-12">
+            <p className="text-destructive font-bold">{error}</p>
+          </div>
+        ) : (
+          subjects.map((subject) => (
+            <QuizCard
+              key={subject.slug}
+              title={subject.name}
+              icon={SUBJECT_ICONS[subject.slug] || BookOpen}
+              selected={value === subject.slug}
+              onClick={() => handleSelect(subject.slug)}
+            />
+          ))
+        )}
+      </div>
+    </QuizStep>
   );
 }
