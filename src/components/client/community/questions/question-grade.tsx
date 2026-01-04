@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { QuizStep } from '@/components/quiz/QuizStep';
-import { QuizCard } from '@/components/quiz/QuizCard';
+import { QuizStep } from '@/components/client/quiz/QuizStep';
+import { QuizCard } from '@/components/client/quiz/QuizCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Calendar, Baby, Users } from 'lucide-react';
 

@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { QuizStep } from '@/components/quiz/QuizStep';
-import { QuizCard } from '@/components/quiz/QuizCard';
-import { QuizAction } from '@/components/quiz/QuizAction';
+import { QuizStep } from '@/components/client/quiz/QuizStep';
+import { QuizCard } from '@/components/client/quiz/QuizCard';
+import { QuizAction } from '@/components/client/quiz/QuizAction';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChevronRight } from 'lucide-react';
 

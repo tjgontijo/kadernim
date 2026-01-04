@@ -11,8 +11,8 @@ import {
   Music,
   Heart,
 } from 'lucide-react';
-import { QuizStep } from '@/components/quiz/QuizStep';
-import { QuizCard } from '@/components/quiz/QuizCard';
+import { QuizStep } from '@/components/client/quiz/QuizStep';
+import { QuizCard } from '@/components/client/quiz/QuizCard';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface Subject {

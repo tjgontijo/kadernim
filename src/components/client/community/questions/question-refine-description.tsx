@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { QuizStep } from '@/components/quiz/QuizStep';
-import { QuizCard } from '@/components/quiz/QuizCard';
+import { QuizStep } from '@/components/client/quiz/QuizStep';
+import { QuizCard } from '@/components/client/quiz/QuizCard';
 import { Layout, Users, GraduationCap, ArrowRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 

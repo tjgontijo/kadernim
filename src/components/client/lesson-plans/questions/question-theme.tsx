@@ -37,8 +37,8 @@ type Step = 'input' | 'selection';
  * - Skeleton loading durante fetch de temas
  * - Click para preencher automaticamente
  */
-import { QuizStep } from '@/components/quiz/QuizStep';
-import { QuizCard } from '@/components/quiz/QuizCard';
+import { QuizStep } from '@/components/client/quiz/QuizStep';
+import { QuizCard } from '@/components/client/quiz/QuizCard';
 
 export function QuestionTheme({
   value,

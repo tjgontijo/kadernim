@@ -31,7 +31,7 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { UserEditDrawer, UserCreateDrawer } from '@/components/client/users'
+import { UserEditDrawer, UserCreateDrawer } from '@/components/admin/users'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 

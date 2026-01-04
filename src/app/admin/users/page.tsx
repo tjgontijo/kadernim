@@ -56,7 +56,7 @@ import {
     ViewSwitcher,
     type ViewType,
 } from '@/components/client/resources'
-import { UsersCardView, UsersTableView, UserEditDrawer } from '@/components/client/users'
+import { UsersCardView, UsersTableView, UserEditDrawer } from '@/components/admin/users'
 
 const ROLE_OPTIONS = [
     { value: 'all', label: 'Todos os Cargos' },

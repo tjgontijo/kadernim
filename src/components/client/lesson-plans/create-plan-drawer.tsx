@@ -56,7 +56,7 @@ const TOTAL_STEPS = 7;
 /**
  * CreatePlanDrawer - Wizard em formato quiz para criar planos de aula
  */
-import { QuizLayout } from '@/components/quiz/QuizLayout';
+import { QuizLayout } from '@/components/client/quiz/QuizLayout';
 
 export function CreatePlanDrawer({ open, onOpenChange }: CreatePlanDrawerProps) {
   const [currentStep, setCurrentStep] = useState<QuestionStep>('education-level');

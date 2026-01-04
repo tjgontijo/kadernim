@@ -8,9 +8,9 @@ import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { triggerCannon } from '@/lib/utils/confetti';
 
-import { QuizLayout } from '@/components/quiz/QuizLayout';
-import { QuizStep } from '@/components/quiz/QuizStep';
-import { QuizAction } from '@/components/quiz/QuizAction';
+import { QuizLayout } from '@/components/client/quiz/QuizLayout';
+import { QuizStep } from '@/components/client/quiz/QuizStep';
+import { QuizAction } from '@/components/client/quiz/QuizAction';
 
 import { QuestionEducationLevel } from './questions/question-education-level';
 import { QuestionGrade } from './questions/question-grade';

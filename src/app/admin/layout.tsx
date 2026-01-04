@@ -11,7 +11,7 @@ import { HeaderActionsProvider } from '@/components/admin/header-actions'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { AdminContent } from '@/components/admin/admin-content'
 import { ResourceProvider } from '@/contexts/resource-context'
-import { MobileNav } from '@/components/client/navigation/MobileNav'
+import { MobileNav } from '@/components/client/layout/navigation/MobileNav'
 
 export const dynamic = 'force-dynamic'
 

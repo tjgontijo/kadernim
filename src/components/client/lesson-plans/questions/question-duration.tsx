@@ -1,8 +1,8 @@
 'use client';
 
 import { Clock } from 'lucide-react';
-import { QuizStep } from '@/components/quiz/QuizStep';
-import { QuizCard } from '@/components/quiz/QuizCard';
+import { QuizStep } from '@/components/client/quiz/QuizStep';
+import { QuizCard } from '@/components/client/quiz/QuizCard';
 
 interface QuestionDurationProps {
   value?: number;

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { QuizAction } from '@/components/quiz/QuizAction';
+import { QuizAction } from '@/components/client/quiz/QuizAction';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 

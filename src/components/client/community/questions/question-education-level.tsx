@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { GraduationCap, Baby, School } from 'lucide-react';
-import { QuizStep } from '@/components/quiz/QuizStep';
-import { QuizCard } from '@/components/quiz/QuizCard';
+import { QuizStep } from '@/components/client/quiz/QuizStep';
+import { QuizCard } from '@/components/client/quiz/QuizCard';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface Option {
