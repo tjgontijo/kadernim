@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { Plus, Filter, Loader2, SlidersHorizontal } from 'lucide-react'
+import { Plus, Filter, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useBreakpoint } from '@/hooks/use-breakpoint'
 import { VoteProgress } from '@/components/client/community/vote-progress'
@@ -18,7 +18,6 @@ import {
     DrawerDescription,
     DrawerTrigger,
 } from "@/components/ui/drawer"
-import { Skeleton } from '@/components/ui/skeleton'
 import { useCommunityUsage } from '@/hooks/use-community-usage'
 import { triggerConfetti } from '@/lib/utils/confetti'
 import { PageScaffold } from '@/components/client/shared/page-scaffold'
@@ -30,6 +29,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
+import { PageScaffoldSkeleton } from '@/components/client/shared/skeletons/page-scaffold-skeleton'
+import { RequestCardSkeleton } from '@/components/client/shared/skeletons/request-card-skeleton'
 
 interface FilterOption {
     slug: string
@@ -179,6 +180,16 @@ export default function CommunityPage() {
         return data?.pages.flatMap(page => page.data.items) || []
     }, [data])
 
+    if (isLoading && requests.length === 0) {
+        return (
+            <PageScaffoldSkeleton
+                CardSkeleton={RequestCardSkeleton}
+                cardCount={8}
+                columns={{ mobile: 1, tablet: 2, desktop: 3, large: 4 }}
+            />
+        )
+    }
+
     return (
         <PageScaffold>
             {/* LINHA 1: Header */}
@@ -299,13 +310,7 @@ export default function CommunityPage() {
 
             {/* Grid de Pedidos */}
             <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-4 sm:px-0">
-                {isLoading && requests.length === 0 ? (
-                    Array.from({ length: 8 }).map((_, i) => (
-                        <div key={i} className="h-[320px] rounded-3xl overflow-hidden border border-border/50">
-                            <Skeleton className="h-full w-full" />
-                        </div>
-                    ))
-                ) : requests.length > 0 ? (
+                {requests.length > 0 ? (
                     requests.map((request, index) => (
                         <RequestCard
                             key={request.id}

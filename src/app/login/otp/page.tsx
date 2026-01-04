@@ -143,8 +143,8 @@ export default function RequestOtpPage() {
               <Image
                 src="/images/system/logo_transparent.png"
                 alt="Kadernim Logo"
-                width={150}
-                height={150}
+                width={200}
+                height={200}
                 style={{ height: 'auto' }}
                 priority
               />

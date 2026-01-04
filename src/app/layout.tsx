@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Poppins, Open_Sans, Nunito_Sans } from "next/font/google";
 import "./globals.css";
-import "./mobile.css"; // Importando estilos específicos para mobile
 import ServiceWorkerRegister from "@/components/pwa/ServiceWorkerRegister";
 import { ReactQueryProvider } from "@/providers/react-query-provider";
 import { ThemeProvider } from "@/providers/theme-provider";

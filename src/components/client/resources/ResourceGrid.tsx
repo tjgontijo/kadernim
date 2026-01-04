@@ -52,9 +52,9 @@ export function ResourceGrid({
   return (
     <div className="w-full">
       {items.length === 0 && !isLoading ? (
-        <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50">
+        <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-border bg-muted/30">
           <div className="text-center">
-            <p className="text-gray-500">Nenhum material encontrado</p>
+            <p className="text-foreground/60 font-medium">Nenhum material encontrado</p>
           </div>
         </div>
       ) : (

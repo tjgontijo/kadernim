@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-
 import { ResourceGrid } from '@/components/client/resources/ResourceGrid'
 import { ResourceFilters } from '@/components/client/resources/ResourceFilters'
 import { ResourceTabs } from '@/components/client/resources/ResourceTabs'
@@ -12,6 +11,8 @@ import { Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { PageScaffold } from '@/components/client/shared/page-scaffold'
+import { PageScaffoldSkeleton } from '@/components/client/shared/skeletons/page-scaffold-skeleton'
+import { ResourceCardSkeleton } from '@/components/client/shared/skeletons/resource-card-skeleton'
 
 interface Filters {
   q?: string
@@ -60,6 +61,16 @@ export default function ResourcesPage() {
 
   const handleSubscribe = () => {
     window.open('https://seguro.profdidatica.com.br/r/TMNDJH4WEN', '_blank', 'noopener,noreferrer')
+  }
+
+  if (isLoading && items.length === 0) {
+    return (
+      <PageScaffoldSkeleton
+        CardSkeleton={ResourceCardSkeleton}
+        cardCount={8}
+        columns={{ mobile: 1, tablet: 2, desktop: 3, large: 4 }}
+      />
+    )
   }
 
   return (

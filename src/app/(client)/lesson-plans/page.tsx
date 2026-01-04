@@ -1,6 +1,6 @@
 'use client';
 
-import { Plus, Filter, Loader2, SlidersHorizontal, ArrowRight, X, GraduationCap } from 'lucide-react';
+import { Plus, Filter, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useBreakpoint } from '@/hooks/use-breakpoint';
 import { CreatePlanDrawer } from '@/components/client/lesson-plans/create-plan-drawer';
@@ -8,7 +8,6 @@ import { PlanCard } from '@/components/client/lesson-plans/plan-card';
 import { EmptyState } from '@/components/client/lesson-plans/empty-state';
 import { useLessonPlans } from '@/hooks/use-lesson-plans';
 import { useLessonPlanUsage } from '@/hooks/use-lesson-plan-usage';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import { PageScaffold } from '@/components/client/shared/page-scaffold';
 import { SearchInput } from '@/components/client/shared/search-input';
@@ -31,6 +30,8 @@ import {
 } from "@/components/ui/drawer";
 import { useEffect, useState, useMemo } from 'react';
 import { type LessonPlanResponse } from '@/lib/schemas/lesson-plan';
+import { PageScaffoldSkeleton } from '@/components/client/shared/skeletons/page-scaffold-skeleton';
+import { PlanCardSkeleton } from '@/components/client/shared/skeletons/plan-card-skeleton';
 
 interface FilterOption {
   slug: string;
@@ -138,6 +139,15 @@ export default function LessonPlansPage() {
     setGrade('all');
     setSubject('all');
   };
+
+  if (isLoading) {
+    return (
+      <PageScaffoldSkeleton
+        CardSkeleton={PlanCardSkeleton}
+        cardCount={6}
+      />
+    )
+  }
 
   return (
     <PageScaffold>
@@ -287,25 +297,7 @@ export default function LessonPlansPage() {
 
       {/* Conteúdo: Grid de Planos */}
       <section className="px-4 sm:px-0">
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="animate-pulse bg-card border border-border/50 rounded-[32px] p-6 h-56 flex flex-col justify-between shadow-sm">
-                <div className="space-y-3">
-                  <Skeleton className="h-6 w-3/4 rounded-md" />
-                  <div className="flex gap-2">
-                    <Skeleton className="h-4 w-20 rounded-md" />
-                    <Skeleton className="h-4 w-16 rounded-md" />
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Skeleton className="h-4 w-12 rounded-full" />
-                  <Skeleton className="h-4 w-12 rounded-full" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : isEmpty ? (
+        {isEmpty ? (
           <div className="py-16">
             <EmptyState onCreateClick={() => setDrawerOpen(true)} />
           </div>
@@ -327,7 +319,7 @@ export default function LessonPlansPage() {
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredPlans.map((plan: any) => (
               <PlanCard key={plan.id} plan={plan} />
             ))}

@@ -36,6 +36,7 @@ import {
     denormalizeWhatsApp
 } from '@/lib/utils/phone'
 import { AvatarCropper } from '@/components/ui/avatar-cropper'
+import { ProfileSkeleton } from '@/components/client/shared/skeletons/profile-skeleton'
 
 interface AccountData {
     id: string
@@ -182,12 +183,12 @@ export default function AccountPage() {
         }
     }
 
+
+
+    // ... (keep headers)
+
     if (isLoading) {
-        return (
-            <div className="flex items-center justify-center min-h-[50vh]">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-        )
+        return <ProfileSkeleton />
     }
 
     if (!account) {
@@ -204,7 +205,7 @@ export default function AccountPage() {
         : null
 
     return (
-        <div className="w-full max-w-2xl mx-auto space-y-8 py-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="w-full max-w-2xl mx-auto space-y-8 py-8">
             {/* Unified Card: Profile + Details */}
             <Card className="border-none shadow-xl shadow-foreground/5 bg-card/50 backdrop-blur-sm overflow-hidden pt-12 relative">
                 {/* Edit Button - Top Right */}
