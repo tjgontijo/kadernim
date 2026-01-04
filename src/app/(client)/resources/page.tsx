@@ -8,6 +8,10 @@ import { ResourceTabs } from '@/components/client/resources/ResourceTabs'
 import { ResourceUpsellBanner } from '@/components/client/resources/ResourceUpsellBanner'
 import { useResourcesSummaryQuery } from '@/hooks/useResourcesSummaryQuery'
 import { useSessionQuery } from '@/hooks/useSessionQuery'
+import { PageHeader } from '@/components/client/shared/page-header'
+import { BookOpen, Sparkles } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 
 interface Filters {
   q?: string
@@ -58,7 +62,19 @@ export default function ResourcesPage() {
   }
 
   return (
-    <div className="w-full space-y-6 sm:space-y-8">
+    <div className="w-full space-y-4">
+      <PageHeader
+        icon={BookOpen}
+        title={<>Explorar <span className="text-primary italic">Materiais</span></>}
+        action={
+          <Button asChild variant="outline" className="h-10 sm:h-11 px-4 sm:px-5 rounded-2xl border-primary/20 text-primary hover:bg-primary/5 font-bold transition-all group">
+            <Link href="/community">
+              <Sparkles className="h-4 w-4 mr-2 group-hover:rotate-12 transition-transform" />
+              Fazer Pedido
+            </Link>
+          </Button>
+        }
+      />
 
       {isCommonUser && (
         <section>
