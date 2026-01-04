@@ -9,9 +9,11 @@ const swConfig = {
   modifyURLPrefix: {
     'static/': '/_next/static/',
   },
-  skipWaiting: false, // Não ativar automático - usuário decide quando atualizar
+  skipWaiting: false, // Controlado via mensagem do cliente
   clientsClaim: true,
   cleanupOutdatedCaches: true,
+  // Injeta código customizado no SW para ouvir mensagens
+  importScripts: ['/sw-custom.js'],
   runtimeCaching: [
     {
       urlPattern: ({ request }) => request.destination === 'document',
