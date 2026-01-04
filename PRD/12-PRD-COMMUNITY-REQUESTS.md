@@ -77,22 +77,54 @@ Uma área gamificada onde **assinantes** podem solicitar novos materiais pedagó
 - Pedido inviável **não conta** contra o limite de 1 pedido/mês da autora
 - Autora pode criar novo pedido ajustado
 
-### 2.4 Seleção Mensal
+### 2.4 Seleção Mensal e Reset
 
-**Critérios de seleção (final do mês):**
-- Top 10 pedidos com mais votos → Status **"Selecionado"**
-- Mínimo de 20 votos para ser elegível
-- Empates resolvidos por data de criação (mais antigo ganha)
+**Regra de Ouro: Voto = Validação**
+Pedidos com **0 votos** são **deletados permanentemente** no fim do mês.
+
+**Funil de Sobrevivência (processado no dia 1 às 00:00 BRT):**
+
+| Posição | Votos | Destino |
+|---------|-------|--------|
+| 1º ao 10º | 1+ | `selected` → Vai para avaliação do Admin |
+| 11º ao 30º | 1+ | Continua em `voting` → Sobrevive para o próximo mês |
+| Qualquer | 0 | **DELETADO** (DB + Cloudinary) |
+| 31º em diante | Qualquer | **DELETADO** (DB + Cloudinary) |
+
+**Regras de Desempate:**
+1. **Mais votos ganha** (critério principal)
+2. **Empate de votos**: Pedido mais antigo (`createdAt`) tem prioridade
+
+**Reset Mensal (Justiça Competitiva):**
+- Todos os pedidos que sobrevivem têm `voteCount` resetado para **zero**
+- `survivedMonths` é incrementado (+1)
+- Pedidos com `survivedMonths >= 3` são **deletados permanentemente** ("3 strikes")
 
 **⚠️ IMPORTANTE: Seleção ≠ Produção Garantida**
-- Pedidos selecionados vão para **avaliação de viabilidade**
-- Admin avalia: direitos autorais, complexidade, alinhamento pedagógico
-- Pedidos aprovados → **"Aprovado"** → entram em produção
-- Pedidos inviáveis → **"Inviável"** com justificativa obrigatória
+- Pedidos selecionados vão para **avaliação de viabilidade** do Admin.
+- Avaliação inclui: direitos autorais, complexidade técnica e alinhamento pedagógico.
+- Pedidos aprovados → `approved` → entram em produção.
+- Pedidos inviáveis → `unfeasible` (justificativa obrigatória, mantido por 30 dias para transparência antes da deleção automática).
 
-**O que acontece com pedidos não selecionados:**
-- Pedidos com 10+ votos: **mantidos** para o próximo mês (continuam acumulando votos)
-- Pedidos com <10 votos: **arquivados** automaticamente
+### 2.5 Política de Limpeza (Cleanup)
+
+**Deleção Permanente (Purge):**
+- **Pedidos sem votos / Fora do Top 30**: Deletados imediatamente no processamento mensal.
+- **Pedidos Inviáveis (`unfeasible`)**: Deletados após **30 dias** (tempo para a autora ver o feedback).
+- **Pedidos Completados (`completed`)**: Referências/anexos deletados **imediatamente** após o vínculo com o Resource oficial.
+
+**Motivação:** Manter o banco de dados limpo, o storage do Cloudinary otimizado e focar apenas no que a comunidade realmente validou. Sugestões são efêmeras; o material oficial é que é permanente.
+
+### 2.6 Comunicação e Transparência
+
+Para garantir que a deleção não seja percebida como erro do sistema, o sistema disparará notificações automáticas:
+
+| Evento | Canal | Mensagem / Ação |
+|--------|-------|-----------------|
+| **Pedido Deletado (0 votos ou Ranking 31+)** | E-mail | "Sua sugestão não atingiu o apoio necessário nesta rodada. Que tal tentar um tema diferente?" |
+| **Pedido Inviável (`unfeasible`)** | E-mail + Push | Justificativa do admin + Convite para criar um novo pedido corrigido. |
+| **Pedido Selecionado (`selected`)** | E-mail + Push | Parabéns! Seu pedido está entre os 10 mais votados e será avaliado. |
+| **Material Publicado (`completed`)**| E-mail + Push | "O material que você votou/pediu já está disponível!" (Para autor + todos que votaram). |
 
 ---
 
@@ -149,7 +181,6 @@ enum CommunityRequestStatus {
   approved        // Aprovado para produção (viável)
   in_production   // Em produção
   completed       // Produzido e disponível
-  archived        // Arquivado (não atingiu meta de votos)
   unfeasible      // Inviável (desqualificado com justificativa)
 }
 
@@ -157,54 +188,63 @@ enum CommunityRequestStatus {
 model CommunityRequest {
   id              String                  @id @default(cuid())
 
-  // Autor
-  authorId        String
-  author          User                    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  // Autor (usa userId para consistência com o resto do sistema)
+  userId          String
+  user            User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Categorização (usa tabelas existentes)
   educationLevelId String
   educationLevel   EducationLevel         @relation(fields: [educationLevelId], references: [id])
+  
+  gradeId          String?                // Opcional: para granularidade de ano/série (EF)
+  grade            Grade?                 @relation(fields: [gradeId], references: [id])
+  
   subjectId        String
   subject          Subject                @relation(fields: [subjectId], references: [id])
 
   // Conteúdo
   title           String                  // Título curto (max 100 chars)
-  description     String                  // Descrição detalhada (max 1000 chars)
+  description     String    @db.Text      // Descrição detalhada (max 1000 chars)
 
   // Status e ciclo
   status          CommunityRequestStatus  @default(voting)
-  votingMonth     String                  // Formato: "2026-02" (ano-mês)
+  votingMonth     String                  // Formato: "2026-02" (ano-mês inicial)
 
   // Contadores (desnormalizado para performance)
   voteCount       Int                     @default(0)
+  survivedMonths  Int                     @default(0) // Quantas vezes sobreviveu ao corte mensal (max 3)
 
   // Justificativa de inviabilidade (quando status = unfeasible)
-  unfeasibleReason String?                // Motivo da desqualificação
+  unfeasibleReason String?   @db.Text     // Motivo da desqualificação (visível para autora)
   unfeasibleAt     DateTime?              // Quando foi marcado como inviável
-  unfeasibleBy     String?                // ID do admin que desqualificou
+  unfeasibleById   String?                // ID do admin que desqualificou
 
-  // Vinculação com Resource produzido (quando completado)
+  // Vinculação com Resource produzido (quando completed)
   producedResourceId String?              @unique
   producedResource   Resource?            @relation(fields: [producedResourceId], references: [id])
 
   // Timestamps
   createdAt       DateTime                @default(now())
   updatedAt       DateTime                @updatedAt
-  selectedAt      DateTime?               // Quando foi selecionado
+  selectedAt      DateTime?               // Quando foi selecionado (top 10)
   completedAt     DateTime?               // Quando foi marcado como produzido
+  unfeasibleAt     DateTime?              // Para controle de limpeza (30 dias)
 
   // Relações
   votes           CommunityRequestVote[]
   references      CommunityRequestReference[]
 
-  @@index([authorId])
+  @@index([userId])
   @@index([status, votingMonth])
   @@index([votingMonth, voteCount(sort: Desc)])
   @@index([educationLevelId])
+  @@index([gradeId])
   @@index([subjectId])
   @@map("community_request")
 }
+```
 
+```prisma
 // Votos nos pedidos
 model CommunityRequestVote {
   id              String            @id @default(cuid())
@@ -212,19 +252,19 @@ model CommunityRequestVote {
   requestId       String
   request         CommunityRequest  @relation(fields: [requestId], references: [id], onDelete: Cascade)
 
-  voterId         String
-  voter           User              @relation(fields: [voterId], references: [id], onDelete: Cascade)
+  userId          String            // Renomeado de voterId para consistência
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   votingMonth     String            // Formato: "2026-02" - para contar votos do mês
   createdAt       DateTime          @default(now())
 
-  @@unique([requestId, voterId])    // Um voto por pessoa por pedido
-  @@index([voterId, votingMonth])   // Para contar votos usados no mês
+  @@unique([requestId, userId])     // Um voto por pessoa por pedido
+  @@index([userId, votingMonth])    // Para contar votos usados no mês
   @@index([requestId])
   @@map("community_request_vote")
 }
 
-// Imagens de referência anexadas ao pedido
+// Imagens de referência anexadas ao pedido (temporárias - serão deletadas após arquivamento/conclusão)
 model CommunityRequestReference {
   id              String            @id @default(cuid())
 
@@ -260,6 +300,12 @@ model EducationLevel {
   communityRequests CommunityRequest[]
 }
 
+// Adicionar em Grade
+model Grade {
+  // ... campos existentes ...
+  communityRequests CommunityRequest[]
+}
+
 // Adicionar em Subject
 model Subject {
   // ... campos existentes ...
@@ -269,7 +315,7 @@ model Subject {
 // Adicionar em Resource
 model Resource {
   // ... campos existentes ...
-  originRequest CommunityRequest?  // Se foi criado a partir de um pedido
+  originRequest CommunityRequest?  // Se foi criado a partir de um pedido da comunidade
 }
 ```
 
@@ -323,559 +369,178 @@ POST   /api/v1/admin/community/process-month
        Processa fim do mês: seleciona top 10, arquiva baixa votação
 ```
 
-### 5.3 Fluxo de Avaliação (Admin)
+### 5.3 Job de Processamento Mensal (Vercel Cron)
 
+**Agendamento:** Dia 1 de cada mês, 00:05 BRT (`0 3 1 * *` UTC)
+
+```typescript
+// src/app/api/cron/community-month-end/route.ts
+// Protegido por CRON_SECRET
+
+export async function POST() {
+  const currentMonth = getCurrentYearMonth() // "2026-02"
+  const nextMonth = getNextYearMonth()       // "2026-03"
+
+  await prisma.$transaction(async (tx) => {
+    // 1. Notifica e Deleta TODOS com 0 votos
+    const failedOnVotes = await tx.communityRequest.findMany({
+      where: { votingMonth: currentMonth, voteCount: 0, status: 'voting' },
+      select: { 
+        id: true, 
+        title: true,
+        user: { select: { email: true, name: true } },
+        references: { select: { cloudinaryPublicId: true } } 
+      }
+    })
+    
+    // Dispara e-mails (pode ser via fila ou background job)
+    await sendRejectionEmails(failedOnVotes, "lack_of_support")
+
+    // Deleta do Cloudinary e DB
+    await tx.communityRequest.deleteMany({
+      where: { id: { in: failedOnVotes.map(r => r.id) } }
+    })
+
+    // 2. Seleciona Top 10 (com 1+ votos)
+    const top10 = await tx.communityRequest.findMany({
+      where: { votingMonth: currentMonth, status: 'voting', voteCount: { gte: 1 } },
+      orderBy: [{ voteCount: 'desc' }, { createdAt: 'asc' }],
+      take: 10,
+      select: { id: true }
+    })
+    await tx.communityRequest.updateMany({
+      where: { id: { in: top10.map(r => r.id) } },
+      data: { status: 'selected', selectedAt: new Date() }
+    })
+
+    // 3. Sobreviventes (posição 11-30): resetar votos e passar para próximo mês
+    const survivors = await tx.communityRequest.findMany({
+      where: { 
+        votingMonth: currentMonth, 
+        status: 'voting', 
+        voteCount: { gte: 1 },
+        id: { notIn: top10.map(r => r.id) }
+      },
+      orderBy: [{ voteCount: 'desc' }, { createdAt: 'asc' }],
+      take: 20,
+      select: { id: true, survivedMonths: true }
+    })
+
+    for (const req of survivors) {
+      if (req.survivedMonths >= 2) {
+        // 3 strikes - Deletar
+        await tx.communityRequest.delete({ where: { id: req.id } })
+      } else {
+        // Sobrevive para próximo mês
+        await tx.communityRequest.update({
+          where: { id: req.id },
+          data: { 
+            votingMonth: nextMonth, 
+            voteCount: 0, 
+            survivedMonths: req.survivedMonths + 1 
+          }
+        })
+      }
+    }
+
+    // 4. Deleta o resto (posição 31+)
+    await tx.communityRequest.deleteMany({
+      where: { votingMonth: currentMonth, status: 'voting' }
+    })
+  })
+
+  return Response.json({ ok: true, processed: currentMonth })
+}
 ```
-Pedido no TOP 10
-      ↓
-[Selecionado] ← Automático no fim do mês
-      ↓
-Admin avalia viabilidade
-      ↓
-   ┌──┴──┐
-   ↓     ↓
-Viável   Inviável
-   ↓         ↓
-[Aprovado]  [Inviável]
-   ↓         └─> Justificativa obrigatória
-   ↓             └─> Autora é notificada
-[Em Produção]        └─> Pode criar novo pedido
-   ↓
-[Disponível]
-   └─> Vincula ao Resource
+
+### 5.4 Job de Limpeza de Anexos (Cleanup)
+
+**Agendamento:** Diário, 03:00 BRT (`0 6 * * *` UTC)
+
+```typescript
+// src/app/api/cron/community-cleanup/route.ts
+
+export async function POST() {
+  const thirtyDaysAgo = subDays(new Date(), 30)
+
+  // 1. Busca pedidos inviáveis há mais de 30 dias para remoção total
+  const staleUnfeasible = await prisma.communityRequest.findMany({
+    where: {
+      status: 'unfeasible',
+      unfeasibleAt: { lte: thirtyDaysAgo }
+    },
+    include: { references: true }
+  })
+
+  // ... lógica para deletar refs do Cloudinary ...
+
+  // 2. Deleta os pedidos
+  await prisma.communityRequest.deleteMany({
+    where: { id: { in: staleUnfeasible.map(r => r.id) } }
+  })
+
+  return Response.json({ deleted: staleUnfeasible.length })
+}
 ```
 
 ---
 
 ## 6. UI/UX Design
 
-### 6.1 Página Principal - Mobile (80% do tráfego)
+### 6.1 Telas Principais
 
-```
-┌─────────────────────────────────────────┐
-│  ←  Pedidos da Comunidade    Fev/2026   │
-├─────────────────────────────────────────┤
-│                                         │
-│  ┌─────────────────────────────────┐    │
-│  │  🎯 Seus Votos                  │    │
-│  │                                 │    │
-│  │    ●  ●  ●  ○  ○               │    │
-│  │    3 de 5 usados                │    │
-│  │                                 │    │
-│  │  "Vote para desbloquear        │    │
-│  │   sua sugestão!"               │    │
-│  │                                 │    │
-│  └─────────────────────────────────┘    │
-│                                         │
-│  ┌─────────────────────────────────┐    │
-│  │ [+ Sugerir Material]           │    │
-│  │      (bloqueado)               │    │
-│  └─────────────────────────────────┘    │
-│                                         │
-├─────────────────────────────────────────┤
-│  🏆 TOP DO MÊS                          │
-│                                         │
-│  ┌─────────────────────────────────┐    │
-│  │ 🥇 1º                           │    │
-│  │                                 │    │
-│  │ Atividades de Páscoa            │    │
-│  │ Ed. Infantil · Artes            │    │
-│  │                                 │    │
-│  │ 📝 @maria.prof                  │    │
-│  │ "Preciso de atividades de       │    │
-│  │ páscoa para crianças de 4..."   │    │
-│  │                                 │    │
-│  │ 🔥 847 votos                    │    │
-│  │                                 │    │
-│  │ ┌─────────────────────────────┐ │    │
-│  │ │       ✓ Votado!             │ │    │
-│  │ └─────────────────────────────┘ │    │
-│  └─────────────────────────────────┘    │
-│                                         │
-│  ┌─────────────────────────────────┐    │
-│  │ 🥈 2º                           │    │
-│  │                                 │    │
-│  │ Jogos de Alfabetização          │    │
-│  │ 1º Ano · Português              │    │
-│  │                                 │    │
-│  │ 📝 @ana.edu                     │    │
-│  │ "Jogos interativos para         │    │
-│  │ trabalhar sílabas simples..."   │    │
-│  │                                 │    │
-│  │ 🔥 612 votos                    │    │
-│  │                                 │    │
-│  │ ┌─────────────────────────────┐ │    │
-│  │ │     👍 Votar (3 restantes)  │ │    │
-│  │ └─────────────────────────────┘ │    │
-│  └─────────────────────────────────┘    │
-│                                         │
-│  [Ver todos os 32 pedidos →]            │
-│                                         │
-├─────────────────────────────────────────┤
-│  ✅ PRODUZIDOS EM JANEIRO               │
-│  (baseado nos votos de Dezembro)        │
-│                                         │
-│  ┌───────┐ ┌───────┐ ┌───────┐          │
-│  │ 📚    │ │ 📚    │ │ 📚    │          │
-│  │Calendá│ │Planner│ │ Volta │          │
-│  │rio    │ │       │ │ Aulas │          │
-│  │       │ │       │ │       │          │
-│  │🟢 Disp│ │🟢 Disp│ │🟡 Prod│          │
-│  └───────┘ └───────┘ └───────┘          │
-│                                         │
-└─────────────────────────────────────────┘
-```
+**Página `/community` (Mobile-First):**
+- **Header**: Título "Pedidos da Comunidade" + seletor de mês.
+- **VoteProgress**: Indicador de votos usados (●●●○○ 3/5) estilo Duolingo.
+- **Botão "Sugerir Material"**: Bloqueado até votar 1x. Liberado com animação.
+- **Lista de Pedidos (Cards)**: Ordenados por `voteCount DESC`. Exibe título, categoria, descrição truncada, autor, votos e botão de votar.
+- **Seção "Produzidos"**: Carousel horizontal com materiais recentes que vieram de pedidos da comunidade.
 
-### 6.2 Página Principal - Desktop
+**Página `/community` (Desktop):**
+- Layout em duas colunas: Lista de pedidos à esquerda, sidebar com estatísticas e produzidos à direita.
 
-```
-┌──────────────────────────────────────────────────────────────────────────────────────┐
-│  ← Voltar                          Pedidos da Comunidade                   Fev/2026  │
-├──────────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                      │
-│  ┌─────────────────────────────────────────────────────────────────────────────────┐ │
-│  │                                                                                 │ │
-│  │   🎯 Participe da comunidade!                              Seus Votos          │ │
-│  │                                                                                 │ │
-│  │   Vote nos materiais que você quer ver                    ●  ●  ●  ○  ○       │ │
-│  │   produzidos no próximo mês.                              3 de 5 usados        │ │
-│  │                                                                                 │ │
-│  │   Os 10 mais votados serão criados!                      [+ Sugerir Material]  │ │
-│  │                                                              (vote 1x antes)   │ │
-│  │                                                                                 │ │
-│  └─────────────────────────────────────────────────────────────────────────────────┘ │
-│                                                                                      │
-│  ┌──────────────────────────────────────────────┐  ┌─────────────────────────────┐   │
-│  │  🏆 TOP 10 DO MÊS                            │  │  📊 Estatísticas           │   │
-│  │                                              │  │                             │   │
-│  │  ┌────────────────────────────────────────┐  │  │  Total de pedidos: 32      │   │
-│  │  │ 🥇  Atividades de Páscoa               │  │  │  Total de votos: 2.847     │   │
-│  │  │     Ed. Infantil · Artes               │  │  │  Participantes: 412        │   │
-│  │  │                                        │  │  │                             │   │
-│  │  │     📝 @maria.prof                     │  │  │  ────────────────────────   │   │
-│  │  │     "Preciso de atividades de páscoa   │  │  │                             │   │
-│  │  │      para crianças de 4 a 5 anos..."   │  │  │  🎯 Sua participação       │   │
-│  │  │                                        │  │  │                             │   │
-│  │  │     🖼️ [ref1] [ref2]                   │  │  │  Votos dados: 3            │   │
-│  │  │                                        │  │  │  Pedidos criados: 1        │   │
-│  │  │     🔥 847 votos          [✓ Votado]   │  │  │  Pedidos atendidos: 2      │   │
-│  │  └────────────────────────────────────────┘  │  │                             │   │
-│  │                                              │  └─────────────────────────────┘   │
-│  │  ┌────────────────────────────────────────┐  │                                    │
-│  │  │ 🥈  Jogos de Alfabetização             │  │  ┌─────────────────────────────┐   │
-│  │  │     1º Ano · Português                 │  │  │  ✅ Produzidos Recentes    │   │
-│  │  │                                        │  │  │                             │   │
-│  │  │     📝 @ana.edu                        │  │  │  📚 Calendário 2026        │   │
-│  │  │     "Jogos interativos para trabalhar  │  │  │     🟢 Disponível          │   │
-│  │  │      sílabas simples e complexas..."   │  │  │     [Ver material →]       │   │
-│  │  │                                        │  │  │                             │   │
-│  │  │     🔥 612 votos     [👍 Votar]        │  │  │  📚 Planner do Professor   │   │
-│  │  └────────────────────────────────────────┘  │  │     🟢 Disponível          │   │
-│  │                                              │  │     [Ver material →]       │   │
-│  │  ┌────────────────────────────────────────┐  │  │                             │   │
-│  │  │ 🥉  Planner Semanal Colorido           │  │  │  📚 Volta às Aulas         │   │
-│  │  │     Fundamental · Organização          │  │  │     🟡 Em produção         │   │
-│  │  │     ...                                │  │  │                             │   │
-│  │  └────────────────────────────────────────┘  │  └─────────────────────────────┘   │
-│  │                                              │                                    │
-│  │  [Ver todos os 32 pedidos]                   │                                    │
-│  └──────────────────────────────────────────────┘                                    │
-│                                                                                      │
-└──────────────────────────────────────────────────────────────────────────────────────┘
-```
+### 6.2 Drawer de Criação de Pedido (Wizard 3 Steps)
 
-### 6.3 Drawer de Criação de Pedido (Multi-Step Wizard)
+Seguindo o padrão `CrudEditDrawer` do projeto:
 
-Usando o padrão `CrudEditDrawer` do projeto com wizard de 3 etapas:
+| Step | Conteúdo |
+|------|----------|
+| **1. Categoria** | Seleção de EducationLevel + Grade (opcional) + Subject. Cards visuais com ícones. |
+| **2. Descrição** | Input de título (max 100 chars) + textarea de descrição (max 1000 chars). Dica: "Seja específica!" |
+| **3. Referências** | Upload de até 3 imagens (opcional) + Preview do pedido + Botão "Publicar". Aviso: não editável após publicação. |
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  ┌──────────┐                                                   │
-│  │ 📝       │  Novo Pedido                              [✕]    │
-│  └──────────┘  COMUNIDADE                                       │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────┐    │
-│  │  ① Categoria      ② Descrição      ③ Referências       │    │
-│  │  ━━━━━━━━━━━━━━   ─────────────    ─────────────       │    │
-│  └─────────────────────────────────────────────────────────┘    │
-│                                                                 │
-│  ─────────────────────────────────────────────────────────────  │
-│                                                                 │
-│  STEP 1: CATEGORIA                                              │
-│                                                                 │
-│  Para qual nível de ensino?                                     │
-│                                                                 │
-│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐               │
-│  │ 🎒      │ │ 📚      │ │ 📖      │ │ 🎓      │               │
-│  │ Ed.     │ │ Fund.   │ │ Fund.   │ │ Médio   │               │
-│  │Infantil │ │ Anos    │ │ Anos    │ │         │               │
-│  │         │ │Iniciais │ │ Finais  │ │         │               │
-│  │    ✓    │ │         │ │         │ │         │               │
-│  └─────────┘ └─────────┘ └─────────┘ └─────────┘               │
-│                                                                 │
-│  Qual disciplina?                                               │
-│                                                                 │
-│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐               │
-│  │ 🔤      │ │ 🔢      │ │ 🎨      │ │ 🌍      │               │
-│  │Português│ │Matemátic│ │ Artes   │ │Ciências │               │
-│  │    ✓    │ │         │ │         │ │         │               │
-│  └─────────┘ └─────────┘ └─────────┘ └─────────┘               │
-│                         [ver mais ↓]                            │
-│                                                                 │
-├─────────────────────────────────────────────────────────────────┤
-│  ┌───────────────────┐  ┌───────────────────────────────────┐   │
-│  │    DESCARTAR      │  │          PRÓXIMO →               │   │
-│  └───────────────────┘  └───────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
-```
+### 6.3 Drawer de Detalhes do Pedido
 
-**STEP 2: DESCRIÇÃO**
+Ao clicar em um card, abre drawer com:
+- Avatar + nome + username do autor
+- Descrição completa do pedido
+- Imagens de referência (se houver)
+- Estatísticas: votos, dias restantes, posição no ranking
+- Botão de votar (ou indicador "Já votado")
+- Se `status === 'unfeasible'`: exibe card com justificativa da equipe
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  ┌──────────┐                                                   │
-│  │ 📝       │  Novo Pedido                              [✕]    │
-│  └──────────┘  COMUNIDADE                                       │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────┐    │
-│  │  ① Categoria      ② Descrição      ③ Referências       │    │
-│  │  ────────────    ━━━━━━━━━━━━━━    ─────────────       │    │
-│  └─────────────────────────────────────────────────────────┘    │
-│                                                                 │
-│  ─────────────────────────────────────────────────────────────  │
-│                                                                 │
-│  STEP 2: DESCREVA SEU PEDIDO                                    │
-│                                                                 │
-│  Título do pedido                                               │
-│  ┌─────────────────────────────────────────────────────────┐    │
-│  │ Atividades de Páscoa para Educação Infantil             │    │
-│  └─────────────────────────────────────────────────────────┘    │
-│  48/100 caracteres                                              │
-│                                                                 │
-│  Descreva o que você precisa                                    │
-│  ┌─────────────────────────────────────────────────────────┐    │
-│  │ Preciso de atividades coloridas sobre páscoa para       │    │
-│  │ crianças de 4-5 anos. Gostaria que tivesse:             │    │
-│  │                                                         │    │
-│  │ - Atividades de recorte e colagem                       │    │
-│  │ - Pintura com coelhinhos e ovos                         │    │
-│  │ - Labirinto temático                                    │    │
-│  │ - Jogo da memória para imprimir                         │    │
-│  │                                                         │    │
-│  │ Pode ser em formato PDF para impressão.                 │    │
-│  └─────────────────────────────────────────────────────────┘    │
-│  312/1000 caracteres                                            │
-│                                                                 │
-│  💡 Dica: Seja específica! Quanto mais detalhes, maior a        │
-│     chance de produzirmos exatamente o que você precisa.        │
-│                                                                 │
-├─────────────────────────────────────────────────────────────────┤
-│  ┌───────────────────┐  ┌───────────────────────────────────┐   │
-│  │    ← VOLTAR       │  │          PRÓXIMO →               │   │
-│  └───────────────────┘  └───────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
-```
+### 6.4 Elementos de Gamificação (Estilo Duolingo)
 
-**STEP 3: REFERÊNCIAS + PREVIEW**
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  ┌──────────┐                                                   │
-│  │ 📝       │  Novo Pedido                              [✕]    │
-│  └──────────┘  COMUNIDADE                                       │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────┐    │
-│  │  ① Categoria      ② Descrição      ③ Referências       │    │
-│  │  ────────────    ─────────────    ━━━━━━━━━━━━━━       │    │
-│  └─────────────────────────────────────────────────────────┘    │
-│                                                                 │
-│  ─────────────────────────────────────────────────────────────  │
-│                                                                 │
-│  STEP 3: ADICIONE REFERÊNCIAS (opcional)                        │
-│                                                                 │
-│  Tem alguma imagem de inspiração?                               │
-│                                                                 │
-│  ┌─────────┐  ┌─────────┐  ┌─────────┐                         │
-│  │ ┌─────┐ │  │ ┌─────┐ │  │         │                         │
-│  │ │ 🖼️  │ │  │ │ 🖼️  │ │  │   +    │                         │
-│  │ │     │ │  │ │     │ │  │         │                         │
-│  │ └──✕──┘ │  │ └──✕──┘ │  │ Adicionar│                         │
-│  └─────────┘  └─────────┘  └─────────┘                         │
-│                                                                 │
-│  ─────────────────────────────────────────────────────────────  │
-│                                                                 │
-│  📋 PREVIEW DO SEU PEDIDO                                       │
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────┐    │
-│  │  Atividades de Páscoa para Educação Infantil            │    │
-│  │  Ed. Infantil · Português                               │    │
-│  │                                                         │    │
-│  │  "Preciso de atividades coloridas sobre páscoa para     │    │
-│  │   crianças de 4-5 anos. Gostaria que tivesse..."        │    │
-│  │                                                         │    │
-│  │  🖼️ [ref1] [ref2]                                       │    │
-│  └─────────────────────────────────────────────────────────┘    │
-│                                                                 │
-│  ⚠️ Após publicar, seu pedido não poderá ser editado.          │
-│                                                                 │
-├─────────────────────────────────────────────────────────────────┤
-│  ┌───────────────────┐  ┌───────────────────────────────────┐   │
-│  │    ← VOLTAR       │  │     🚀 PUBLICAR PEDIDO           │   │
-│  └───────────────────┘  └───────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### 6.4 Drawer de Detalhes do Pedido
-
-Ao clicar em um pedido, abre drawer com informações completas:
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  ┌──────────┐                                                   │
-│  │ 🎯       │  Atividades de Páscoa                     [✕]    │
-│  └──────────┘  ED. INFANTIL · PORTUGUÊS                         │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────┐    │
-│  │  ℹ️ Detalhes          🖼️ Referências          📊 Status │    │
-│  │  ━━━━━━━━━━━━━       ─────────────          ────────   │    │
-│  └─────────────────────────────────────────────────────────┘    │
-│                                                                 │
-│  ─────────────────────────────────────────────────────────────  │
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────┐    │
-│  │  👤 Solicitado por                                      │    │
-│  │                                                         │    │
-│  │  ┌────┐  Maria Silva                                    │    │
-│  │  │ 🧑‍🏫 │  @maria.prof                                    │    │
-│  │  └────┘  Membro desde Mar/2025                          │    │
-│  └─────────────────────────────────────────────────────────┘    │
-│                                                                 │
-│  📝 DESCRIÇÃO                                                   │
-│                                                                 │
-│  Preciso de atividades coloridas sobre páscoa para              │
-│  crianças de 4-5 anos. Gostaria que tivesse:                    │
-│                                                                 │
-│  • Atividades de recorte e colagem                              │
-│  • Pintura com coelhinhos e ovos                                │
-│  • Labirinto temático                                           │
-│  • Jogo da memória para imprimir                                │
-│                                                                 │
-│  Pode ser em formato PDF para impressão.                        │
-│                                                                 │
-│  ─────────────────────────────────────────────────────────────  │
-│                                                                 │
-│  📊 ESTATÍSTICAS                                                │
-│                                                                 │
-│  ┌─────────┐  ┌─────────┐  ┌─────────┐                         │
-│  │  🔥     │  │  📅     │  │  🏆     │                         │
-│  │  847    │  │  12     │  │  #1     │                         │
-│  │  votos  │  │  dias   │  │  lugar  │                         │
-│  └─────────┘  └─────────┘  └─────────┘                         │
-│                                                                 │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────┐    │
-│  │           👍  VOTAR NESTE PEDIDO  (3 restantes)         │    │
-│  └─────────────────────────────────────────────────────────┘    │
-│             ou                                                  │
-│  ┌─────────────────────────────────────────────────────────┐    │
-│  │           ✓  VOCÊ JÁ VOTOU NESTE PEDIDO                │    │
-│  └─────────────────────────────────────────────────────────┘    │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### 6.5 Card de Pedido com Votação Inline (Mobile-First)
-
-Card otimizado para votação rápida sem abrir drawer:
-
-```
-┌─────────────────────────────────────────┐
-│  🥇  #1 do mês                          │
-│                                         │
-│  Atividades de Páscoa                   │
-│  Ed. Infantil · Português               │
-│                                         │
-│  ┌─────────────────────────────────┐    │
-│  │ "Preciso de atividades colori-  │    │
-│  │ das sobre páscoa para crianças  │    │
-│  │ de 4-5 anos..."                 │    │
-│  │                      [ver mais] │    │
-│  └─────────────────────────────────┘    │
-│                                         │
-│  ┌────┐ @maria.prof · 12 dias atrás     │
-│  │ 👩 │                                 │
-│  └────┘                                 │
-│                                         │
-│  ┌──────────────────┬──────────────┐    │
-│  │                  │              │    │
-│  │   🔥 847 votos   │   👍 Votar   │    │
-│  │                  │              │    │
-│  └──────────────────┴──────────────┘    │
-│                                         │
-└─────────────────────────────────────────┘
-
-Estado após votar (com animação):
-┌─────────────────────────────────────────┐
-│  ...                                    │
-│  ┌──────────────────┬──────────────┐    │
-│  │                  │   ✓ Votado   │    │
-│  │   🔥 848 votos   │   ┌──────┐   │    │
-│  │      (+1!)       │   │  ✨  │   │    │
-│  │                  │   └──────┘   │    │
-│  └──────────────────┴──────────────┘    │
-└─────────────────────────────────────────┘
-```
-
-### 6.6 Elementos de Gamificação (Estilo Duolingo)
-
-**Feedback visual ao votar:**
-```
-┌─────────────────────────────────────────┐
-│                                         │
-│           🎉                            │
-│                                         │
-│      Voto computado!                    │
-│                                         │
-│      ●  ●  ●  ●  ○                     │
-│      4 de 5 usados                      │
-│                                         │
-│   "Só mais 1 voto e você pode          │
-│    sugerir seu material!"              │
-│                                         │
-│        [Continuar votando]              │
-│                                         │
-└─────────────────────────────────────────┘
-```
-
-**Desbloqueio de sugestão:**
-```
-┌─────────────────────────────────────────┐
-│                                         │
-│           🔓 ✨                          │
-│                                         │
-│     Sugestão Desbloqueada!              │
-│                                         │
-│   Você votou e agora pode sugerir       │
-│   um material para a comunidade!        │
-│                                         │
-│      [Sugerir agora]  [Depois]          │
-│                                         │
-└─────────────────────────────────────────┘
-```
-
-**Pedido selecionado (notificação):**
-```
-┌─────────────────────────────────────────┐
-│                                         │
-│           🏆 🎊                          │
-│                                         │
-│      Seu pedido foi selecionado!        │
-│                                         │
-│   "Atividades de Páscoa" ficou no       │
-│   TOP 10 com 847 votos!                 │
-│                                         │
-│   Vamos produzir em Março.              │
-│   Você será notificada quando           │
-│   estiver disponível!                   │
-│                                         │
-│           [Compartilhar 🔗]             │
-│                                         │
-└─────────────────────────────────────────┘
-```
-
-**Badges de participação:**
-```
-🗳️ Primeiro Voto - Votou pela primeira vez
-📝 Voz Ativa - Criou seu primeiro pedido
-🔥 Influencer - Seu pedido teve 100+ votos
-🏆 Top 10 - Seu pedido foi selecionado
-⭐ Veterana - Participou por 3 meses seguidos
-```
+| Momento | Feedback Visual |
+|---------|-----------------|
+| **Após votar** | Confetti + contador incrementa (+1!) + toast "Voto computado!" |
+| **Ao desbloquear sugestão** | Toast especial dourado "🔓 Sugestão Desbloqueada!" com animação de unlock |
+| **Pedido selecionado (Top 10)** | Notificação celebratória "🏆 Seu pedido foi selecionado!" com opção de compartilhar |
+| **Material produzido** | Push notification para todos que votaram: "O material que você ajudou a escolher está disponível!" |
 
 ### 6.5 Card de Pedido Inviável (para a autora)
 
-```
-┌─────────────────────────────────────────┐
-│  ⚠️ INVIÁVEL                            │
-├─────────────────────────────────────────┤
-│                                         │
-│  Atividades do Mickey                   │
-│  Ed. Infantil · Artes                   │
-│                                         │
-│  📝 @voce (seu pedido)                  │
-│  "Atividades com o Mickey Mouse..."     │
-│                                         │
-│  🔥 234 votos                           │
-│                                         │
-│  ┌─────────────────────────────────┐    │
-│  │ 💬 Justificativa da equipe:     │    │
-│  │                                 │    │
-│  │ "Infelizmente não podemos       │    │
-│  │  produzir materiais com         │    │
-│  │  personagens da Disney por      │    │
-│  │  questões de direitos autorais. │    │
-│  │                                 │    │
-│  │  Sugestão: Crie um novo pedido  │    │
-│  │  com tema de animais ou outro   │    │
-│  │  tema livre! 💜"                │    │
-│  └─────────────────────────────────┘    │
-│                                         │
-│  [Criar novo pedido →]                  │
-│                                         │
-└─────────────────────────────────────────┘
-```
+Quando `status === 'unfeasible'`:
+- Badge "⚠️ INVIÁVEL" no topo
+- Caixa destacada com a justificativa da equipe
+- CTA: "Criar novo pedido →" (já que o crédito é devolvido)
+### 6.6 Painel Admin
 
-### 6.6 Painel Admin - Avaliar Viabilidade
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  📋 Pedidos Selecionados - Aguardando Avaliação      Fev/2026  │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ┌───────────────────────────────────────────────────────────┐  │
-│  │  🥇 Atividades do Mickey                                  │  │
-│  │  Ed. Infantil · Artes · 234 votos                         │  │
-│  │                                                           │  │
-│  │  "Atividades com o Mickey Mouse para crianças de 4..."    │  │
-│  │                                                           │  │
-│  │  ┌─────────────────┐  ┌─────────────────────────────┐     │  │
-│  │  │  ✅ Aprovar     │  │  ❌ Marcar Inviável         │     │  │
-│  │  └─────────────────┘  └─────────────────────────────┘     │  │
-│  └───────────────────────────────────────────────────────────┘  │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-
-Modal ao clicar "Marcar Inviável":
-┌─────────────────────────────────────────┐
-│  ❌ Marcar como Inviável                │
-├─────────────────────────────────────────┤
-│                                         │
-│  Justificativa (obrigatório)            │
-│  ┌─────────────────────────────────┐    │
-│  │                                 │    │
-│  │ Explique o motivo de forma      │    │
-│  │ gentil. A autora vai ver essa   │    │
-│  │ mensagem.                       │    │
-│  │                                 │    │
-│  │ Ex: "Não podemos produzir por   │    │
-│  │ questões de direitos autorais.  │    │
-│  │ Sugestão: crie um pedido com    │    │
-│  │ tema livre!"                    │    │
-│  │                                 │    │
-│  └─────────────────────────────────┘    │
-│                                         │
-│  ⚠️ A autora será notificada e poderá  │
-│     criar um novo pedido este mês.      │
-│                                         │
-│  [Cancelar]  [Confirmar Inviabilidade]  │
-│                                         │
-└─────────────────────────────────────────┘
-```
+**Página `/admin/community`:**
+- Lista de pedidos filtráveis por status e mês
+- Para pedidos `selected`: botões "Aprovar" e "Marcar Inviável"
+- Modal de justificativa obrigatória para inviabilidade
+- Vinculação de Resource ao pedido (ao marcar `completed`)
 
 ---
 
