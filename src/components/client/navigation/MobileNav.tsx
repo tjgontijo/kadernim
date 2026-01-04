@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FileText, LayoutGrid, User } from 'lucide-react';
+import { FileText, LayoutGrid, User, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function MobileNav() {
@@ -11,6 +11,7 @@ export function MobileNav() {
     const navItems = [
         { label: 'Planos', icon: FileText, href: '/lesson-plans' },
         { label: 'Recursos', icon: LayoutGrid, href: '/resources' },
+        { label: 'Pedidos', icon: Sparkles, href: '/community' },
         { label: 'Conta', icon: User, href: '/account' }
     ];
 

@@ -9,7 +9,7 @@ const swConfig = {
   modifyURLPrefix: {
     'static/': '/_next/static/',
   },
-  skipWaiting: true,
+  skipWaiting: false, // Não ativar automático - usuário decide quando atualizar
   clientsClaim: true,
   cleanupOutdatedCaches: true,
   runtimeCaching: [

@@ -194,3 +194,20 @@ Interface visual para:
 - `community.request.completed`
 - `community.request.unfeasible`
 - `resource.published`
+
+---
+
+## 9. Estratégia de Implementação e Refatoração Legado
+
+A adoção da Arquitetura Orientada a Eventos será feita de forma incremental para não paralisar o desenvolvimento de novas funcionalidades.
+
+### 9.1 Novos Recursos (Greenfield)
+Todo novo recurso (ex: Pedidos da Comunidade) deve nascer emitindo eventos nativamente em seus casos de uso através da função `events.emit()`.
+
+### 9.2 Recursos Existentes (Refatoração Legado)
+Para integrar módulos antigos (Cadastro, Pagamentos, Recursos), serão usadas duas abordagens:
+1. **Manual sob Demanda**: Ao precisar automatizar algo em um módulo antigo, o gatilho `events.emit()` é adicionado ao código fonte daquele caso de uso.
+2. **Automática via Prisma Extensions**: Implementação de uma extensão global do Prisma que intercepta escritas no banco de dados para emitir eventos genéricos (ex: `db.user.created`), permitindo automações sem alterar o código legado.
+
+### 9.3 Roadmap Incremental
+O sistema começará "surdo" para o legado e ganhará "audição" conforme as necessidades de automação surgirem, evitando uma refatoração massiva e arriscada.

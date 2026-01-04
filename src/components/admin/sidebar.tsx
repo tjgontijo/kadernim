@@ -11,6 +11,7 @@ import {
   Settings,
   Hash,
   Tags,
+  Sparkles,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -57,6 +58,7 @@ const ICON_MAP = {
   Settings,
   Hash,
   Tags,
+  Sparkles,
 } as const
 
 export function AdminSidebar({ user }: AdminSidebarProps) {
@@ -76,6 +78,7 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
 
   const dataItems: NavItem[] = [
     { title: 'Recursos', href: '/admin/resources', icon: 'BookOpen', permission: { action: 'read', subject: 'Resource' } },
+    { title: 'Pedidos', href: '/admin/community-requests', icon: 'Sparkles', permission: { action: 'read', subject: 'Resource' } },
     { title: 'Matérias', href: '/admin/subjects', icon: 'Hash', permission: { action: 'read', subject: 'Subject' } },
     { title: 'Usuários', href: '/admin/users', icon: 'Users', permission: { action: 'read', subject: 'User' } },
     { title: 'Organizações', href: '/admin/organizations', icon: 'Building2', permission: { action: 'read', subject: 'Organization' } },
