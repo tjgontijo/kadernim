@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Download } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Download, Share2, PlusSquare, X, Smartphone, Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -10,20 +12,14 @@ interface BeforeInstallPromptEvent extends Event {
 
 export function InstallPWA() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [isInstallable, setIsInstallable] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Detectar dispositivos móveis
-    const userAgent = window.navigator.userAgent.toLowerCase();
-    const isIOSDevice = /iphone|ipad|ipod/.test(userAgent);
-    const isAndroidMobile = /android/.test(userAgent) && /mobile/.test(userAgent);
-    const isMobileDevice = isIOSDevice || isAndroidMobile;
-    
+    // Detectar iOS
+    const isIOSDevice = /iPhone|iPad|iPod/i.test(window.navigator.userAgent);
     setIsIOS(isIOSDevice);
-    setIsMobile(isMobileDevice);
 
     // Verificar se já está instalado
     if (window.matchMedia('(display-mode: standalone)').matches) {
@@ -31,15 +27,20 @@ export function InstallPWA() {
       return;
     }
 
-    // Listener para o evento beforeinstallprompt (Android/Desktop)
-    // Não usamos preventDefault() para permitir que o banner nativo seja exibido automaticamente
+    // Listener para Android/Desktop
     const promptHandler = (e: Event) => {
-      // Armazenamos a referência para uso posterior caso o usuário queira instalar via nosso botão
+      e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setIsInstallable(true);
+      setIsVisible(true);
     };
 
     window.addEventListener('beforeinstallprompt', promptHandler);
+
+    // Para iOS, mostramos após alguns segundos se não estiver instalado
+    if (isIOSDevice && !window.matchMedia('(display-mode: standalone)').matches) {
+      const timer = setTimeout(() => setIsVisible(true), 3000);
+      return () => clearTimeout(timer);
+    }
 
     return () => {
       window.removeEventListener('beforeinstallprompt', promptHandler);
@@ -48,80 +49,106 @@ export function InstallPWA() {
 
   const handleInstallClick = async () => {
     if (!deferredPrompt) return;
-
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-
-    if (outcome === 'accepted') {
-      console.log('PWA instalado com sucesso');
-      setIsInstallable(false);
-    }
-
+    if (outcome === 'accepted') setIsVisible(false);
     setDeferredPrompt(null);
   };
 
-  // Não mostrar se já estiver instalado ou não for dispositivo móvel
-  if (isInstalled || !isMobile) return null;
+  if (isInstalled || !isVisible) return null;
 
-  // Mostrar instruções para iOS
-  if (isIOS) {
-    return (
-      <div className="mt-6">
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300 dark:border-gray-600" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="bg-white px-2 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
-              Instale o app
-            </span>
-          </div>
-        </div>
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ y: '100%' }}
+        animate={{ y: 0 }}
+        exit={{ y: '100%' }}
+        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+        className="fixed inset-x-0 bottom-0 z-[100] p-4 pb-8 sm:p-6"
+      >
+        <div className="mx-auto max-w-md overflow-hidden rounded-[2.5rem] border border-border bg-background/80 p-1 shadow-2xl backdrop-blur-2xl">
+          <div className="relative rounded-[2.2rem] bg-card p-6 shadow-sm">
+            {/* Close Button */}
+            <button
+              onClick={() => setIsVisible(false)}
+              className="absolute right-4 top-4 rounded-full bg-muted p-1 hover:bg-muted/80"
+            >
+              <X className="h-4 w-4 text-muted-foreground" />
+            </button>
 
-        <div className="mt-6 rounded-md border-2 border-indigo-200 bg-indigo-50 p-4 dark:border-indigo-800 dark:bg-indigo-900/30">
-          <div className="flex items-start gap-3">
-            <Download className="h-5 w-5 text-indigo-600 dark:text-indigo-400 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-indigo-800 dark:text-indigo-200">
-              <p className="font-medium mb-1">Para instalar no iOS:</p>
-              <ol className="list-decimal list-inside space-y-1 text-xs">
-                <li>Toque no ícone de compartilhar</li>
-                <li>Role para baixo e toque em &quot;Adicionar à Tela de Início&quot;</li>
-                <li>Toque em &quot;Adicionar&quot;</li>
-              </ol>
+            {/* Header */}
+            <div className="flex items-center gap-4 mb-6">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-inner">
+                <Smartphone className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-black tracking-tight text-foreground">
+                  Instalar Kadernim
+                </h3>
+                <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-primary">
+                  <Sparkles className="h-3 w-3" />
+                  Experiência Premium
+                </div>
+              </div>
             </div>
+
+            {isIOS ? (
+              /* iOS Steps */
+              <div className="space-y-4">
+                <p className="text-sm font-medium text-muted-foreground leading-relaxed">
+                  Adicione o app à sua tela de início para acessar instantaneamente, mesmo offline.
+                </p>
+                <div className="space-y-3 rounded-2xl bg-muted/30 p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-background border border-border shadow-sm text-xs font-bold">1</div>
+                    <p className="text-xs font-medium text-foreground">
+                      Toque no ícone de <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-white border border-border mx-1 shadow-sm"><Share2 className="h-3 w-3 text-blue-500" /></span> (Compartilhar)
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-background border border-border shadow-sm text-xs font-bold">2</div>
+                    <p className="text-xs font-medium text-foreground">
+                      Role para baixo e selecione <span className="font-bold underline decoration-primary/50 underline-offset-2">&quot;Adicionar à Tela de Início&quot;</span>
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-background border border-border shadow-sm text-xs font-bold">3</div>
+                    <p className="text-xs font-medium text-foreground">
+                      Pressione <span className="font-bold text-primary">Adicionar</span> no canto superior
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => setIsVisible(false)}
+                  className="w-full rounded-2xl h-12 font-black uppercase tracking-widest text-[11px]"
+                >
+                  Entendi
+                </Button>
+              </div>
+            ) : (
+              /* Android/Chrome Button */
+              <div className="space-y-4">
+                <p className="text-sm font-medium text-muted-foreground leading-relaxed">
+                  Instale o app para ter acesso rápido aos seus planos de aula e recursos educativos.
+                </p>
+                <Button
+                  onClick={handleInstallClick}
+                  className="w-full gap-2 rounded-2xl h-14 font-black uppercase tracking-widest text-[12px] shadow-lg shadow-primary/20"
+                >
+                  <Download className="h-4 w-4" />
+                  Instalar Agora
+                </Button>
+                <button
+                  onClick={() => setIsVisible(false)}
+                  className="w-full text-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Agora não, obrigado
+                </button>
+              </div>
+            )}
           </div>
         </div>
-      </div>
-    );
-  }
-
-  // Mostrar botão de instalação para Android/Desktop
-  if (isInstallable && deferredPrompt) {
-    return (
-      <div className="mt-6">
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300 dark:border-gray-600" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="bg-white px-2 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
-              Instale o app
-            </span>
-          </div>
-        </div>
-
-        <div className="mt-6">
-          <button
-            onClick={handleInstallClick}
-            className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-md border-2 border-indigo-300 bg-indigo-50 px-4 py-3 text-indigo-700 shadow-sm transition-all duration-200 hover:border-indigo-400 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:border-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 dark:hover:border-indigo-600 dark:hover:bg-indigo-900/50"
-          >
-            <Download className="h-5 w-5" />
-            <span className="font-medium">Instalar Aplicativo</span>
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return null;
+      </motion.div>
+    </AnimatePresence>
+  );
 }
