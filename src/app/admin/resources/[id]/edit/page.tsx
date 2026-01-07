@@ -48,6 +48,7 @@ interface ResourceDetail {
   externalId: number
   isFree: boolean
   thumbUrl: string | null
+  grades: string[]
   createdAt: string
   updatedAt: string
   files: Array<{
