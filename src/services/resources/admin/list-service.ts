@@ -14,6 +14,7 @@ interface ListResourcesResponse {
     thumbUrl: string | null
     fileCount: number
     accessCount: number
+    grades: string[]
     createdAt: Date
     updatedAt: Date
   }>
@@ -103,6 +104,13 @@ export async function listResourcesService(
         take: 1,
         select: { url: true, cloudinaryPublicId: true },
       },
+      grades: {
+        include: {
+          grade: {
+            select: { name: true }
+          }
+        }
+      },
     },
   })
 
@@ -127,6 +135,7 @@ export async function listResourcesService(
     thumbUrl: buildThumbUrl(resource.images[0]),
     fileCount: resource.files.length,
     accessCount: resource.accessEntries.length,
+    grades: resource.grades.map(rg => rg.grade.name),
     createdAt: resource.createdAt,
     updatedAt: resource.updatedAt,
   }))
