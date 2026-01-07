@@ -23,13 +23,15 @@ export async function createResourceService(
     thumbUrl,
   } = input
 
-  // Check if externalId already exists
-  const existingResource = await prisma.resource.findUnique({
-    where: { externalId },
-  })
+  // Check if externalId already exists (only if provided)
+  if (externalId) {
+    const existingResource = await prisma.resource.findUnique({
+      where: { externalId },
+    })
 
-  if (existingResource) {
-    throw new Error(`Resource with externalId ${externalId} already exists`)
+    if (existingResource) {
+      throw new Error(`Resource with externalId ${externalId} already exists`)
+    }
   }
 
   // Resolve slugs to IDs
@@ -48,7 +50,7 @@ export async function createResourceService(
       description: description || null,
       educationLevelId: level.id,
       subjectId: sub.id,
-      externalId,
+      externalId: externalId ?? null,
       isFree,
       grades: {
         create: input.grades?.map(gradeSlug => ({
