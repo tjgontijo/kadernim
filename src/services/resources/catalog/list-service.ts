@@ -30,8 +30,8 @@ type ResourceRow = {
   id: string
   title: string
   description: string | null
+  thumbUrl: string | null
   cloudinaryPublicId: string | null
-  imageUrl: string | null
   educationLevel: string
   subject: string
   isFree: boolean
@@ -96,8 +96,8 @@ export async function getResourceList({
       r.id,
       r.title,
       r.description AS description,
+      (SELECT ri.url FROM "resource_image" ri WHERE ri."resourceId" = r.id ORDER BY ri."order" ASC LIMIT 1) AS "thumbUrl",
       (SELECT ri."cloudinaryPublicId" FROM "resource_image" ri WHERE ri."resourceId" = r.id ORDER BY ri."order" ASC LIMIT 1) AS "cloudinaryPublicId",
-      (SELECT ri.url FROM "resource_image" ri WHERE ri."resourceId" = r.id ORDER BY ri."order" ASC LIMIT 1) AS "imageUrl",
       el.slug AS "educationLevel",
       s.slug AS "subject",
       r."isFree" AS "isFree",
@@ -123,7 +123,7 @@ export async function getResourceList({
       id: row.id,
       title: row.title,
       description: row.description,
-      thumbUrl: row.imageUrl || (row.cloudinaryPublicId ? `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${row.cloudinaryPublicId}` : null),
+      thumbUrl: row.thumbUrl || (row.cloudinaryPublicId ? `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/c_scale,w_400,q_auto,f_auto/${row.cloudinaryPublicId}` : null),
       educationLevel: row.educationLevel,
       subject: row.subject,
       isFree: row.isFree,

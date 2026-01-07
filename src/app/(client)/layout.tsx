@@ -15,7 +15,7 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
   const session = await getServerSession()
 
   if (!session) {
-    redirect('/login/otp')
+    redirect('/login')
   }
 
   return (

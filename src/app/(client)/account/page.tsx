@@ -185,8 +185,6 @@ export default function AccountPage() {
 
 
 
-    // ... (keep headers)
-
     if (isLoading) {
         return <ProfileSkeleton />
     }
@@ -241,7 +239,7 @@ export default function AccountPage() {
 
                             <label
                                 htmlFor="avatar-upload-main"
-                                className="absolute bottom-1 right-1 p-2 bg-background/80 backdrop-blur-sm text-muted-foreground hover:text-primary rounded-full cursor-pointer shadow-md hover:shadow-lg transition-all border border-border opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-95"
+                                className="absolute bottom-1 right-1 p-2 bg-background/80 backdrop-blur-sm text-muted-foreground hover:text-primary rounded-full cursor-pointer shadow-md hover:shadow-lg transition-all border border-border opacity-100 md:opacity-0 md:group-hover:opacity-100 hover:scale-110 active:scale-95"
                             >
                                 <Camera className="h-3.5 w-3.5" />
                             </label>

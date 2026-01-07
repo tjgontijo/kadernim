@@ -24,7 +24,7 @@ interface CrudEditDrawerProps {
     onSave?: () => void
     isSaving?: boolean
     saveLabel?: string
-    maxWidth?: 'max-w-4xl' | 'max-w-5xl' | 'max-w-7xl' | 'max-w-none'
+    maxWidth?: 'max-w-xl' | 'max-w-2xl' | 'max-w-3xl' | 'max-w-4xl' | 'max-w-5xl' | 'max-w-7xl' | 'max-w-none'
     showFooter?: boolean
 }
 
@@ -38,7 +38,7 @@ export function CrudEditDrawer({
     onSave,
     isSaving = false,
     saveLabel = 'Salvar Alterações',
-    maxWidth = 'max-w-7xl',
+    maxWidth = 'max-w-xl',
     showFooter = true
 }: CrudEditDrawerProps) {
     return (
@@ -49,7 +49,7 @@ export function CrudEditDrawer({
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4 min-w-0">
                                 {Icon && (
-                                    <div className="p-2.5 bg-primary/10 rounded-xl shrink-0">
+                                    <div className="h-10 w-10 flex items-center justify-center bg-primary/10 rounded-lg shrink-0">
                                         <Icon className="h-5 w-5 text-primary" />
                                     </div>
                                 )}
@@ -57,18 +57,16 @@ export function CrudEditDrawer({
                                     <DrawerTitle className="text-xl font-bold tracking-tight truncate">
                                         {title}
                                     </DrawerTitle>
-                                    {subtitle ? (
-                                        <DrawerDescription className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50 mt-1">
+                                    {subtitle && (
+                                        <DrawerDescription className="text-xs text-muted-foreground mt-0.5">
                                             {subtitle}
                                         </DrawerDescription>
-                                    ) : (
-                                        <DrawerDescription className="sr-only">Formulário de edição do sistema.</DrawerDescription>
                                     )}
                                 </div>
                             </div>
 
                             <DrawerClose asChild>
-                                <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted/80">
+                                <Button variant="ghost" size="icon" className="rounded-full">
                                     <X className="h-5 w-5" />
                                 </Button>
                             </DrawerClose>
@@ -76,33 +74,33 @@ export function CrudEditDrawer({
                     </DrawerHeader>
 
                     <div className="flex-1 overflow-y-auto p-6 scrollbar-thin focus:outline-none">
-                        <div className="w-full pb-20">
+                        <div className="w-full pb-10">
                             {children}
                         </div>
                     </div>
 
                     {showFooter && (
-                        <DrawerFooter className="border-t pt-6 bg-background/80 backdrop-blur-md shrink-0 px-6 pb-10">
-                            <div className="flex gap-4">
+                        <DrawerFooter className="border-t pt-4 bg-background/80 backdrop-blur-md shrink-0 px-6 pb-8">
+                            <div className="flex gap-3 justify-end">
                                 <DrawerClose asChild>
                                     <Button
                                         variant="outline"
-                                        className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-muted transition-all"
+                                        className="h-10 px-6 font-medium"
                                         disabled={isSaving}
                                     >
-                                        Descartar
+                                        Cancelar
                                     </Button>
                                 </DrawerClose>
                                 {onSave && (
                                     <Button
-                                        className="flex-[2] h-14 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                        className="h-10 px-8 font-bold min-w-[140px]"
                                         onClick={onSave}
                                         disabled={isSaving}
                                     >
                                         {isSaving ? (
                                             <>
-                                                <Loader2 className="h-4 w-4 animate-spin mr-3" />
-                                                Processando...
+                                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                                Salvando...
                                             </>
                                         ) : (
                                             saveLabel

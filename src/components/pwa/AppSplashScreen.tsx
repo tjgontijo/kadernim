@@ -5,19 +5,34 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 
 export function AppSplashScreen() {
-    const [isVisible, setIsVisible] = useState(true);
+    const [isVisible, setIsVisible] = useState(false);
     const [isStandalone, setIsStandalone] = useState(false);
 
     useEffect(() => {
+        // Verificar se já foi mostrado nesta sessão para evitar repetir em navegação
+        const hasShown = sessionStorage.getItem('splash-shown');
+        if (hasShown) {
+            setIsVisible(false);
+            return;
+        }
+
         // Verificar se está em modo standalone (PWA instalado)
         const standalone = window.matchMedia('(display-mode: standalone)').matches;
         setIsStandalone(standalone);
 
-        // No modo mobile PWA, queremos que o splash dure um pouco mais para dar o efeito native
-        // Em desktop, apenas um flash rápido ou nem mostrar
+        // Se não for standalone, não mostramos o splash (especialmente em desktop)
+        if (!standalone) {
+            setIsVisible(false);
+            return;
+        }
+
+        // Se chegamos aqui, mostramos o splash
+        setIsVisible(true);
+
         const timer = setTimeout(() => {
             setIsVisible(false);
-        }, standalone ? 2200 : 1200);
+            sessionStorage.setItem('splash-shown', 'true');
+        }, 2200);
 
         return () => clearTimeout(timer);
     }, []);
@@ -34,8 +49,8 @@ export function AppSplashScreen() {
                     className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-background"
                 >
                     <div className="relative flex flex-col items-center">
-                        {/* Logo Animation */}
-                        <motion.div
+                        {/* Logo Animation as H1 */}
+                        <motion.h1
                             initial={{ scale: 0.8, opacity: 0 }}
                             animate={{
                                 scale: 1,
@@ -51,16 +66,17 @@ export function AppSplashScreen() {
                                     }
                                 }
                             }}
-                            className="relative h-32 w-32"
+                            className="relative h-32 w-48"
                         >
                             <Image
                                 src="/images/system/logo_transparent.png"
-                                alt="Logo"
+                                alt="Kadernim"
                                 fill
+                                sizes="(max-width: 768px) 100vw, 224px"
                                 className="object-contain"
                                 priority
                             />
-                        </motion.div>
+                        </motion.h1>
 
                         {/* Glowing effect background */}
                         <motion.div
@@ -77,7 +93,7 @@ export function AppSplashScreen() {
                             className="absolute -inset-10 -z-10 bg-primary/20 blur-3xl rounded-full"
                         />
 
-                        {/* Text Animation */}
+                        {/* Tagline Animation */}
                         <motion.div
                             initial={{ y: 20, opacity: 0 }}
                             animate={{
@@ -85,14 +101,11 @@ export function AppSplashScreen() {
                                 opacity: 1,
                                 transition: { delay: 0.4, duration: 0.6 }
                             }}
-                            className="mt-8 flex flex-col items-center"
+                            className="mt-6 flex flex-col items-center"
                         >
-                            <h1 className="text-2xl font-black tracking-tighter text-foreground">
-                                KADERNIM
-                            </h1>
-                            <div className="mt-2 flex items-center gap-1">
+                            <div className="flex items-center gap-2">
                                 <div className="h-1 w-1 rounded-full bg-primary" />
-                                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                                <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-muted-foreground">
                                     Transformando a Educação
                                 </p>
                                 <div className="h-1 w-1 rounded-full bg-primary" />

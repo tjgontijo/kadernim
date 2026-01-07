@@ -38,7 +38,7 @@ import {
     DropdownMenuTrigger,
     DropdownMenuItem,
 } from '@/components/ui/dropdown-menu'
-import { useAdminUsers, useUpdateAdminUser, useDeleteAdminUser } from '@/hooks/useAdminUsers'
+import { useAdminUsers, useUpdateAdminUser, useDeleteAdminUser } from '@/hooks/use-admin-users'
 import { toast } from 'sonner'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'

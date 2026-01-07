@@ -67,7 +67,7 @@ export async function POST(
     }
 
     // Upload to Cloudinary
-    const uploadResult = await uploadVideo(file, resourceId, title)
+    const uploadResult = await uploadVideo(file, 'resources/videos', resourceId, title)
 
     // Generate thumbnail
     const thumbnail = getVideoThumbnail(uploadResult.publicId, 0)
@@ -77,6 +77,7 @@ export async function POST(
       resourceId,
       title,
       cloudinaryPublicId: uploadResult.publicId,
+      url: uploadResult.url,
       thumbnail,
       duration: uploadResult.duration,
     })

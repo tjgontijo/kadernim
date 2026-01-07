@@ -6,11 +6,11 @@ Sistema de billing desacoplado para o Kadernim SaaS, permitindo cobrancas recorr
 O sistema gerencia planos, assinaturas, faturas e pagamentos de forma agnositca ao gateway, permitindo troca de provedor sem impacto nas entidades de dominio.
 
 ## Problema que resolve
-- Monetizacao do SaaS com cobranca recorrente automatica
-- Controle de acesso a features baseado em planos
-- Limites de uso (Meta Ads profiles, WhatsApp instances, membros, etc.)
-- Experiencia de checkout sem redirecionamento (checkout transparente)
-- Flexibilidade para operar em multiplas moedas/paises no futuro
+- Monetização do SaaS para professores com cobrança recorrente automática
+- Controle de acesso a features baseado em planos de assinatura
+- Limites de uso específicos para o nicho (perfis de alunos, instâncias de WhatsApp, geradores de aulas)
+- Experiência de checkout sem fricção (Checkout Transparente)
+- Automação burocrática (emissão de NF-e e régua de cobrança automática via WhatsApp/SMS pela Asaas)
 
 ## Usuarios
 - **Owners de Organization**: Gerenciam assinatura, visualizam faturas, atualizam pagamento
@@ -53,10 +53,15 @@ O sistema gerencia planos, assinaturas, faturas e pagamentos de forma agnositca 
 - Auditoria completa de eventos recebidos
 - Atualizacao automatica de status
 
-## 6. Aplicacao de Limites
-- Verificacao de limites antes de criar recursos
-- Bloqueio suave (aviso) vs bloqueio duro (impede acao)
-- Degradacao gradual por inadimplencia
+## 6. Aplicação de Limites
+- Verificação de limites antes de criar recursos
+- Bloqueio suave (aviso) vs bloqueio duro (impede ação)
+- Degradação gradual por inadimplência
+
+## 7. Automação de NF-e e Réguas (Diverencial Professores)
+- Emissão automática de NF-e via Asaas no momento da confirmação do pagamento
+- Régua de cobrança nativa (WhatsApp/e-mail) para reduzir inadimplência
+- Gestão de dados fiscais (CPF/CNPJ) integrada ao checkout transparente
 
 # User Experience
 
@@ -799,18 +804,18 @@ BILLING_WEBHOOK_BASE_URL=https://whatrack.com/api/webhooks
 ## MVP Definition
 
 O MVP permite:
-1. Criar planos no banco de dados
-2. Usuario fazer checkout com cartao de credito
-3. Sistema confirmar pagamento via webhook
-4. Usuario ver status da assinatura
-5. Sistema aplicar limites basicos
+1. Criar planos no banco de dados (Starter, Pro, Business)
+2. Usuário fazer checkout transparente com **Cartão de Crédito ou PIX**
+3. Captura de dados fiscais (CPF/CNPJ) para emissão de NF-e
+4. Sistema confirmar pagamento via webhook e liberar acesso imediato
+5. Usuário ver status da assinatura e histórico
 
-NAO inclui no MVP:
-- PIX/Boleto (Phase 2)
-- Upgrade/downgrade (Phase 2)
+NÃO inclui no MVP:
+- Boleto Bancário (Phase 2)
+- Upgrade/downgrade com pro-rata automático (Phase 2)
 - Trial period (Phase 4)
 - Cupons (Phase 4)
-- Stripe (Phase 4)
+- Outros provedores como Stripe (Phase 4)
 
 ## Resource Constraints
 

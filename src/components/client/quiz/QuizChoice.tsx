@@ -91,13 +91,13 @@ export function QuizChoice({
                         />
                     ))
                 ) : (
-                    options.map((option) => {
+                    options.map((option, index) => {
                         const selected = isSelected(option.slug);
                         const disabled = !selected && isMaxReached;
 
                         return (
                             <QuizCard
-                                key={option.slug}
+                                key={`${option.slug}-${index}`}
                                 title={option.name}
                                 description={option.description}
                                 icon={option.icon}

@@ -17,7 +17,7 @@ interface AdminContentProps {
 
 export function AdminContent({ user, children }: AdminContentProps) {
     return (
-        <div className="flex-1 w-full h-full">
+        <div className="flex-1 w-full min-h-0">
             {children}
         </div>
     )

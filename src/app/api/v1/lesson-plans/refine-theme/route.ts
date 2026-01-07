@@ -2,33 +2,12 @@ import { NextResponse } from 'next/server';
 import { generateObject } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { z } from 'zod';
+import { auth } from '@/server/auth';
+import { logLlmUsage } from '@/services/llm/llm-usage-service';
 
 /**
  * POST /api/v1/lesson-plans/refine-theme
- *
- * Refina um tema bruto fornecido pela professora em 3 versões profissionais
- *
- * Request body:
- * {
- *   rawTheme: string,
- *   educationLevelSlug: string,
- *   gradeSlug: string,
- *   subjectSlug: string,
- *   seed?: number
- * }
- *
- * Response:
- * {
- *   success: true,
- *   data: {
- *     original: string,
- *     refined: [
- *       { version: 'short', text: string },
- *       { version: 'medium', text: string },
- *       { version: 'long', text: string }
- *     ]
- *   }
- * }
+// ... (omitting comments for brevity in replacement chunk but keeping them in real file)
  */
 
 const RequestSchema = z.object({
@@ -52,6 +31,11 @@ const RefinedThemesSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const startTime = Date.now();
+  const session = await auth.api.getSession({ headers: request.headers });
+  const userId = session?.user?.id;
+  const model = 'gpt-4o-mini';
+
   try {
     const body = await request.json();
     const validated = RequestSchema.parse(body);
@@ -97,13 +81,35 @@ export async function POST(request: Request) {
     3. **Longa**: Descritiva e alinhada com BNCC (máximo 25 palavras)`;
 
     // Gerar refinamentos com IA
-    const { object } = await generateObject({
-      model: openai('gpt-4o-mini'),
+    const { object, usage } = await generateObject({
+      model: openai(model),
       system: systemPrompt,
       prompt: userPrompt,
       schema: RefinedThemesSchema,
       temperature: 0.8 + seed * 0.1,
     });
+
+    // Log de sucesso
+    const promptTokens = (usage as any).promptTokens ?? (usage as any).prompt_tokens ?? 0;
+    const completionTokens = (usage as any).completionTokens ?? (usage as any).completion_tokens ?? 0;
+
+    await logLlmUsage({
+      userId,
+      feature: 'theme-refinement',
+      operation: `Refinar tema: "${rawTheme}"`,
+      model,
+      inputTokens: promptTokens,
+      outputTokens: completionTokens,
+      latencyMs: Date.now() - startTime,
+      status: 'success',
+      metadata: {
+        rawTheme,
+        educationLevel: educationLevelSlug,
+        seed,
+      },
+      // Passar objeto raw p/ debug no service se os tokens forem 0
+      rawUsage: usage
+    } as any);
 
     // Formatar resposta
     const refined = [
@@ -120,6 +126,24 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
+    const latencyMs = Date.now() - startTime;
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+    // Log de erro (apenas se não for erro de validação do RequestSchema)
+    if (!(error instanceof z.ZodError)) {
+      await logLlmUsage({
+        userId,
+        feature: 'theme-refinement',
+        operation: `Refinar tema (Falha)`,
+        model,
+        inputTokens: 0,
+        outputTokens: 0,
+        latencyMs,
+        status: 'error',
+        errorMessage,
+      });
+    }
+
     console.error('[POST /api/v1/lesson-plans/refine-theme] Error:', error);
 
     // Erros de validação

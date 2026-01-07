@@ -10,7 +10,7 @@ import {
     Bold, Italic, List, ListOrdered,
     Heading2, Undo, Redo,
     Underline as UnderlineIcon, Link2, MoreHorizontal,
-    AlignLeft, AlignCenter, AlignRight, Minus, Code
+    AlignLeft, AlignCenter, AlignRight, Minus, Code, Variable
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -20,16 +20,19 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
     DropdownMenuSeparator,
+    DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
+import type { EventVariable } from "@/lib/events/catalog"
 
 interface RichTextEditorProps {
     value: string
     onChange: (value: string) => void
     placeholder?: string
+    availableVariables?: EventVariable[]
 }
 
-export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
+export function RichTextEditor({ value, onChange, availableVariables = [] }: RichTextEditorProps) {
     const editor = useEditor({
         extensions: [
             StarterKit.configure({
@@ -67,6 +70,10 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
         if (url) {
             editor.chain().focus().setLink({ href: url }).run()
         }
+    }
+
+    const insertVariable = (variableKey: string) => {
+        editor.chain().focus().insertContent(`{{${variableKey}}}`).run()
     }
 
     return (
@@ -130,6 +137,47 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
                 </Button>
 
                 <Separator orientation="vertical" className="h-5 mx-1" />
+
+                {/* Botão de Variáveis */}
+                {availableVariables.length > 0 && (
+                    <>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 px-2 gap-1"
+                                    title="Inserir variável"
+                                >
+                                    <Variable className="h-3.5 w-3.5" />
+                                    <span className="text-[10px]">Variáveis</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start" className="w-64 max-h-[400px] overflow-y-auto">
+                                <DropdownMenuLabel className="text-xs">Inserir Variável</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                {availableVariables.map((variable) => (
+                                    <DropdownMenuItem
+                                        key={variable.key}
+                                        onClick={() => insertVariable(variable.key)}
+                                        className="flex flex-col items-start gap-1 py-2"
+                                    >
+                                        <code className="text-xs font-mono text-primary">
+                                            {`{{${variable.key}}}`}
+                                        </code>
+                                        <span className="text-[10px] text-muted-foreground">
+                                            {variable.label}
+                                            {variable.example && <span className="text-primary"> · Ex: {variable.example}</span>}
+                                        </span>
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <Separator orientation="vertical" className="h-5 mx-1" />
+                    </>
+                )}
 
                 {/* Dropdown "Mais Opções" */}
                 <DropdownMenu>

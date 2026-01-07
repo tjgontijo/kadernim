@@ -58,6 +58,18 @@ export async function GET(
           },
           orderBy: { order: 'asc' },
         },
+        videos: {
+          select: {
+            id: true,
+            title: true,
+            cloudinaryPublicId: true,
+            thumbnail: true,
+            duration: true,
+            order: true,
+            url: true,
+          },
+          orderBy: { order: 'asc' },
+        },
       },
     }) as any
 
@@ -100,10 +112,7 @@ export async function GET(
       educationLevel: resource.educationLevel.slug,
       subject: resource.subject.slug,
       hasAccess,
-      // Fallback construction until DB migration is done
-      thumbUrl: resource.images?.[0]
-        ? `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/c_scale,w_400,q_auto,f_auto/${resource.images[0].cloudinaryPublicId}`
-        : null,
+      thumbUrl: resource.images?.[0]?.url || (resource.images?.[0]?.cloudinaryPublicId ? `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/c_scale,w_800,q_auto,f_auto/${resource.images[0].cloudinaryPublicId}` : null),
       files: resource.files.map((file: any) => ({
         id: file.id,
         name: file.name,
@@ -114,8 +123,16 @@ export async function GET(
         cloudinaryPublicId: img.cloudinaryPublicId,
         alt: img.alt,
         order: img.order,
-        // Use DB url if exists, otherwise construct it
         url: img.url || `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/c_limit,w_1200,q_auto,f_auto/${img.cloudinaryPublicId}`,
+      })),
+      videos: (resource.videos || []).map((vid: any) => ({
+        id: vid.id,
+        title: vid.title,
+        cloudinaryPublicId: vid.cloudinaryPublicId,
+        thumbnail: vid.thumbnail,
+        duration: vid.duration,
+        order: vid.order,
+        url: vid.url || `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/video/upload/q_auto,f_auto/${vid.cloudinaryPublicId}`,
       })),
     })
 

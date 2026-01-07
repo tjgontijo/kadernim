@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
         // Upload to Cloudinary using existing helper
         const uploadResult = await uploadImage(
             file,
+            'avatar',
             `user-avatar-${session.user.id}`,
             'User Avatar'
         )

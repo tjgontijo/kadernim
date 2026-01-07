@@ -4,28 +4,27 @@ import { AspectRatio } from '@/components/ui/aspect-ratio'
 
 export function ResourceCardSkeleton() {
     return (
-        <Card className="group overflow-hidden border-border/50">
-            <AspectRatio ratio={1 / 1} className="bg-muted animate-pulse relative">
-                <Skeleton className="absolute left-2 top-2 h-6 w-16 rounded-full" />
-            </AspectRatio>
+        <Card className="flex h-full flex-col overflow-hidden border-border/50 bg-card rounded-3xl p-3">
+            <div className="relative overflow-hidden rounded-2xl bg-muted shrink-0">
+                <AspectRatio ratio={1 / 1}>
+                    <Skeleton className="h-full w-full" />
+                </AspectRatio>
+            </div>
 
-            <div className="flex min-h-[160px] flex-col px-6 pb-6 pt-6 gap-3">
-                <div className="space-y-1">
-                    <Skeleton className="h-5 w-full" />
-                    <Skeleton className="h-5 w-3/4" />
+            <div className="flex flex-1 flex-col px-3 py-5 pb-2">
+                <div className="flex-1 space-y-2.5">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-4/5" />
+
+                    <div className="pt-2 space-y-2">
+                        <Skeleton className="h-3 w-full" />
+                        <Skeleton className="h-3 w-3/4" />
+                    </div>
                 </div>
 
-                <div className="h-px bg-border/20 w-full" />
-
-                <div className="space-y-2">
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-2/3" />
-                </div>
-
-                <div className="mt-auto flex flex-wrap gap-2">
-                    <Skeleton className="h-5 w-20 rounded-full" />
-                    <Skeleton className="h-5 w-16 rounded-full" />
+                <div className="mt-4 flex flex-wrap gap-1.5 pt-3 border-t border-border/40">
+                    <Skeleton className="h-5 w-20 rounded-md" />
+                    <Skeleton className="h-5 w-16 rounded-md" />
                 </div>
             </div>
         </Card>

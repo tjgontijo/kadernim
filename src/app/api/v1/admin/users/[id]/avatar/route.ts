@@ -79,7 +79,7 @@ export async function POST(
 
         // Upload to Cloudinary
         // Note: for users, we might want a different folder or tags
-        const uploadResult = await uploadImage(file, `user-avatar-${targetUserId}`, 'User Avatar')
+        const uploadResult = await uploadImage(file, 'avatar', `user-avatar-${targetUserId}`, 'User Avatar')
 
         // Update user image field
         await prisma.user.update({

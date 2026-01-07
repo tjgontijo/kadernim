@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Plus, SlidersHorizontal, Search, Filter, ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { Plus, Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -75,7 +75,6 @@ export function CrudPageShell({
     isLoading
 }: CrudPageShellProps) {
     const { isMobile } = useBreakpoint()
-    // Usa o hook responsivo que força cards em telas < 1200px
     const actualView = useResponsiveView(view)
 
     return (
@@ -96,7 +95,7 @@ export function CrudPageShell({
                                     <p className="text-sm text-muted-foreground">{subtitle}</p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-3">
                                 {actions}
                             </div>
                         </div>
@@ -113,13 +112,17 @@ export function CrudPageShell({
                                 <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                                 <Input
                                     placeholder={searchPlaceholder}
-                                    className="h-8 rounded-full border-transparent bg-muted/50 pl-9 text-xs focus-visible:bg-background focus-visible:ring-1 focus-visible:ring-ring transition-all"
+                                    className="h-8 rounded-md border-border bg-background pl-9 text-xs focus-visible:ring-1 focus-visible:ring-ring transition-all"
                                     value={searchInput}
                                     onChange={(e) => onSearchChange(e.target.value)}
                                 />
                             </div>
-                            <div className="h-4 w-[1px] bg-border mx-2" />
-                            {filters}
+                            {filters && (
+                                <>
+                                    <div className="h-4 w-[1px] bg-border mx-2" />
+                                    {filters}
+                                </>
+                            )}
                         </div>
                     </div>
                 </>
@@ -128,12 +131,7 @@ export function CrudPageShell({
             {isMobile && (
                 <div className="flex flex-col gap-3 p-4 border-b bg-background">
                     <div className="flex items-center justify-between">
-                        <h1 className="text-xl font-black">{title}</h1>
-                        {onAdd && (
-                            <Button onClick={onAdd} size="icon" className="h-10 w-10 rounded-full">
-                                <Plus className="h-5 w-5" />
-                            </Button>
-                        )}
+                        <h1 className="text-xl font-bold">{title}</h1>
                     </div>
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -158,7 +156,6 @@ export function CrudPageShell({
                         </div>
                     </div>
                 ) : (
-                    // Injeta actualView nos children se for CrudDataView
                     React.Children.map(children, child => {
                         if (React.isValidElement(child) && child.type === CrudDataView) {
                             return React.cloneElement(child, { view: actualView } as any)
@@ -168,26 +165,26 @@ export function CrudPageShell({
                 )}
             </div>
 
-            <div className="border-t border-border bg-background py-3 shrink-0">
-                <div className="flex items-center justify-between gap-4">
+            <div className="border-t border-border bg-background py-2 shrink-0 px-6 h-14 flex items-center">
+                <div className="flex items-center justify-between w-full gap-4">
                     <div className="flex items-center gap-4">
-                        <div className="text-xs text-muted-foreground whitespace-nowrap">
-                            Mostrando <span className="font-medium">{totalItems}</span> itens
+                        <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest whitespace-nowrap">
+                            <span className="text-foreground font-bold">{totalItems}</span> itens
                         </div>
 
                         {!isMobile && (
                             <div className="flex items-center gap-2">
-                                <span className="text-xs text-muted-foreground whitespace-nowrap">Itens:</span>
+                                <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Por página:</span>
                                 <Select
                                     value={limit.toString()}
                                     onValueChange={(v) => onLimitChange(Number(v))}
                                 >
-                                    <SelectTrigger size="sm" className="h-8 w-[70px]">
+                                    <SelectTrigger size="sm" className="h-7 w-[65px] text-[10px] font-bold bg-muted/30 border-none ring-0 focus:ring-0">
                                         <SelectValue placeholder={limit.toString()} />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {[10, 15, 20, 50, 100].map((v) => (
-                                            <SelectItem key={v} value={v.toString()}>
+                                            <SelectItem key={v} value={v.toString()} className="text-[10px]">
                                                 {v}
                                             </SelectItem>
                                         ))}
@@ -199,14 +196,13 @@ export function CrudPageShell({
 
                     <div className="flex items-center gap-2">
                         <Button
-                            variant="outline"
+                            variant="ghost"
                             size="sm"
-                            className="h-8 gap-1 text-xs"
+                            className="h-8 w-8 p-0 rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
                             onClick={() => onPageChange(Math.max(1, page - 1))}
                             disabled={page === 1 || isLoading}
                         >
-                            <ChevronLeft className="h-3.5 w-3.5" />
-                            Anterior
+                            <ChevronLeft className="h-4 w-4" />
                         </Button>
 
                         {!isMobile && (
@@ -216,9 +212,12 @@ export function CrudPageShell({
                                     return (
                                         <Button
                                             key={pageNum}
-                                            variant={page === pageNum ? "default" : "ghost"}
+                                            variant={page === pageNum ? "secondary" : "ghost"}
                                             size="sm"
-                                            className="h-8 w-8 text-xs p-0"
+                                            className={cn(
+                                                "h-7 w-7 text-[10px] font-bold p-0 rounded-full transition-all",
+                                                page === pageNum ? "bg-primary/10 text-primary shadow-none" : "hover:bg-muted"
+                                            )}
                                             onClick={() => onPageChange(pageNum)}
                                         >
                                             {pageNum}
@@ -226,32 +225,32 @@ export function CrudPageShell({
                                     )
                                 })}
                                 {totalPages > 5 && (
-                                    <span className="text-xs text-muted-foreground px-1">...</span>
+                                    <span className="text-[10px] text-muted-foreground px-1 font-bold">...</span>
                                 )}
                             </div>
                         )}
 
                         <Button
-                            variant="outline"
+                            variant="ghost"
                             size="sm"
-                            className="h-8 gap-1 text-xs"
+                            className="h-8 w-8 p-0 rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
                             onClick={() => onPageChange(page + 1)}
                             disabled={!hasMore || isLoading}
                         >
-                            Próximo
-                            <ChevronRight className="h-3.5 w-3.5" />
+                            <ChevronRight className="h-4 w-4" />
                         </Button>
                     </div>
                 </div>
             </div>
 
+            {/* FAB Button */}
             {onAdd && (
                 <Button
                     onClick={onAdd}
                     size="icon"
-                    className="fixed bottom-20 right-8 h-14 w-14 rounded-full shadow-2xl hover:shadow-primary/50 hover:scale-110 transition-all z-50"
+                    className="fixed bottom-20 right-8 h-14 w-14 rounded-full shadow-2xl hover:shadow-primary/40 hover:scale-110 active:scale-95 transition-all z-50 animate-in fade-in zoom-in duration-300"
                 >
-                    <Plus className="h-6 w-6" />
+                    <Plus className="h-7 w-7" />
                 </Button>
             )}
         </section>

@@ -33,7 +33,7 @@ export function SystemHeader() {
     await authClient.signOut({
       fetchOptions: {
         onSuccess: () => {
-          router.push('/login/otp')
+          router.push('/login')
         },
       },
     })

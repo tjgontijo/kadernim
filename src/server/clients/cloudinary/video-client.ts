@@ -1,9 +1,7 @@
 import { cloudinary } from './config'
 import { UploadApiResponse, UploadApiErrorResponse } from 'cloudinary'
 
-const FOLDER = 'resources/videos'
 const MAX_FILE_SIZE = 500 * 1024 * 1024 // 500MB for videos
-
 const ALLOWED_MIME_TYPES = ['video/mp4', 'video/webm', 'video/quicktime']
 
 export interface VideoUploadResult {
@@ -18,6 +16,7 @@ export interface VideoUploadResult {
 
 export async function uploadVideo(
   file: File,
+  folder: string,
   resourceId: string,
   title: string
 ): Promise<VideoUploadResult> {
@@ -40,7 +39,7 @@ export async function uploadVideo(
   return new Promise((resolve, reject) => {
     cloudinary.uploader.upload_stream(
       {
-        folder: `${FOLDER}/${resourceId}`,
+        folder: `${folder}/${resourceId}`,
         public_id: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
         resource_type: 'video',
         tags: ['resource', 'video', resourceId],

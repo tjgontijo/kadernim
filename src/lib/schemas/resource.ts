@@ -41,16 +41,29 @@ export type ResourceFileMetadata = z.infer<typeof ResourceFileMetadataSchema>
 export const ResourceImageSchema = z.object({
   id: z.string(),
   cloudinaryPublicId: z.string(),
-  url: z.string().optional(),
+  url: z.string().nullable().optional(),
   alt: z.string().nullable().optional(),
   order: z.number(),
 })
 
 export type ResourceImage = z.infer<typeof ResourceImageSchema>
 
+export const ResourceVideoSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  cloudinaryPublicId: z.string(),
+  url: z.string().nullable().optional(),
+  thumbnail: z.string().nullable().optional(),
+  duration: z.number().nullable().optional(),
+  order: z.number(),
+})
+
+export type ResourceVideo = z.infer<typeof ResourceVideoSchema>
+
 export const ResourceDetailSchema = ResourceSchema.extend({
   files: z.array(ResourceFileMetadataSchema),
   images: z.array(ResourceImageSchema),
+  videos: z.array(ResourceVideoSchema),
 })
 
 export type ResourceDetail = z.infer<typeof ResourceDetailSchema>

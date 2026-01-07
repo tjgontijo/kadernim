@@ -16,14 +16,14 @@ export function ResourceUpsellBanner({
   onSubscribe,
 }: ResourceUpsellBannerProps) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border bg-white p-3 sm:p-4 shadow-sm group">
-      <div className="pointer-events-none absolute inset-0 opacity-40 [background:radial-gradient(125%_125%_at_50%_10%,#e0e7ff_0,transparent_50%),radial-gradient(125%_125%_at_0%_0%,#cffafe_0,transparent_50%),radial-gradient(125%_125%_at_100%_0%,#fce7f3_0,transparent_50%)]" />
-      <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-6">
+    <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-card p-4 sm:p-5 shadow-sm group">
+      <div className="pointer-events-none absolute inset-0 opacity-20 dark:opacity-10 [background:radial-gradient(125%_125%_at_50%_10%,hsl(var(--primary))_0,transparent_50%),radial-gradient(125%_125%_at_0%_0%,hsl(var(--secondary))_0,transparent_50%),radial-gradient(125%_125%_at_100%_0%,hsl(var(--accent))_0,transparent_50%)]" />
+      <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
         <div className="flex flex-col">
-          <h3 className="text-sm sm:text-base font-black text-gray-900 leading-tight uppercase tracking-tight italic">Assine por <span className="text-primary tracking-normal">R$9,90/mês</span></h3>
-          <p className="text-[10px] sm:text-xs text-gray-500 font-medium">Acesso ilimitado e imediato a todos os materiais.</p>
+          <h3 className="text-sm sm:text-base font-black text-foreground leading-tight uppercase tracking-tight italic">Assine por <span className="text-primary tracking-normal">R$9,90/mês</span></h3>
+          <p className="text-[10px] sm:text-xs text-muted-foreground font-semibold">Acesso ilimitado e imediato a todos os materiais.</p>
         </div>
-        <Button onClick={() => onSubscribe?.()} size="sm" className="h-9 sm:h-10 px-6 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:shadow-primary/40 shrink-0">
+        <Button onClick={() => onSubscribe?.()} size="sm" className="h-9 sm:h-11 px-8 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all hover:-translate-y-0.5 active:translate-y-0 shrink-0">
           {ctaLabel}
         </Button>
       </div>

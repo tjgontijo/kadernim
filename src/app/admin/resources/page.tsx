@@ -24,7 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useAdminResources } from '@/hooks/useAdminResources'
+import { useAdminResources } from '@/hooks/use-admin-resources'
 import { toast } from 'sonner'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
@@ -45,7 +45,7 @@ import {
   ResourcesTableView,
 } from '@/components/client/resources'
 import { ResourceEditDrawer } from '@/components/client/resources/resource-edit-drawer'
-import { useResourceMeta } from '@/hooks/useResourceMeta'
+import { useResourceMeta } from '@/hooks/use-resource-meta'
 
 // Options will be fetched from the API
 

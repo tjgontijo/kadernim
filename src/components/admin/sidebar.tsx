@@ -12,6 +12,9 @@ import {
   Hash,
   Tags,
   Sparkles,
+  Cpu,
+  Zap,
+  FileText,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -59,6 +62,9 @@ const ICON_MAP = {
   Hash,
   Tags,
   Sparkles,
+  Cpu,
+  Zap,
+  FileText,
 } as const
 
 export function AdminSidebar({ user }: AdminSidebarProps) {
@@ -74,6 +80,8 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
   // Nav items with permission requirements
   const platformItems: NavItem[] = [
     { title: 'Dashboard', href: '/admin', icon: 'LayoutDashboard' },
+    { title: 'Monitoramento IA', href: '/admin/llm-usage', icon: 'Cpu', permission: { action: 'manage', subject: 'all' } },
+    { title: 'Analytics', href: '/admin/analytics', icon: 'BarChart3', permission: { action: 'read', subject: 'Analytics' } },
   ]
 
   const dataItems: NavItem[] = [
@@ -81,8 +89,8 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
     { title: 'Pedidos', href: '/admin/community-requests', icon: 'Sparkles', permission: { action: 'read', subject: 'Resource' } },
     { title: 'Matérias', href: '/admin/subjects', icon: 'Hash', permission: { action: 'read', subject: 'Subject' } },
     { title: 'Usuários', href: '/admin/users', icon: 'Users', permission: { action: 'read', subject: 'User' } },
-    { title: 'Organizações', href: '/admin/organizations', icon: 'Building2', permission: { action: 'read', subject: 'Organization' } },
-    { title: 'Analytics', href: '/admin/analytics', icon: 'BarChart3', permission: { action: 'read', subject: 'Analytics' } },
+    { title: 'Automações', href: '/admin/automations', icon: 'Zap', permission: { action: 'manage', subject: 'all' } },
+    { title: 'Templates', href: '/admin/templates', icon: 'FileText', permission: { action: 'manage', subject: 'all' } },
   ]
 
   const configItems: NavItem[] = [

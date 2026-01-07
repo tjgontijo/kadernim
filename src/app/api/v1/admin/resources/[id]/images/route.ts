@@ -67,12 +67,13 @@ export async function POST(
     }
 
     // Upload to Cloudinary
-    const uploadResult = await uploadImage(file, resourceId, altText)
+    const uploadResult = await uploadImage(file, 'resources/images', resourceId, altText)
 
     // Save to database
     const image = await createResourceImage({
       resourceId,
       cloudinaryPublicId: uploadResult.publicId,
+      url: uploadResult.url,
       alt: altText,
     })
 

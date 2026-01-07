@@ -2,11 +2,13 @@ import { generateObject } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { systemPromptEI, systemPromptEF, buildUserPrompt } from '@/lib/ai/prompts/lesson-plan';
 import { LessonPlanContentSchema, type BnccSkillDetail, type LessonPlanContent } from '@/lib/schemas/lesson-plan';
+import { logLlmUsage } from '@/services/llm/llm-usage-service';
 
 /**
  * Parâmetros para geração de plano de aula
  */
 export interface GenerateLessonPlanParams {
+  userId: string; // Obrigatório para logging
   title: string;
   educationLevelSlug: string;
   gradeSlug?: string;
@@ -29,6 +31,9 @@ export interface GenerateLessonPlanParams {
 export async function generateLessonPlanContent(
   params: GenerateLessonPlanParams
 ): Promise<LessonPlanContent> {
+  const startTime = Date.now();
+  const model = 'gpt-4o-mini';
+
   try {
     const isEI = params.educationLevelSlug === 'educacao-infantil';
 
@@ -37,18 +42,58 @@ export async function generateLessonPlanContent(
     const userPrompt = buildUserPrompt(params);
 
     // Gerar conteúdo estruturado
-    const { object } = await generateObject({
-      model: openai('gpt-4o-mini'),
+    const { object, usage } = await generateObject({
+      model: openai(model),
       system: systemPromptSelected,
       prompt: userPrompt,
       schema: LessonPlanContentSchema,
       temperature: 0.7,
     });
 
+    // Log de sucesso
+    const promptTokens = (usage as any).promptTokens ?? (usage as any).prompt_tokens ?? 0;
+    const completionTokens = (usage as any).completionTokens ?? (usage as any).completion_tokens ?? 0;
+
+    await logLlmUsage({
+      userId: params.userId,
+      feature: 'lesson-plan-generation',
+      operation: `Gerar plano ${params.educationLevelSlug} - ${params.title}`,
+      model,
+      inputTokens: promptTokens,
+      outputTokens: completionTokens,
+      latencyMs: Date.now() - startTime,
+      status: 'success',
+      metadata: {
+        educationLevel: params.educationLevelSlug,
+        grade: params.gradeSlug,
+        subject: params.subjectSlug,
+        numberOfClasses: params.numberOfClasses,
+        skillsCount: params.bnccSkills.length,
+      },
+      // Passar objeto raw p/ debug no service se os tokens forem 0
+      rawUsage: usage
+    } as any);
+
     // O objeto já vem validado pelo Zod schema
     return object;
   } catch (error) {
-    // Log detalhado do erro
+    const latencyMs = Date.now() - startTime;
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+    // Log de erro
+    await logLlmUsage({
+      userId: params.userId,
+      feature: 'lesson-plan-generation',
+      operation: `Gerar plano ${params.educationLevelSlug} - ${params.title}`,
+      model,
+      inputTokens: 0,
+      outputTokens: 0,
+      latencyMs,
+      status: 'error',
+      errorMessage,
+    });
+
+    // Log detalhado do erro no console
     console.error('[generateLessonPlanContent] Error:', error);
 
     // Tratar erros específicos da OpenAI

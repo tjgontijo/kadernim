@@ -92,6 +92,7 @@ model User {
   lessonPlanUsage LessonPlanUsage[]
   communityRequests      CommunityRequest[]
   communityRequestVotes  CommunityRequestVote[]
+  llmUsageLogs           LlmUsageLog[]
 
   @@map("user")
 }
@@ -213,6 +214,7 @@ model ResourceFile {
 
   name        String
   cloudinaryPublicId String
+  url         String?
   fileType    String?
   sizeBytes   Int?
   createdAt   DateTime  @default(now())
@@ -228,6 +230,7 @@ model ResourceVideo {
 
   title       String
   cloudinaryPublicId String
+  url         String?
   thumbnail   String?
   duration    Int?
   order       Int @default(0)
@@ -471,4 +474,175 @@ model CommunityRequestReference {
 
   @@index([requestId])
   @@map("community_request_reference")
+}
+
+/// Log de uso de LLM (todas as chamadas)
+model LlmUsageLog {
+  id String @id @default(cuid())
+
+  // Contexto da chamada
+  userId        String?  // Opcional: se chamada é anônima/sistema
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  feature       String   // "lesson-plan-generation", "theme-refinement", "chat", etc
+  operation     String   // Descrição da operação (ex: "Gerar plano de aula EF 3º ano Matemática")
+
+  // Modelo e tokens
+  model         String   // "gpt-4o-mini", "gpt-4o", "gpt-4-turbo", etc
+  provider      String   @default("openai") // "openai", "anthropic", etc
+
+  inputTokens   Int      // Tokens do prompt
+  outputTokens  Int      // Tokens da resposta
+  totalTokens   Int      // Total (input + output)
+
+  // Custo calculado (em USD)
+  inputCost     Float    // Custo do input (baseado no pricing do modelo)
+  outputCost    Float    // Custo do output
+  totalCost     Float    // Custo total em USD
+
+  // Métricas de performance
+  latencyMs     Int?     // Tempo de resposta em ms
+
+  // Status
+  status        String   // "success", "error", "timeout"
+  errorMessage  String?  // Se status = error
+
+  // Metadata adicional (JSON flexível)
+  metadata      Json?    // { planId, theme, skillsCount, etc }
+
+  // Timestamps
+  createdAt     DateTime @default(now())
+
+  @@index([userId])
+  @@index([feature])
+  @@index([createdAt])
+  @@index([status])
+  @@map("llm_usage_log")
+}
+
+/// Agregados diários (pré-calculados para performance)
+model LlmUsageDaily {
+  id String @id @default(cuid())
+
+  date          DateTime @db.Date // Data (sem hora)
+  feature       String           // "lesson-plan-generation", etc
+  model         String           // "gpt-4o-mini", etc
+
+  // Agregados
+  totalCalls    Int              // Total de chamadas
+  successCalls  Int              // Chamadas bem-sucedidas
+  errorCalls    Int              // Chamadas com erro
+
+  totalTokens   BigInt           // Total de tokens
+  totalCost     Float            // Custo total em USD
+
+  avgLatencyMs  Float?           // Latência média
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([date, feature, model])
+  @@index([date])
+  @@index([feature])
+  @@map("llm_usage_daily")
+}
+
+// ==========================================
+// AUTOMATION ENGINE (Kadernim Automation)
+// ==========================================
+
+/// Regra de automação que define qual evento dispara quais ações
+model AutomationRule {
+  id        String   @id @default(cuid())
+  name      String   // Ex: "Notificar Rejeição de Pedido"
+  eventType String   // Ex: "community.request.unfeasible"
+  isActive  Boolean  @default(true)
+
+  // Condições opcionais (JSON para flexibilidade)
+  // Ex: { "voteCount": { "gte": 10 } }
+  conditions Json?
+
+  // Descrição para o admin entender o que faz
+  description String?
+
+  actions AutomationAction[]
+  logs    AutomationLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventType])
+  @@index([isActive])
+  @@map("automation_rule")
+}
+
+/// Ação vinculada a uma regra de automação
+model AutomationAction {
+  id     String         @id @default(cuid())
+  ruleId String
+  rule   AutomationRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+
+  type   String // "EMAIL_SEND", "PUSH_NOTIFICATION", "WEBHOOK_CALL", "SLACK_LOG", "DB_UPDATE"
+  order  Int    @default(0) // Ordem de execução
+
+  // Configurações específicas da ação (JSON)
+  // Ex: { "templateId": "rejection-v1", "subject": "Atualização do seu pedido" }
+  config Json
+
+  createdAt DateTime @default(now())
+
+  logs AutomationLog[]
+
+  @@index([ruleId])
+  @@map("automation_action")
+}
+
+/// Log de execução de automações (para auditoria e debug)
+model AutomationLog {
+  id       String         @id @default(cuid())
+  ruleId   String
+  rule     AutomationRule @relation(fields: [ruleId], references: [id])
+  actionId String?
+  action   AutomationAction? @relation(fields: [actionId], references: [id])
+
+  status  String  // "success", "failed", "retrying"
+  payload Json    // Os dados que dispararam o evento
+  error   String? // Mensagem de erro se falhar
+
+  executedAt DateTime @default(now())
+
+  @@index([ruleId])
+  @@index([actionId])
+  @@index([status])
+  @@index([executedAt])
+  @@map("automation_log")
+}
+
+/// Templates de notificação (e-mail, push, whatsapp)
+model NotificationTemplate {
+  id   String @id @default(cuid())
+  slug String @unique // Ex: "request-unfeasible", "welcome-email"
+  name String // Nome amigável para o admin
+
+  type String // "email", "push", "whatsapp", "slack"
+  
+  // ✅ NOVO: Tipo de evento ao qual este template pertence
+  eventType String // Ex: "user.login", "resource.purchased"
+
+  // Conteúdo (suporta variáveis Handlebars: {{user.name}})
+  subject String? // Apenas para e-mail
+  body    String  @db.Text // HTML para e-mail, texto para outros
+
+  // Metadata
+  description String? // Descrição do propósito do template
+  variables   Json?   // Lista de variáveis disponíveis: ["user.name", "request.title"]
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+  @@index([eventType])
+  @@index([isActive])
+  @@map("notification_template")
 }

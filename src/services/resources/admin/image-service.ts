@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db'
 export interface CreateResourceImageInput {
   resourceId: string
   cloudinaryPublicId: string
+  url?: string
   alt?: string
   order?: number
 }
@@ -13,7 +14,7 @@ export interface UpdateResourceImageInput {
 }
 
 export async function createResourceImage(input: CreateResourceImageInput) {
-  const { resourceId, cloudinaryPublicId, alt, order = 0 } = input
+  const { resourceId, cloudinaryPublicId, url, alt, order = 0 } = input
 
   // Verify resource exists
   const resource = await prisma.resource.findUnique({
@@ -29,6 +30,7 @@ export async function createResourceImage(input: CreateResourceImageInput) {
     data: {
       resourceId,
       cloudinaryPublicId,
+      url,
       alt,
       order,
     },

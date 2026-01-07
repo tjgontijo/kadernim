@@ -1,4 +1,5 @@
 'use client'
+import * as React from 'react'
 
 import {
   DropdownMenu,
@@ -23,9 +24,26 @@ interface UserDropdownMenuProps {
 }
 
 export function UserDropdownMenu({ userName, userEmail, userImage }: UserDropdownMenuProps) {
+  const [mounted, setMounted] = React.useState(false)
   const { isMobile } = useSidebar()
 
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
   const userInitial = userName?.charAt(0).toUpperCase() || 'U'
+
+  if (!mounted) {
+    return (
+      <div className="flex items-center gap-2 px-2 py-1.5 min-h-[48px] w-full rounded-lg bg-sidebar-accent/50">
+        <div className="h-8 w-8 rounded-lg bg-sidebar-foreground/10 animate-pulse shrink-0" />
+        <div className="flex-1 min-w-0 space-y-1.5 group-data-[collapsible=icon]:hidden">
+          <div className="h-3.5 w-24 bg-sidebar-foreground/10 animate-pulse rounded" />
+          <div className="h-3 w-32 bg-sidebar-foreground/10 animate-pulse rounded" />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <DropdownMenu>

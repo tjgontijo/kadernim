@@ -70,6 +70,9 @@ export const metadata: Metadata = {
       },
     ],
   },
+  icons: {
+    apple: "/pwa/apple-icon-180.png",
+  },
   // Configurações de OpenGraph para compartilhamento em redes sociais
   openGraph: {
     type: 'website',

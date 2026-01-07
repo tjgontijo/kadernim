@@ -83,7 +83,7 @@ export function ResourceGrid({
             Item: ItemContainer,
             List: ListContainer,
           }}
-          listClassName="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+          listClassName="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
           overscan={12}
           increaseViewportBy={{ top: 200, bottom: 400 }}
         />

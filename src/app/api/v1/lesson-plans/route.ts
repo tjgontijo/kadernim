@@ -209,6 +209,7 @@ export async function POST(request: NextRequest) {
     console.log('[POST /api/v1/lesson-plans] Gerando plano com IA...');
 
     const content = await generateLessonPlanContent({
+      userId: session.user.id,
       title: data.title,
       educationLevelSlug: data.educationLevelSlug,
       gradeSlug: data.gradeSlug,

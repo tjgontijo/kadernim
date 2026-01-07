@@ -63,7 +63,7 @@ export async function POST(
     }
 
     // Upload to Cloudinary
-    const uploadResult = await uploadFile(file, resourceId)
+    const uploadResult = await uploadFile(file, 'resources/files', resourceId)
 
     // Create file record in database
     const { createFileService } = await import('@/services/resources/admin/file-service')
@@ -71,6 +71,7 @@ export async function POST(
       resourceId,
       name: uploadResult.fileName,
       cloudinaryPublicId: uploadResult.publicId,
+      url: uploadResult.url,
       fileType: uploadResult.fileType,
       sizeBytes: uploadResult.sizeBytes,
       adminId: userId,

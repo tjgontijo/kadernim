@@ -5,5 +5,5 @@ import { authClient } from '@/lib/auth/auth-client'
 
 export async function signOutAction() {
   await authClient.signOut()
-  redirect('/login/otp')
+  redirect('/login')
 }

@@ -1,7 +1,6 @@
 import { cloudinary, CLOUDINARY_CLOUD_NAME } from './config'
 import { UploadApiResponse, UploadApiErrorResponse } from 'cloudinary'
 
-const FOLDER = 'resources/images'
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB for images
 
 export interface ImageUploadResult {
@@ -14,6 +13,7 @@ export interface ImageUploadResult {
 
 export async function uploadImage(
   file: File,
+  folder: string,
   resourceId: string,
   altText?: string
 ): Promise<ImageUploadResult> {
@@ -34,7 +34,7 @@ export async function uploadImage(
   return new Promise((resolve, reject) => {
     cloudinary.uploader.upload_stream(
       {
-        folder: `${FOLDER}/${resourceId}`,
+        folder: `${folder}/${resourceId}`,
         public_id: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
         resource_type: 'image',
         quality: 'auto',
@@ -118,16 +118,16 @@ export function getOptimizedImageUrl(
 }
 export async function uploadImageFromUrl(
   imageUrl: string,
-  options?: {
+  options: {
+    folder: string
     publicId?: string
-    folder?: string
     altText?: string
   }
 ): Promise<ImageUploadResult> {
   console.log(`Uploading image from URL: ${imageUrl}`)
 
   const uploadOptions: any = {
-    folder: options?.folder || FOLDER,
+    folder: options.folder,
     resource_type: 'image',
     quality: 'auto',
     fetch_format: 'auto',

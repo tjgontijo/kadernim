@@ -57,6 +57,7 @@ export async function GET(
             id: true,
             name: true,
             cloudinaryPublicId: true,
+            url: true,
             fileType: true,
             sizeBytes: true,
             createdAt: true,
@@ -66,6 +67,7 @@ export async function GET(
           select: {
             id: true,
             cloudinaryPublicId: true,
+            url: true,
             alt: true,
             order: true,
             createdAt: true,
@@ -77,6 +79,7 @@ export async function GET(
             id: true,
             title: true,
             cloudinaryPublicId: true,
+            url: true,
             thumbnail: true,
             duration: true,
             order: true,
@@ -125,16 +128,16 @@ export async function GET(
       subject: resource.subject.slug,
       externalId: resource.externalId,
       isFree: resource.isFree,
-      thumbUrl: resource.images?.[0]
+      thumbUrl: resource.images?.[0]?.url || (resource.images?.[0]
         ? `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/c_scale,w_400,q_auto,f_auto/${resource.images[0].cloudinaryPublicId}`
-        : null,
+        : null),
       createdAt: resource.createdAt.toISOString(),
       updatedAt: resource.updatedAt.toISOString(),
       files: resource.files.map((f) => ({
         id: f.id,
         name: f.name,
         cloudinaryPublicId: f.cloudinaryPublicId,
-        url: getFileUrl(f.cloudinaryPublicId),
+        url: f.url || getFileUrl(f.cloudinaryPublicId),
         fileType: f.fileType,
         sizeBytes: f.sizeBytes,
         createdAt: f.createdAt.toISOString(),
@@ -142,7 +145,7 @@ export async function GET(
       images: resource.images.map((img) => ({
         id: img.id,
         cloudinaryPublicId: img.cloudinaryPublicId,
-        url: getImageUrl(img.cloudinaryPublicId),
+        url: img.url || getImageUrl(img.cloudinaryPublicId),
         alt: img.alt,
         order: img.order,
         createdAt: img.createdAt.toISOString(),
@@ -151,7 +154,7 @@ export async function GET(
         id: vid.id,
         title: vid.title,
         cloudinaryPublicId: vid.cloudinaryPublicId,
-        url: getVideoUrl(vid.cloudinaryPublicId),
+        url: vid.url || getVideoUrl(vid.cloudinaryPublicId),
         thumbnail: vid.thumbnail,
         duration: vid.duration,
         order: vid.order,

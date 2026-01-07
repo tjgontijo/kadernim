@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { RichTextEditor } from '@/components/admin/shared/rich-text-editor'
+import { RichTextEditor } from '@/components/admin/editor/rich-text-editor'
 import {
   Select,
   SelectContent,
@@ -30,7 +30,7 @@ import {
   UpdateResourceSchema,
   type UpdateResourceInput,
 } from '@/lib/schemas/admin/resources'
-import { useResourceMeta } from '@/hooks/useResourceMeta'
+import { useResourceMeta } from '@/hooks/use-resource-meta'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 

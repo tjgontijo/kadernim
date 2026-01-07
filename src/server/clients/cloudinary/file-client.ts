@@ -1,7 +1,6 @@
 import { cloudinary } from './config'
 import { UploadApiResponse, UploadApiErrorResponse } from 'cloudinary'
 
-const FOLDER = 'resources/files'
 const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB for files
 
 const ALLOWED_MIME_TYPES = [
@@ -25,6 +24,7 @@ export interface FileUploadResult {
 
 export async function uploadFile(
   file: File,
+  folder: string,
   resourceId: string
 ): Promise<FileUploadResult> {
   // Validate file size
@@ -46,7 +46,7 @@ export async function uploadFile(
   return new Promise((resolve, reject) => {
     cloudinary.uploader.upload_stream(
       {
-        folder: `${FOLDER}/${resourceId}`,
+        folder: `${folder}/${resourceId}`,
         public_id: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
         resource_type: 'raw',
         tags: ['resource', 'file', resourceId],

@@ -187,19 +187,19 @@ export function QuestionTheme({
 
   const refinedOptions: QuizOption[] = [
     ...refinedThemes.map((theme) => ({
-      id: theme.text,
+      id: theme.version,
       slug: theme.text,
       name: theme.text,
       description: `Versão ${theme.version === 'short' ? 'curta' : theme.version === 'medium' ? 'média' : 'descritiva'}`,
-      icon: FileText
+      icon: FileText,
     })),
     {
       id: 'original',
-      slug: 'original',
+      slug: rawTheme,
       name: rawTheme,
       description: 'Manter texto original',
-      icon: Sparkles
-    }
+      icon: Sparkles,
+    },
   ];
 
   return (
@@ -211,7 +211,7 @@ export function QuestionTheme({
         <QuizChoice
           options={refinedOptions}
           value={value}
-          onSelect={(opt) => handleSelectTheme(opt.slug === 'original' ? rawTheme : opt.slug)}
+          onSelect={(opt) => handleSelectTheme(opt.slug)}
           autoAdvance={true}
         />
 

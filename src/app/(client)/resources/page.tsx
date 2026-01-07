@@ -5,7 +5,7 @@ import { ResourceGrid } from '@/components/client/resources/ResourceGrid'
 import { ResourceFilters } from '@/components/client/resources/ResourceFilters'
 import { ResourceTabs } from '@/components/client/resources/ResourceTabs'
 import { ResourceUpsellBanner } from '@/components/client/resources/ResourceUpsellBanner'
-import { useResourcesSummaryQuery } from '@/hooks/useResourcesSummaryQuery'
+import { useResourcesSummaryQuery } from '@/hooks/use-resources-summary-query'
 import { useSessionQuery } from '@/hooks/useSessionQuery'
 import { Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -68,7 +68,7 @@ export default function ResourcesPage() {
       <PageScaffoldSkeleton
         CardSkeleton={ResourceCardSkeleton}
         cardCount={8}
-        columns={{ mobile: 1, tablet: 2, desktop: 3, large: 4 }}
+        columns={{ mobile: 1, tablet: 2, desktop: 3, large: 3 }}
       />
     )
   }

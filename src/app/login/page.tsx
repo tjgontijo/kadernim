@@ -1,14 +1,28 @@
 'use client'
 
-import { ChangeEvent, FormEvent, useState } from 'react'
+import { useState } from 'react'
+
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Mail } from 'lucide-react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { authClient } from '@/lib/auth/auth-client'
 import { Spinner } from '@/components/ui/spinner'
 import { InstallPWA } from '@/components/pwa/InstallPWA'
 import { toast } from 'sonner'
+
+const otpSchema = z.object({
+  email: z
+    .string()
+    .min(1, 'O email é obrigatório.')
+    .email('Informe um email válido.')
+    .trim(),
+})
+
+type OtpData = z.infer<typeof otpSchema>
 
 interface RequestOtpForm {
   email: string
@@ -31,25 +45,26 @@ interface OtpClientTimingLog {
 
 export default function RequestOtpPage() {
   const router = useRouter()
-  const [form, setForm] = useState<RequestOtpForm>({ email: '' })
   const [status, setStatus] = useState<SubmissionState>('idle')
-  const [errorMessage, setErrorMessage] = useState<string>('')
 
-  const handleEmailChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setForm({ email: event.target.value })
-    if (errorMessage) setErrorMessage('')
-  }
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<OtpData>({
+    resolver: zodResolver(otpSchema),
+    defaultValues: { email: '' },
+  })
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-
+  const onSubmit = async (data: OtpData) => {
     const start = performance.now()
     let afterValidation = start
     let afterRequest = start
     let outcome: OtpClientTimingLog['outcome'] = 'success'
     let errorCode: string | undefined
 
-    const maskedEmail = form.email.replace(/(?<=.).(?=[^@]*?@)/g, '*')
+    const maskedEmail = data.email.replace(/(?<=.).(?=[^@]*?@)/g, '*')
 
     const emitLog = () => {
       const end = performance.now()
@@ -74,23 +89,12 @@ export default function RequestOtpPage() {
       timestamp: new Date().toISOString(),
     })
 
-    if (!form.email || !form.email.includes('@')) {
-      afterValidation = performance.now()
-      outcome = 'error'
-      errorCode = 'invalid_email'
-      setStatus('error')
-      setErrorMessage('Informe um email válido.')
-      emitLog()
-      return
-    }
-
     setStatus('loading')
-    setErrorMessage('')
 
     try {
       afterValidation = performance.now()
       const { error } = await authClient.emailOtp.sendVerificationOtp({
-        email: form.email,
+        email: data.email,
         type: 'sign-in',
       })
       afterRequest = performance.now()
@@ -109,20 +113,16 @@ export default function RequestOtpPage() {
           message = 'Tivemos um problema ao enviar o código. Tente novamente.'
         }
 
-        setStatus('error')
-        setErrorMessage(message)
         toast.error(message)
         outcome = 'error'
         errorCode = rawCode
         return
       }
 
-      router.push(`/login/otp/sent?email=${encodeURIComponent(form.email)}`)
+      router.push(`/login/sent?email=${encodeURIComponent(data.email)}`)
     } catch (cause) {
       console.error('[otp] erro ao solicitar OTP', cause)
       const message = 'Falha na comunicação com o servidor. Tente novamente.'
-      setStatus('error')
-      setErrorMessage(message)
       toast.error(message)
       outcome = 'error'
       errorCode = cause instanceof Error ? cause.name ?? 'request_failed' : 'request_failed'
@@ -131,64 +131,71 @@ export default function RequestOtpPage() {
         afterRequest = performance.now()
       }
       emitLog()
+      if (outcome !== 'success') setStatus('idle')
     }
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white dark:bg-gray-900">
+    <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="w-full max-w-md px-4">
         <div className="py-8 px-4 sm:px-6">
           <div className="mb-6 flex justify-center">
-            <Link href="/" className="inline-block cursor-pointer">
-              <Image
-                src="/images/system/logo_transparent.png"
-                alt="Kadernim Logo"
-                width={200}
-                height={200}
-                style={{ height: 'auto' }}
-                priority
-              />
-            </Link>
+            <Image
+              src="/images/system/logo_transparent.png"
+              alt="Kadernim Logo"
+              width={130}
+              height={87}
+              style={{ width: 'auto', height: 'auto' }}
+              priority
+            />
           </div>
 
-          <h1 className="mb-2 text-center text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="mb-2 text-center text-xl font-semibold text-foreground">
             Acesse sua conta
           </h1>
-          <p className="mb-6 text-center text-sm text-gray-600 dark:text-gray-300">
-            Informe seu email para receber um código de verificação.
+          <p className="mb-6 text-center text-xs text-muted-foreground">
+            Enviaremos um código de verificação para o seu email.
           </p>
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                className="block text-sm font-medium text-muted-foreground"
               >
                 Email
               </label>
               <div className="relative mt-1 rounded-md">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <Mail className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+                  <Mail className="h-5 w-5 text-muted-foreground/50" />
                 </div>
                 <input
                   id="email"
-                  name="email"
                   type="email"
                   autoComplete="email"
-                  required
-                  value={form.email}
-                  onChange={handleEmailChange}
-                  className="block w-full rounded-md border border-gray-300 bg-white py-3 pl-10 text-gray-900 placeholder-gray-500 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 dark:focus:border-indigo-400 dark:focus:ring-indigo-400 sm:text-sm"
+                  {...register('email')}
+                  onBlur={(e) => {
+                    setValue('email', e.target.value.trim(), { shouldValidate: true })
+                  }}
+                  className={`block w-full rounded-md border py-3 pl-10 text-foreground placeholder-muted-foreground focus:ring-2 sm:text-sm ${errors.email
+                    ? 'border-destructive focus:border-destructive focus:ring-destructive/50'
+                    : 'border-input bg-background focus:border-primary focus:ring-ring'
+                    }`}
                   placeholder="seu@email.com"
-                  aria-invalid={status === 'error'}
+                  aria-invalid={!!errors.email}
                 />
               </div>
+              {errors.email && (
+                <p className="mt-1 text-xs text-destructive">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
 
             <button
               type="submit"
               disabled={status === 'loading'}
-              className="flex w-full cursor-pointer justify-center rounded-md bg-indigo-600 px-4 py-3 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex w-full cursor-pointer justify-center rounded-md bg-primary px-4 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {status === 'loading' ? <Spinner className="h-5 w-5 text-white" /> : 'Enviar código'}
             </button>

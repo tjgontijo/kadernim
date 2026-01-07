@@ -15,6 +15,7 @@ export interface CommunityReferenceUploadResult {
  */
 export async function uploadCommunityReference(
     file: File,
+    folder: string,
     requestId: string
 ): Promise<CommunityReferenceUploadResult> {
     // Validate file size
@@ -34,7 +35,7 @@ export async function uploadCommunityReference(
     return new Promise((resolve, reject) => {
         cloudinary.uploader.upload_stream(
             {
-                folder: `${FOLDER}/${requestId}`,
+                folder: `${folder}/${requestId}`,
                 public_id: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
                 resource_type: 'image',
                 quality: 'auto',

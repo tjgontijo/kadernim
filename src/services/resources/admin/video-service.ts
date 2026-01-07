@@ -4,6 +4,7 @@ export interface CreateResourceVideoInput {
   resourceId: string
   title: string
   cloudinaryPublicId: string
+  url?: string
   thumbnail?: string
   duration?: number
   order?: number
@@ -17,7 +18,7 @@ export interface UpdateResourceVideoInput {
 }
 
 export async function createResourceVideo(input: CreateResourceVideoInput) {
-  const { resourceId, title, cloudinaryPublicId, thumbnail, duration, order = 0 } = input
+  const { resourceId, title, cloudinaryPublicId, url, thumbnail, duration, order = 0 } = input
 
   // Verify resource exists
   const resource = await prisma.resource.findUnique({
@@ -34,6 +35,7 @@ export async function createResourceVideo(input: CreateResourceVideoInput) {
       resourceId,
       title,
       cloudinaryPublicId,
+      url,
       thumbnail,
       duration,
       order,

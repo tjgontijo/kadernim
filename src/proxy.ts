@@ -15,7 +15,7 @@ export async function proxy(request: NextRequest) {
   const isApiOrStaticRoute = pathname.startsWith('/api') ||
     pathname.includes('/_next/') ||
     pathname.includes('/static/') ||
-    pathname.includes('/login/') ||
+    pathname === '/login' ||
     pathname.startsWith('/images/') ||
     pathname.includes('favicon.ico')
 
@@ -31,7 +31,7 @@ export async function proxy(request: NextRequest) {
   }
 
   const AUTH_ROUTES = ['/']
-  const PUBLIC_ROUTES = ['/login/otp', '/login/magic-link', '/login/magic-link/sent', '/offline']
+  const PUBLIC_ROUTES = ['/login', '/offline']
 
   const matchesRoute = (route: string) =>
     pathname === route || pathname.startsWith(`${route}/`)
@@ -57,12 +57,12 @@ export async function proxy(request: NextRequest) {
     }
     // Se não tem cookie na home, deixa prosseguir para o login se for o caso ou redireciona
     // Aqui a home '/' no seu projeto parece ser o login ou redirecionar para ele
-    return NextResponse.redirect(new URL('/login/otp', request.url))
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
   // Qualquer outra rota é protegida por padrão
   if (!hasPlausibleCookie) {
-    return NextResponse.redirect(new URL('/login/otp', request.url))
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
   return NextResponse.next()

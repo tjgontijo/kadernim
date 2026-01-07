@@ -34,11 +34,11 @@ export type Breakpoint = keyof typeof BREAKPOINTS
  * }
  */
 export function useBreakpoint() {
-    const [width, setWidth] = useState<number>(
-        typeof window !== 'undefined' ? window.innerWidth : 0
-    )
+    const [width, setWidth] = useState<number>(0)
+    const [isMounted, setIsMounted] = useState(false)
 
     useEffect(() => {
+        setIsMounted(true)
         const handleResize = () => {
             setWidth(window.innerWidth)
         }
@@ -65,6 +65,7 @@ export function useBreakpoint() {
      * Verifica se a tela é maior ou igual ao breakpoint especificado
      */
     const isAbove = (breakpoint: Breakpoint): boolean => {
+        if (!isMounted) return false
         return width >= BREAKPOINTS[breakpoint]
     }
 
@@ -72,6 +73,7 @@ export function useBreakpoint() {
      * Verifica se a tela é menor que o breakpoint especificado
      */
     const isBelow = (breakpoint: Breakpoint): boolean => {
+        if (!isMounted) return false
         return width < BREAKPOINTS[breakpoint]
     }
 
@@ -79,12 +81,13 @@ export function useBreakpoint() {
      * Verifica se a tela está entre dois breakpoints
      */
     const isBetween = (min: Breakpoint, max: Breakpoint): boolean => {
+        if (!isMounted) return false
         return width >= BREAKPOINTS[min] && width < BREAKPOINTS[max]
     }
 
     return {
         // Largura atual
-        width,
+        width: isMounted ? width : 0,
 
         // Helpers de breakpoint
         isAbove,
@@ -92,17 +95,17 @@ export function useBreakpoint() {
         isBetween,
 
         // Atalhos comuns (compatibilidade com use-mobile.ts)
-        isMobile: width < BREAKPOINTS.mobile,
-        isTablet: isBetween('mobile', 'desktop'),
-        isDesktop: width >= BREAKPOINTS.desktop,
-        isWide: width >= BREAKPOINTS.wide,
+        isMobile: isMounted ? width < BREAKPOINTS.mobile : false,
+        isTablet: isMounted ? isBetween('mobile', 'desktop') : false,
+        isDesktop: isMounted ? width >= BREAKPOINTS.desktop : true, // Default p/ desktop no server
+        isWide: isMounted ? width >= BREAKPOINTS.wide : false,
 
         // Breakpoints Tailwind padrão
-        isSm: width >= BREAKPOINTS.sm,
-        isMd: width >= BREAKPOINTS.md,
-        isLg: width >= BREAKPOINTS.lg,
-        isXl: width >= BREAKPOINTS.xl,
-        is2xl: width >= BREAKPOINTS['2xl'],
+        isSm: isMounted ? width >= BREAKPOINTS.sm : false,
+        isMd: isMounted ? width >= BREAKPOINTS.md : false,
+        isLg: isMounted ? width >= BREAKPOINTS.lg : false,
+        isXl: isMounted ? width >= BREAKPOINTS.xl : false,
+        is2xl: isMounted ? width >= BREAKPOINTS['2xl'] : false,
     }
 }
 

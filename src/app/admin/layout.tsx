@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic'
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const session = await getServerSession()
-  if (!session) redirect('/login/otp')
+  if (!session) redirect('/login')
 
   // Permite apenas admin, manager e editor na área administrativa
   if (!isStaff(session.user.role as any)) {
@@ -41,7 +41,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
             <SidebarInset className="flex flex-col min-h-0 h-full overflow-hidden">
               <AdminHeader />
-              <main className="flex-1 overflow-hidden p-6">
+              <main className="flex-1 overflow-y-auto p-6">
                 <AdminContent user={user}>
                   {children}
                 </AdminContent>

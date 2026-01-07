@@ -18,6 +18,7 @@ export interface CreateFileInput {
   resourceId: string
   name: string
   cloudinaryPublicId: string
+  url?: string
   fileType?: string
   sizeBytes?: number
   adminId: string
@@ -30,7 +31,7 @@ export interface CreateFileInput {
 export async function createFileService(
   input: CreateFileInput
 ) {
-  const { resourceId, name, cloudinaryPublicId, fileType, sizeBytes } = input
+  const { resourceId, name, cloudinaryPublicId, url, fileType, sizeBytes } = input
 
   // Check if resource exists
   const resource = await prisma.resource.findUnique({
@@ -46,6 +47,7 @@ export async function createFileService(
     data: {
       name,
       cloudinaryPublicId,
+      url,
       fileType,
       sizeBytes,
       resourceId,

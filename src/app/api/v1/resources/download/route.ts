@@ -50,6 +50,7 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         cloudinaryPublicId: true,
+        url: true,
         resource: {
           select: {
             id: true,
@@ -95,7 +96,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const fileUrl = getFileUrl(file.cloudinaryPublicId)
+    const fileUrl = file.url || getFileUrl(file.cloudinaryPublicId)
     const response = NextResponse.redirect(fileUrl, 302)
     response.headers.set('Cache-Control', 'private, no-store')
 

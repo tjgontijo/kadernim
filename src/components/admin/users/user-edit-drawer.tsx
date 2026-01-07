@@ -43,7 +43,7 @@ import {
     useUploadUserAvatar,
     useUserAccess,
     useToggleUserAccess
-} from '@/hooks/useAdminUsers'
+} from '@/hooks/use-admin-users'
 import { toast } from 'sonner'
 import imageCompression from 'browser-image-compression'
 import {
