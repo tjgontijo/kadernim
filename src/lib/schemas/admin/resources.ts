@@ -23,6 +23,7 @@ export const CreateResourceSchema = z.object({
     .url('thumbUrl deve ser uma URL válida')
     .optional()
     .nullable(),
+  grades: z.array(z.string()).default([]),
 })
 
 export type CreateResourceInput = z.infer<typeof CreateResourceSchema>
@@ -48,6 +49,7 @@ export const UpdateResourceSchema = z.object({
     .url('thumbUrl deve ser uma URL válida')
     .optional()
     .nullable(),
+  grades: z.array(z.string()).optional(),
 })
 
 export type UpdateResourceInput = z.infer<typeof UpdateResourceSchema>
@@ -64,6 +66,7 @@ export const ListResourcesFilterSchema = z.object({
     .max(100)
     .optional(),
   educationLevel: z.string().optional(),
+  grade: z.string().optional(),
   subject: z.string().optional(),
   isFree: z.boolean().optional(),
   sortBy: z.enum(['title', 'createdAt', 'updatedAt']).default('updatedAt'),
@@ -107,6 +110,7 @@ export const ResourceDetailResponseSchema = z.object({
   externalId: z.number(),
   isFree: z.boolean(),
   thumbUrl: z.string().nullable(),
+  grades: z.array(z.string()),
   createdAt: z.string(),
   updatedAt: z.string(),
   files: z.array(z.object({
@@ -156,6 +160,7 @@ export const ResourceListResponseSchema = z.object({
     thumbUrl: z.string().nullable(),
     fileCount: z.number(),
     accessCount: z.number(),
+    grades: z.array(z.string()),
     createdAt: z.string(),
     updatedAt: z.string(),
   })),
