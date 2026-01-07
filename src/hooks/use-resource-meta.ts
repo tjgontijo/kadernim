@@ -10,6 +10,7 @@ export interface ResourceMetaItem {
 export interface ResourceMetaResponse {
     educationLevels: ResourceMetaItem[]
     subjects: ResourceMetaItem[]
+    grades: (ResourceMetaItem & { educationLevelKey: string; subjects: string[] })[]
     user: {
         role: string | null
         isAdmin: boolean
