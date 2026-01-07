@@ -17,6 +17,16 @@ import { cn } from '@/lib/utils'
 import { ViewSwitcher } from './view-switcher'
 import { CrudDataView } from './crud-data-view'
 import { ViewType } from './types'
+import { Filter } from 'lucide-react'
+import {
+    Drawer,
+    DrawerContent,
+    DrawerHeader,
+    DrawerTitle,
+    DrawerTrigger,
+    DrawerFooter,
+    DrawerClose,
+} from '@/components/ui/drawer'
 
 interface CrudPageShellProps {
     title: string
@@ -133,14 +143,40 @@ export function CrudPageShell({
                     <div className="flex items-center justify-between">
                         <h1 className="text-xl font-bold">{title}</h1>
                     </div>
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                            placeholder={searchPlaceholder}
-                            className="h-10 rounded-full border-border bg-muted/50 pl-10 pr-4"
-                            value={searchInput}
-                            onChange={(e) => onSearchChange(e.target.value)}
-                        />
+                    <div className="flex items-center gap-2">
+                        <div className="relative flex-1">
+                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                                placeholder={searchPlaceholder}
+                                className="h-10 rounded-full border-border bg-muted/50 pl-10 pr-4"
+                                value={searchInput}
+                                onChange={(e) => onSearchChange(e.target.value)}
+                            />
+                        </div>
+                        {filters && (
+                            <Drawer>
+                                <DrawerTrigger asChild>
+                                    <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 rounded-full border-border">
+                                        <Filter className="h-4 w-4" />
+                                    </Button>
+                                </DrawerTrigger>
+                                <DrawerContent>
+                                    <div className="mx-auto w-full max-w-md">
+                                        <DrawerHeader className="border-b pb-4">
+                                            <DrawerTitle>Filtros</DrawerTitle>
+                                        </DrawerHeader>
+                                        <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
+                                            {filters}
+                                        </div>
+                                        <DrawerFooter className="border-t pt-4 bg-muted/30">
+                                            <DrawerClose asChild>
+                                                <Button className="w-full h-12 font-bold uppercase tracking-widest">Aplicar Filtros</Button>
+                                            </DrawerClose>
+                                        </DrawerFooter>
+                                    </div>
+                                </DrawerContent>
+                            </Drawer>
+                        )}
                     </div>
                 </div>
             )}
