@@ -22,6 +22,7 @@ export async function updateResourceService(
     subject,
     isFree,
     thumbUrl,
+    externalId, // Added externalId to destructuring
   } = input
 
   // Check if resource exists
@@ -58,6 +59,15 @@ export async function updateResourceService(
   if (isFree !== undefined) updateData.isFree = isFree
   if (isFree !== undefined) updateData.isFree = isFree
   // if (thumbUrl !== undefined) updateData.thumbUrl = thumbUrl -- removed
+  if (input.grades !== undefined) {
+    updateData.grades = {
+      deleteMany: {},
+      create: input.grades.map(gradeSlug => ({
+        grade: { connect: { slug: gradeSlug } }
+      }))
+    }
+  }
+
   // TODO: Add support for updating images (add/remove from ResourceImage relation)
 
   // Update the resource
