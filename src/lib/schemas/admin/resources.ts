@@ -17,13 +17,15 @@ export const CreateResourceSchema = z.object({
   subject: z.string().min(1, { message: 'Matéria é obrigatória' }),
   externalId: z.number()
     .int()
-    .positive('externalId deve ser positivo'),
+    .positive('externalId deve ser positivo')
+    .optional()
+    .nullable(),
   isFree: z.boolean(),
   thumbUrl: z.string()
     .url('thumbUrl deve ser uma URL válida')
     .optional()
     .nullable(),
-  grades: z.array(z.string()).default([]),
+  grades: z.array(z.string()),
 })
 
 export type CreateResourceInput = z.infer<typeof CreateResourceSchema>
@@ -44,6 +46,7 @@ export const UpdateResourceSchema = z.object({
     .nullable(),
   educationLevel: z.string().optional(),
   subject: z.string().optional(),
+  externalId: z.number().int().positive().optional().nullable(),
   isFree: z.boolean().optional(),
   thumbUrl: z.string()
     .url('thumbUrl deve ser uma URL válida')
@@ -107,7 +110,7 @@ export const ResourceDetailResponseSchema = z.object({
   description: z.string().nullable(),
   educationLevel: z.string(),
   subject: z.string(),
-  externalId: z.number(),
+  externalId: z.number().nullable(),
   isFree: z.boolean(),
   thumbUrl: z.string().nullable(),
   grades: z.array(z.string()),
@@ -155,7 +158,7 @@ export const ResourceListResponseSchema = z.object({
     description: z.string().nullable().optional(),
     educationLevel: z.string(),
     subject: z.string(),
-    externalId: z.number(),
+    externalId: z.number().nullable(),
     isFree: z.boolean(),
     thumbUrl: z.string().nullable(),
     fileCount: z.number(),
