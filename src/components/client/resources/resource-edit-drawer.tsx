@@ -43,6 +43,7 @@ interface ResourceDetail {
     externalId: number
     isFree: boolean
     thumbUrl: string | null
+    grades: string[]
     createdAt: string
     updatedAt: string
     files: Array<any>
@@ -201,7 +202,10 @@ export function ResourceEditDrawer({ resourceId, open, onOpenChange, onSuccess }
                             <div className="flex-1 overflow-y-auto p-6 scrollbar-thin focus:outline-none">
                                 <div className="max-w-7xl mx-auto pb-20">
                                     <TabsContent value="details" className="m-0 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                        <ResourceDetailsForm resource={resource} />
+                                        <ResourceDetailsForm
+                                            resource={resource}
+                                            onSuccess={() => { }}
+                                        />
                                     </TabsContent>
 
                                     <TabsContent value="files" className="m-0 mt-0 animate-in fade-in slide-in-from-bottom-2 duration-300">
