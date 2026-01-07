@@ -267,7 +267,7 @@ model Resource {
   subjectId        String
   subject          Subject           @relation(fields: [subjectId], references: [id])
   
-  externalId      Int             @unique
+  externalId      Int?            @unique
   isFree          Boolean         @default(false)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
