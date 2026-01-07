@@ -71,7 +71,7 @@ export function ResourceCreateDrawer({ open, onOpenChange, onSuccess }: Resource
             subject: '',
             isFree: false,
             grades: [],
-            externalId: Math.floor(Math.random() * 1000000),
+            externalId: null,
         },
     })
 
