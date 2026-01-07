@@ -65,7 +65,7 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
       subject: resource.subject,
       isFree: resource.isFree,
       grades: resource.grades || [],
-      ...(isEditing ? {} : { externalId: resource.externalId || Math.floor(Math.random() * 1000000) })
+      ...(isEditing ? {} : { externalId: resource.externalId || null })
     },
   })
 
