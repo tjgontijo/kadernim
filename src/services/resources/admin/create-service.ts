@@ -50,6 +50,11 @@ export async function createResourceService(
       subjectId: sub.id,
       externalId,
       isFree,
+      grades: {
+        create: input.grades?.map(gradeSlug => ({
+          grade: { connect: { slug: gradeSlug } }
+        }))
+      }
       // Handle images creation if input has them (logic tbd based on input schema)
     },
     include: {
