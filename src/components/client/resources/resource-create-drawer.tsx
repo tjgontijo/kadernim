@@ -198,25 +198,55 @@ export function ResourceCreateDrawer({ open, onOpenChange, onSuccess }: Resource
                             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 
                                 {/* Título */}
-                                <FormField
-                                    control={form.control}
-                                    name="title"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                                                Título do Recurso *
-                                            </FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    placeholder="Ex: Introdução ao Estudo dos Gases"
-                                                    className="h-12 text-base bg-muted/10 border-muted-foreground/20"
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <FormField
+                                        control={form.control}
+                                        name="title"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                                                    Título do Recurso *
+                                                </FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        placeholder="Ex: Introdução ao Estudo dos Gases"
+                                                        className="h-12 text-base bg-muted/10 border-muted-foreground/20"
+                                                        {...field}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="externalId"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                                                    ID Externo (Yampi)
+                                                </FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        type="number"
+                                                        placeholder="Ex: 37235525"
+                                                        className="h-12 text-base bg-muted/10 border-muted-foreground/20"
+                                                        value={field.value || ''}
+                                                        onChange={(e) => {
+                                                            const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
+                                                            field.onChange(val);
+                                                        }}
+                                                    />
+                                                </FormControl>
+                                                <FormDescription className="text-[10px]">
+                                                    ID do produto na Yampi para liberação automática.
+                                                </FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
 
                                 {/* Etapa (EducationLevel) */}
                                 <FormField
