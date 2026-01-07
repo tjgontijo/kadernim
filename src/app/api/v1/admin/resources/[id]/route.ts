@@ -85,10 +85,16 @@ export async function GET(
             order: true,
             createdAt: true,
           },
-          orderBy: { order: 'asc' },
         },
         accessEntries: {
           select: { id: true },
+        },
+        grades: {
+          include: {
+            grade: {
+              select: { slug: true }
+            }
+          }
         },
       },
     })
@@ -128,6 +134,7 @@ export async function GET(
       subject: resource.subject.slug,
       externalId: resource.externalId,
       isFree: resource.isFree,
+      grades: resource.grades.map(rg => rg.grade.slug),
       thumbUrl: resource.images?.[0]?.url || (resource.images?.[0]
         ? `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/c_scale,w_400,q_auto,f_auto/${resource.images[0].cloudinaryPublicId}`
         : null),
@@ -274,6 +281,13 @@ export async function PUT(
         accessEntries: {
           select: { id: true },
         },
+        grades: {
+          include: {
+            grade: {
+              select: { slug: true }
+            }
+          }
+        },
       },
     })
 
@@ -307,6 +321,7 @@ export async function PUT(
       subject: updated.subject.slug,
       externalId: updated.externalId,
       isFree: updated.isFree,
+      grades: updated.grades.map(rg => rg.grade.slug),
       thumbUrl: updated.images?.[0]
         ? `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/q_auto,f_auto/${updated.images[0].cloudinaryPublicId}`
         : null,
