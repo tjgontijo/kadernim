@@ -9,7 +9,7 @@ interface ListResourcesResponse {
     description: string | null
     educationLevel: string
     subject: string
-    externalId: number
+    externalId: number | null
     isFree: boolean
     thumbUrl: string | null
     fileCount: number
