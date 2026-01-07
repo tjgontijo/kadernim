@@ -21,6 +21,7 @@ type Resource = {
   educationLevel?: string | null
   isFree?: boolean
   thumbUrl?: string | null
+  grades: string[]
   createdAt: Date
   updatedAt: Date
 }
@@ -73,6 +74,11 @@ export function ResourcesTableView({
                 {isColumnVisible('educationLevel') && (
                   <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
                     Etapa
+                  </th>
+                )}
+                {isColumnVisible('grades') && (
+                  <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+                    Anos / Séries
                   </th>
                 )}
                 {isColumnVisible('isFree') && (
@@ -141,6 +147,23 @@ export function ResourcesTableView({
                       <span className="text-[12px] text-muted-foreground">
                         {resource.educationLevel || '—'}
                       </span>
+                    </td>
+                  )}
+
+                  {/* Grades */}
+                  {isColumnVisible('grades') && (
+                    <td className="px-4 py-2.5">
+                      <div className="flex flex-wrap gap-1">
+                        {resource.grades?.length > 0 ? (
+                          resource.grades.map((grade) => (
+                            <Badge key={grade} variant="secondary" className="text-[9px] px-1 h-4 font-normal bg-muted text-muted-foreground border-none">
+                              {grade}
+                            </Badge>
+                          ))
+                        ) : (
+                          <span className="text-[12px] text-muted-foreground">Todo Nível</span>
+                        )}
+                      </div>
                     </td>
                   )}
 
