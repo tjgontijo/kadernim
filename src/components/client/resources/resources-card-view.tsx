@@ -21,6 +21,7 @@ type Resource = {
   educationLevel?: string | null
   isFree?: boolean
   thumbUrl?: string | null
+  grades: string[]
   createdAt: Date
   updatedAt: Date
 }
@@ -147,6 +148,11 @@ export function ResourcesCardView({ resources, onView, onEdit, onDelete }: Resou
                   {resource.educationLevel}
                 </Badge>
               )}
+              {resource.grades?.map((grade) => (
+                <Badge key={grade} variant="secondary" className="text-[10px] bg-muted text-muted-foreground border-none">
+                  {grade}
+                </Badge>
+              ))}
             </div>
           </div>
         ))}
