@@ -28,70 +28,93 @@ import {
 import { Switch } from '@/components/ui/switch'
 import {
   UpdateResourceSchema,
+  CreateResourceSchema,
   type UpdateResourceInput,
 } from '@/lib/schemas/admin/resources'
+import { Badge } from '@/components/ui/badge'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useResourceMeta } from '@/hooks/use-resource-meta'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 interface ResourceDetailsFormProps {
   resource: {
-    id: string
+    id?: string
     title: string
     description: string | null
     educationLevel: string
     subject: string
     isFree: boolean
+    grades: string[]
+    externalId?: number
   }
+  onSuccess?: (resource: any) => void
 }
 
-export function ResourceDetailsForm({ resource }: ResourceDetailsFormProps) {
+export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsFormProps) {
   const { data: metaData } = useResourceMeta()
   const queryClient = useQueryClient()
+  const isEditing = !!resource.id
+
   const form = useForm<UpdateResourceInput>({
-    resolver: zodResolver(UpdateResourceSchema),
+    resolver: zodResolver(isEditing ? UpdateResourceSchema : CreateResourceSchema),
     defaultValues: {
       title: resource.title,
       description: resource.description,
       educationLevel: resource.educationLevel,
       subject: resource.subject,
       isFree: resource.isFree,
+      grades: resource.grades || [],
+      ...(isEditing ? {} : { externalId: resource.externalId || Math.floor(Math.random() * 1000000) })
     },
   })
 
-  const updateMutation = useMutation({
-    mutationFn: async (data: UpdateResourceInput) => {
-      const response = await fetch(
-        `/api/v1/admin/resources/${resource.id}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-        }
-      )
+  // Watch education level to filter grades
+  const selectedEducationLevel = form.watch('educationLevel')
+  const availableGrades = (metaData?.grades || []).filter(
+    (g) => g.educationLevelKey === selectedEducationLevel
+  )
+
+  const saveMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const url = isEditing
+        ? `/api/v1/admin/resources/${resource.id}`
+        : `/api/v1/admin/resources`
+
+      const response = await fetch(url, {
+        method: isEditing ? 'PUT' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
 
       if (!response.ok) {
-        throw new Error('Failed to update resource')
+        const errData = await response.json().catch(() => ({}))
+        throw new Error(errData.error || 'Failed to save resource')
       }
 
       return response.json()
     },
-    onSuccess: () => {
-      toast('Alterações salvas', {
-        description: 'Os dados do recurso foram atualizados com sucesso.',
+    onSuccess: (data) => {
+      toast(isEditing ? 'Alterações salvas' : 'Recurso criado', {
+        description: isEditing
+          ? 'Os dados do recurso foram atualizados com sucesso.'
+          : 'O novo recurso foi adicionado ao catálogo.',
       })
-      queryClient.invalidateQueries({ queryKey: ['resource-detail', resource.id] })
+      if (isEditing) {
+        queryClient.invalidateQueries({ queryKey: ['resource-detail', resource.id] })
+      }
+      queryClient.invalidateQueries({ queryKey: ['admin-resources'] })
+      onSuccess?.(data)
     },
     onError: (error) => {
-      toast.error('Erro ao atualizar recurso')
-      console.error('Erro ao atualizar recurso:', error)
+      toast.error(error instanceof Error ? error.message : 'Erro ao salvar recurso')
     },
   })
 
   const onSubmit = (data: UpdateResourceInput) => {
-    updateMutation.mutate(data)
+    saveMutation.mutate(data)
   }
 
   return (
@@ -230,6 +253,47 @@ export function ResourceDetailsForm({ resource }: ResourceDetailsFormProps) {
                     </FormItem>
                   )}
                 />
+
+                {/* Grade Selection (Anos / Séries) */}
+                <FormField
+                  control={form.control}
+                  name="grades"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col md:col-span-2 pt-4 border-t border-dashed mt-4">
+                      <div className="flex flex-col gap-1 mb-3">
+                        <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Anos / Séries (Grades)</FormLabel>
+                        <FormDescription className="text-[10px]">Selecione os anos específicos para este recurso. Se nenhum for selecionado, será considerado aplicável a todo o nível.</FormDescription>
+                      </div>
+                      <FormControl>
+                        <ToggleGroup
+                          type="multiple"
+                          value={field.value || []}
+                          onValueChange={field.onChange}
+                          className="flex flex-wrap justify-start gap-2"
+                        >
+                          {availableGrades.length > 0 ? (
+                            availableGrades.map((grade) => (
+                              <ToggleGroupItem
+                                key={grade.key}
+                                value={grade.key}
+                                className="h-9 px-4 rounded-full border data-[state=on]:bg-primary data-[state=on]:text-primary-foreground text-xs font-medium transition-all"
+                              >
+                                {grade.label}
+                              </ToggleGroupItem>
+                            ))
+                          ) : (
+                            <div className="h-20 w-full flex items-center justify-center border border-dashed rounded-xl bg-muted/5">
+                              <span className="text-xs text-muted-foreground italic">
+                                {selectedEducationLevel ? 'Nenhum ano cadastrado para este nível' : 'Selecione um nível de educação primeiro'}
+                              </span>
+                            </div>
+                          )}
+                        </ToggleGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
             </CardContent>
           </Card>
@@ -237,24 +301,16 @@ export function ResourceDetailsForm({ resource }: ResourceDetailsFormProps) {
           {/* Action Buttons */}
           <div className="flex items-center justify-end gap-5 pt-6">
             <Button
-              type="button"
-              variant="ghost"
-              onClick={() => window.history.back()}
-              className="px-10 h-14 font-bold text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Descartar
-            </Button>
-            <Button
               type="submit"
-              disabled={updateMutation.isPending}
+              disabled={saveMutation.isPending}
               className="px-12 h-14 font-black uppercase tracking-widest text-xs shadow-2xl shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all"
             >
-              {updateMutation.isPending ? (
+              {saveMutation.isPending ? (
                 <>
                   <Loader2 className="mr-3 h-5 w-5 animate-spin" />
                   Salvando...
                 </>
-              ) : 'Salvar Alterações'}
+              ) : isEditing ? 'Salvar Alterações' : 'Criar Recurso'}
             </Button>
           </div>
         </div>
