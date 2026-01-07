@@ -57,7 +57,19 @@ export async function updateResourceService(
   }
 
   if (isFree !== undefined) updateData.isFree = isFree
-  if (isFree !== undefined) updateData.isFree = isFree
+
+  if (externalId !== undefined) {
+    if (externalId !== null) {
+      const existing = await prisma.resource.findFirst({
+        where: {
+          externalId,
+          id: { not: id }
+        }
+      })
+      if (existing) throw new Error(`Resource with externalId ${externalId} already exists`)
+    }
+    updateData.externalId = externalId
+  }
   // if (thumbUrl !== undefined) updateData.thumbUrl = thumbUrl -- removed
   if (input.grades !== undefined) {
     updateData.grades = {
