@@ -1,62 +1,58 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import React, { useState } from 'react'
 import {
-    Plus,
-    SlidersHorizontal,
-    Search,
-    Filter,
-    Shield,
     Users,
-    ChevronLeft,
-    ChevronRight,
-    X,
+    Shield,
     UserCheck,
-    Ban
+    Ban,
+    Edit3,
+    Trash2,
+    Mail,
+    MailCheck,
+    Crown,
+    Calendar,
+    Package,
+    X
 } from 'lucide-react'
+import { CrudPageShell } from '@/components/admin/crud/crud-page-shell'
+import { CrudDataView } from '@/components/admin/crud/crud-data-view'
+import { DeleteConfirmDialog } from '@/components/admin/crud/delete-confirm-dialog'
+import { PermissionGuard } from '@/components/auth/permission-guard'
+import { useDataTable } from '@/hooks/use-data-table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import {
-    Drawer,
-    DrawerContent,
-    DrawerHeader,
-    DrawerTitle,
-    DrawerTrigger,
-    DrawerFooter,
-    DrawerClose,
-} from '@/components/ui/drawer'
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
-    DropdownMenuItem,
 } from '@/components/ui/dropdown-menu'
-import { useAdminUsers, useUpdateAdminUser, useDeleteAdminUser } from '@/hooks/use-admin-users'
+import { UserEditDrawer, UserCreateDrawer } from '@/components/admin/users'
 import { toast } from 'sonner'
-import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select'
-import {
-    TemplateMainShell,
-    TemplateMainHeader,
-    DataToolbar,
-    ViewSwitcher,
-    type ViewType,
-} from '@/components/client/resources'
-import { UsersCardView, UsersTableView, UserEditDrawer } from '@/components/admin/users'
+
+interface User {
+    id: string
+    name: string
+    email: string
+    image: string | null
+    role: string
+    banned: boolean
+    emailVerified: boolean
+    createdAt: string
+    subscription: {
+        status: string
+        planName: string | null
+        expiresAt: string | null
+    } | null
+    _count?: {
+        resourceAccess: number
+    }
+}
 
 const ROLE_OPTIONS = [
     { value: 'all', label: 'Todos os Cargos' },
@@ -72,509 +68,471 @@ const STATUS_OPTIONS = [
     { value: 'banned', label: 'Banidos' },
 ]
 
-export default function AdminUsersPage() {
-    const router = useRouter()
-    const [view, setView] = useState<ViewType>('list')
-    const isMobile = useIsMobile()
-    const [page, setPage] = useState(1)
-    const [limit, setLimit] = useState(15)
-    const [visibleColumns, setVisibleColumns] = useState<string[]>(['role', 'subscription', 'createdAt'])
+export default function AdminUsersCrudPage() {
+    const [isDeletingId, setIsDeletingId] = useState<string | null>(null)
+    const [isDeletingLoading, setIsDeletingLoading] = useState(false)
+    const [editingUser, setEditingUser] = useState<User | null>(null)
+    const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false)
+    const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false)
 
     // Filters
     const [role, setRole] = useState<string>('all')
     const [status, setStatus] = useState<string>('all')
     const [emailVerifiedOnly, setEmailVerifiedOnly] = useState(false)
 
-    // Search with debounce
-    const [searchInput, setSearchInput] = useState('')
-    const [searchQuery, setSearchQuery] = useState('')
-
-    // Mutations
-    const updateMutation = useUpdateAdminUser()
-    const deleteMutation = useDeleteAdminUser()
-
-    // Edit state
-    const [editingUser, setEditingUser] = useState<any | null>(null)
-    const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false)
-
-    // Debounce effect for search
-    useEffect(() => {
-        const trimmed = searchInput.trim()
-
-        if (trimmed.length === 0) {
-            if (searchQuery) {
-                setSearchQuery('')
-                setPage(1)
-            }
-            return undefined
-        }
-
-        if (trimmed.length < 2) {
-            return undefined
-        }
-
-        const handle = window.setTimeout(() => {
-            setSearchQuery(trimmed)
-            setPage(1)
-        }, 400)
-
-        return () => {
-            window.clearTimeout(handle)
-        }
-    }, [searchInput, searchQuery])
-
-    // Get data
-    const { data: usersData, isLoading, error, refetch } = useAdminUsers({
-        filters: {
-            page,
-            limit,
-            q: searchQuery,
-            role: role !== 'all' ? role as any : undefined,
-            banned: status === 'banned' ? true : undefined,
-            subscriptionActive: status === 'active' ? true : status === 'inactive' ? false : undefined,
-            emailVerified: emailVerifiedOnly || undefined,
-        }
+    const crud = useDataTable<User>({
+        queryKey: ['admin-users-crud'],
+        endpoint: '/api/v1/admin/users'
     })
 
-    const users = usersData?.data || []
-    const pagination = usersData?.pagination
+    // Apply custom filters
+    React.useEffect(() => {
+        const filters: Record<string, any> = {}
+        if (role !== 'all') filters.role = role
+        if (status === 'banned') filters.banned = true
+        if (status === 'active') filters.subscriptionActive = true
+        if (status === 'inactive') filters.subscriptionActive = false
+        if (emailVerifiedOnly) filters.emailVerified = true
+        crud.handleFilterChange(filters)
+    }, [role, status, emailVerifiedOnly])
 
-    const handlePageChange = (newPage: number) => {
-        setPage(newPage)
-        // Scroll to top of list
-        const listTop = document.getElementById('data-list-area')
-        if (listTop) listTop.scrollTop = 0
+    const handleEdit = (user: User) => {
+        setEditingUser(user)
+        setIsEditDrawerOpen(true)
     }
 
-    // Sync editing user with updated data from list
-    useEffect(() => {
-        if (editingUser && users.length > 0) {
-            const updated = users.find(u => u.id === editingUser.id)
-            if (updated) {
-                setEditingUser(updated)
+    const handleToggleBan = async (user: User) => {
+        try {
+            const response = await fetch(`/api/v1/admin/users/${user.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ banned: !user.banned })
+            })
+
+            if (!response.ok) {
+                throw new Error('Erro ao atualizar usuário')
             }
+
+            toast.success(user.banned ? 'Usuário desbanido' : 'Usuário banido')
+            crud.refetch()
+        } catch (error: any) {
+            toast.error(error.message)
         }
-    }, [users, editingUser?.id])
+    }
 
-    const handleEdit = (userId: string) => {
-        const user = users.find(u => u.id === userId)
-        if (user) {
-            setEditingUser(user)
-            setIsEditDrawerOpen(true)
+    const confirmDelete = async () => {
+        if (!isDeletingId) return
+        setIsDeletingLoading(true)
+        try {
+            const response = await fetch(`/api/v1/admin/users/${isDeletingId}`, {
+                method: 'DELETE'
+            })
+
+            if (!response.ok) {
+                const err = await response.json()
+                throw new Error(err.error || 'Erro ao excluir usuário')
+            }
+
+            toast.success('Usuário excluído com sucesso')
+            crud.refetch()
+        } catch (error: any) {
+            toast.error(error.message)
+        } finally {
+            setIsDeletingLoading(false)
+            setIsDeletingId(null)
         }
     }
 
-    const handleToggleBan = async (userId: string) => {
-        const user = users.find(u => u.id === userId)
-        if (!user) return
-
-        updateMutation.mutate({
-            userId,
-            data: { banned: !user.banned }
-        }, {
-            onSuccess: () => {
-                toast.success(user.banned ? 'Usuário desbanido' : 'Usuário banido')
-            },
-            onError: () => {
-                toast.error('Ocorreu um erro ao atualizar o usuário')
-            }
-        })
+    const getRoleBadge = (role: string) => {
+        const variants: Record<string, { class: string; icon: React.ReactNode }> = {
+            admin: { class: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: <Crown className="h-3 w-3" /> },
+            subscriber: { class: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', icon: <Package className="h-3 w-3" /> },
+            user: { class: 'bg-slate-500/10 text-slate-600 border-slate-500/20', icon: <Users className="h-3 w-3" /> },
+        }
+        const v = variants[role] || variants.user
+        return (
+            <Badge variant="outline" className={cn("gap-1 font-medium", v.class)}>
+                {v.icon}
+                {role === 'admin' ? 'Admin' : role === 'subscriber' ? 'Assinante' : 'Usuário'}
+            </Badge>
+        )
     }
 
-    const handleDelete = async (userId: string) => {
-        if (!confirm('Tem certeza que deseja excluir este usuário? Esta ação é irreversível.')) return
-
-        deleteMutation.mutate(userId, {
-            onSuccess: () => {
-                toast.success('Usuário excluído')
-            },
-            onError: () => {
-                toast.error('Ocorreu um erro ao excluir o usuário')
-            }
-        })
+    const getSubscriptionBadge = (subscription: User['subscription']) => {
+        if (!subscription || subscription.status !== 'active') {
+            return <span className="text-xs text-muted-foreground/50 italic">—</span>
+        }
+        return (
+            <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-medium">
+                {subscription.planName || 'Ativo'}
+            </Badge>
+        )
     }
 
-    return (
-        <TemplateMainShell>
-            {/* Header Area */}
-            <TemplateMainHeader
-                title="Usuários"
-                subtitle="Gerencie os usuários, assinaturas e permissões do sistema."
-                icon={Users}
-            >
-                <div className="flex items-center gap-2">
-                    <ViewSwitcher view={view} setView={setView} />
-                </div>
-            </TemplateMainHeader>
+    // Check if any filter is active
+    const hasActiveFilters = role !== 'all' || status !== 'all' || emailVerifiedOnly || crud.searchInput.length > 0
 
-            {/* Toolbar Area */}
-            <DataToolbar>
-                {/* Search */}
-                <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Buscar por nome ou email..."
-                        className="pl-9 h-10 bg-background"
-                        value={searchInput}
-                        onChange={(e) => setSearchInput(e.target.value)}
-                    />
-                    {searchInput && (
-                        <button
-                            onClick={() => setSearchInput('')}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                        >
-                            <X className="h-4 w-4" />
-                        </button>
-                    )}
-                </div>
+    const clearAllFilters = () => {
+        setRole('all')
+        setStatus('all')
+        setEmailVerifiedOnly(false)
+        crud.clearFilters()
+    }
 
-                {/* Filters Desktop */}
-                <div className="hidden md:flex items-center gap-2 ml-auto">
-                    {/* Role Filter */}
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-9 gap-1.5 border-dashed">
-                                <Shield className="h-4 w-4" />
-                                <span>Cargo:</span>
-                                <Badge variant="secondary" className="px-1 font-normal rounded-sm">
-                                    {ROLE_OPTIONS.find((o) => o.value === role)?.label}
-                                </Badge>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                            {ROLE_OPTIONS.map((opt) => (
-                                <DropdownMenuCheckboxItem
-                                    key={opt.value}
-                                    checked={role === opt.value}
-                                    onCheckedChange={() => {
-                                        setRole(opt.value)
-                                        setPage(1)
-                                    }}
-                                >
-                                    {opt.label}
-                                </DropdownMenuCheckboxItem>
-                            ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-
-                    {/* Status Filter */}
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-9 gap-1.5 border-dashed">
-                                <UserCheck className="h-4 w-4" />
-                                <span>Status:</span>
-                                <Badge variant="secondary" className="px-1 font-normal rounded-sm">
-                                    {STATUS_OPTIONS.find((o) => o.value === status)?.label}
-                                </Badge>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                            {STATUS_OPTIONS.map((opt) => (
-                                <DropdownMenuCheckboxItem
-                                    key={opt.value}
-                                    checked={status === opt.value}
-                                    onCheckedChange={() => {
-                                        setStatus(opt.value)
-                                        setPage(1)
-                                    }}
-                                >
-                                    {opt.label}
-                                </DropdownMenuCheckboxItem>
-                            ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-
-                    <div className="h-4 w-[1px] bg-border mx-1" />
-
-                    {/* Verification Switch */}
-                    <div className="flex items-center gap-2 px-2">
-                        <Switch
-                            id="verified-only"
-                            checked={emailVerifiedOnly}
-                            onCheckedChange={(checked) => {
-                                setEmailVerifiedOnly(checked)
-                                setPage(1)
-                            }}
-                        />
-                        <Label htmlFor="verified-only" className="text-xs font-medium cursor-pointer">
-                            Verificados
-                        </Label>
-                    </div>
-
-                    <div className="h-4 w-[1px] bg-border mx-1" />
-
-                    {/* Columns Visibility */}
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-9 gap-2">
-                                <SlidersHorizontal className="h-4 w-4" />
-                                <span>Colunas</span>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuLabel>Colunas Visíveis</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            {[
-                                { id: 'role', label: 'Cargo' },
-                                { id: 'subscription', label: 'Assinatura' },
-                                { id: 'emailVerified', label: 'Verificado' },
-                                { id: 'resourceAccessCount', label: 'Acessos' },
-                                { id: 'createdAt', label: 'Criado em' },
-                            ].map((col) => (
-                                <DropdownMenuCheckboxItem
-                                    key={col.id}
-                                    checked={visibleColumns.includes(col.id)}
-                                    onCheckedChange={(checked) => {
-                                        setVisibleColumns((prev) =>
-                                            checked ? [...prev, col.id] : prev.filter((id) => id !== col.id)
-                                        )
-                                    }}
-                                >
-                                    {col.label}
-                                </DropdownMenuCheckboxItem>
-                            ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-
-                {/* Mobile Filters Trigger */}
-                <div className="md:hidden ml-auto">
-                    <Drawer>
-                        <DrawerTrigger asChild>
-                            <Button variant="outline" size="icon" className="h-10 w-10">
-                                <Filter className="h-4 w-4" />
-                            </Button>
-                        </DrawerTrigger>
-                        <DrawerContent>
-                            <DrawerHeader>
-                                <DrawerTitle>Filtros Avançados</DrawerTitle>
-                            </DrawerHeader>
-                            <div className="p-4 space-y-6">
-                                <div className="space-y-3">
-                                    <Label>Cargo</Label>
-                                    <Select value={role} onValueChange={setRole}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Todos os cargos" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {ROLE_OPTIONS.map((opt) => (
-                                                <SelectItem key={opt.value} value={opt.value}>
-                                                    {opt.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="space-y-3">
-                                    <Label>Status</Label>
-                                    <Select value={status} onValueChange={setStatus}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Qualquer status" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {STATUS_OPTIONS.map((opt) => (
-                                                <SelectItem key={opt.value} value={opt.value}>
-                                                    {opt.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <Label htmlFor="mobile-verified">Apenas E-mails Verificados</Label>
-                                    <Switch
-                                        id="mobile-verified"
-                                        checked={emailVerifiedOnly}
-                                        onCheckedChange={setEmailVerifiedOnly}
-                                    />
-                                </div>
-                            </div>
-                            <DrawerFooter className="border-t">
-                                <DrawerClose asChild>
-                                    <Button onClick={() => setPage(1)}>Aplicar Filtros</Button>
-                                </DrawerClose>
-                                <DrawerClose asChild>
-                                    <Button variant="outline">Cancelar</Button>
-                                </DrawerClose>
-                            </DrawerFooter>
-                        </DrawerContent>
-                    </Drawer>
-                </div>
-            </DataToolbar>
-
-            {/* Content Area */}
-            <div id="data-list-area" className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-light">
-                {isLoading ? (
-                    <div className="flex flex-col items-center justify-center py-20 gap-4">
-                        <div className="h-10 w-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-                        <p className="text-sm text-muted-foreground animate-pulse font-medium">
-                            Carregando usuários...
-                        </p>
-                    </div>
-                ) : error ? (
-                    <div className="flex flex-col items-center justify-center py-20 text-center">
-                        <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center text-destructive mb-4">
-                            <X className="h-6 w-6" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-foreground mb-1">Falha ao carregar dados</h3>
-                        <p className="text-sm text-muted-foreground max-w-xs mb-6">
-                            Ocorreu um erro ao tentar buscar a lista de usuários.
-                        </p>
-                        <Button onClick={() => refetch()} variant="outline">Tentar Novamente</Button>
-                    </div>
-                ) : users.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-32 text-center">
-                        <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center text-muted-foreground/30 mb-4">
-                            <Users className="h-8 w-8" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-foreground mb-1">Nenhum usuário encontrado</h3>
-                        <p className="text-sm text-muted-foreground max-w-sm">
-                            Não encontramos nenhum usuário com os filtros aplicados nas suas buscas.
-                        </p>
-                        <Button
-                            variant="link"
-                            className="mt-4"
-                            onClick={() => {
-                                setSearchInput('')
-                                setSearchQuery('')
-                                setRole('all')
-                                setStatus('all')
-                                setEmailVerifiedOnly(false)
-                                setPage(1)
+    // Custom filters component
+    const filtersComponent = (
+        <div className="flex items-center gap-2">
+            {/* Role Filter */}
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-8 gap-1.5 border-dashed text-xs">
+                        <Shield className="h-3.5 w-3.5" />
+                        <span>Cargo:</span>
+                        <Badge variant="secondary" className="px-1 font-normal rounded-sm text-[10px]">
+                            {ROLE_OPTIONS.find((o) => o.value === role)?.label}
+                        </Badge>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-48">
+                    {ROLE_OPTIONS.map((opt) => (
+                        <DropdownMenuCheckboxItem
+                            key={opt.value}
+                            checked={role === opt.value}
+                            onCheckedChange={() => {
+                                setRole(opt.value)
+                                crud.handlePageChange(1)
                             }}
                         >
-                            Limpar todos os filtros
-                        </Button>
-                    </div>
-                ) : view === 'list' && !isMobile ? (
-                    <UsersTableView
-                        users={users as any}
-                        visibleColumns={visibleColumns}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
-                        onToggleBan={handleToggleBan}
-                    />
-                ) : (
-                    <UsersCardView
-                        users={users as any}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
-                        onToggleBan={handleToggleBan}
-                    />
-                )}
+                            {opt.label}
+                        </DropdownMenuCheckboxItem>
+                    ))}
+                </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Status Filter */}
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-8 gap-1.5 border-dashed text-xs">
+                        <UserCheck className="h-3.5 w-3.5" />
+                        <span>Status:</span>
+                        <Badge variant="secondary" className="px-1 font-normal rounded-sm text-[10px]">
+                            {STATUS_OPTIONS.find((o) => o.value === status)?.label}
+                        </Badge>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-48">
+                    {STATUS_OPTIONS.map((opt) => (
+                        <DropdownMenuCheckboxItem
+                            key={opt.value}
+                            checked={status === opt.value}
+                            onCheckedChange={() => {
+                                setStatus(opt.value)
+                                crud.handlePageChange(1)
+                            }}
+                        >
+                            {opt.label}
+                        </DropdownMenuCheckboxItem>
+                    ))}
+                </DropdownMenuContent>
+            </DropdownMenu>
+
+            <div className="h-4 w-[1px] bg-border mx-1" />
+
+            <div className="flex items-center gap-2 px-2">
+                <Switch
+                    id="verified-only"
+                    checked={emailVerifiedOnly}
+                    onCheckedChange={(checked) => {
+                        setEmailVerifiedOnly(checked)
+                        crud.handlePageChange(1)
+                    }}
+                />
+                <Label htmlFor="verified-only" className="text-xs font-medium cursor-pointer">
+                    Verificados
+                </Label>
             </div>
 
-            {/* Pagination Bar */}
-            {pagination && pagination.totalPages > 1 && (
-                <div className="border-t border-border bg-card/50 backdrop-blur-md px-4 py-3 flex items-center justify-between sm:px-6 shrink-0 transition-all">
-                    <div className="flex-1 flex justify-between sm:hidden">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            disabled={page === 1}
-                            onClick={() => handlePageChange(page - 1)}
-                            className="rounded-xl h-9"
-                        >
-                            Anterior
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            disabled={!pagination.hasMore}
-                            onClick={() => handlePageChange(page + 1)}
-                            className="rounded-xl h-9"
-                        >
-                            Próxima
-                        </Button>
-                    </div>
-                    <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between gap-4">
-                        <div className="flex items-center gap-6">
-                            <p className="text-sm text-muted-foreground whitespace-nowrap">
-                                Mostrando <span className="font-semibold text-foreground">{users.length}</span> de{' '}
-                                <span className="font-semibold text-foreground">{pagination.total}</span> usuários
-                            </p>
-
-                            <div className="flex items-center gap-2">
-                                <span className="text-xs text-muted-foreground whitespace-nowrap">Itens:</span>
-                                <Select
-                                    value={String(limit)}
-                                    onValueChange={(val) => {
-                                        setLimit(Number(val))
-                                        setPage(1)
-                                    }}
-                                >
-                                    <SelectTrigger className="h-8 w-[70px] rounded-lg text-xs">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {[15, 30, 50, 100].map((v) => (
-                                            <SelectItem key={v} value={String(v)} className="text-xs">
-                                                {v}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                className="h-9 w-9 rounded-xl border-border/50 hover:bg-muted"
-                                disabled={page === 1}
-                                onClick={() => handlePageChange(page - 1)}
-                            >
-                                <ChevronLeft className="h-4 w-4" />
-                            </Button>
-
-                            <div className="flex items-center gap-1.5 px-2">
-                                {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                                    let pageNum = i + 1
-                                    if (pagination.totalPages > 5 && page > 3) {
-                                        pageNum = page - 2 + i
-                                        if (pageNum + 2 > pagination.totalPages) {
-                                            pageNum = pagination.totalPages - 4 + i
-                                        }
-                                    }
-
-                                    return (
-                                        <Button
-                                            key={pageNum}
-                                            variant={page === pageNum ? 'default' : 'ghost'}
-                                            size="icon"
-                                            className={cn(
-                                                "h-9 w-9 rounded-xl text-xs font-bold transition-all",
-                                                page === pageNum ? "shadow-md shadow-primary/20 scale-105" : "hover:bg-muted"
-                                            )}
-                                            onClick={() => handlePageChange(pageNum)}
-                                        >
-                                            {pageNum}
-                                        </Button>
-                                    )
-                                })}
-                            </div>
-
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                className="h-9 w-9 rounded-xl border-border/50 hover:bg-muted"
-                                disabled={!pagination.hasMore}
-                                onClick={() => handlePageChange(page + 1)}
-                            >
-                                <ChevronRight className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    </div>
-                </div>
+            {/* Clear Filters Button */}
+            {hasActiveFilters && (
+                <>
+                    <div className="h-4 w-[1px] bg-border mx-1" />
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                        onClick={clearAllFilters}
+                    >
+                        <X className="h-3.5 w-3.5" />
+                        Limpar filtros
+                    </Button>
+                </>
             )}
-            {/* Drawer Area */}
+        </div>
+    )
+
+    return (
+        <>
+            <CrudPageShell
+                title="Usuários"
+                subtitle="Gerencie os usuários, assinaturas e permissões do sistema"
+                icon={Users}
+                view={crud.view}
+                setView={crud.setView}
+                searchInput={crud.searchInput}
+                onSearchChange={crud.setSearchInput}
+                searchPlaceholder="Buscar por nome ou email..."
+                page={crud.page}
+                limit={crud.limit}
+                onPageChange={crud.handlePageChange}
+                onLimitChange={crud.handleLimitChange}
+                totalItems={crud.pagination?.total ?? 0}
+                totalPages={crud.pagination?.totalPages ?? 0}
+                hasMore={crud.pagination?.hasMore ?? false}
+                isLoading={crud.isLoading}
+                filters={filtersComponent}
+                onAdd={() => setIsCreateDrawerOpen(true)}
+            >
+                <CrudDataView
+                    data={crud.data}
+                    view={crud.view}
+                    tableView={
+                        <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead>
+                                        <tr className="bg-muted/30 border-b border-border">
+                                            <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+                                                Usuário
+                                            </th>
+                                            <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+                                                Cargo
+                                            </th>
+                                            <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+                                                Assinatura
+                                            </th>
+                                            <th className="px-4 py-2.5 text-center text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+                                                E-mail
+                                            </th>
+                                            <th className="px-4 py-2.5 text-center text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+                                                Acessos
+                                            </th>
+                                            <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+                                                Criado em
+                                            </th>
+                                            <th className="w-28"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {crud.data.map((user) => (
+                                            <tr
+                                                key={user.id}
+                                                className={cn(
+                                                    "group border-b border-border/50 last:border-0 hover:bg-muted/40 transition-colors cursor-pointer",
+                                                    user.banned && "opacity-50 bg-destructive/5"
+                                                )}
+                                                onClick={() => handleEdit(user)}
+                                            >
+                                                <td className="px-4 py-3">
+                                                    <div className="flex items-center gap-3">
+                                                        <Avatar className="h-9 w-9 border">
+                                                            <AvatarImage src={user.image || ''} alt={user.name} />
+                                                            <AvatarFallback className="text-xs font-bold bg-primary/10 text-primary">
+                                                                {user.name?.slice(0, 2).toUpperCase() || '??'}
+                                                            </AvatarFallback>
+                                                        </Avatar>
+                                                        <div className="min-w-0">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="font-semibold text-sm text-foreground truncate leading-tight">
+                                                                    {user.name}
+                                                                </span>
+                                                                {user.banned && (
+                                                                    <Badge variant="destructive" className="text-[9px] px-1.5 py-0">
+                                                                        BANIDO
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
+                                                            <span className="text-xs text-muted-foreground truncate block">
+                                                                {user.email}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    {getRoleBadge(user.role)}
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    {getSubscriptionBadge(user.subscription)}
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <div className="flex items-center justify-center">
+                                                        {user.emailVerified ? (
+                                                            <MailCheck className="h-4 w-4 text-emerald-500" />
+                                                        ) : (
+                                                            <Mail className="h-4 w-4 text-muted-foreground/40" />
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <div className="flex items-center justify-center">
+                                                        <span className="inline-flex items-center justify-center h-7 min-w-[28px] px-2 rounded-full bg-primary/10 text-primary font-bold text-xs">
+                                                            {user._count?.resourceAccess ?? 0}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                                        <Calendar className="h-3.5 w-3.5" />
+                                                        {new Date(user.createdAt).toLocaleDateString('pt-BR')}
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                                                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <PermissionGuard action="update" subject="User">
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
+                                                                onClick={() => handleEdit(user)}
+                                                            >
+                                                                <Edit3 className="h-4 w-4" />
+                                                            </Button>
+                                                        </PermissionGuard>
+                                                        <PermissionGuard action="update" subject="User">
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className={cn(
+                                                                    "h-8 w-8 rounded-full transition-colors",
+                                                                    user.banned
+                                                                        ? "text-emerald-500 hover:bg-emerald-500/10"
+                                                                        : "text-amber-500 hover:bg-amber-500/10"
+                                                                )}
+                                                                onClick={() => handleToggleBan(user)}
+                                                                title={user.banned ? 'Desbanir' : 'Banir'}
+                                                            >
+                                                                {user.banned ? <UserCheck className="h-4 w-4" /> : <Ban className="h-4 w-4" />}
+                                                            </Button>
+                                                        </PermissionGuard>
+                                                        <PermissionGuard action="delete" subject="User">
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8 rounded-full text-destructive hover:bg-destructive/10 hover:text-destructive transition-colors"
+                                                                onClick={() => setIsDeletingId(user.id)}
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
+                                                        </PermissionGuard>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    }
+                    cardView={
+                        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                            {crud.data.map((user) => (
+                                <div
+                                    key={user.id}
+                                    className={cn(
+                                        "group relative rounded-xl border border-border bg-card overflow-hidden transition-all hover:border-primary/40 hover:shadow-md cursor-pointer",
+                                        user.banned && "opacity-60 bg-destructive/5"
+                                    )}
+                                    onClick={() => handleEdit(user)}
+                                >
+                                    <div className="flex p-3 gap-3">
+                                        <Avatar className="h-12 w-12 border shrink-0">
+                                            <AvatarImage src={user.image || ''} alt={user.name} />
+                                            <AvatarFallback className="text-sm font-bold bg-primary/10 text-primary">
+                                                {user.name?.slice(0, 2).toUpperCase() || '??'}
+                                            </AvatarFallback>
+                                        </Avatar>
+
+                                        <div className="flex-1 min-w-0 pr-8">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <h3 className="font-semibold text-sm text-foreground truncate leading-tight">
+                                                    {user.name}
+                                                </h3>
+                                                {user.banned && (
+                                                    <Badge variant="destructive" className="text-[9px] px-1.5 py-0 shrink-0">
+                                                        BANIDO
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                                            <div className="flex items-center gap-2 mt-2">
+                                                {getRoleBadge(user.role)}
+                                                {user.emailVerified && (
+                                                    <MailCheck className="h-3.5 w-3.5 text-emerald-500" />
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div
+                                            className="absolute right-2 top-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            <PermissionGuard action="update" subject="User">
+                                                <Button
+                                                    variant="secondary"
+                                                    size="icon"
+                                                    className="h-7 w-7 rounded-lg bg-background/80 backdrop-blur-sm shadow-sm"
+                                                    onClick={() => handleEdit(user)}
+                                                >
+                                                    <Edit3 className="h-3.5 w-3.5" />
+                                                </Button>
+                                            </PermissionGuard>
+                                            <PermissionGuard action="delete" subject="User">
+                                                <Button
+                                                    variant="secondary"
+                                                    size="icon"
+                                                    className="h-7 w-7 rounded-lg bg-background/80 backdrop-blur-sm shadow-sm text-destructive hover:text-destructive"
+                                                    onClick={() => setIsDeletingId(user.id)}
+                                                >
+                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                </Button>
+                                            </PermissionGuard>
+                                        </div>
+                                    </div>
+
+                                    <div className="border-t border-border/50 px-3 py-2 bg-muted/5 flex items-center justify-between">
+                                        {getSubscriptionBadge(user.subscription)}
+                                        <span className="text-[9px] text-muted-foreground/40 font-mono">
+                                            {user._count?.resourceAccess ?? 0} acessos
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    }
+                />
+            </CrudPageShell>
+
             <UserEditDrawer
-                user={editingUser}
+                user={editingUser as any}
                 open={isEditDrawerOpen}
                 onOpenChange={setIsEditDrawerOpen}
-                onSuccess={() => refetch()}
+                onSuccess={() => crud.refetch()}
             />
-        </TemplateMainShell>
+
+            <UserCreateDrawer
+                open={isCreateDrawerOpen}
+                onOpenChange={setIsCreateDrawerOpen}
+                onSuccess={() => crud.refetch()}
+            />
+
+            <DeleteConfirmDialog
+                open={!!isDeletingId}
+                onOpenChange={(open) => !open && setIsDeletingId(null)}
+                onConfirm={confirmDelete}
+                isLoading={isDeletingLoading}
+                title="Excluir Usuário?"
+                description="Esta ação não pode ser desfeita. Todos os dados do usuário, incluindo acessos a recursos e histórico, serão permanentemente removidos."
+                trigger={null}
+            />
+        </>
     )
 }
