@@ -131,23 +131,49 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 md:p-6 space-y-6">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs font-semibold text-muted-foreground">Título do Recurso</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Ex: Introdução ao Estudo dos Gases"
-                        className="bg-muted/10 border-muted-foreground/20 focus-visible:ring-primary h-10 text-base px-3"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs font-semibold text-muted-foreground">Título do Recurso</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Ex: Introdução ao Estudo dos Gases"
+                          className="bg-muted/10 border-muted-foreground/20 focus-visible:ring-primary h-10 text-base px-3"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="externalId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs font-semibold text-muted-foreground">ID Externo (Yampi)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="Ex: 37235525"
+                          className="bg-muted/10 border-muted-foreground/20 focus-visible:ring-primary h-10 text-base px-3"
+                          value={field.value || ''}
+                          onChange={(e) => {
+                            const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
+                            field.onChange(val);
+                          }}
+                        />
+                      </FormControl>
+                      <FormDescription className="text-[10px]">Utilizado para liberar acesso via webhook da Yampi.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
 
               <FormField
