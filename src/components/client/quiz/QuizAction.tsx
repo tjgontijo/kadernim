@@ -32,9 +32,9 @@ export function QuizAction({
             onClick={onClick}
             disabled={disabled || loading}
             className={cn(
-                "w-full rounded-2xl font-black transition-all",
-                size === 'xl' ? "h-16 text-xl" : "h-14 text-lg",
-                variant === 'primary' && "shadow-xl shadow-primary/20",
+                "w-full rounded-xl font-bold transition-all",
+                size === 'xl' ? "h-12 text-base" : "h-11 text-sm",
+                variant === 'primary' && "shadow-lg shadow-primary/10",
                 className
             )}
             variant={variant === 'primary' ? 'default' : variant}
@@ -42,7 +42,7 @@ export function QuizAction({
             {label}
             {ActualIcon && (
                 <ActualIcon className={cn(
-                    "ml-2 h-6 w-6",
+                    "ml-2 h-4 w-4",
                     loading && "animate-spin"
                 )} />
             )}
