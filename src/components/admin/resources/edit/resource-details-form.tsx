@@ -50,7 +50,7 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
       title: resource.title,
       description: resource.description,
       isFree: resource.isFree,
-      ...(isEditing ? {} : { externalId: resource.externalId || null })
+      externalId: resource.externalId || null
     },
   })
 
