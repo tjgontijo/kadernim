@@ -1,20 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { QuizChoice, type QuizOption } from '@/components/client/quiz/QuizChoice';
-import { Spinner } from '@/components/ui/spinner';
+import { useState } from 'react';
+import { QuizChoice } from '@/components/client/quiz/QuizChoice';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Info, Sparkles, ChevronDown, ChevronUp, Search } from 'lucide-react';
+import { Info, Sparkles, ChevronDown, ChevronUp, Search, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-interface BnccSkill {
-  code: string;
-  description: string;
-  unitTheme?: string;
-  knowledgeObject?: string;
-  fieldOfExperience?: string;
-}
+import { QuizStep } from '@/components/client/quiz/QuizStep';
+import { useBnccSkills } from '@/hooks/use-taxonomy';
 
 interface QuestionSkillsProps {
   educationLevelSlug: string;
@@ -27,111 +20,45 @@ interface QuestionSkillsProps {
   onContinue: () => void;
 }
 
-/**
- * Question 6: Habilidades BNCC
- *
- * COM BUSCA HÍBRIDA:
- * - Se tema fornecido: mostra sugestões baseadas em FTS + embeddings
- * - Botão "Ver todos" para expandir lista completa
- * - Loading states informativos
- */
-import { QuizStep } from '@/components/client/quiz/QuizStep';
-import { Loader2 } from 'lucide-react';
-
 export function QuestionSkills({
   educationLevelSlug,
   gradeSlug,
   subjectSlug,
   theme,
   values,
-  skillDetails,
   onSelect,
   onContinue,
 }: QuestionSkillsProps) {
-  const [suggestedSkills, setSuggestedSkills] = useState<BnccSkill[]>([]);
-  const [allSkills, setAllSkills] = useState<BnccSkill[]>([]);
-  const [loadingSuggested, setLoadingSuggested] = useState(true);
-  const [loadingAll, setLoadingAll] = useState(false);
   const [showAll, setShowAll] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchSuggestedSkills() {
-      try {
-        setLoadingSuggested(true);
-        setError(null);
+  // Busca sugestões (híbrido) baseadas no tema
+  const {
+    data: suggestedSkills = [],
+    isLoading: loadingSuggested,
+    error: suggestedError
+  } = useBnccSkills({
+    educationLevelSlug,
+    gradeSlug,
+    subjectSlug,
+    theme,
+    limit: 20,
+    searchMode: 'hybrid',
+  });
 
-        const params = new URLSearchParams({
-          educationLevelSlug,
-          limit: theme ? '20' : '50',
-        });
+  // Busca lista completa (texto)
+  const {
+    data: allSkills = [],
+    isLoading: loadingAll,
+    error: allError
+  } = useBnccSkills({
+    educationLevelSlug,
+    gradeSlug,
+    subjectSlug,
+    limit: 100,
+    searchMode: 'text',
+  });
 
-        if (gradeSlug) params.append('gradeSlug', gradeSlug);
-        if (subjectSlug) params.append('subjectSlug', subjectSlug);
-
-        if (theme) {
-          params.append('q', theme);
-          params.append('searchMode', 'hybrid');
-        }
-
-        const response = await fetch(`/api/v1/bncc/skills?${params}`);
-
-        if (!response.ok) {
-          throw new Error('Erro ao carregar habilidades');
-        }
-
-        const data = await response.json();
-
-        if (data.success) {
-          setSuggestedSkills(data.data);
-          if (!theme) {
-            setAllSkills(data.data);
-          }
-        } else {
-          throw new Error(data.error || 'Erro desconhecido');
-        }
-      } catch (err) {
-        console.error('Error fetching suggested skills:', err);
-        setError(err instanceof Error ? err.message : 'Erro ao carregar habilidades');
-      } finally {
-        setLoadingSuggested(false);
-      }
-    }
-
-    fetchSuggestedSkills();
-  }, [educationLevelSlug, gradeSlug, subjectSlug, theme]);
-
-  useEffect(() => {
-    if (!theme || allSkills.length > 0) return;
-
-    async function fetchAllSkills() {
-      try {
-        setLoadingAll(true);
-
-        const params = new URLSearchParams({
-          educationLevelSlug,
-          limit: '50',
-        });
-
-        if (gradeSlug) params.append('gradeSlug', gradeSlug);
-        if (subjectSlug) params.append('subjectSlug', subjectSlug);
-
-        const response = await fetch(`/api/v1/bncc/skills?${params}`);
-        const data = await response.json();
-
-        if (data.success) {
-          setAllSkills(data.data);
-        }
-      } catch (err) {
-        console.error('Error pre-loading all skills:', err);
-      } finally {
-        setLoadingAll(false);
-      }
-    }
-
-    const timer = setTimeout(fetchAllSkills, 500);
-    return () => clearTimeout(timer);
-  }, [educationLevelSlug, gradeSlug, subjectSlug, theme, allSkills.length]);
+  const error = suggestedError || allError;
 
   const handleSelectionChange = (selectedCodes: string[]) => {
     const currentSkills = showAll ? allSkills : suggestedSkills;
@@ -180,7 +107,7 @@ export function QuestionSkills({
     return (
       <QuizStep
         title="Ops! Algo deu errado"
-        description={error}
+        description={error instanceof Error ? error.message : 'Erro ao carregar habilidades'}
       >
         <div className="text-center py-8">
           <Button onClick={() => window.location.reload()}>Tentar novamente</Button>
@@ -212,8 +139,6 @@ export function QuestionSkills({
   }
 
   const displayedSkills = showAll ? allSkills : suggestedSkills;
-  const hiddenCount = Math.max(0, allSkills.length - suggestedSkills.length);
-
 
   return (
     <QuizStep
