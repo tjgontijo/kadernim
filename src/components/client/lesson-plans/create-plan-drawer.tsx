@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, X, Sparkles } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { useDownloadFile } from '@/hooks/use-download-file';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { QuizLayout } from '@/components/client/quiz/QuizLayout';
+
 import { QuestionEducationLevel } from './questions/question-education-level';
 import { QuestionGrade } from './questions/question-grade';
 import { QuestionSubject } from './questions/question-subject';
@@ -53,17 +55,55 @@ interface CreatePlanDrawerProps {
 
 const TOTAL_STEPS = 7;
 
-/**
- * CreatePlanDrawer - Wizard em formato quiz para criar planos de aula
- */
-import { QuizLayout } from '@/components/client/quiz/QuizLayout';
-
 export function CreatePlanDrawer({ open, onOpenChange }: CreatePlanDrawerProps) {
   const [currentStep, setCurrentStep] = useState<QuestionStep>('education-level');
   const [wizardState, setWizardState] = useState<WizardState>({});
   const [history, setHistory] = useState<QuestionStep[]>(['education-level']);
 
+  const queryClient = useQueryClient();
+  const { downloadFile } = useDownloadFile();
+
   const stepNumber = getStepNumber(currentStep);
+
+  // Mutação para gerar o plano final
+  const generateMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/v1/lesson-plans', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: wizardState.title,
+          numberOfClasses: wizardState.numberOfClasses,
+          educationLevelSlug: wizardState.educationLevelSlug,
+          gradeSlug: wizardState.gradeSlug,
+          subjectSlug: wizardState.subjectSlug,
+          bnccSkillCodes: wizardState.bnccSkillCodes,
+        }),
+      });
+      const data = await response.json();
+      if (!data.success) throw new Error(data.error || 'Erro ao gerar plano');
+      return data.data;
+    },
+    onMutate: () => {
+      goToNextStep('generating', {});
+    },
+    onSuccess: (data) => {
+      // Invalida a lista de planos para disparar o refresh automático na página de trás
+      queryClient.invalidateQueries({ queryKey: ['lesson-plans'] });
+      queryClient.invalidateQueries({ queryKey: ['lesson-plan-usage'] });
+
+      setTimeout(() => {
+        goToNextStep('success', { planId: data.id });
+      }, 500);
+    },
+    onError: (error) => {
+      console.error('Error generating plan:', error);
+      toast.error('Erro ao gerar plano', {
+        description: error instanceof Error ? error.message : 'Tente novamente',
+      });
+      goToPreviousStep();
+    },
+  });
 
   const goToNextStep = (nextStep: QuestionStep, updates: Partial<WizardState>) => {
     setWizardState((prev) => ({ ...prev, ...updates }));
@@ -85,43 +125,12 @@ export function CreatePlanDrawer({ open, onOpenChange }: CreatePlanDrawerProps) 
     setHistory((prev) => [...prev, step]);
   };
 
-  const handleGenerate = async () => {
-    try {
-      goToNextStep('generating', {});
-      const response = await fetch('/api/v1/lesson-plans', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: wizardState.title,
-          numberOfClasses: wizardState.numberOfClasses,
-          educationLevelSlug: wizardState.educationLevelSlug,
-          gradeSlug: wizardState.gradeSlug,
-          subjectSlug: wizardState.subjectSlug,
-          bnccSkillCodes: wizardState.bnccSkillCodes,
-        }),
-      });
-      const data = await response.json();
-      if (!data.success) throw new Error(data.error || 'Erro ao gerar plano');
-      setTimeout(() => {
-        goToNextStep('success', { planId: data.data.id });
-      }, 500);
-    } catch (error) {
-      console.error('Error generating plan:', error);
-      toast.error('Erro ao gerar plano', {
-        description: error instanceof Error ? error.message : 'Tente novamente',
-      });
-      goToPreviousStep();
-    }
-  };
-
   const handleClose = () => {
     setCurrentStep('education-level');
     setWizardState({});
     setHistory(['education-level']);
     onOpenChange(false);
   };
-
-  const { downloadFile } = useDownloadFile();
 
   const handleDownload = (format: 'docx' | 'pdf') => {
     if (!wizardState.planId) return;
@@ -243,7 +252,7 @@ export function CreatePlanDrawer({ open, onOpenChange }: CreatePlanDrawerProps) 
             <QuestionReview
               data={wizardState}
               onEdit={goToStep}
-              onGenerate={handleGenerate}
+              onGenerate={() => generateMutation.mutate()}
             />
           )}
 
