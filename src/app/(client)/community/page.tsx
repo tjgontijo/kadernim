@@ -1,9 +1,11 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { Plus, Filter, Loader2 } from 'lucide-react'
+import { Plus, Filter, Loader2, Sparkles, Users, Vote, Lightbulb } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useBreakpoint } from '@/hooks/use-breakpoint'
+import { useSession } from '@/lib/auth/auth-client'
+import { UpsellBanner } from '@/components/client/shared/UpsellBanner'
 import { VoteProgress } from '@/components/client/community/vote-progress'
 import { RequestCard } from '@/components/client/community/request-card'
 import { CreateRequestDrawer } from '@/components/client/community/create-request-drawer'
@@ -39,9 +41,14 @@ interface FilterOption {
 
 export default function CommunityPage() {
     const { isMobile } = useBreakpoint()
+    const { data: session, isPending: isSessionLoading } = useSession()
     const [mounted, setMounted] = useState(false)
     const [searchQuery, setSearchQuery] = useState('')
     const [debouncedQuery, setDebouncedQuery] = useState('')
+
+    // Check if user is subscriber
+    const userRole = session?.user?.role ?? 'user'
+    const isSubscriber = userRole === 'subscriber' || userRole === 'admin'
 
     useEffect(() => {
         setMounted(true)
@@ -190,6 +197,75 @@ export default function CommunityPage() {
         )
     }
 
+    // Show paywall for non-subscribers
+    if (!isSessionLoading && !isSubscriber) {
+        return (
+            <div className="min-h-screen bg-background">
+                <div className="container max-w-6xl mx-auto px-4 py-12 sm:py-20">
+                    {/* Hero Section */}
+                    <div className="text-center space-y-6 mb-16">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-bold uppercase tracking-wider border border-primary/20">
+                            <Sparkles size={16} className="fill-primary/20" />
+                            Funcionalidade Premium
+                        </div>
+                        <h1 className="text-4xl sm:text-6xl font-black text-foreground leading-tight">
+                            Peça <span className="text-primary italic">Seus Materiais</span> Personalizados
+                        </h1>
+                        <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+                            Sugira os recursos que você precisa e vote nas ideias da comunidade. Produzimos exatamente o que você quer usar em sala de aula.
+                        </p>
+                    </div>
+
+                    {/* Benefits Grid */}
+                    <div className="grid md:grid-cols-3 gap-6 mb-16">
+                        <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-3">
+                            <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                                <Lightbulb className="h-6 w-6 text-primary" />
+                            </div>
+                            <h3 className="text-xl font-black text-foreground">Sugira Recursos</h3>
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                                Descreva o material que você precisa e nossa equipe produz especialmente para você.
+                            </p>
+                        </div>
+                        <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-3">
+                            <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                                <Vote className="h-6 w-6 text-primary" />
+                            </div>
+                            <h3 className="text-xl font-black text-foreground">Vote nas Ideias</h3>
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                                Apoie as sugestões da comunidade e ajude a definir o que será produzido primeiro.
+                            </p>
+                        </div>
+                        <div className="bg-card border border-border/50 rounded-2xl p-6 space-y-3">
+                            <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                                <Users className="h-6 w-6 text-primary" />
+                            </div>
+                            <h3 className="text-xl font-black text-foreground">Comunidade Ativa</h3>
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                                Faça parte de uma comunidade de educadores que molda o futuro da plataforma.
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Upsell Banner */}
+                    <UpsellBanner
+                        title="Acesso Total: De R$347 por R$147 à vista"
+                        description="ou apenas 12x de R$14,70 no cartão"
+                        benefits={[
+                            'Sugira recursos personalizados para suas aulas',
+                            'Vote nas ideias da comunidade',
+                            'Criação ilimitada de planos de aula com IA',
+                        ]}
+                        ctaLabel="Quero Pedir Meus Materiais"
+                        onSubscribe={() => {
+                            window.location.href = '/checkout';
+                        }}
+                    />
+                </div>
+            </div>
+        )
+    }
+
     return (
         <PageScaffold>
             {/* LINHA 1: Header */}
@@ -199,7 +275,9 @@ export default function CommunityPage() {
                     <Button
                         variant="outline"
                         onClick={() => setCreateDrawerOpen(true)}
-                        className="h-10 sm:h-12 px-4 sm:px-6 rounded-2xl border-primary/20 text-primary hover:bg-primary/5 font-bold transition-all group shrink-0"
+                        disabled={!isSubscriber}
+                        className="h-10 sm:h-12 px-4 sm:px-6 rounded-2xl border-primary/20 text-primary hover:bg-primary/5 font-bold transition-all group shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title={!isSubscriber ? 'Apenas assinantes podem sugerir recursos' : ''}
                     >
                         <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-1 group-hover:rotate-90 transition-transform" />
                         Sugerir
@@ -318,6 +396,7 @@ export default function CommunityPage() {
                             onVote={(id) => voteMutation.mutate(id)}
                             isVoting={voteMutation.isPending}
                             rank={index + 1}
+                            disabled={!isSubscriber}
                         />
                     ))
                 ) : (
