@@ -14,26 +14,26 @@ export async function seedTaxonomy(prisma: PrismaClient) {
    */
   const subjects = [
     // Componentes Curriculares (Ensino Fundamental)
-    { name: 'Língua Portuguesa', slug: 'lingua-portuguesa' },
-    { name: 'Matemática', slug: 'matematica' },
-    { name: 'Ciências', slug: 'ciencias' },
-    { name: 'História', slug: 'historia' },
-    { name: 'Geografia', slug: 'geografia' },
-    { name: 'Arte', slug: 'arte' },
-    { name: 'Educação Física', slug: 'educacao-fisica' },
-    { name: 'Língua Inglesa', slug: 'lingua-inglesa' },
-    { name: 'Ensino Religioso', slug: 'ensino-religioso' },
+    { name: 'Língua Portuguesa', slug: 'lingua-portuguesa', isBncc: true },
+    { name: 'Matemática', slug: 'matematica', isBncc: true },
+    { name: 'Ciências', slug: 'ciencias', isBncc: true },
+    { name: 'História', slug: 'historia', isBncc: true },
+    { name: 'Geografia', slug: 'geografia', isBncc: true },
+    { name: 'Arte', slug: 'arte', isBncc: true },
+    { name: 'Educação Física', slug: 'educacao-fisica', isBncc: true },
+    { name: 'Língua Inglesa', slug: 'lingua-inglesa', isBncc: true },
+    { name: 'Ensino Religioso', slug: 'ensino-religioso', isBncc: true },
 
     // Matérias Extra-Curriculares / Suporte
-    { name: 'Planejamento', slug: 'planejamento' },
-    { name: 'Datas Importantes', slug: 'data-importante' },
+    { name: 'Planejamento', slug: 'planejamento', isBncc: false },
+    { name: 'Datas Importantes', slug: 'data-importante', isBncc: false },
 
     // Campos de Experiência (Educação Infantil)
-    { name: 'O eu, o outro e o nós', slug: 'eu-outro-nos' },
-    { name: 'Corpo, gestos e movimentos', slug: 'corpo-gestos-movimentos' },
-    { name: 'Traços, sons, cores e formas', slug: 'tracos-sons-cores-formas' },
-    { name: 'Escuta, fala, pensamento e imaginação', slug: 'escuta-fala-pensamento' },
-    { name: 'Espaços, tempos, quantidades, relações e transformações', slug: 'espacos-tempos-quantidades' },
+    { name: 'O eu, o outro e o nós', slug: 'eu-outro-nos', isBncc: true },
+    { name: 'Corpo, gestos e movimentos', slug: 'corpo-gestos-movimentos', isBncc: true },
+    { name: 'Traços, sons, cores e formas', slug: 'tracos-sons-cores-formas', isBncc: true },
+    { name: 'Escuta, fala, pensamento e imaginação', slug: 'escuta-fala-pensamento', isBncc: true },
+    { name: 'Espaços, tempos, quantidades, relações e transformações', slug: 'espacos-tempos-quantidades', isBncc: true },
   ] as const
 
   const gradesByLevelSlug = {
@@ -110,8 +110,8 @@ export async function seedTaxonomy(prisma: PrismaClient) {
   for (const subject of subjects) {
     await prisma.subject.upsert({
       where: { slug: subject.slug },
-      update: { name: subject.name },
-      create: { name: subject.name, slug: subject.slug },
+      update: { name: subject.name, isBncc: subject.isBncc },
+      create: { name: subject.name, slug: subject.slug, isBncc: subject.isBncc },
     })
   }
 
