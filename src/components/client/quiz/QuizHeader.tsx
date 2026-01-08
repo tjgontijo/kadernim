@@ -51,7 +51,7 @@ export function QuizHeader({
                 <div className="p-2.5 bg-primary/10 rounded-xl">
                     <Sparkles className="h-5 w-5 text-primary fill-current" />
                 </div>
-                <h2 className="text-lg font-black tracking-tight">{title}</h2>
+                <h2 className="text-lg font-bold tracking-tight">{title}</h2>
             </div>
         </div>
     );
