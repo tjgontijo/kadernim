@@ -20,6 +20,12 @@ const subjectLabels: Record<string, string> = {
   'fisica': 'Física',
   'data-importante': 'Data Importante',
   'planejamento': 'Planejamento',
+  // Campos de Experiência (EI)
+  'eu-outro-nos': 'O eu, o outro e o nós',
+  'corpo-gestos-movimentos': 'Corpo, gestos e movimentos',
+  'tracos-sons-cores-formas': 'Traços, sons, cores e formas',
+  'escuta-fala-pensamento-imaginacao': 'Escuta, fala, pensamento e imaginação',
+  'espacos-tempos-quantidades-relacoes-transformacoes': 'Espaços, tempos, quantidades, relações e transformações',
 }
 
 export function BadgeSubject({ subject }: BadgeSubjectProps) {

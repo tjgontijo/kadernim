@@ -13,8 +13,6 @@ export interface GenerateLessonPlanParams {
   educationLevelSlug: string;
   gradeSlug?: string;
   subjectSlug?: string;
-  ageRange?: string;
-  fieldOfExperience?: string;
   numberOfClasses: number;
   bnccSkills: BnccSkillDetail[];
 }

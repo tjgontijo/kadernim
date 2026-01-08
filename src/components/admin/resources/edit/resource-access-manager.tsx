@@ -12,12 +12,25 @@ import {
   Plus,
   Search,
   X,
-  Calendar,
+  Calendar as CalendarIcon,
   ShieldCheck,
   Shield,
-  Loader2
+  Loader2,
+  Clock
 } from "lucide-react"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { format, addMonths, addYears } from "date-fns"
+import { ptBR } from "date-fns/locale"
 import { DeleteConfirmDialog } from "@/components/admin/crud/delete-confirm-dialog"
+import { cn } from "@/lib/utils"
 
 interface User {
   id: string
@@ -47,7 +60,7 @@ export function ResourceAccessManager({
   resourceId,
 }: ResourceAccessManagerProps) {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
-  const [expiresAt, setExpiresAt] = useState<string>("")
+  const [expiresAt, setExpiresAt] = useState<Date | undefined>(undefined)
   const [searchQuery, setSearchQuery] = useState("")
 
   // Fetch current access records
@@ -106,7 +119,7 @@ export function ResourceAccessManager({
     },
     onSuccess: () => {
       setSelectedUserId(null)
-      setExpiresAt("")
+      setExpiresAt(undefined)
       setSearchQuery("")
       refetchAccessList()
     },
@@ -134,6 +147,27 @@ export function ResourceAccessManager({
   const handleGrantAccess = () => {
     if (selectedUserId) {
       grantMutation.mutate(selectedUserId)
+    }
+  }
+
+  const handlePeriodSelect = (value: string) => {
+    const now = new Date()
+    switch (value) {
+      case "1-month":
+        setExpiresAt(addMonths(now, 1))
+        break
+      case "3-months":
+        setExpiresAt(addMonths(now, 3))
+        break
+      case "6-months":
+        setExpiresAt(addMonths(now, 6))
+        break
+      case "1-year":
+        setExpiresAt(addYears(now, 1))
+        break
+      case "unlimited":
+        setExpiresAt(undefined)
+        break
     }
   }
 
@@ -228,20 +262,66 @@ export function ResourceAccessManager({
               )}
             </div>
 
-            <div className="w-full md:w-64 space-y-4">
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
-                  Expira em (Opcional)
-                </label>
-                <div className="relative">
-                  <Input
-                    type="date"
-                    value={expiresAt}
-                    onChange={(e) => setExpiresAt(e.target.value)}
-                    min={new Date().toISOString().split("T")[0]}
-                    className="h-11 bg-muted/10 border-muted-foreground/20 focus-visible:ring-primary"
-                  />
-                  <Calendar className="absolute right-3 top-3 h-5 w-5 text-muted-foreground/30 pointer-events-none" />
+            <div className="w-full md:w-72 space-y-4">
+              <div className="space-y-4 p-4 bg-muted/20 border border-muted-foreground/10 rounded-2xl">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1 flex items-center gap-1.5">
+                    <Clock className="h-3 w-3" />
+                    Período de Acesso
+                  </label>
+                  <Select onValueChange={handlePeriodSelect}>
+                    <SelectTrigger className="h-11 bg-background border-muted-foreground/20 focus:ring-primary">
+                      <SelectValue placeholder="Escolha um período..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unlimited" className="font-bold text-emerald-600">Acesso Vitalício</SelectItem>
+                      <SelectItem value="1-month">1 Mês</SelectItem>
+                      <SelectItem value="3-months">3 Meses</SelectItem>
+                      <SelectItem value="6-months">6 Meses</SelectItem>
+                      <SelectItem value="1-year">1 Ano</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1 flex items-center gap-1.5">
+                    <CalendarIcon className="h-3 w-3" />
+                    Expiração (Personalizada)
+                  </label>
+                  <div className="relative">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-full h-11 justify-start text-left font-medium bg-background border-muted-foreground/20 focus:ring-primary",
+                            !expiresAt && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground/50" />
+                          {expiresAt ? format(expiresAt, "PPP", { locale: ptBR }) : <span>Selecione uma data</span>}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="end">
+                        <Calendar
+                          mode="single"
+                          selected={expiresAt}
+                          onSelect={setExpiresAt}
+                          disabled={(date) => date < new Date()}
+                          initialFocus
+                          locale={ptBR}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    {expiresAt && (
+                      <button
+                        onClick={() => setExpiresAt(undefined)}
+                        className="absolute right-3 top-3.5 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 

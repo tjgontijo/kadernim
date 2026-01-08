@@ -43,6 +43,20 @@ export async function createResourceService(
   if (!level) throw new Error(`Education level ${educationLevel} not found`)
   if (!sub) throw new Error(`Subject ${subject} not found`)
 
+  // Validate that all grades belong to the specified education level
+  if (input.grades && input.grades.length > 0) {
+    const gradesInDb = await prisma.grade.findMany({
+      where: {
+        slug: { in: input.grades },
+        educationLevelId: level.id
+      }
+    })
+
+    if (gradesInDb.length !== input.grades.length) {
+      throw new Error(`One or more grades do not belong to the selected education level (${educationLevel})`)
+    }
+  }
+
   // Create the resource
   const resource = await prisma.resource.create({
     data: {

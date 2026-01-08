@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { BnccService } from '@/services/bncc/bncc-service';
 
 /**
  * GET /api/v1/bncc/themes
@@ -25,8 +24,8 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const educationLevelSlug = searchParams.get('educationLevelSlug');
-    let gradeSlug = searchParams.get('gradeSlug');
-    let subjectSlug = searchParams.get('subjectSlug');
+    const gradeSlug = searchParams.get('gradeSlug');
+    const subjectSlug = searchParams.get('subjectSlug');
 
     if (!educationLevelSlug) {
       return NextResponse.json(
@@ -38,37 +37,45 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Buscar temas únicos (knowledgeObject ou fieldOfExperience para EI)
-    const isEI = educationLevelSlug === 'educacao-infantil';
+    // Buscar IDs a partir dos slugs
+    const educationLevel = await prisma.educationLevel.findUnique({
+      where: { slug: educationLevelSlug }
+    });
 
+    if (!educationLevel) {
+      return NextResponse.json(
+        { success: false, error: 'Etapa não encontrada' },
+        { status: 404 }
+      );
+    }
+
+    let gradeId: string | undefined;
+    if (gradeSlug) {
+      const grade = await prisma.grade.findUnique({
+        where: { slug: gradeSlug }
+      });
+      gradeId = grade?.id;
+    }
+
+    let subjectId: string | undefined;
+    if (subjectSlug) {
+      const subject = await prisma.subject.findUnique({
+        where: { slug: subjectSlug }
+      });
+      subjectId = subject?.id;
+    }
+
+    // Buscar temas únicos (knowledgeObject)
+    const isEI = educationLevelSlug === 'educacao-infantil';
     let themes: string[] = [];
 
-    // Adaptação para Educação Infantil: converter slugs para nomes
-    let ageRange: string | null = null;
-    let fieldOfExperience: string | null = null;
-
     if (isEI) {
-      // Para EI: gradeSlug = ageRange, subjectSlug = fieldOfExperience (slugificado)
-      if (gradeSlug) {
-        ageRange = gradeSlug;
-        console.log('[EI Themes] ageRange:', ageRange);
-      }
-
-      if (subjectSlug) {
-        fieldOfExperience = await BnccService.getFieldNameFromSlug(subjectSlug);
-        if (fieldOfExperience) {
-          console.log('[EI Themes] Match encontrado:', fieldOfExperience);
-        } else {
-          console.log('[EI Themes] Nenhum match encontrado para:', subjectSlug);
-        }
-      }
-
-      // Educação Infantil: tentar knowledgeObject primeiro (consistência com EF)
+      // Educação Infantil: tentar knowledgeObject primeiro
       const skillsWithKnowledgeObject = await prisma.bnccSkill.findMany({
         where: {
-          educationLevelSlug,
-          ...(ageRange && { ageRange }),
-          ...(fieldOfExperience && { fieldOfExperience }),
+          educationLevelId: educationLevel.id,
+          ...(gradeId && { gradeId }),
+          ...(subjectId && { subjectId }),
           knowledgeObject: { not: null },
         },
         select: { knowledgeObject: true },
@@ -78,21 +85,18 @@ export async function GET(request: NextRequest) {
 
       if (skillsWithKnowledgeObject.length > 0) {
         themes = skillsWithKnowledgeObject.map((s) => s.knowledgeObject!).filter(Boolean);
-        console.log('[EI Themes] Usando knowledgeObject:', themes);
       } else {
-        // Fallback: extrair palavras-chave das descrições se knowledgeObject estiver vazio
+        // Fallback: extrair palavras-chave das descrições
         const skills = await prisma.bnccSkill.findMany({
           where: {
-            educationLevelSlug,
-            ...(ageRange && { ageRange }),
-            ...(fieldOfExperience && { fieldOfExperience }),
+            educationLevelId: educationLevel.id,
+            ...(gradeId && { gradeId }),
+            ...(subjectId && { subjectId }),
             description: { not: '' },
           },
           select: { description: true },
           take: 50,
         });
-
-        console.log('[EI Themes] Extraindo keywords das descrições. Encontradas:', skills.length);
 
         const keywords = skills
           .map((s) => {
@@ -110,19 +114,19 @@ export async function GET(request: NextRequest) {
         themes = [...new Set(keywords)].slice(0, 3);
       }
     } else {
-      // Ensino Fundamental: usar knowledgeObject (mais preciso)
+      // Ensino Fundamental: usar knowledgeObject
       const skills = await prisma.bnccSkill.findMany({
         where: {
-          educationLevelSlug,
-          ...(gradeSlug && { gradeSlug }),
-          ...(subjectSlug && { subjectSlug }),
+          educationLevelId: educationLevel.id,
+          ...(gradeId && { gradeId }),
+          ...(subjectId && { subjectId }),
           knowledgeObject: { not: null },
         },
         select: {
           knowledgeObject: true,
         },
         distinct: ['knowledgeObject'],
-        take: 5, // Top 5 objetos de conhecimento
+        take: 5,
       });
 
       themes = skills

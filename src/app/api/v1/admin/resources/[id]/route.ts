@@ -8,6 +8,8 @@ import {
   ResourceDetailResponseSchema,
 } from '@/lib/schemas/admin/resources'
 import { getFileUrl } from '@/server/clients/cloudinary/file-client'
+import { getImageUrl } from '@/server/clients/cloudinary/image-client'
+import { getVideoUrl } from '@/server/clients/cloudinary/video-client'
 
 /**
  * GET /api/v1/admin/resources/:id
@@ -103,11 +105,17 @@ export async function GET(
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
 
-    // Import URL helpers
-    const { getImageUrl } = await import('@/server/clients/cloudinary/image-client')
-    const { getVideoUrl } = await import('@/server/clients/cloudinary/video-client')
+    // Fetch BNCC skills linked to the resource separately (to avoid Prisma include issues)
+    const bnccLinks = await prisma.resourceBnccSkill.findMany({
+      where: { resourceId: id },
+      include: {
+        bnccSkill: {
+          select: { id: true, code: true, description: true }
+        }
+      }
+    })
 
-    // Get stats
+    // Compute stats
     const totalUsers = await prisma.resourceUserAccess.count({
       where: { resourceId: id },
     })
@@ -126,21 +134,22 @@ export async function GET(
       },
     })
 
+    // Build response
     const response = {
       id: resource.id,
       title: resource.title,
       description: resource.description,
-      educationLevel: resource.educationLevel.slug,
-      subject: resource.subject.slug,
+      educationLevel: resource.educationLevel?.slug,
+      subject: resource.subject?.slug,
       externalId: resource.externalId,
       isFree: resource.isFree,
-      grades: resource.grades.map(rg => rg.grade.slug),
-      thumbUrl: resource.images?.[0]?.url || (resource.images?.[0]
+      thumbUrl: resource.images?.[0]
         ? `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/c_scale,w_400,q_auto,f_auto/${resource.images[0].cloudinaryPublicId}`
-        : null),
+        : null,
+      grades: resource.grades.map(g => g.grade?.slug).filter(Boolean),
       createdAt: resource.createdAt.toISOString(),
       updatedAt: resource.updatedAt.toISOString(),
-      files: resource.files.map((f) => ({
+      files: resource.files.map(f => ({
         id: f.id,
         name: f.name,
         cloudinaryPublicId: f.cloudinaryPublicId,
@@ -149,7 +158,7 @@ export async function GET(
         sizeBytes: f.sizeBytes,
         createdAt: f.createdAt.toISOString(),
       })),
-      images: resource.images.map((img) => ({
+      images: resource.images.map(img => ({
         id: img.id,
         cloudinaryPublicId: img.cloudinaryPublicId,
         url: img.url || getImageUrl(img.cloudinaryPublicId),
@@ -157,7 +166,7 @@ export async function GET(
         order: img.order,
         createdAt: img.createdAt.toISOString(),
       })),
-      videos: resource.videos.map((vid) => ({
+      videos: resource.videos.map(vid => ({
         id: vid.id,
         title: vid.title,
         cloudinaryPublicId: vid.cloudinaryPublicId,
@@ -172,6 +181,11 @@ export async function GET(
         accessGrants,
         subscriberAccess,
       },
+      bnccSkills: bnccLinks.map(l => ({
+        id: l.bnccSkill.id,
+        code: l.bnccSkill.code,
+        description: l.bnccSkill.description,
+      })),
     }
 
     // Validate response

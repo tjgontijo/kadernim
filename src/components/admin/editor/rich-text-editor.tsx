@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import { useEditor, EditorContent } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Link from "@tiptap/extension-link"
@@ -33,29 +34,31 @@ interface RichTextEditorProps {
 }
 
 export function RichTextEditor({ value, onChange, availableVariables = [] }: RichTextEditorProps) {
-    const editor = useEditor({
-        extensions: [
-            StarterKit.configure({
-                codeBlock: {
-                    HTMLAttributes: {
-                        class: "rounded-lg bg-muted p-4 font-mono text-sm my-4",
-                    },
-                },
-            }),
-            Underline,
-            Link.configure({
-                openOnClick: false,
+    const extensions = React.useMemo(() => [
+        StarterKit.configure({
+            codeBlock: {
                 HTMLAttributes: {
-                    class: "text-primary underline cursor-pointer",
+                    class: "rounded-lg bg-muted p-4 font-mono text-sm my-4",
                 },
-            }),
-            TextAlign.configure({
-                types: ["heading", "paragraph"],
-            }),
-            Placeholder.configure({
-                placeholder: "Comece a escrever a descrição...",
-            }),
-        ],
+            },
+        }),
+        Underline,
+        Link.configure({
+            openOnClick: false,
+            HTMLAttributes: {
+                class: "text-primary underline cursor-pointer",
+            },
+        }),
+        TextAlign.configure({
+            types: ["heading", "paragraph"],
+        }),
+        Placeholder.configure({
+            placeholder: "Comece a escrever a descrição...",
+        }),
+    ], [])
+
+    const editor = useEditor({
+        extensions,
         content: value,
         immediatelyRender: false, // Mandatório para Next.js
         onUpdate: ({ editor }) => {

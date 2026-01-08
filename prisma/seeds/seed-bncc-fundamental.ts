@@ -134,13 +134,6 @@ function parseTsv(filePath: string): RawRow[] {
   return rows
 }
 
-/**
- * Seed BNCC Skills (Fundamental)
- *
- * Requer no Prisma:
- * - code sem @unique
- * - @@unique([code, gradeSlug])
- */
 export async function seedBnccSkillsFundamental(prisma: PrismaClient) {
   console.log('🌱 Inserindo BNCC Skills (Fundamental) em bncc_skill...')
 
@@ -149,7 +142,23 @@ export async function seedBnccSkillsFundamental(prisma: PrismaClient) {
 
   console.log(`📄 Linhas lidas: ${rawRows.length}`)
 
-  let upserts = 0
+  // Buscar todos os EducationLevels, Grades e Subjects
+  const educationLevels = await prisma.educationLevel.findMany({
+    select: { id: true, slug: true }
+  })
+  const educationLevelIdBySlug = new Map(educationLevels.map(el => [el.slug, el.id]))
+
+  const grades = await prisma.grade.findMany({
+    select: { id: true, slug: true }
+  })
+  const gradeIdBySlug = new Map(grades.map(g => [g.slug, g.id]))
+
+  const subjects = await prisma.subject.findMany({
+    select: { id: true, slug: true }
+  })
+  const subjectIdBySlug = new Map(subjects.map(s => [s.slug, s.id]))
+
+  const skillsToCreate: any[] = []
   let skipped = 0
 
   for (const r of rawRows) {
@@ -167,8 +176,8 @@ export async function seedBnccSkillsFundamental(prisma: PrismaClient) {
     }
 
     const subjectSlug = subjectSlugFromComponent(r.componente)
+    const subjectId = subjectIdBySlug.get(subjectSlug)
 
-    const axis = norm(r.eixo)
     const unitTheme = norm(r.unidadeTematica)
     const knowledgeObject = norm(r.objetoConhecimento)
     const comments = norm(r.comentario)
@@ -184,38 +193,35 @@ export async function seedBnccSkillsFundamental(prisma: PrismaClient) {
         continue
       }
 
-      await prisma.bnccSkill.upsert({
-        where: {
-          // exige @@unique([code, gradeSlug])
-          code_gradeSlug: { code, gradeSlug },
-        },
-        update: {
-          educationLevelSlug,
-          gradeSlug,
-          subjectSlug,
-          unitTheme,
-          knowledgeObject,
-          description,
-          comments,
-          curriculumSuggestions,
-        },
-        create: {
-          code,
-          educationLevelSlug,
-          gradeSlug,
-          subjectSlug,
-          unitTheme,
-          knowledgeObject,
-          description,
-          comments,
-          curriculumSuggestions,
-        },
-      })
+      const educationLevelId = educationLevelIdBySlug.get(educationLevelSlug)
+      const gradeId = gradeIdBySlug.get(gradeSlug)
 
-      upserts++
+      if (!educationLevelId || !gradeId) {
+        console.warn(`⚠️  IDs não encontrados: ${educationLevelSlug} / ${gradeSlug}`)
+        continue
+      }
+
+      skillsToCreate.push({
+        code,
+        educationLevelId,
+        gradeId,
+        subjectId,
+        unitTheme,
+        knowledgeObject,
+        description,
+        comments,
+        curriculumSuggestions,
+      })
     }
   }
 
-  console.log(`✅ Upserts: ${upserts}`)
+  console.log(`📦 Inserindo ${skillsToCreate.length} habilidades em batch...`)
+
+  const result = await prisma.bnccSkill.createMany({
+    data: skillsToCreate,
+    skipDuplicates: true,
+  })
+
+  console.log(`✅ Inseridas: ${result.count}`)
   console.log(`⚠️ Ignoradas: ${skipped}`)
 }

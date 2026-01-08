@@ -147,8 +147,6 @@ interface Props {
     bnccSkillDescriptions?: {
         code: string;
         description: string;
-        fieldOfExperience?: string | null;
-        ageRange?: string | null;
     }[];
 }
 
@@ -222,13 +220,12 @@ export const LessonPlanPDF = ({ plan, bnccSkillDescriptions = [] }: Props) => {
     const isEI = plan.educationLevelSlug === 'educacao-infantil';
     const levelDisplay = formatEducationLevel(plan.educationLevelSlug);
 
-    // Tenta pegar do plano, se não tiver, pega da primeira habilidade
     let gradeDisplay = isEI
-        ? formatAgeRange(plan.ageRange || bnccSkillDescriptions[0]?.ageRange || '')
+        ? formatAgeRange(plan.gradeSlug)
         : formatGrade(plan.gradeSlug);
 
     let subjectDisplay = isEI
-        ? (plan.fieldOfExperience || bnccSkillDescriptions[0]?.fieldOfExperience || '')
+        ? formatSubject(plan.subjectSlug)
         : formatSubject(plan.subjectSlug);
 
     return (

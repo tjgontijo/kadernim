@@ -20,9 +20,10 @@ model EducationLevel {
   slug      String     @unique
   order     Int        @default(0)
 
-  grades  Grade[]
-  resources Resource[]
+  grades            Grade[]
+  resources         Resource[]
   communityRequests CommunityRequest[]
+  bnccSkills        BnccSkill[]
 
   @@map("education_level")
 }
@@ -36,10 +37,10 @@ model Grade {
   educationLevelId String
   educationLevel   EducationLevel @relation(fields: [educationLevelId], references: [id])
 
-  subjects         GradeSubject[]
-  
-  resources ResourceGrade[]
+  subjects          GradeSubject[]
+  resources         ResourceGrade[]
   communityRequests CommunityRequest[]
+  bnccSkills        BnccSkill[]
 
   @@index([educationLevelId])
   @@map("grade")
@@ -50,9 +51,10 @@ model Subject {
   name      String          @unique
   slug      String          @unique
 
-  grades    GradeSubject[]
-  resources Resource[]
+  grades            GradeSubject[]
+  resources         Resource[]
   communityRequests CommunityRequest[]
+  bnccSkills        BnccSkill[]
 
   @@map("subject")
 }
@@ -277,6 +279,7 @@ model Resource {
   videos ResourceVideo[]
   accessEntries ResourceUserAccess[]
   grades ResourceGrade[]
+  bnccSkills ResourceBnccSkill[]
 
   originRequestId String?           @unique
   originRequest   CommunityRequest? @relation(fields: [originRequestId], references: [id])
@@ -292,37 +295,56 @@ model BnccSkill {
 
   code String // nao pode ser @unique
 
-  educationLevelSlug String
+  // FK para nossas models (fonte da verdade)
+  educationLevelId String
+  educationLevel   EducationLevel @relation(fields: [educationLevelId], references: [id])
 
-  fieldOfExperience String?
-  ageRange String?
+  gradeId   String?
+  grade     Grade? @relation(fields: [gradeId], references: [id])
 
-  gradeSlug String?
-  subjectSlug String?
-  unitTheme String?
-  knowledgeObject String?
+  subjectId String?
+  subject   Subject? @relation(fields: [subjectId], references: [id])
 
-  description String @db.Text
-  comments String? @db.Text
+  // Campos BNCC
+  unitTheme             String?
+  knowledgeObject       String?
+  description           String @db.Text
+  comments              String? @db.Text
   curriculumSuggestions String? @db.Text
 
   // Full-Text Search (criado automaticamente por trigger - ver reset-db.sh)
   searchVector Unsupported("tsvector")?
-  embedding Unsupported("vector(1536)")?
+  embedding    Unsupported("vector(1536)")?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([educationLevelSlug])
-  @@index([gradeSlug])
-  @@index([subjectSlug])
+  @@index([educationLevelId])
+  @@index([gradeId])
+  @@index([subjectId])
   @@index([code])
-  @@index([searchVector], type: Gin)  
+  @@index([searchVector], type: Gin)
 
-  @@unique([code, gradeSlug], name: "code_gradeSlug")
-  @@unique([code, ageRange], name: "code_ageRange")
+  @@unique([code, gradeId], name: "code_gradeId")
+
+  resources ResourceBnccSkill[]
 
   @@map("bncc_skill")
+}
+
+model ResourceBnccSkill {
+  id          String    @id @default(cuid())
+
+  resourceId  String
+  resource    Resource  @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  bnccSkillId String
+  bnccSkill   BnccSkill @relation(fields: [bnccSkillId], references: [id], onDelete: Cascade)
+
+  @@unique([resourceId, bnccSkillId])
+  @@index([resourceId])
+  @@index([bnccSkillId])
+  @@map("resource_bncc_skill")
 }
 
 model LessonPlan {

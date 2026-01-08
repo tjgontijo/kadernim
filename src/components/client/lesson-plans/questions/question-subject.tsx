@@ -36,15 +36,15 @@ const SUBJECT_ICONS: Record<string, typeof BookOpen> = {
   'ciencias': Microscope,
   'geografia': Globe,
   'historia': Scroll,
-  'artes': Palette,
+  'arte': Palette,
   'educacao-fisica': Heart,
   'musica': Music,
   // Campos de experiência (EI)
-  'o-eu-o-outro-e-o-nos': Heart,
-  'corpo-gestos-e-movimentos': Heart,
-  'tracos-sons-cores-e-formas': Palette,
-  'escuta-fala-pensamento-e-imaginacao': BookOpen,
-  'espacos-tempos-quantidades-relacoes-e-transformacoes': Calculator,
+  'eu-outro-nos': Heart,
+  'corpo-gestos-movimentos': Heart,
+  'tracos-sons-cores-formas': Palette,
+  'escuta-fala-pensamento-imaginacao': BookOpen,
+  'espacos-tempos-quantidades-relacoes-transformacoes': Calculator,
 };
 
 export function QuestionSubject({

@@ -24,8 +24,7 @@ import {
   ResourcesCardView,
   ResourcesTableView,
 } from '@/components/client/resources'
-import { ResourceEditDrawer } from '@/components/client/resources/resource-edit-drawer'
-import { ResourceCreateDrawer } from '@/components/client/resources/resource-create-drawer'
+import { ResourceEditDrawer } from '@/components/client/resources/resource-drawer'
 import { useResourceMeta } from '@/hooks/use-resource-meta'
 import { useBreakpoint } from '@/hooks/use-breakpoint'
 
@@ -266,7 +265,10 @@ export default function AdminResourcesPage() {
         hasMore={resourcesData?.pagination.hasMore ?? false}
         isLoading={isLoading}
         filters={filtersComponent}
-        onAdd={() => setIsCreateDrawerOpen(true)}
+        onAdd={() => {
+          setResourceToEdit(null)
+          setIsEditDrawerOpen(true)
+        }}
         actions={
           view === 'list' && (
             <DropdownMenu>
@@ -314,19 +316,17 @@ export default function AdminResourcesPage() {
         </div>
       </CrudPageShell>
 
-      <ResourceCreateDrawer
-        open={isCreateDrawerOpen}
-        onOpenChange={setIsCreateDrawerOpen}
-        onSuccess={(newResource) => {
-          handleEditResource(newResource.id)
-        }}
-      />
 
       <ResourceEditDrawer
         resourceId={resourceToEdit}
         open={isEditDrawerOpen}
         onOpenChange={setIsEditDrawerOpen}
-        onSuccess={refetch}
+        onSuccess={(data: any) => {
+          refetch()
+          if (data?.id) {
+            setResourceToEdit(data.id)
+          }
+        }}
       />
     </>
   )

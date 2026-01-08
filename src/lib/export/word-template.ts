@@ -81,8 +81,6 @@ export async function generateWordDocument(
     bnccSkillDescriptions: {
         code: string;
         description: string;
-        fieldOfExperience?: string | null;
-        ageRange?: string | null;
     }[] = []
 ): Promise<Buffer> {
     const content = plan.content as unknown as LessonPlanContent;
@@ -91,13 +89,12 @@ export async function generateWordDocument(
     const isEI = plan.educationLevelSlug === 'educacao-infantil';
     const levelDisplay = formatEducationLevel(plan.educationLevelSlug);
 
-    // Fallbacks para campos que podem estar vazios no plano mas existem nas skills
     const gradeDisplay = isEI
-        ? formatAgeRange(plan.ageRange || bnccSkillDescriptions[0]?.ageRange || '')
+        ? formatAgeRange(plan.gradeSlug)
         : formatGrade(plan.gradeSlug);
 
     const subjectDisplay = isEI
-        ? (plan.fieldOfExperience || bnccSkillDescriptions[0]?.fieldOfExperience || '')
+        ? formatSubject(plan.subjectSlug)
         : formatSubject(plan.subjectSlug);
 
     const doc = new Document({

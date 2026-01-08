@@ -87,13 +87,6 @@ function parseEiTsv(filePath: string): RawEiRow[] {
   return rows
 }
 
-/**
- * Seed BNCC Skills (Educação Infantil)
- *
- * Requer no Prisma:
- * - code sem @unique
- * - @@unique([code, ageRange])
- */
 export async function seedBnccSkillsInfantil(prisma: PrismaClient) {
   console.log('🌱 Inserindo BNCC Skills (Educação Infantil) em bncc_skill...')
 
@@ -102,7 +95,34 @@ export async function seedBnccSkillsInfantil(prisma: PrismaClient) {
 
   console.log(`📄 Linhas lidas: ${rawRows.length}`)
 
-  let upserts = 0
+  // Buscar IDs necessários
+  const educationLevel = await prisma.educationLevel.findUnique({
+    where: { slug: 'educacao-infantil' }
+  })
+  if (!educationLevel) throw new Error('EducationLevel educacao-infantil não encontrado')
+
+  const grades = await prisma.grade.findMany({
+    where: { educationLevelId: educationLevel.id },
+    select: { id: true, slug: true }
+  })
+  const gradeIdBySlug = new Map(grades.map(g => [g.slug, g.id]))
+
+  // Mapeamento de Campo de Experiência para Subject
+  const fieldToSubjectSlug: Record<string, string> = {
+    'O eu, o outro e o nós': 'eu-outro-nos',
+    'Corpo, gestos e movimentos': 'corpo-gestos-movimentos',
+    'Traços, sons, cores e formas': 'tracos-sons-cores-formas',
+    'Escuta, fala, pensamento e imaginação': 'escuta-fala-pensamento',
+    'Espaços, tempos, quantidades, relações e transformações': 'espacos-tempos-quantidades',
+  }
+
+  const subjects = await prisma.subject.findMany({
+    where: { slug: { in: Object.values(fieldToSubjectSlug) } },
+    select: { id: true, slug: true }
+  })
+  const subjectIdBySlug = new Map(subjects.map(s => [s.slug, s.id]))
+
+  const skillsToCreate: any[] = []
   let skipped = 0
 
   for (const r of rawRows) {
@@ -116,44 +136,41 @@ export async function seedBnccSkillsInfantil(prisma: PrismaClient) {
       continue
     }
 
-    const ageRange = ageRangeToGradeSlug(faixa)
+    const gradeSlug = ageRangeToGradeSlug(faixa)
+    const gradeId = gradeIdBySlug.get(gradeSlug)
+    if (!gradeId) {
+      console.warn(`⚠️  Grade não encontrado: ${gradeSlug}`)
+      skipped++
+      continue
+    }
+
+    // Mapear Campo de Experiência para Subject
+    const subjectSlug = fieldToSubjectSlug[fieldOfExperience]
+    const subjectId = subjectSlug ? subjectIdBySlug.get(subjectSlug) : null
 
     const comments = norm(r.approach)
     const curriculumSuggestions = norm(r.suggestions)
 
-    await prisma.bnccSkill.upsert({
-      where: {
-        // exige @@unique([code, ageRange])
-        code_ageRange: { code, ageRange },
-      },
-      update: {
-        educationLevelSlug: 'educacao-infantil',
-        fieldOfExperience,
-        ageRange,
-        description,
-        comments,
-        curriculumSuggestions,
-
-        // garante que campos do EF ficam nulos
-        gradeSlug: null,
-        subjectSlug: null,
-        unitTheme: null,
-        knowledgeObject: null,
-      },
-      create: {
-        code,
-        educationLevelSlug: 'educacao-infantil',
-        fieldOfExperience,
-        ageRange,
-        description,
-        comments,
-        curriculumSuggestions,
-      },
+    skillsToCreate.push({
+      code,
+      educationLevelId: educationLevel.id,
+      gradeId,
+      subjectId,
+      description,
+      comments,
+      curriculumSuggestions,
+      unitTheme: null,
+      knowledgeObject: null,
     })
-
-    upserts++
   }
 
-  console.log(`✅ Upserts: ${upserts}`)
+  console.log(`📦 Inserindo ${skillsToCreate.length} habilidades em batch...`)
+
+  const result = await prisma.bnccSkill.createMany({
+    data: skillsToCreate,
+    skipDuplicates: true,
+  })
+
+  console.log(`✅ Inseridas: ${result.count}`)
   console.log(`⚠️ Ignoradas: ${skipped}`)
 }

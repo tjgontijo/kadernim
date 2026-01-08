@@ -14,8 +14,6 @@ const prisma = new PrismaClient({
 function buildEmbeddingText(row: {
   code: string
   educationLevelSlug: string
-  fieldOfExperience: string | null
-  ageRange: string | null
   gradeSlug: string | null
   subjectSlug: string | null
   unitTheme: string | null
@@ -25,10 +23,8 @@ function buildEmbeddingText(row: {
   const parts = [
     `Código: ${row.code}`,
     `Etapa: ${row.educationLevelSlug}`,
-    row.gradeSlug ? `Ano: ${row.gradeSlug}` : null,
-    row.subjectSlug ? `Componente: ${row.subjectSlug}` : null,
-    row.fieldOfExperience ? `Campo de experiência: ${row.fieldOfExperience}` : null,
-    row.ageRange ? `Faixa etária: ${row.ageRange}` : null,
+    row.gradeSlug ? `Ano/Faixa: ${row.gradeSlug}` : null,
+    row.subjectSlug ? `Componente/Campo: ${row.subjectSlug}` : null,
     row.unitTheme ? `Unidade temática: ${row.unitTheme}` : null,
     row.knowledgeObject ? `Objeto de conhecimento: ${row.knowledgeObject}` : null,
     `Habilidade: ${row.description}`,
@@ -74,13 +70,11 @@ async function main() {
   let batchNumber = 0
 
   while (true) {
-    // Buscar registros sem embedding (embedding é Unsupported, precisa usar raw SQL)
+    // Buscar registros sem embedding usando JOINs para pegar os slugs
     const rows = await prisma.$queryRaw<Array<{
       id: string
       code: string
       educationLevelSlug: string
-      fieldOfExperience: string | null
-      ageRange: string | null
       gradeSlug: string | null
       subjectSlug: string | null
       unitTheme: string | null
@@ -88,18 +82,19 @@ async function main() {
       description: string
     }>>`
       SELECT
-        id,
-        code,
-        "educationLevelSlug",
-        "fieldOfExperience",
-        "ageRange",
-        "gradeSlug",
-        "subjectSlug",
-        "unitTheme",
-        "knowledgeObject",
-        description
-      FROM "bncc_skill"
-      WHERE "embedding" IS NULL
+        s.id,
+        s.code,
+        el.slug as "educationLevelSlug",
+        g.slug as "gradeSlug",
+        sub.slug as "subjectSlug",
+        s."unitTheme",
+        s."knowledgeObject",
+        s.description
+      FROM "bncc_skill" s
+      JOIN "education_level" el ON s."educationLevelId" = el.id
+      LEFT JOIN "grade" g ON s."gradeId" = g.id
+      LEFT JOIN "subject" sub ON s."subjectId" = sub.id
+      WHERE s."embedding" IS NULL
       LIMIT ${BATCH}
     `
 

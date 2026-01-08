@@ -57,8 +57,6 @@ export async function GET(
             select: {
                 code: true,
                 description: true,
-                fieldOfExperience: true,
-                ageRange: true,
             },
         });
 

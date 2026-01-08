@@ -12,51 +12,16 @@ import { prisma } from '@/lib/db';
  * Exemplos:
  *   - GET /api/v1/subjects (todas as disciplinas)
  *   - GET /api/v1/subjects?educationLevelSlug=ensino-fundamental-1 (disciplinas do EF1)
- *   - GET /api/v1/subjects?educationLevelSlug=ensino-fundamental-1&gradeSlug=1-ano (disciplinas do 1º ano EF1)
+ *   - GET /api/v1/subjects?educationLevelSlug=ensino-fundamental-1&gradeSlug=ef1-1-ano (disciplinas do 1º ano EF1)
  *   - GET /api/v1/subjects?educationLevelSlug=educacao-infantil (campos de experiência EI)
  *
- * Nota: Se gradeSlug for informado, retorna apenas disciplinas válidas para aquele ano (via GradeSubject)
+ * Nota: Campos de Experiência da EI agora são Subjects normais vinculados via GradeSubject
  */
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const educationLevelSlug = searchParams.get('educationLevelSlug');
     const gradeSlug = searchParams.get('gradeSlug');
-
-    // Educação Infantil: retornar Campos de Experiência únicos da tabela bncc_skill
-    if (educationLevelSlug === 'educacao-infantil') {
-      const fieldsOfExperience = await prisma.bnccSkill.findMany({
-        where: {
-          educationLevelSlug: 'educacao-infantil',
-          fieldOfExperience: { not: null },
-        },
-        select: {
-          fieldOfExperience: true,
-        },
-        distinct: ['fieldOfExperience'],
-      });
-
-      // Mapear para formato compatível com frontend (slug baseado no nome)
-      const uniqueFields = fieldsOfExperience
-        .filter((f) => f.fieldOfExperience)
-        .map((f) => {
-          const name = f.fieldOfExperience!;
-          const slug = name
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/(^-|-$)/g, '');
-
-          return { slug, name };
-        })
-        .sort((a, b) => a.name.localeCompare(b.name));
-
-      return NextResponse.json({
-        success: true,
-        data: uniqueFields,
-      });
-    }
 
     // Se gradeSlug foi informado, buscar via GradeSubject (disciplinas válidas para o ano)
     if (gradeSlug) {

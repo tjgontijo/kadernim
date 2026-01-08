@@ -10,12 +10,10 @@ export async function seedTaxonomy(prisma: PrismaClient) {
   ] as const
 
   /**
-   * Subjects = Componentes Curriculares (apenas EF)
-   *
-   * Nota: EI não usa Subject. EI usa "Campos de Experiência"
-   * armazenados em BnccSkill.fieldOfExperience
+   * Subjects = Componentes Curriculares (EF/EM) + Campos de Experiência (EI)
    */
   const subjects = [
+    // Componentes Curriculares (Ensino Fundamental)
     { name: 'Língua Portuguesa', slug: 'lingua-portuguesa' },
     { name: 'Matemática', slug: 'matematica' },
     { name: 'Ciências', slug: 'ciencias' },
@@ -25,6 +23,17 @@ export async function seedTaxonomy(prisma: PrismaClient) {
     { name: 'Educação Física', slug: 'educacao-fisica' },
     { name: 'Língua Inglesa', slug: 'lingua-inglesa' },
     { name: 'Ensino Religioso', slug: 'ensino-religioso' },
+
+    // Matérias Extra-Curriculares / Suporte
+    { name: 'Planejamento', slug: 'planejamento' },
+    { name: 'Datas Importantes', slug: 'data-importante' },
+
+    // Campos de Experiência (Educação Infantil)
+    { name: 'O eu, o outro e o nós', slug: 'eu-outro-nos' },
+    { name: 'Corpo, gestos e movimentos', slug: 'corpo-gestos-movimentos' },
+    { name: 'Traços, sons, cores e formas', slug: 'tracos-sons-cores-formas' },
+    { name: 'Escuta, fala, pensamento e imaginação', slug: 'escuta-fala-pensamento' },
+    { name: 'Espaços, tempos, quantidades, relações e transformações', slug: 'espacos-tempos-quantidades' },
   ] as const
 
   const gradesByLevelSlug = {
@@ -62,6 +71,7 @@ export async function seedTaxonomy(prisma: PrismaClient) {
   const gradeSubjectRules: Record<EfLevelSlug, readonly string[]> = {
     'ensino-fundamental-1': [
       'lingua-portuguesa',
+      'lingua-inglesa',
       'matematica',
       'ciencias',
       'historia',
@@ -69,6 +79,8 @@ export async function seedTaxonomy(prisma: PrismaClient) {
       'arte',
       'educacao-fisica',
       'ensino-religioso',
+      'planejamento',
+      'data-importante',
     ],
     'ensino-fundamental-2': [
       'lingua-portuguesa',
@@ -80,6 +92,8 @@ export async function seedTaxonomy(prisma: PrismaClient) {
       'educacao-fisica',
       'lingua-inglesa', // ← Obrigatória apenas a partir do 6º ano
       'ensino-religioso',
+      'planejamento',
+      'data-importante',
     ],
   }
 
@@ -119,9 +133,40 @@ export async function seedTaxonomy(prisma: PrismaClient) {
       })
     }
 
-    // EI nao tem GradeSubject
-    if (levelSlug === 'educacao-infantil') continue
+    // EI: vincular Campos de Experiência
+    if (levelSlug === 'educacao-infantil') {
+      const fieldsOfExperience = [
+        'eu-outro-nos',
+        'corpo-gestos-movimentos',
+        'tracos-sons-cores-formas',
+        'escuta-fala-pensamento',
+        'espacos-tempos-quantidades',
+        'planejamento',
+        'data-importante',
+      ]
 
+      const gradeRows = await prisma.grade.findMany({
+        where: { educationLevelId },
+        select: { id: true },
+      })
+
+      for (const gr of gradeRows) {
+        for (const fieldSlug of fieldsOfExperience) {
+          const subjectId = subjectIdBySlug.get(fieldSlug)
+          if (!subjectId) throw new Error(`Campo de Experiência não encontrado: ${fieldSlug}`)
+
+          await prisma.gradeSubject.upsert({
+            where: { gradeId_subjectId: { gradeId: gr.id, subjectId } },
+            update: {},
+            create: { gradeId: gr.id, subjectId },
+          })
+        }
+      }
+
+      continue
+    }
+
+    // EF: vincular Componentes Curriculares
     const subjectSlugs = gradeSubjectRules[levelSlug as EfLevelSlug]
 
     const gradeRows = await prisma.grade.findMany({

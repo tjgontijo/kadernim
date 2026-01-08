@@ -14,11 +14,9 @@ export async function GET(request: Request) {
       q: searchParams.get('q'),
       searchMode: (searchParams.get('searchMode') || 'hybrid') as any,
       educationLevelSlug: searchParams.get('educationLevelSlug'),
-      gradeSlug: searchParams.get('gradeSlug'),
+      gradeSlugs: searchParams.getAll('gradeSlug'),
       subjectSlug: searchParams.get('subjectSlug'),
-      ageRange: searchParams.get('ageRange'),
-      fieldOfExperience: searchParams.get('fieldOfExperience'),
-      limit: Math.min(Number(searchParams.get('limit')) || 50, 100),
+      limit: Math.min(Number(searchParams.get('limit')) || 50, 500),
     });
 
     return NextResponse.json({

@@ -88,7 +88,6 @@ export function CreatePlanDrawer({ open, onOpenChange }: CreatePlanDrawerProps) 
   const handleGenerate = async () => {
     try {
       goToNextStep('generating', {});
-      const isEI = wizardState.educationLevelSlug === 'educacao-infantil';
       const response = await fetch('/api/v1/lesson-plans', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -96,10 +95,8 @@ export function CreatePlanDrawer({ open, onOpenChange }: CreatePlanDrawerProps) 
           title: wizardState.title,
           numberOfClasses: wizardState.numberOfClasses,
           educationLevelSlug: wizardState.educationLevelSlug,
-          gradeSlug: isEI ? undefined : wizardState.gradeSlug,
-          subjectSlug: isEI ? undefined : wizardState.subjectSlug,
-          ageRange: isEI ? wizardState.gradeSlug : undefined,
-          fieldOfExperience: isEI ? wizardState.subjectSlug : undefined,
+          gradeSlug: wizardState.gradeSlug,
+          subjectSlug: wizardState.subjectSlug,
           bnccSkillCodes: wizardState.bnccSkillCodes,
         }),
       });

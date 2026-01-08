@@ -54,10 +54,9 @@ function formatSubject(subjectSlug: string | undefined): string {
 }
 
 export function PlanCard({ plan }: PlanCardProps) {
-    const isEI = plan.educationLevelSlug === 'educacao-infantil';
     const levelDisplay = formatEducationLevel(plan.educationLevelSlug);
-    const gradeDisplay = isEI ? plan.ageRange : formatGrade(plan.gradeSlug);
-    const subjectDisplay = isEI ? plan.fieldOfExperience : formatSubject(plan.subjectSlug);
+    const gradeDisplay = formatGrade(plan.gradeSlug);
+    const subjectDisplay = formatSubject(plan.subjectSlug);
 
     return (
         <Link href={`/lesson-plans/${plan.id}`} className="block group">

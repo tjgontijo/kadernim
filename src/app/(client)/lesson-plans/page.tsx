@@ -114,10 +114,8 @@ export default function LessonPlansPage() {
       if (!matchesSearch) return false;
 
       const matchLevel = level === 'all' || plan.educationLevelSlug === level;
-      const matchGrade = grade === 'all' ||
-        (plan.educationLevelSlug === 'educacao-infantil' ? plan.ageRange === grade : plan.gradeSlug === grade);
-      const matchSubject = subject === 'all' ||
-        (plan.educationLevelSlug === 'educacao-infantil' ? plan.fieldOfExperience === subject : plan.subjectSlug === subject);
+      const matchGrade = grade === 'all' || plan.gradeSlug === grade;
+      const matchSubject = subject === 'all' || plan.subjectSlug === subject;
 
       return matchLevel && matchGrade && matchSubject;
     });

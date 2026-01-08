@@ -23,6 +23,7 @@ function OTPSentContent() {
   const [form, setForm] = useState<VerifyState>({ email: '', otp: '' })
   const [verifyStatus, setVerifyStatus] = useState<SubmissionState>('idle')
   const [resendStatus, setResendStatus] = useState<ResendState>('idle')
+  const [countdown, setCountdown] = useState(60)
 
   // Referência para o input de OTP
   const otpInputRef = useRef<HTMLInputElement | null>(null)
@@ -40,6 +41,15 @@ function OTPSentContent() {
       }
     }, 100) // Pequeno delay para garantir que o DOM esteja pronto
   }, [searchParams])
+
+  // Countdown timer para o botão de reenviar
+  useEffect(() => {
+    let timer: NodeJS.Timeout
+    if (countdown > 0) {
+      timer = setTimeout(() => setCountdown(countdown - 1), 1000)
+    }
+    return () => clearTimeout(timer)
+  }, [countdown])
 
   const handleOtpChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newOtp = event.target.value.replace(/[^0-9]/g, '').slice(0, 6)
@@ -96,6 +106,7 @@ function OTPSentContent() {
       }
 
       toast.success('Novo código enviado! Verifique seu email.')
+      setCountdown(60) // Reinicia o contador
     } catch (cause) {
       console.error('[otp] erro ao reenviar código', cause)
       toast.error('Erro ao reenviar código. Tente novamente mais tarde.')
@@ -163,15 +174,19 @@ function OTPSentContent() {
           <button
             type="button"
             onClick={handleResend}
-            disabled={resendStatus === 'sending'}
+            disabled={resendStatus === 'sending' || countdown > 0}
             className="flex w-full items-center justify-center gap-2 rounded-md border border-primary px-4 py-2 font-medium text-primary hover:bg-primary/5 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {resendStatus === 'sending' ? (
               <Spinner className="h-4 w-4 text-primary" />
+            ) : countdown > 0 ? (
+              <span className="tabular-nums">Reenviar em {countdown}s</span>
             ) : (
-              <Clock className="h-4 w-4" />
+              <>
+                <Clock className="h-4 w-4" />
+                Reenviar código
+              </>
             )}
-            Reenviar código
           </button>
 
           <button

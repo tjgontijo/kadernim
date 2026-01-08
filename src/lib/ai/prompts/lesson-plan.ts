@@ -47,22 +47,22 @@ export const systemPrompt = systemPromptEF; // Fallback ou para compatibilidade 
  */
 export function buildUserPromptEI(params: {
   title: string;
-  ageRange?: string;
-  fieldOfExperience?: string;
+  gradeSlug?: string;
+  subjectSlug?: string;
   numberOfClasses: number;
   bnccSkills: BnccSkillDetail[];
 }): string {
-  const { title, ageRange, fieldOfExperience, numberOfClasses, bnccSkills } = params;
+  const { title, gradeSlug, subjectSlug, numberOfClasses, bnccSkills } = params;
 
   const skillsFormatted = bnccSkills.map((skill, i) =>
-    `${i + 1}. **${skill.code}**: ${skill.description}\nCampo: ${skill.fieldOfExperience || fieldOfExperience}`
+    `${i + 1}. **${skill.code}**: ${skill.description}`
   ).join('\n\n');
 
   return `Gere um Plano de Aula de Educação Infantil (JSON).
 
 TEMA: "${title}"
-FAIXA ETÁRIA: ${ageRange}
-CAMPO DE EXPERIÊNCIA: ${fieldOfExperience}
+FAIXA ETÁRIA: ${gradeSlug || 'Não especificada'}
+CAMPO DE EXPERIÊNCIA: ${subjectSlug || 'Não especificado'}
 DURAÇÃO: ${numberOfClasses} aula(s).
 
 HABILIDADES (OBJETIVOS DE APRENDIZAGEM) BNCC:

@@ -21,7 +21,6 @@ export const BnccSkillDetailSchema = z.object({
   description: z.string(), // Descrição completa da habilidade
   unitTheme: z.string().default(''), // Unidade temática (EF)
   knowledgeObject: z.string().default(''), // Objeto de conhecimento (EF)
-  fieldOfExperience: z.string().default(''), // Campo de experiência (EI)
   comments: z.string().default(''), // Comentários pedagógicos da BNCC
   curriculumSuggestions: z.string().default(''), // Sugestões curriculares
 });
@@ -63,12 +62,8 @@ export const CreateLessonPlanSchema = z.object({
   title: z.string().min(5).max(200),
   numberOfClasses: z.number().int().min(1).max(3),
   educationLevelSlug: z.string(),
-
-  // Bifurcação EI vs EF
   gradeSlug: z.string().optional(),
   subjectSlug: z.string().optional(),
-  ageRange: z.string().optional(),
-  fieldOfExperience: z.string().optional(),
 
   // Códigos BNCC selecionados (wizard Step 6)
   bnccSkillCodes: z.array(z.string()).min(1).max(3),
@@ -87,8 +82,6 @@ export const LessonPlanResponseSchema = z.object({
   educationLevelSlug: z.string(),
   gradeSlug: z.string().optional(),
   subjectSlug: z.string().optional(),
-  ageRange: z.string().optional(),
-  fieldOfExperience: z.string().optional(),
   bnccSkillCodes: z.array(z.string()),
   content: LessonPlanContentSchema,
   createdAt: z.date(),

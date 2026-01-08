@@ -175,7 +175,9 @@ export function ResourceFilters({ onFiltersChange, tab = 'all' }: ResourceFilter
         <div className="py-6 space-y-6 overflow-y-auto">
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Etapa de Ensino</label>
+              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                {level === 'educacao-infantil' ? 'Etapa' : 'Etapa de Ensino'}
+              </label>
               <Select value={level} onValueChange={setLevel}>
                 <SelectTrigger className="h-14 w-full bg-muted/30 border-border/50 rounded-2xl text-sm font-bold">
                   <SelectValue placeholder="Todas as Etapas" />
@@ -188,7 +190,9 @@ export function ResourceFilters({ onFiltersChange, tab = 'all' }: ResourceFilter
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Ano / Série</label>
+              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                {level === 'educacao-infantil' ? 'Faixa Etária' : 'Ano / Série'}
+              </label>
               <Select value={grade} onValueChange={setGrade} disabled={level === 'all'}>
                 <SelectTrigger className="h-14 w-full bg-muted/30 border-border/50 rounded-2xl text-sm font-bold">
                   <SelectValue placeholder={level === 'educacao-infantil' ? 'Faixa Etária' : 'Ano/Série'} />
@@ -201,7 +205,9 @@ export function ResourceFilters({ onFiltersChange, tab = 'all' }: ResourceFilter
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Componente / Campo</label>
+              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                {level === 'educacao-infantil' ? 'Campo de Experiência' : 'Componente / Matéria'}
+              </label>
               <Select value={subject} onValueChange={setSubject} disabled={grade === 'all' && level !== 'educacao-infantil'}>
                 <SelectTrigger className="h-14 w-full bg-muted/30 border-border/50 rounded-2xl text-sm font-bold">
                   <SelectValue placeholder={level === 'educacao-infantil' ? 'Campo de Exp.' : 'Componente'} />

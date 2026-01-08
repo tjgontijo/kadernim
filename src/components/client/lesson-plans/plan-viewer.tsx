@@ -48,8 +48,6 @@ interface PlanViewerProps {
     bnccSkillDescriptions?: {
         code: string;
         description: string;
-        fieldOfExperience?: string | null;
-        ageRange?: string | null;
     }[];
 }
 
@@ -131,13 +129,12 @@ export function PlanViewer({ plan, bnccSkillDescriptions = [] }: PlanViewerProps
     const isEI = plan.educationLevelSlug === 'educacao-infantil';
     const levelDisplay = formatEducationLevel(plan.educationLevelSlug);
 
-    // Tenta pegar do plano, se não tiver, pega da primeira habilidade (fallback)
     const gradeDisplay = isEI
-        ? formatAgeRange(plan.ageRange || bnccSkillDescriptions[0]?.ageRange || '')
+        ? formatAgeRange(plan.gradeSlug)
         : formatGrade(plan.gradeSlug);
 
     const subjectDisplay = isEI
-        ? (plan.fieldOfExperience || bnccSkillDescriptions[0]?.fieldOfExperience || '')
+        ? formatSubject(plan.subjectSlug)
         : formatSubject(plan.subjectSlug);
 
     const BlockHeader = ({ icon: Icon, number, title }: { icon: any, number: number, title: string }) => (

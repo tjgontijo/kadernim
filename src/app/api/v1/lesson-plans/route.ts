@@ -178,7 +178,6 @@ export async function POST(request: NextRequest) {
         description: true,
         unitTheme: true,
         knowledgeObject: true,
-        fieldOfExperience: true,
         comments: true,
         curriculumSuggestions: true,
       },
@@ -200,7 +199,6 @@ export async function POST(request: NextRequest) {
       description: skill.description,
       unitTheme: skill.unitTheme || '',
       knowledgeObject: skill.knowledgeObject || '',
-      fieldOfExperience: skill.fieldOfExperience || '',
       comments: skill.comments || '',
       curriculumSuggestions: skill.curriculumSuggestions || '',
     }));
@@ -214,8 +212,6 @@ export async function POST(request: NextRequest) {
       educationLevelSlug: data.educationLevelSlug,
       gradeSlug: data.gradeSlug,
       subjectSlug: data.subjectSlug,
-      ageRange: data.ageRange,
-      fieldOfExperience: data.fieldOfExperience,
       numberOfClasses: data.numberOfClasses,
       bnccSkills: skillDetails,
     });
@@ -232,8 +228,6 @@ export async function POST(request: NextRequest) {
         educationLevelSlug: data.educationLevelSlug,
         gradeSlug: data.gradeSlug,
         subjectSlug: data.subjectSlug,
-        ageRange: data.ageRange,
-        fieldOfExperience: data.fieldOfExperience,
         bnccSkillCodes: data.bnccSkillCodes,
         content: content as any, // JSON field
       },
