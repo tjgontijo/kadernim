@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import {
   BookOpen,
   Calculator,
@@ -12,13 +11,8 @@ import {
   Heart,
 } from 'lucide-react';
 import { QuizStep } from '@/components/client/quiz/QuizStep';
-import { QuizCard } from '@/components/client/quiz/QuizCard';
-import { Skeleton } from '@/components/ui/skeleton';
-
-interface Subject {
-  slug: string;
-  name: string;
-}
+import { QuizChoice, type QuizOption } from '@/components/client/quiz/QuizChoice';
+import { useSubjects } from '@/hooks/use-taxonomy';
 
 interface QuestionSubjectProps {
   educationLevelSlug: string;
@@ -26,8 +20,6 @@ interface QuestionSubjectProps {
   value?: string;
   onSelect: (slug: string, name: string) => void;
 }
-
-import { QuizChoice, type QuizOption } from '@/components/client/quiz/QuizChoice';
 
 // Ícones por disciplina/campo
 const SUBJECT_ICONS: Record<string, typeof BookOpen> = {
@@ -53,29 +45,9 @@ export function QuestionSubject({
   value,
   onSelect,
 }: QuestionSubjectProps) {
-  const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: subjects = [], isLoading, error } = useSubjects(educationLevelSlug, gradeSlug, true);
 
   const isEI = educationLevelSlug === 'educacao-infantil';
-
-  useEffect(() => {
-    async function fetchSubjects() {
-      try {
-        const response = await fetch(
-          `/api/v1/subjects?educationLevelSlug=${educationLevelSlug}&gradeSlug=${gradeSlug}`
-        );
-        if (!response.ok) throw new Error('Erro ao carregar disciplinas/campos');
-        const data = await response.json();
-        if (data.success) setSubjects(data.data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erro ao carregar');
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchSubjects();
-  }, [educationLevelSlug, gradeSlug]);
 
   const quizOptions: QuizOption[] = subjects.map(subject => ({
     id: subject.slug,
@@ -95,14 +67,16 @@ export function QuestionSubject({
     >
       {error ? (
         <div className="text-center py-12">
-          <p className="text-destructive font-bold">{error}</p>
+          <p className="text-destructive font-bold">
+            {error instanceof Error ? error.message : 'Erro ao carregar disciplinas/campos'}
+          </p>
         </div>
       ) : (
         <QuizChoice
           options={quizOptions}
           value={value}
           onSelect={(opt) => onSelect(opt.slug, opt.name)}
-          loading={loading}
+          loading={isLoading}
           autoAdvance={true}
         />
       )}
