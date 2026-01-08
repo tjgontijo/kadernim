@@ -23,9 +23,10 @@ interface RequestCardProps {
     onVote: (id: string) => void
     isVoting: boolean
     rank?: number
+    disabled?: boolean
 }
 
-export function RequestCard({ request, onVote, isVoting, rank }: RequestCardProps) {
+export function RequestCard({ request, onVote, isVoting, rank, disabled = false }: RequestCardProps) {
     const isTrending = rank !== undefined && rank <= 3
     return (
         <motion.div
@@ -102,11 +103,12 @@ export function RequestCard({ request, onVote, isVoting, rank }: RequestCardProp
 
                         <Button
                             size="icon"
-                            disabled={isVoting || request.hasVoted}
+                            disabled={isVoting || request.hasVoted || disabled}
                             onClick={(e) => {
                                 e.stopPropagation();
                                 onVote(request.id);
                             }}
+                            title={disabled ? 'Apenas assinantes podem votar' : request.hasVoted ? 'Você já votou' : 'Votar neste pedido'}
                             className={cn(
                                 "h-14 w-14 rounded-[20px] transition-all duration-300 relative overflow-hidden",
                                 request.hasVoted
