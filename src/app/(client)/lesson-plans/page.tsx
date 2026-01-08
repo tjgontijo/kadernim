@@ -10,6 +10,7 @@ import { PlanCard } from '@/components/client/lesson-plans/plan-card';
 import { EmptyState } from '@/components/client/lesson-plans/empty-state';
 import { useLessonPlans } from '@/hooks/use-lesson-plans';
 import { useLessonPlanUsage } from '@/hooks/use-lesson-plan-usage';
+import { useEducationLevels, useGrades, useSubjects } from '@/hooks/use-taxonomy';
 import { Progress } from '@/components/ui/progress';
 import { PageScaffold } from '@/components/client/shared/page-scaffold';
 import { SearchInput } from '@/components/client/shared/search-input';
@@ -35,11 +36,6 @@ import { type LessonPlanResponse } from '@/lib/schemas/lesson-plan';
 import { PageScaffoldSkeleton } from '@/components/client/shared/skeletons/page-scaffold-skeleton';
 import { PlanCardSkeleton } from '@/components/client/shared/skeletons/plan-card-skeleton';
 
-interface FilterOption {
-  slug: string;
-  name: string;
-}
-
 export default function LessonPlansPage() {
   const { isMobile } = useBreakpoint();
   const { data: session, isPending: isSessionLoading } = useSession();
@@ -57,59 +53,34 @@ export default function LessonPlansPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
 
-  // States para os filtros cascateados
+  // States para a navegação dos filtros
   const [level, setLevel] = useState<string>('all');
   const [grade, setGrade] = useState<string>('all');
   const [subject, setSubject] = useState<string>('all');
 
-  // Opções para os dropdowns
-  const [levels, setLevels] = useState<FilterOption[]>([]);
-  const [grades, setGrades] = useState<FilterOption[]>([]);
-  const [subjects, setSubjects] = useState<FilterOption[]>([]);
+  // Fetch taxonomy data usando hooks (cacheado/deduplicado)
+  const { data: levels = [] } = useEducationLevels();
+  const { data: grades = [] } = useGrades(level);
+  const { data: subjects = [] } = useSubjects(level, grade);
 
   const { data: plans, isLoading } = useLessonPlans();
   const { data: usage, isLoading: isLoadingUsage } = useLessonPlanUsage();
 
-  // Carregar Etapas ao montar
-  useEffect(() => {
-    fetch('/api/v1/education-levels')
-      .then(res => res.json())
-      .then(data => { if (data.success) setLevels(data.data); });
-  }, []);
-
-  // Carregar Anos quando Etapa mudar
+  // Reseta filtros dependentes quando o pai muda
   useEffect(() => {
     if (level === 'all') {
-      setGrades([]);
       setGrade('all');
-      return;
+      setSubject('all');
+    } else {
+      setSubject('all');
     }
-    fetch(`/api/v1/grades?educationLevelSlug=${level}`)
-      .then(res => res.json())
-      .then(data => { if (data.success) setGrades(data.data); });
-
-    setGrade('all');
-    setSubject('all');
   }, [level]);
 
-  // Carregar Disciplinas quando Ano mudar
   useEffect(() => {
-    if (grade === 'all' && level === 'all') {
-      setSubjects([]);
+    if (grade === 'all') {
       setSubject('all');
-      return;
     }
-
-    const params = new URLSearchParams();
-    if (level !== 'all') params.append('educationLevelSlug', level);
-    if (grade !== 'all') params.append('gradeSlug', grade);
-
-    fetch(`/api/v1/subjects?${params.toString()}`)
-      .then(res => res.json())
-      .then(data => { if (data.success) setSubjects(data.data); });
-
-    setSubject('all');
-  }, [grade, level]);
+  }, [grade]);
 
   const filteredPlans = useMemo(() => {
     if (!plans) return [];
