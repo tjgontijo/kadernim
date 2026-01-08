@@ -8,20 +8,20 @@ import { prisma } from '@/lib/db';
  * Query params:
  *   - educationLevelSlug?: string (opcional, filtra por etapa)
  *   - gradeSlug?: string (opcional, filtra disciplinas válidas para o ano via GradeSubject)
- *
- * Exemplos:
- *   - GET /api/v1/subjects (todas as disciplinas)
- *   - GET /api/v1/subjects?educationLevelSlug=ensino-fundamental-1 (disciplinas do EF1)
- *   - GET /api/v1/subjects?educationLevelSlug=ensino-fundamental-1&gradeSlug=ef1-1-ano (disciplinas do 1º ano EF1)
- *   - GET /api/v1/subjects?educationLevelSlug=educacao-infantil (campos de experiência EI)
- *
- * Nota: Campos de Experiência da EI agora são Subjects normais vinculados via GradeSubject
+ *   - bnccOnly?: boolean (opcional, filtra apenas disciplinas da BNCC)
  */
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const educationLevelSlug = searchParams.get('educationLevelSlug');
     const gradeSlug = searchParams.get('gradeSlug');
+    const bnccOnly = searchParams.get('bnccOnly') === 'true';
+
+    // Construir filtro de BNCC se solicitado
+    const subjectsWhere: any = {};
+    if (bnccOnly) {
+      subjectsWhere.isBncc = true;
+    }
 
     // Se gradeSlug foi informado, buscar via GradeSubject (disciplinas válidas para o ano)
     if (gradeSlug) {
@@ -30,12 +30,14 @@ export async function GET(request: Request) {
           grade: {
             slug: gradeSlug,
           },
+          subject: subjectsWhere,
         },
         include: {
           subject: {
             select: {
               slug: true,
               name: true,
+              isBncc: true,
             },
           },
         },
@@ -64,12 +66,14 @@ export async function GET(request: Request) {
               slug: educationLevelSlug,
             },
           },
+          subject: subjectsWhere,
         },
         include: {
           subject: {
             select: {
               slug: true,
               name: true,
+              isBncc: true,
             },
           },
         },
@@ -93,9 +97,11 @@ export async function GET(request: Request) {
 
     // Sem filtro: retorna todos os subjects
     const subjects = await prisma.subject.findMany({
+      where: subjectsWhere,
       select: {
         slug: true,
         name: true,
+        isBncc: true,
       },
       orderBy: {
         name: 'asc',
