@@ -50,7 +50,7 @@ export function QuizCard({
 
             <div className="flex-1 min-w-0 pr-6">
                 <h3 className={cn(
-                    "font-bold leading-tight",
+                    "font-semibold leading-tight",
                     compact ? "text-sm" : "text-base",
                     selected ? "text-primary" : "text-foreground"
                 )}>
