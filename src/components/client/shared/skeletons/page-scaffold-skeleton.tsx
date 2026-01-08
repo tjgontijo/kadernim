@@ -1,5 +1,6 @@
 import { Skeleton } from '@/components/ui/skeleton'
 import { PageScaffold } from '@/components/client/shared/page-scaffold'
+import { cn } from '@/lib/utils'
 
 interface PageScaffoldSkeletonProps {
     showHighlight?: boolean
@@ -46,10 +47,10 @@ export function PageScaffoldSkeleton({
             <div className="px-4 sm:px-0 mt-6">
                 <div className={cn(
                     "grid gap-6",
-                    "grid-cols-1",
-                    "md:grid-cols-2",
-                    "lg:grid-cols-3",
-                    columns?.large && "xl:grid-cols-4"
+                    columns?.mobile ? `grid-cols-${columns.mobile}` : "grid-cols-1",
+                    columns?.tablet ? `md:grid-cols-${columns.tablet}` : "md:grid-cols-2",
+                    columns?.desktop ? `lg:grid-cols-${columns.desktop}` : "lg:grid-cols-3",
+                    columns?.large ? `xl:grid-cols-${columns.large}` : ""
                 )}>
                     {Array.from({ length: cardCount }).map((_, i) => (
                         <CardSkeleton key={i} />
@@ -60,7 +61,4 @@ export function PageScaffoldSkeleton({
     )
 }
 
-// Helper to avoid importing cn everywhere if not needed
-function cn(...classes: any[]) {
-    return classes.filter(Boolean).join(' ')
-}
+
