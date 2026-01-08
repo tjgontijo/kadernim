@@ -60,7 +60,7 @@ export function QuizTextInput({
     };
 
     return (
-        <div className="flex flex-col gap-8 w-full">
+        <div className="flex flex-col gap-6 w-full">
             <div className="relative group">
                 {multiline ? (
                     <textarea
@@ -70,8 +70,8 @@ export function QuizTextInput({
                         placeholder={placeholder}
                         maxLength={maxLength}
                         className={cn(
-                            "w-full min-h-[200px] bg-muted/20 border-2 border-border/40 rounded-[32px] p-8 text-xl font-medium outline-none transition-all",
-                            "focus:border-primary focus:bg-background focus:shadow-xl focus:shadow-primary/5 placeholder:text-muted-foreground/30",
+                            "w-full min-h-[140px] bg-muted/20 border-2 border-border/40 rounded-[16px] p-5 text-base font-normal outline-none transition-all",
+                            "focus:border-primary focus:bg-background focus:shadow-sm placeholder:text-muted-foreground/40",
                             "scrollbar-none resize-none"
                         )}
                         onKeyDown={handleKeyDown}
@@ -85,14 +85,14 @@ export function QuizTextInput({
                         placeholder={placeholder}
                         maxLength={maxLength}
                         className={cn(
-                            "w-full h-20 bg-muted/20 border-2 border-border/40 rounded-[28px] px-8 text-2xl font-black outline-none transition-all",
-                            "focus:border-primary focus:bg-background focus:shadow-xl focus:shadow-primary/5 placeholder:text-muted-foreground/30"
+                            "w-full h-12 bg-muted/20 border-2 border-border/40 rounded-[12px] px-5 text-base font-normal outline-none transition-all",
+                            "focus:border-primary focus:bg-background focus:shadow-sm placeholder:text-muted-foreground/40"
                         )}
                         onKeyDown={handleKeyDown}
                     />
                 )}
 
-                <div className="absolute bottom-6 right-8 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/20">
+                <div className="absolute bottom-3 right-5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/30">
                     {charCount} / {maxLength}
                 </div>
             </div>
@@ -101,12 +101,12 @@ export function QuizTextInput({
                 <AnimatePresence mode="wait">
                     {charCount > 0 && charCount < minLength && (
                         <motion.p
-                            initial={{ opacity: 0, y: -10 }}
+                            initial={{ opacity: 0, y: -5 }}
                             animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="text-xs font-black text-primary text-center uppercase tracking-widest"
+                            exit={{ opacity: 0, y: -5 }}
+                            className="text-[10px] font-bold text-primary/70 text-center uppercase tracking-widest"
                         >
-                            Continue escrevendo... ({minLength - charCount} restante)
+                            Escreva mais {minLength - charCount} caracteres
                         </motion.p>
                     )}
                 </AnimatePresence>
@@ -119,8 +119,8 @@ export function QuizTextInput({
                 />
 
                 {!multiline && isValid && !isLoading && (
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/20 text-center animate-pulse">
-                        Pressione Enter
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/20 text-center">
+                        Pressione Enter para prosseguir
                     </p>
                 )}
             </div>
