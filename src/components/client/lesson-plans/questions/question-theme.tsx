@@ -1,11 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, RotateCw, FileText } from 'lucide-react';
 import { QuizTextInput } from '@/components/client/quiz/QuizTextInput';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { QuizStep } from '@/components/client/quiz/QuizStep';
+import { QuizChoice, type QuizOption } from '@/components/client/quiz/QuizChoice';
+import { useBnccThemes } from '@/hooks/use-taxonomy';
+import { useMutation } from '@tanstack/react-query';
 
 interface RefinedTheme {
   version: 'short' | 'medium' | 'long';
@@ -23,23 +27,6 @@ interface QuestionThemeProps {
 
 type Step = 'input' | 'selection';
 
-/**
- * Question 4: Tema da Aula
- *
- * Fluxo em 2 etapas:
- * 1. Professora escreve tema bruto (com sugestões baseadas na BNCC)
- * 2. IA refina em 3 versões profissionais + opção de regenerar
- *
- * Features:
- * - Sugestões dinâmicas de temas da BNCC (baseadas em educationLevel/grade/subject)
- * - Skeleton loading durante fetch de temas
- * - Click para preencher automaticamente
- */
-import { QuizStep } from '@/components/client/quiz/QuizStep';
-import { QuizCard } from '@/components/client/quiz/QuizCard';
-
-import { QuizChoice, type QuizOption } from '@/components/client/quiz/QuizChoice';
-
 export function QuestionTheme({
   value,
   onChange,
@@ -51,44 +38,23 @@ export function QuestionTheme({
   const [step, setStep] = useState<Step>('input');
   const [rawTheme, setRawTheme] = useState('');
   const [refinedThemes, setRefinedThemes] = useState<RefinedTheme[]>([]);
-  const [isRefining, setIsRefining] = useState(false);
   const [regenerateCount, setRegenerateCount] = useState(0);
-  const [themes, setThemes] = useState<string[]>([]);
-  const [loadingThemes, setLoadingThemes] = useState(true);
 
-  useEffect(() => {
-    async function fetchThemes() {
-      try {
-        setLoadingThemes(true);
-        const params = new URLSearchParams({ educationLevelSlug });
-        if (gradeSlug) params.append('gradeSlug', gradeSlug);
-        if (subjectSlug) params.append('subjectSlug', subjectSlug);
-        const response = await fetch(`/api/v1/bncc/themes?${params}`);
-        const data = await response.json();
-        if (data.success && data.data.themes.length > 0) {
-          setThemes(data.data.themes);
-        }
-      } catch (error) {
-        console.error('Error fetching themes:', error);
-      } finally {
-        setLoadingThemes(false);
-      }
-    }
-    fetchThemes();
-  }, [educationLevelSlug, gradeSlug, subjectSlug]);
+  // Busca temas sugeridos via React Query
+  const { data: themes = [], isLoading: loadingThemes } = useBnccThemes({
+    educationLevelSlug,
+    gradeSlug,
+    subjectSlug,
+  });
 
-  const handleRefine = async () => {
-    if (rawTheme.length < 3) {
-      toast.error('Digite pelo menos 3 caracteres');
-      return;
-    }
-    setIsRefining(true);
-    try {
+  // Mutação para refinar o tema com IA
+  const refineMutation = useMutation({
+    mutationFn: async (currentRawTheme: string) => {
       const response = await fetch('/api/v1/lesson-plans/refine-theme', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          rawTheme,
+          rawTheme: currentRawTheme,
           educationLevelSlug,
           gradeSlug,
           subjectSlug,
@@ -97,21 +63,31 @@ export function QuestionTheme({
       });
       const data = await response.json();
       if (!data.success) throw new Error(data.error || 'Erro ao refinar tema');
-      setRefinedThemes(data.data.refined);
+      return data.data.refined as RefinedTheme[];
+    },
+    onSuccess: (data) => {
+      setRefinedThemes(data);
       setStep('selection');
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error('Error refining theme:', error);
       toast.error('Erro ao refinar tema', {
         description: error instanceof Error ? error.message : 'Tente novamente',
       });
-    } finally {
-      setIsRefining(false);
+    },
+  });
+
+  const handleRefine = () => {
+    if (rawTheme.length < 3) {
+      toast.error('Digite pelo menos 3 caracteres');
+      return;
     }
+    refineMutation.mutate(rawTheme);
   };
 
   const handleRegenerate = () => {
     setRegenerateCount((prev) => prev + 1);
-    handleRefine();
+    refineMutation.mutate(rawTheme);
   };
 
   const handleSelectTheme = (theme: string) => {
@@ -123,11 +99,11 @@ export function QuestionTheme({
     return (
       <QuizStep
         title="Qual o tema da aula?"
-        description="Digite uma ideia simples, vamos refinar para você."
+        description="Escolha ou digite uma ideia simples, vamos usar nossa Inteligência Artificial para refinar o tema."
       >
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-8">
           <div className="p-6 bg-primary/5 rounded-[32px] border-2 border-primary/10">
-            <p className="text-xs font-black uppercase tracking-widest text-primary mb-4 flex items-center gap-2">
+            <p className="text-xs font-bold uppercase tracking-widest text-primary mb-4 flex items-center gap-2">
               <Sparkles className="h-4 w-4 fill-current" />
               Sugestões BNCC
             </p>
@@ -139,8 +115,8 @@ export function QuestionTheme({
                 <div className="h-4 bg-primary/10 rounded-full animate-pulse w-4/6" />
               </div>
             ) : themes.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {themes.map((theme, index) => (
+              <div className="flex flex-wrap gap-2 justify-start">
+                {themes.slice(0, 5).map((theme, index) => (
                   <motion.button
                     key={index}
                     initial={{ opacity: 0, scale: 0.9 }}
@@ -160,27 +136,33 @@ export function QuestionTheme({
             )}
           </div>
 
-          <QuizTextInput
-            value={rawTheme}
-            onChange={setRawTheme}
-            onContinue={handleRefine}
-            placeholder="Digite o tema aqui..."
-            minLength={3}
-            maxLength={100}
-            autoFocus
-            isLoading={isRefining}
-            loadingText="Refinando com IA..."
-          />
+          <div className="space-y-4">
+            <p className="text-xs font-semibold text-muted-foreground ml-2">
+              Ou digite aqui o tema do plano de aula:
+            </p>
+            <QuizTextInput
+              value={rawTheme}
+              onChange={setRawTheme}
+              onContinue={handleRefine}
+              placeholder="Descreva o que deseja trabalhar nesta aula..."
+              minLength={3}
+              maxLength={200}
+              multiline={true}
+              autoFocus
+              isLoading={refineMutation.isPending}
+              loadingText="Refinando com IA..."
+            />
+          </div>
         </div>
       </QuizStep>
     );
   }
 
-  if (isRefining && refinedThemes.length === 0) {
+  if (refineMutation.isPending && refinedThemes.length === 0) {
     return (
       <div className="h-full flex flex-col items-center justify-center space-y-6">
         <RotateCw className="h-16 w-16 text-primary animate-spin" />
-        <h2 className="text-2xl font-black">Refinando seu tema...</h2>
+        <h2 className="text-2xl font-bold">Refinando seu tema...</h2>
       </div>
     );
   }
@@ -218,11 +200,11 @@ export function QuestionTheme({
         <div className="pt-2">
           <Button
             onClick={handleRegenerate}
-            disabled={isRefining}
+            disabled={refineMutation.isPending}
             variant="ghost"
-            className="w-full h-14 rounded-2xl font-black gap-2 uppercase tracking-widest text-[10px]"
+            className="w-full h-12 rounded-xl font-bold gap-2 uppercase tracking-widest text-[10px]"
           >
-            {isRefining ? (
+            {refineMutation.isPending ? (
               <RotateCw className="h-4 w-4 animate-spin" />
             ) : (
               <RotateCw className="h-4 w-4" />
