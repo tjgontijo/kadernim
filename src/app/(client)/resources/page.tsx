@@ -68,7 +68,7 @@ export default function ResourcesPage() {
       <PageScaffoldSkeleton
         CardSkeleton={ResourceCardSkeleton}
         cardCount={8}
-        columns={{ mobile: 1, tablet: 2, desktop: 3, large: 3 }}
+        columns={{ mobile: 1, tablet: 2, desktop: 3 }}
       />
     )
   }
