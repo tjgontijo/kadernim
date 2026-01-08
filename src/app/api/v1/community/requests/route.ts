@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/server/auth/auth'
+import { prisma } from '@/lib/db'
 import { getCommunityRequests, createCommunityRequest } from '@/services/community/request-service'
 import { CommunityFilterSchema, CommunityRequestSchema } from '@/lib/schemas/community'
 
@@ -51,6 +52,22 @@ export async function POST(request: NextRequest) {
         const session = await auth.api.getSession({ headers: request.headers })
         if (!session?.user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+
+        // 2. Validar role (subscriber ou admin)
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { role: true },
+        })
+
+        if (!user || (user.role !== 'subscriber' && user.role !== 'admin')) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: 'Apenas assinantes podem sugerir novos recursos',
+                },
+                { status: 403 }
+            )
         }
 
         const body = await request.json()
