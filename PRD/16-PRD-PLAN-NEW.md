@@ -184,7 +184,9 @@ Isso reduz ansiedade e evita a sensação de que algo ficou faltando.
 **Seções exibidas:**
 1. **Identificação**
    - Etapa, Ano, Disciplina, Duração
-   - Tema (baseado em intentRaw ou knowledgeObject da habilidade principal)
+   - **Tema da Aula** (gerado automaticamente, **editável**)
+     - Clique para editar inline
+     - Aparece com ícone de lápis para indicar que é editável
 
 2. **Habilidades BNCC**
    - Principal (destaque visual)
