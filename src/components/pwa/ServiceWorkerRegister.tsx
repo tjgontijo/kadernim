@@ -6,26 +6,16 @@ import { RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export default function ServiceWorkerRegister() {
-  const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null)
-  const [showUpdatePrompt, setShowUpdatePrompt] = useState(false)
-
-  const handleUpdate = () => {
-    if (waitingWorker) {
-      // Envia mensagem para o SW ativar imediatamente
-      waitingWorker.postMessage({ type: 'SKIP_WAITING' })
-      setShowUpdatePrompt(false)
-
-      // Recarrega a página após o SW assumir
-      window.location.reload()
-    }
-  }
+  const [currentVersion, setCurrentVersion] = useState<string | null>(null)
 
   useEffect(() => {
-    if (process.env.NODE_ENV !== 'production') {
-      return
-    }
+    // Busca a versão local (do arquivo gerado no build)
+    fetch('/version.json')
+      .then(res => res.json())
+      .then(data => setCurrentVersion(data.version))
+      .catch(() => console.error('[PWA] Erro ao carregar versão local'))
 
-    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+    if (process.env.NODE_ENV !== 'production' || typeof window === 'undefined' || !('serviceWorker' in navigator)) {
       return
     }
 
@@ -34,72 +24,52 @@ export default function ServiceWorkerRegister() {
       .then((registration) => {
         console.log('[PWA] Service Worker registrado')
 
-        // Verifica se já há uma versão esperando
-        if (registration.waiting) {
-          setWaitingWorker(registration.waiting)
-          setShowUpdatePrompt(true)
+        const notifyUpdate = (newWorker: ServiceWorker) => {
+          // Busca a nova versão do servidor
+          fetch('/version.json?t=' + Date.now())
+            .then(res => res.json())
+            .then(data => {
+              const newVersion = data.version
+              const versionDisplay = currentVersion ? `v${currentVersion} → v${newVersion}` : `v${newVersion}`
+
+              toast('Nova versão disponível!', {
+                description: versionDisplay,
+                duration: Infinity,
+                action: {
+                  label: 'Atualizar',
+                  onClick: () => {
+                    newWorker.postMessage({ type: 'SKIP_WAITING' })
+                  },
+                },
+              })
+            })
         }
 
-        // Detecta quando uma nova versão está disponível
+        if (registration.waiting) {
+          notifyUpdate(registration.waiting)
+        }
+
         registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing
           if (!newWorker) return
 
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // Há uma nova versão pronta
-              setWaitingWorker(newWorker)
-              setShowUpdatePrompt(true)
-
-              toast('Nova versão disponível!', {
-                description: 'Toque para atualizar o app.',
-                duration: Infinity,
-                action: {
-                  label: 'Atualizar',
-                  onClick: () => {
-                    newWorker.postMessage({ type: 'SKIP_WAITING' })
-                    window.location.reload()
-                  },
-                },
-              })
+              notifyUpdate(newWorker)
             }
           })
         })
 
-        // Listener para quando o SW assume controle
         navigator.serviceWorker.addEventListener('controllerchange', () => {
           window.location.reload()
         })
 
-        // Verifica por atualizações periodicamente (a cada 60 segundos)
-        setInterval(() => {
-          registration.update()
-        }, 60 * 1000)
+        // Verificar a cada 5 minutos
+        const interval = setInterval(() => registration.update(), 5 * 60 * 1000)
+        return () => clearInterval(interval)
       })
-      .catch((error) => {
-        console.error('[PWA] Erro ao registrar SW:', error)
-      })
-  }, [])
-
-  // Componente visual de update (além do toast)
-  if (showUpdatePrompt && waitingWorker) {
-    return (
-      <div className="fixed bottom-20 sm:bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-auto z-50 animate-in slide-in-from-bottom-4 fade-in duration-300">
-        <div className="bg-primary text-primary-foreground rounded-2xl px-4 py-3 shadow-lg flex items-center gap-3">
-          <RefreshCw className="h-5 w-5 animate-spin" />
-          <span className="font-medium text-sm">Nova versão disponível!</span>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={handleUpdate}
-            className="rounded-xl font-bold"
-          >
-            Atualizar
-          </Button>
-        </div>
-      </div>
-    )
-  }
+      .catch((error) => console.error('[PWA] Erro ao registrar SW:', error))
+  }, [currentVersion])
 
   return null
 }

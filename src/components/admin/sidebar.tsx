@@ -30,6 +30,7 @@ import {
   SidebarRail,
   useSidebar,
 } from '@/components/ui/sidebar'
+import { useState, useEffect } from 'react'
 import { UserDropdownMenu } from './users/user-dropdown-menu'
 import { defineAbilitiesFor, PermissionAction, PermissionSubject } from '@/lib/auth/permissions'
 import { UserRoleType } from '@/types/user-role'
@@ -70,6 +71,14 @@ const ICON_MAP = {
 export function AdminSidebar({ user }: AdminSidebarProps) {
   const pathname = usePathname()
   const { isMobile, setOpenMobile } = useSidebar()
+  const [version, setVersion] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/version.json')
+      .then((res) => res.json())
+      .then((data) => setVersion(data.version))
+      .catch(() => console.log('Version file not found'))
+  }, [])
 
   const userName = user.name || 'Usuário'
   const userEmail = user.email || ''
@@ -212,6 +221,11 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
             />
           </SidebarMenuItem>
         </SidebarMenu>
+        {version && (
+          <div className="px-4 py-2 text-[10px] text-muted-foreground/50 font-mono text-center group-data-[collapsible=icon]:hidden">
+            v{version}
+          </div>
+        )}
       </SidebarFooter>
 
       <SidebarRail />

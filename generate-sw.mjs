@@ -1,4 +1,19 @@
 import { generateSW } from 'workbox-build';
+import fs from 'fs';
+import path from 'path';
+
+// Gerar versão baseada no timestamp
+const now = new Date();
+const version = now.toISOString().replace(/[-T:]/g, '').split('.')[0].slice(0, 12); // formato: YYYYMMDDHHMM
+const versionData = { version, buildAt: now.toISOString() };
+
+// Garantir que a pasta public existe e gravar o version.json
+const publicDir = path.join(process.cwd(), 'public');
+if (!fs.existsSync(publicDir)) {
+  fs.mkdirSync(publicDir, { recursive: true });
+}
+fs.writeFileSync(path.join(publicDir, 'version.json'), JSON.stringify(versionData, null, 2));
+console.log(`📌 Versão do build gerada: ${version}`);
 
 const swConfig = {
   swDest: 'public/sw.js',
