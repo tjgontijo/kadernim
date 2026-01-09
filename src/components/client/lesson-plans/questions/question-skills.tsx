@@ -185,7 +185,7 @@ export function QuestionSkills({
                 id: skill.code,
                 slug: skill.code,
                 name: skill.code,
-                description: truncateText(skill.description, 120)
+                description: skill.description
               }))}
               value={values}
               onSelect={(opt) => {

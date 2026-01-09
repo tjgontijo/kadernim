@@ -72,14 +72,14 @@ export function QuestionSuccess({
 
       {/* Cartão do Plano */}
       <div className="w-full flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
-        <div className="p-6 rounded-[32px] border-2 border-border/10 bg-card/50 backdrop-blur-sm text-left relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-            <FileText className="h-12 w-12" />
+        <div className="p-4 rounded-2xl border border-border/30 bg-card/50 backdrop-blur-sm text-left relative overflow-hidden group">
+          <div className="absolute top-2 right-2 opacity-5 group-hover:opacity-10 transition-opacity">
+            <FileText className="h-10 w-10" />
           </div>
-          <div className="relative z-10 space-y-2">
+          <div className="relative z-10 space-y-1">
             <p className="text-[10px] font-black uppercase tracking-widest text-primary/60">Plano de Aula</p>
-            <p className="text-lg font-bold leading-snug line-clamp-2">{title}</p>
-            <p className="text-[11px] font-medium text-muted-foreground">ID: {planId.substring(0, 8)}</p>
+            <p className="text-base font-bold leading-snug line-clamp-2">{title}</p>
+            <p className="text-[10px] font-medium text-muted-foreground/50">ID: {planId.substring(0, 8)}</p>
           </div>
         </div>
 

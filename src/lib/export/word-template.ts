@@ -12,7 +12,7 @@ import {
     AlignmentType,
     ShadingType,
 } from 'docx';
-import { type LessonPlanResponse, type LessonPlanContent } from '@/lib/schemas/lesson-plan';
+import { type LessonPlanResponse } from '@/lib/schemas/lesson-plan';
 
 /**
  * Formata o slug de nível educacional para terminologia BNCC
@@ -27,9 +27,6 @@ function formatEducationLevel(slug: string): string {
     return mapping[slug] || slug.replace(/-/g, ' ');
 }
 
-/**
- * Formata a faixa etária para Educação Infantil
- */
 function formatAgeRange(range: string | undefined): string {
     if (!range) return '';
     const r = range.toLowerCase();
@@ -39,28 +36,15 @@ function formatAgeRange(range: string | undefined): string {
     return range;
 }
 
-/**
- * Formata o ano escolar para padrão oficial (ex: "3 ano" -> "3º ano")
- */
 function formatGrade(gradeSlug: string | undefined): string {
     if (!gradeSlug) return '';
-
-    // Remove prefixos como "ef1-" ou "ef2-"
     let grade = gradeSlug.replace(/^ef[12]-/, '');
-
-    // Substitui patterns como "3-ano" ou "3 ano" por "3º ano"
     grade = grade.replace(/(\d+)[-\s]?ano/i, '$1º ano');
-
-    // Capitaliza primeira letra
     return grade.charAt(0).toUpperCase() + grade.slice(1);
 }
 
-/**
- * Formata componente curricular
- */
 function formatSubject(subjectSlug: string | undefined): string {
     if (!subjectSlug) return '';
-
     const mapping: Record<string, string> = {
         'matematica': 'Matemática',
         'lingua-portuguesa': 'Língua Portuguesa',
@@ -72,9 +56,21 @@ function formatSubject(subjectSlug: string | undefined): string {
         'lingua-inglesa': 'Língua Inglesa',
         'ensino-religioso': 'Ensino Religioso',
     };
-
     return mapping[subjectSlug] || subjectSlug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 }
+
+// Nomes padrão para etapas sem título
+const DEFAULT_STEP_NAMES = [
+    'Abertura',
+    'Atividade Principal',
+    'Sistematização'
+];
+
+const DEFAULT_STEP_NAMES_EI = [
+    'Acolhimento',
+    'Experiência Principal',
+    'Registro e Documentação'
+];
 
 export async function generateWordDocument(
     plan: LessonPlanResponse,
@@ -83,19 +79,34 @@ export async function generateWordDocument(
         description: string;
     }[] = []
 ): Promise<Buffer> {
-    const content = plan.content as unknown as LessonPlanContent;
-
-    // Formatar contexto
+    const content = plan.content as any;
     const isEI = plan.educationLevelSlug === 'educacao-infantil';
     const levelDisplay = formatEducationLevel(plan.educationLevelSlug);
+    const gradeDisplay = isEI ? formatAgeRange(plan.gradeSlug) : formatGrade(plan.gradeSlug);
+    const subjectDisplay = formatSubject(plan.subjectSlug);
 
-    const gradeDisplay = isEI
-        ? formatAgeRange(plan.gradeSlug)
-        : formatGrade(plan.gradeSlug);
+    // Identificar habilidades
+    const mainSkillCode = content.mainSkillCode || plan.bnccSkillCodes?.[0];
+    const complementaryCodes = content.complementarySkillCodes || [];
 
-    const subjectDisplay = isEI
-        ? formatSubject(plan.subjectSlug)
-        : formatSubject(plan.subjectSlug);
+    // Calcular tempo total
+    const totalTime = content.methodology?.reduce((acc: number, step: any) => acc + (step.timeMinutes || 0), 0) || (plan.numberOfClasses * 50);
+
+    // Nomes padrão para etapas
+    const stepNames = isEI ? DEFAULT_STEP_NAMES_EI : DEFAULT_STEP_NAMES;
+
+    // Função para buscar descrição com fallback
+    const getSkillDescription = (code: string): string => {
+        const found = bnccSkillDescriptions.find(s => s.code === code);
+        return found?.description || 'Descrição indisponível';
+    };
+
+    // Verificar se tem diferenciação com conteúdo real
+    const hasDifferentiation = content.differentiation && (
+        (content.differentiation.support && content.differentiation.support.length > 0) ||
+        (content.differentiation.challenge && content.differentiation.challenge.length > 0) ||
+        (content.differentiation.enrichment && content.differentiation.enrichment.length > 0)
+    );
 
     const doc = new Document({
         sections: [
@@ -104,7 +115,7 @@ export async function generateWordDocument(
                 children: [
                     // ========== CABEÇALHO PRINCIPAL ==========
                     new Paragraph({
-                        text: "PLANO DE AULA",
+                        text: "Plano de Aula",
                         heading: HeadingLevel.HEADING_1,
                         alignment: AlignmentType.CENTER,
                         spacing: { after: 200 },
@@ -113,7 +124,6 @@ export async function generateWordDocument(
                         },
                     }),
 
-                    // Título da Aula
                     new Paragraph({
                         children: [new TextRun({ text: plan.title, bold: true, size: 26 })],
                         alignment: AlignmentType.CENTER,
@@ -122,38 +132,17 @@ export async function generateWordDocument(
 
                     // ========== BLOCO 1: IDENTIFICAÇÃO ==========
                     new Paragraph({
-                        children: [new TextRun({ text: "1. IDENTIFICAÇÃO", bold: true, size: 24 })],
+                        children: [new TextRun({ text: "1. Identificação", bold: true, size: 24 })],
                         shading: { type: ShadingType.SOLID, color: "E0E0E0" },
                         spacing: { before: 200, after: 150 },
                     }),
 
-                    // Campos preenchíveis
+                    // ---------- 1.1 Dados do Plano (fixo, já preenchido) ----------
                     new Paragraph({
-                        children: [
-                            new TextRun({ text: "Escola: ", bold: true }),
-                            new TextRun({ text: "_______________________________________________" }),
-                        ],
-                        spacing: { after: 100 },
-                    }),
-                    new Paragraph({
-                        children: [
-                            new TextRun({ text: "Professor(a): ", bold: true }),
-                            new TextRun({ text: "___________________________________________" }),
-                        ],
-                        spacing: { after: 100 },
-                    }),
-                    new Paragraph({
-                        children: [
-                            new TextRun({ text: "Turma: ", bold: true }),
-                            new TextRun({ text: "____________" }),
-                            new TextRun({ text: "          " }),
-                            new TextRun({ text: "Data: ", bold: true }),
-                            new TextRun({ text: "____/____/______" }),
-                        ],
-                        spacing: { after: 150 },
+                        children: [new TextRun({ text: "1.1 Dados do Plano", bold: true, size: 20 })],
+                        spacing: { before: 100, after: 80 },
                     }),
 
-                    // Tabela de identificação
                     new Table({
                         width: { size: 100, type: WidthType.PERCENTAGE },
                         rows: [
@@ -161,23 +150,21 @@ export async function generateWordDocument(
                                 children: [
                                     new TableCell({
                                         children: [new Paragraph({ children: [new TextRun({ text: "Etapa:", bold: true })] })],
-                                        width: { size: 30, type: WidthType.PERCENTAGE },
+                                        width: { size: 25, type: WidthType.PERCENTAGE },
                                         shading: { type: ShadingType.SOLID, color: "F5F5F5" },
                                     }),
                                     new TableCell({
                                         children: [new Paragraph(levelDisplay)],
-                                        width: { size: 70, type: WidthType.PERCENTAGE },
+                                        width: { size: 25, type: WidthType.PERCENTAGE },
                                     }),
-                                ],
-                            }),
-                            new TableRow({
-                                children: [
                                     new TableCell({
                                         children: [new Paragraph({ children: [new TextRun({ text: isEI ? "Faixa Etária:" : "Ano/Série:", bold: true })] })],
+                                        width: { size: 25, type: WidthType.PERCENTAGE },
                                         shading: { type: ShadingType.SOLID, color: "F5F5F5" },
                                     }),
                                     new TableCell({
                                         children: [new Paragraph(gradeDisplay)],
+                                        width: { size: 25, type: WidthType.PERCENTAGE },
                                     }),
                                 ],
                             }),
@@ -190,16 +177,64 @@ export async function generateWordDocument(
                                     new TableCell({
                                         children: [new Paragraph(subjectDisplay)],
                                     }),
-                                ],
-                            }),
-                            new TableRow({
-                                children: [
                                     new TableCell({
                                         children: [new Paragraph({ children: [new TextRun({ text: "Duração:", bold: true })] })],
                                         shading: { type: ShadingType.SOLID, color: "F5F5F5" },
                                     }),
                                     new TableCell({
-                                        children: [new Paragraph(`${plan.numberOfClasses} aula(s) de 50 minutos`)],
+                                        children: [new Paragraph(`${plan.numberOfClasses} aula(s) - ${totalTime} min`)],
+                                    }),
+                                ],
+                            }),
+                        ],
+                    }),
+
+                    // ---------- 1.2 Dados da Escola e Turma (preenchível) ----------
+                    new Paragraph({
+                        children: [new TextRun({ text: "1.2 Dados da Escola e Turma", bold: true, size: 20 })],
+                        spacing: { before: 150, after: 80 },
+                    }),
+
+                    new Table({
+                        width: { size: 100, type: WidthType.PERCENTAGE },
+                        rows: [
+                            new TableRow({
+                                children: [
+                                    new TableCell({
+                                        children: [new Paragraph({ children: [new TextRun({ text: "Escola:", bold: true })] })],
+                                        width: { size: 15, type: WidthType.PERCENTAGE },
+                                        shading: { type: ShadingType.SOLID, color: "F5F5F5" },
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph("_______________________________")],
+                                        width: { size: 35, type: WidthType.PERCENTAGE },
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({ children: [new TextRun({ text: "Professor(a):", bold: true })] })],
+                                        width: { size: 15, type: WidthType.PERCENTAGE },
+                                        shading: { type: ShadingType.SOLID, color: "F5F5F5" },
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph("_______________________________")],
+                                        width: { size: 35, type: WidthType.PERCENTAGE },
+                                    }),
+                                ],
+                            }),
+                            new TableRow({
+                                children: [
+                                    new TableCell({
+                                        children: [new Paragraph({ children: [new TextRun({ text: "Turma:", bold: true })] })],
+                                        shading: { type: ShadingType.SOLID, color: "F5F5F5" },
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph("___________")],
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph({ children: [new TextRun({ text: "Data:", bold: true })] })],
+                                        shading: { type: ShadingType.SOLID, color: "F5F5F5" },
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph("____/____/______")],
                                     }),
                                 ],
                             }),
@@ -208,149 +243,223 @@ export async function generateWordDocument(
 
                     // ========== BLOCO 2: PLANEJAMENTO PEDAGÓGICO ==========
                     new Paragraph({
-                        children: [new TextRun({ text: "2. PLANEJAMENTO PEDAGÓGICO", bold: true, size: 24 })],
+                        children: [new TextRun({ text: "2. Planejamento Pedagógico", bold: true, size: 24 })],
                         shading: { type: ShadingType.SOLID, color: "E0E0E0" },
                         spacing: { before: 300, after: 150 },
                     }),
 
-                    // Objeto de Conhecimento / Conteúdos
+                    // Tema / Objeto de Conhecimento
                     new Paragraph({
                         children: [new TextRun({
-                            text: isEI ? "Conteúdos das experiências" : "Objeto de Conhecimento",
+                            text: isEI ? "Tema Central" : "Objeto de Conhecimento",
                             bold: true,
                             size: 22
                         })],
                         spacing: { before: 150, after: 80 },
                     }),
-                    new Paragraph({ text: content.knowledgeObject || '', spacing: { after: 150 } }),
+                    new Paragraph({ text: content.theme || content.knowledgeObject || '', spacing: { after: 150 } }),
 
-                    // Habilidades BNCC - título condicional
+                    // Objetivo da Aula
                     new Paragraph({
-                        children: [new TextRun({
-                            text: isEI ? "Objetivos de Aprendizagem e Desenvolvimento (BNCC)" : "Habilidades da BNCC",
-                            bold: true,
-                            size: 22
-                        })],
+                        children: [new TextRun({ text: "Objetivo da Aula", bold: true, size: 22 })],
                         spacing: { before: 150, after: 80 },
                     }),
-                    ...(plan.bnccSkillCodes || []).flatMap(code => {
-                        const skillDesc = bnccSkillDescriptions.find(s => s.code === code);
-                        return [
-                            new Paragraph({
-                                children: [new TextRun({ text: code, bold: true })],
-                                spacing: { after: 40 },
-                            }),
-                            ...(skillDesc ? [new Paragraph({
-                                text: skillDesc.description,
-                                spacing: { after: 120 },
-                            })] : []),
-                        ];
+                    new Paragraph({
+                        children: [new TextRun({ text: content.objective || '', bold: true })],
+                        spacing: { after: 150 }
                     }),
 
-                    // Objetivos de Aprendizagem - primeiro em destaque
+                    // Critérios de Sucesso
                     new Paragraph({
-                        children: [new TextRun({ text: "Objetivos de Aprendizagem", bold: true, size: 22 })],
+                        children: [new TextRun({ text: "Critérios de Sucesso", bold: true, size: 22 })],
                         spacing: { before: 150, after: 80 },
                     }),
-                    ...(content.objectives || []).map((obj, i) => new Paragraph({
-                        children: [new TextRun({ text: `• ${obj}`, bold: i === 0 })],
+                    ...(content.successCriteria || []).map((criterion: string) => new Paragraph({
+                        text: `• ${criterion}`,
                         spacing: { after: 50 }
                     })),
 
-                    // Competências / Direitos
+                    // Habilidades BNCC
                     new Paragraph({
                         children: [new TextRun({
-                            text: isEI ? "Direitos de Aprendizagem e Desenvolvimento" : "Competências",
+                            text: isEI ? "Objetivos de Aprendizagem (BNCC)" : "Habilidades BNCC",
                             bold: true,
                             size: 22
                         })],
                         spacing: { before: 150, after: 80 },
                     }),
-                    ...(content.competencies || []).map(comp => new Paragraph({ text: `• ${comp}`, spacing: { after: 50 } })),
 
-                    // ========== BLOCO 3: EXECUÇÃO E ACOMPANHAMENTO ==========
+                    // Habilidade Principal
+                    ...(mainSkillCode ? [
+                        new Paragraph({
+                            children: [
+                                new TextRun({ text: "PRINCIPAL: ", bold: true }),
+                                new TextRun({ text: mainSkillCode, bold: true }),
+                            ],
+                            spacing: { after: 40 },
+                        }),
+                        new Paragraph({
+                            text: getSkillDescription(mainSkillCode),
+                            spacing: { after: 120 },
+                        }),
+                    ] : []),
+
+                    // Habilidades Complementares
+                    ...complementaryCodes.flatMap((code: string) => {
+                        return [
+                            new Paragraph({
+                                children: [
+                                    new TextRun({ text: "Complementar: " }),
+                                    new TextRun({ text: code, bold: true }),
+                                ],
+                                spacing: { after: 40 },
+                            }),
+                            new Paragraph({
+                                text: getSkillDescription(code),
+                                spacing: { after: 120 },
+                            }),
+                        ];
+                    }),
+
+                    // Direitos de Aprendizagem (EI)
+                    ...(isEI && content.rights && content.rights.length > 0 ? [
+                        new Paragraph({
+                            children: [new TextRun({ text: "Direitos de Aprendizagem", bold: true, size: 22 })],
+                            spacing: { before: 150, after: 80 },
+                        }),
+                        new Paragraph({ text: content.rights.join(', '), spacing: { after: 150 } }),
+                    ] : []),
+
+                    // ========== BLOCO 3: METODOLOGIA ==========
                     new Paragraph({
-                        children: [new TextRun({ text: "3. EXECUÇÃO E ACOMPANHAMENTO", bold: true, size: 24 })],
+                        children: [new TextRun({ text: "3. Metodologia (Sequência Didática)", bold: true, size: 24 })],
                         shading: { type: ShadingType.SOLID, color: "E0E0E0" },
                         spacing: { before: 300, after: 150 },
                     }),
 
-                    // Metodologia - limpeza de numeração duplicada
-                    new Paragraph({
-                        children: [new TextRun({ text: "Metodologia (Sequência Didática)", bold: true, size: 22 })],
-                        spacing: { before: 150, after: 80 },
-                    }),
-                    ...(content.methodology || []).map((m, i) => {
-                        const cleanText = (text: string) => (text || '').replace(/^\d+([\.\)\-\s]+\s*|\s+|$)/, '').trim();
-                        const sTitle = cleanText(m.step);
-                        const sDesc = cleanText(m.description);
+                    ...(content.methodology || []).flatMap((step: any, i: number) => {
+                        const actorLabel = isEI ? "Ações do Adulto:" : "Ações do Professor:";
+                        const participantsLabel = isEI ? "Ações das Crianças:" : "Ações dos Alunos:";
+                        const actorActions = step.teacherActions || step.adultActions || [];
+                        const participantActions = step.studentActions || step.childrenActions || [];
 
-                        return new Paragraph({
-                            children: [
-                                new TextRun({ text: `${i + 1}. `, bold: true }),
-                                ...(sTitle ? [new TextRun({ text: sTitle, bold: true }), new TextRun({ text: " – " })] : []),
-                                new TextRun(sDesc),
-                            ],
-                            spacing: { after: 80 },
-                        });
-                    }),
+                        const paragraphs = [
+                            new Paragraph({
+                                children: [
+                                    new TextRun({ text: step.stepTitle || stepNames[i] || `Etapa ${i + 1}`, bold: true }),
+                                    new TextRun({ text: ` (${step.timeMinutes} min)` }),
+                                ],
+                                shading: { type: ShadingType.SOLID, color: "F5F5F5" },
+                                spacing: { before: 150, after: 80 },
+                            }),
 
-                    // Recursos Didáticos
-                    new Paragraph({
-                        children: [new TextRun({ text: "Recursos Didáticos", bold: true, size: 22 })],
-                        spacing: { before: 150, after: 80 },
-                    }),
-                    ...(content.resources || []).map(res => new Paragraph({ text: `• ${res}`, spacing: { after: 50 } })),
+                            // Ações do Professor/Adulto
+                            ...(actorActions.length > 0 ? [
+                                new Paragraph({
+                                    children: [new TextRun({ text: actorLabel, bold: true, size: 20 })],
+                                    spacing: { after: 40 },
+                                }),
+                                ...actorActions.map((action: string) =>
+                                    new Paragraph({ text: `• ${action}`, spacing: { after: 30 } })
+                                ),
+                            ] : []),
 
-                    // Avaliação
-                    new Paragraph({
-                        children: [new TextRun({ text: "Avaliação", bold: true, size: 22 })],
-                        spacing: { before: 150, after: 80 },
-                    }),
-                    ...(() => {
-                        const evalText = content.evaluation || '';
-                        if (evalText.includes('-') || evalText.includes(';')) {
-                            const parts = evalText.split(/[:\n]/);
-                            const intro = parts[0].includes('considerando') ? parts[0] + ':' : '';
+                            // Ações dos Alunos/Crianças
+                            ...(participantActions.length > 0 ? [
+                                new Paragraph({
+                                    children: [new TextRun({ text: participantsLabel, bold: true, size: 20 })],
+                                    spacing: { after: 40 },
+                                }),
+                                ...participantActions.map((action: string) =>
+                                    new Paragraph({ text: `• ${action}`, spacing: { after: 30 } })
+                                ),
+                            ] : []),
+                        ];
 
-                            const listItems = evalText
-                                .replace(intro, '')
-                                .split(/[-;•\n]/)
-                                .map(item => item.trim())
-                                .filter(item => item.length > 0);
-
-                            if (listItems.length > 1) {
-                                return [
-                                    ...(intro ? [new Paragraph({
-                                        children: [new TextRun({ text: intro, bold: true })],
-                                        spacing: { after: 100 },
-                                    })] : []),
-                                    ...listItems.map(item => new Paragraph({
-                                        text: `• ${item}`,
-                                        spacing: { after: 50 },
-                                    })),
-                                    new Paragraph({ text: '', spacing: { after: 100 } }),
-                                ];
-                            }
+                        // Produto/Evidência
+                        if (step.expectedOutput) {
+                            paragraphs.push(
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({ text: isEI ? "Evidência: " : "Produto Esperado: ", bold: true }),
+                                        new TextRun({ text: step.expectedOutput }),
+                                    ],
+                                    spacing: { after: 40 },
+                                })
+                            );
                         }
-                        return [new Paragraph({ text: evalText, spacing: { after: 150 } })];
-                    })(),
 
-                    // Adequações e Inclusão
-                    new Paragraph({
-                        children: [new TextRun({ text: "Adequações e Inclusão", bold: true, size: 22 })],
-                        spacing: { before: 150, after: 80 },
+                        // Materiais
+                        if (step.materials && step.materials.length > 0) {
+                            paragraphs.push(
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({ text: "Materiais: ", bold: true }),
+                                        new TextRun({ text: step.materials.join(', ') }),
+                                    ],
+                                    spacing: { after: 80 },
+                                })
+                            );
+                        }
+
+                        return paragraphs;
                     }),
-                    new Paragraph({ text: content.adaptations || '', spacing: { after: 150 } }),
 
-                    // Referências
+                    // ========== BLOCO 4: AVALIAÇÃO ==========
                     new Paragraph({
-                        children: [new TextRun({ text: "Referências", bold: true, size: 22 })],
-                        spacing: { before: 150, after: 80 },
+                        children: [new TextRun({ text: "4. Avaliação", bold: true, size: 24 })],
+                        shading: { type: ShadingType.SOLID, color: "E0E0E0" },
+                        spacing: { before: 300, after: 150 },
                     }),
-                    ...(content.references || []).map(ref => new Paragraph({ text: `• ${ref}`, spacing: { after: 50 } })),
 
-                    // Rodapé removido para uso profissional do professor
+                    new Paragraph({
+                        children: [
+                            new TextRun({ text: "Instrumento: ", bold: true }),
+                            new TextRun({ text: content.evaluation?.instrument || 'Observação' }),
+                        ],
+                        spacing: { after: 80 },
+                    }),
+
+                    new Paragraph({
+                        children: [new TextRun({ text: "Critérios de Avaliação:", bold: true, size: 20 })],
+                        spacing: { before: 80, after: 40 },
+                    }),
+                    ...(content.evaluation?.criteria || []).map((criterion: string) =>
+                        new Paragraph({ text: `• ${criterion}`, spacing: { after: 30 } })
+                    ),
+
+                    // Dica para o Professor
+                    ...(content.notes ? [
+                        new Paragraph({
+                            children: [new TextRun({ text: "Dica para o Professor", bold: true, size: 22 })],
+                            shading: { type: ShadingType.SOLID, color: "FFF3CD" },
+                            spacing: { before: 300, after: 80 },
+                        }),
+                        new Paragraph({ text: content.notes, spacing: { after: 150 } }),
+                    ] : []),
+
+                    // ========== BLOCO 5: DIFERENCIAÇÃO (apenas se houver conteúdo) ==========
+                    ...(hasDifferentiation ? [
+                        new Paragraph({
+                            children: [new TextRun({ text: "5. Diferenciação e Inclusão", bold: true, size: 24 })],
+                            shading: { type: ShadingType.SOLID, color: "E0E0E0" },
+                            spacing: { before: 300, after: 150 },
+                        }),
+                        new Paragraph({
+                            children: [new TextRun({ text: "Apoio / Adaptações:", bold: true, size: 20 })],
+                            spacing: { after: 40 },
+                        }),
+                        ...(content.differentiation?.support || []).map((item: string) =>
+                            new Paragraph({ text: `• ${item}`, spacing: { after: 30 } })
+                        ),
+                        new Paragraph({
+                            children: [new TextRun({ text: "Desafios / Enriquecimento:", bold: true, size: 20 })],
+                            spacing: { before: 100, after: 40 },
+                        }),
+                        ...(content.differentiation?.challenge || content.differentiation?.enrichment || []).map((item: string) =>
+                            new Paragraph({ text: `• ${item}`, spacing: { after: 30 } })
+                        ),
+                    ] : []),
                 ],
             },
         ],

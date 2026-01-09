@@ -168,6 +168,36 @@ export function useDownloadFile() {
         return;
       }
 
+      // Se é erro de permissão, fazer fallback para download
+      if (error instanceof Error && (error.name === 'NotAllowedError' || error.message.includes('Permission denied'))) {
+        console.warn('[useDownloadFile] Share not allowed, falling back to download');
+        // Fallback: tentar download normal
+        try {
+          const response = await fetch(url, { credentials: 'include' });
+          if (response.ok) {
+            const blob = await response.blob();
+            const filename = options?.filename || 'arquivo';
+            const blobUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = filename;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+            toast.success('Arquivo baixado!');
+            options?.onSuccess?.();
+            setDownloading(null);
+            return;
+          }
+        } catch (fallbackError) {
+          console.error('[useDownloadFile] Fallback download failed:', fallbackError);
+        }
+        setDownloading(null);
+        return;
+      }
+
       console.error('[useDownloadFile] Share error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erro ao compartilhar arquivo';
       toast.error(errorMessage);

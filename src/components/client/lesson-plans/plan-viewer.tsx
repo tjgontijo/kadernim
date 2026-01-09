@@ -1,30 +1,26 @@
 'use client';
 
 import {
-    FileDown,
     ArrowLeft,
     Download,
     Calendar,
-    Clock,
-    School,
     BookOpen,
     Target,
     Lightbulb,
-    Wrench,
     ClipboardCheck,
     Eye,
-    Package,
-    ScrollText,
-    Sparkles,
     ListChecks,
     FileText,
     GraduationCap,
     Users,
-    Link as LinkIcon,
     SendHorizontal,
-    MoreVertical,
     Share2,
-    Loader2
+    Loader2,
+    Star,
+    CheckCircle2,
+    Timer,
+    Copy,
+    ExternalLink
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -37,8 +33,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { type LessonPlanResponse, type LessonPlanContent } from '@/lib/schemas/lesson-plan';
+import { type LessonPlanResponse } from '@/lib/schemas/lesson-plan';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useDownloadFile } from '@/hooks/use-download-file';
@@ -51,9 +46,6 @@ interface PlanViewerProps {
     }[];
 }
 
-/**
- * Formata o slug de nível educacional para terminologia BNCC
- */
 function formatEducationLevel(slug: string): string {
     const mapping: Record<string, string> = {
         'educacao-infantil': 'Educação Infantil',
@@ -64,21 +56,6 @@ function formatEducationLevel(slug: string): string {
     return mapping[slug] || slug.replace(/-/g, ' ');
 }
 
-/**
- * Formata a faixa etária para Educação Infantil
- */
-function formatAgeRange(range: string | undefined): string {
-    if (!range) return '';
-    const r = range.toLowerCase();
-    if (r.includes('bebes')) return 'Bebês (zero a 1 ano e 6 meses)';
-    if (r.includes('bem-pequenas')) return 'Crianças bem pequenas (1 ano e 7 meses a 3 anos e 11 meses)';
-    if (r.includes('pequenas')) return 'Crianças pequenas (4 anos a 5 anos e 11 meses)';
-    return range;
-}
-
-/**
- * Formata o ano escolar para padrão oficial (ex: "3-ano" -> "3º ano")
- */
 function formatGrade(gradeSlug: string | undefined): string {
     if (!gradeSlug) return '';
     let grade = gradeSlug.replace(/^ef[12]-/, '');
@@ -87,32 +64,93 @@ function formatGrade(gradeSlug: string | undefined): string {
 }
 
 /**
- * Formata componente curricular
+ * Gera Markdown do plano de aula (para colar no Google Docs)
  */
-function formatSubject(subjectSlug: string | undefined): string {
-    if (!subjectSlug) return '';
-    const mapping: Record<string, string> = {
-        'matematica': 'Matemática',
-        'lingua-portuguesa': 'Língua Portuguesa',
-        'ciencias': 'Ciências',
-        'historia': 'História',
-        'geografia': 'Geografia',
-        'arte': 'Arte',
-        'educacao-fisica': 'Educação Física',
-        'lingua-inglesa': 'Língua Inglesa',
-        'ensino-religioso': 'Ensino Religioso',
-    };
-    return mapping[subjectSlug] || subjectSlug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+function generatePlanMarkdown(
+    plan: LessonPlanResponse,
+    content: any,
+    bnccSkillDescriptions: { code: string; description: string }[]
+): string {
+    const isEI = plan.educationLevelSlug === 'educacao-infantil';
+    const mainSkillCode = content.mainSkillCode || plan.bnccSkillCodes?.[0];
+    const mainSkillDesc = bnccSkillDescriptions.find(s => s.code === mainSkillCode)?.description || '';
+
+    let md = `# ${plan.title}\n\n`;
+    md += `## Contexto\n`;
+    md += `- **Etapa:** ${formatEducationLevel(plan.educationLevelSlug)}\n`;
+    md += `- **Ano/Série:** ${formatGrade(plan.gradeSlug)}\n`;
+    md += `- **Componente:** ${plan.subjectSlug?.replace(/-/g, ' ')}\n`;
+    md += `- **Duração:** ${plan.numberOfClasses} aula(s)\n\n`;
+
+    md += `## Objetivo\n${content.objective || ''}\n\n`;
+
+    md += `## ${isEI ? 'Tema Central' : 'Objeto de Conhecimento'}\n`;
+    md += `${content.theme || content.knowledgeObject || ''}\n\n`;
+
+    md += `## Habilidade Principal\n`;
+    md += `**${mainSkillCode}**: ${mainSkillDesc}\n\n`;
+
+    if (content.successCriteria?.length) {
+        md += `## Critérios de Sucesso\n`;
+        content.successCriteria.forEach((c: string) => { md += `- ${c}\n`; });
+        md += '\n';
+    }
+
+    md += `## Metodologia\n`;
+    (content.methodology || []).forEach((step: any, i: number) => {
+        md += `### ${i + 1}. ${step.stepTitle} (${step.timeMinutes} min)\n`;
+        const actorLabel = isEI ? 'Adulto' : 'Professor';
+        const participantsLabel = isEI ? 'Crianças' : 'Alunos';
+        const actorActions = step.teacherActions || step.adultActions || [];
+        const participantActions = step.studentActions || step.childrenActions || [];
+
+        if (actorActions.length) {
+            md += `**${actorLabel}:**\n`;
+            actorActions.forEach((a: string) => { md += `- ${a}\n`; });
+        }
+        if (participantActions.length) {
+            md += `**${participantsLabel}:**\n`;
+            participantActions.forEach((a: string) => { md += `- ${a}\n`; });
+        }
+        if (step.expectedOutput) {
+            md += `**Produto:** ${step.expectedOutput}\n`;
+        }
+        if (step.materials?.length) {
+            md += `**Materiais:** ${step.materials.join(', ')}\n`;
+        }
+        md += '\n';
+    });
+
+    if (content.evaluation) {
+        md += `## Avaliação\n`;
+        md += `**Instrumento:** ${content.evaluation.instrument || ''}\n`;
+        if (content.evaluation.criteria?.length) {
+            md += `**Critérios:**\n`;
+            content.evaluation.criteria.forEach((c: string) => { md += `- ${c}\n`; });
+        }
+        md += '\n';
+    }
+
+    if (content.notes) {
+        md += `## 💡 Dica de Ouro\n${content.notes}\n`;
+    }
+
+    return md;
 }
 
 export function PlanViewer({ plan, bnccSkillDescriptions = [] }: PlanViewerProps) {
-    const content = plan.content as unknown as LessonPlanContent;
-    const { downloadFile, shareFile, downloading, isMobile, canShare } = useDownloadFile();
+    const content = plan.content as any; // Cast para any para flexibilidade no MVP
+    const { downloadFile, shareFile, downloading, canShare, isMobile } = useDownloadFile();
 
     const handleDownload = (format: 'docx' | 'pdf') => {
         const url = `/api/v1/lesson-plans/${plan.id}/export/${format}`;
         const filename = `plano-de-aula-${plan.title.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 30)}.${format}`;
         downloadFile(url, { filename });
+    };
+
+    const handleOpenPdf = () => {
+        // Abre PDF em nova aba para visualização (desktop)
+        window.open(`/api/v1/lesson-plans/${plan.id}/export/pdf`, '_blank');
     };
 
     const handleShare = (format: 'docx' | 'pdf') => {
@@ -125,17 +163,28 @@ export function PlanViewer({ plan, bnccSkillDescriptions = [] }: PlanViewerProps
         });
     };
 
-    // Formatar contexto com terminologia BNCC
+    const handleCopyMarkdown = async () => {
+        try {
+            const md = generatePlanMarkdown(plan, content, bnccSkillDescriptions);
+            await navigator.clipboard.writeText(md);
+            // Toast de sucesso (usando o hook)
+            if (typeof window !== 'undefined') {
+                const { toast } = await import('sonner');
+                toast.success('Markdown copiado! Cole no Google Docs (Inserir > Markdown)');
+            }
+        } catch (error) {
+            console.error('Erro ao copiar:', error);
+        }
+    };
+
     const isEI = plan.educationLevelSlug === 'educacao-infantil';
     const levelDisplay = formatEducationLevel(plan.educationLevelSlug);
+    const gradeDisplay = isEI ? plan.gradeSlug : formatGrade(plan.gradeSlug);
+    const subjectDisplay = plan.subjectSlug?.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
-    const gradeDisplay = isEI
-        ? formatAgeRange(plan.gradeSlug)
-        : formatGrade(plan.gradeSlug);
-
-    const subjectDisplay = isEI
-        ? formatSubject(plan.subjectSlug)
-        : formatSubject(plan.subjectSlug);
+    const mainSkillCode = content.mainSkillCode || content.focus?.mainSkillCode || content.focus?.mainObjectiveCode || plan.bnccSkillCodes?.[0];
+    const complementaryCodes = content.complementarySkillCodes || content.focus?.complementarySkillCodes || content.focus?.complementaryObjectiveCodes || [];
+    const totalTime = content.methodology?.reduce((acc: number, step: any) => acc + (step.timeMinutes || 0), 0) || (plan.numberOfClasses * 50);
 
     const BlockHeader = ({ icon: Icon, number, title }: { icon: any, number: number, title: string }) => (
         <div className="flex items-center gap-3 mb-4 sm:mb-6 mt-6 sm:mt-10 first:mt-0">
@@ -160,73 +209,60 @@ export function PlanViewer({ plan, bnccSkillDescriptions = [] }: PlanViewerProps
 
     return (
         <div className="max-w-4xl mx-auto space-y-4 sm:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            {/* Actions Bar */}
             <div className="flex items-center justify-between gap-4 mb-2">
                 <Button variant="ghost" size="icon" asChild className="-ml-2 h-10 w-10 rounded-full hover:bg-muted/50">
-                    <Link href="/lesson-plans" title="Voltar para Meus Planos">
+                    <Link href="/lesson-plans" title="Voltar">
                         <ArrowLeft className="h-5 w-5" />
                     </Link>
                 </Button>
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-10 w-10 rounded-full hover:bg-muted/50"
-                            disabled={downloading !== null}
-                        >
+                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full bg-primary/10" disabled={downloading !== null}>
                             {downloading !== null ? (
                                 <Loader2 className="h-5 w-5 text-primary animate-spin" />
                             ) : (
-                                <SendHorizontal className="h-5 w-5 text-primary rotate-[-45deg] translate-y-[-1px]" />
+                                <Download className="h-5 w-5 text-primary" />
                             )}
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-xl border-border/50">
-                        <DropdownMenuItem
-                            onClick={() => handleDownload('pdf')}
-                            disabled={downloading !== null}
-                            className="cursor-pointer gap-2 py-3 font-medium"
-                        >
-                            {downloading?.includes('/pdf') ? (
-                                <Loader2 className="h-4 w-4 text-muted-foreground animate-spin" />
-                            ) : (
-                                <Eye className="h-4 w-4 text-muted-foreground" />
-                            )}
-                            Visualizar PDF
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            onClick={() => handleDownload('docx')}
-                            disabled={downloading !== null}
-                            className="cursor-pointer gap-2 py-3 font-medium"
-                        >
-                            {downloading?.includes('/docx') ? (
-                                <Loader2 className="h-4 w-4 text-muted-foreground animate-spin" />
-                            ) : (
-                                <Download className="h-4 w-4 text-muted-foreground" />
-                            )}
-                            Exportar para Word
-                        </DropdownMenuItem>
-
-                        {canShare && (
+                    <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-xl">
+                        {/* MOBILE: Compartilhar via Web Share API */}
+                        {isMobile && canShare && (
                             <>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                    onClick={() => handleShare('pdf')}
-                                    disabled={downloading !== null}
-                                    className="cursor-pointer gap-2 py-3 font-medium"
-                                >
-                                    <Share2 className="h-4 w-4 text-muted-foreground" />
-                                    Compartilhar PDF
+                                <DropdownMenuItem onClick={() => handleShare('pdf')} className="cursor-pointer gap-2 py-3 font-medium">
+                                    <Share2 className="h-4 w-4" /> Compartilhar PDF
                                 </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    onClick={() => handleShare('docx')}
-                                    disabled={downloading !== null}
-                                    className="cursor-pointer gap-2 py-3 font-medium"
-                                >
-                                    <Share2 className="h-4 w-4 text-muted-foreground" />
-                                    Compartilhar Word
+                                <DropdownMenuItem onClick={() => handleShare('docx')} className="cursor-pointer gap-2 py-3 font-medium">
+                                    <Share2 className="h-4 w-4" /> Compartilhar Word
+                                </DropdownMenuItem>
+                            </>
+                        )}
+
+                        {/* DESKTOP: Visualizar PDF + Downloads */}
+                        {!isMobile && (
+                            <>
+                                <DropdownMenuItem onClick={handleOpenPdf} className="cursor-pointer gap-2 py-3 font-medium">
+                                    <ExternalLink className="h-4 w-4" /> Visualizar PDF
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleDownload('docx')} className="cursor-pointer gap-2 py-3 font-medium">
+                                    <Download className="h-4 w-4" /> Baixar Word (.docx)
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={handleCopyMarkdown} className="cursor-pointer gap-2 py-3 font-medium">
+                                    <Copy className="h-4 w-4" /> Copiar Markdown
+                                </DropdownMenuItem>
+                            </>
+                        )}
+
+                        {/* Fallback MOBILE sem Web Share API */}
+                        {isMobile && !canShare && (
+                            <>
+                                <DropdownMenuItem onClick={() => handleDownload('pdf')} className="cursor-pointer gap-2 py-3 font-medium">
+                                    <Download className="h-4 w-4" /> Baixar PDF
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleDownload('docx')} className="cursor-pointer gap-2 py-3 font-medium">
+                                    <Download className="h-4 w-4" /> Baixar Word (.docx)
                                 </DropdownMenuItem>
                             </>
                         )}
@@ -234,212 +270,114 @@ export function PlanViewer({ plan, bnccSkillDescriptions = [] }: PlanViewerProps
                 </DropdownMenu>
             </div>
 
-            {/* Main Content Card */}
             <Card className="border-border/50 shadow-xl overflow-hidden">
                 <div className="h-2 bg-primary w-full" />
-                <CardHeader className="p-4 sm:p-8 pb-3 sm:pb-4">
-                    <div className="flex flex-col md:flex-row justify-between gap-4 items-start">
-                        <div className="space-y-1.5">
-                            <Badge variant="outline" className="text-primary border-primary/30 uppercase tracking-widest text-[9px] font-bold">
-                                Plano de Aula BNCC
-                            </Badge>
-                            <CardTitle className="text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight">
-                                {plan.title}
-                            </CardTitle>
-                        </div>
+                <CardHeader className="p-4 sm:p-8">
+                    <div className="space-y-1.5">
+                        <Badge variant="outline" className="text-primary border-primary/30 uppercase tracking-widest text-[9px] font-bold">
+                            Plano de Aula BNCC
+                        </Badge>
+                        <CardTitle className="text-2xl sm:text-3xl font-extrabold leading-tight">
+                            {plan.title}
+                        </CardTitle>
                     </div>
-
-                    <div className="flex flex-wrap gap-y-3 gap-x-6 mt-6 text-sm text-muted-foreground font-medium">
+                    <div className="flex flex-wrap gap-4 mt-6 text-sm text-muted-foreground font-medium">
                         <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-primary/70" />
-                            <span>{format(new Date(plan.createdAt), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}</span>
+                            <span>{format(new Date(plan.createdAt), "dd/MM/yyyy")}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Timer className="h-4 w-4 text-primary/70" />
+                            <span>{totalTime} min</span>
                         </div>
                     </div>
                 </CardHeader>
 
-                <CardContent className="p-4 sm:p-8 pt-2 sm:pt-4 space-y-4">
-                    {/* ========== BLOCO 1: IDENTIFICAÇÃO ========== */}
-                    <BlockHeader icon={FileText} number={1} title="Identificação" />
-
-                    <div className="bg-muted/30 rounded-xl border border-border/50 p-4 sm:p-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-1">
-                                <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Etapa</p>
-                                <p className="font-medium">{levelDisplay}</p>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
-                                    {isEI ? 'Faixa Etária' : 'Ano/Série'}
-                                </p>
-                                <p className="font-medium">{gradeDisplay}</p>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
-                                    {isEI ? 'Campo de Experiência' : 'Componente Curricular'}
-                                </p>
-                                <p className="font-medium">{subjectDisplay}</p>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Duração</p>
-                                <p className="font-medium">{plan.numberOfClasses} aula(s) de 50 min</p>
-                            </div>
-                        </div>
+                <CardContent className="p-4 sm:p-8 space-y-6">
+                    <BlockHeader icon={FileText} number={1} title="Contexto" />
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-muted/30 p-4 rounded-xl">
+                        <div><p className="text-[10px] uppercase text-muted-foreground">Etapa</p><p className="font-bold text-sm">{levelDisplay}</p></div>
+                        <div><p className="text-[10px] uppercase text-muted-foreground">Ano</p><p className="font-bold text-sm">{gradeDisplay}</p></div>
+                        <div><p className="text-[10px] uppercase text-muted-foreground">Componente</p><p className="font-bold text-sm">{subjectDisplay}</p></div>
+                        <div><p className="text-[10px] uppercase text-muted-foreground">Tempo</p><p className="font-bold text-sm">{totalTime} min</p></div>
                     </div>
 
-                    {/* ========== BLOCO 2: PLANEJAMENTO PEDAGÓGICO ========== */}
-                    <BlockHeader icon={GraduationCap} number={2} title="Planejamento Pedagógico" />
+                    <SectionHeader icon={BookOpen} title={isEI ? "Tema Central" : "Objeto de Conhecimento"} />
+                    <p className="text-lg font-semibold">{content.theme || content.knowledgeObject}</p>
 
-                    {/* Objeto de Conhecimento / Conteúdos */}
-                    <SectionHeader icon={BookOpen} title={isEI ? "Conteúdos das experiências" : "Objeto de Conhecimento"} />
-                    <p className="text-base sm:text-lg text-foreground/90 leading-relaxed font-medium">
-                        {content.knowledgeObject}
-                    </p>
+                    <SectionHeader icon={Target} title="Objetivo da Aula" />
+                    <div className="bg-primary/5 p-4 rounded-xl border border-primary/10">
+                        <p className="font-medium">{content.objective}</p>
+                    </div>
 
-                    {/* Habilidades BNCC */}
-                    <SectionHeader icon={ListChecks} title={isEI ? "Objetivos de Aprendizagem e Desenvolvimento (BNCC)" : "Habilidades da BNCC"} />
+                    <SectionHeader icon={ListChecks} title="Habilidades BNCC" />
                     <div className="space-y-3">
-                        {plan.bnccSkillCodes.map(code => {
-                            const skillDesc = bnccSkillDescriptions.find(s => s.code === code);
+                        <div className="bg-primary/5 border-2 border-primary/20 rounded-lg p-4">
+                            <Badge className="mb-2">{mainSkillCode}</Badge>
+                            <p className="text-sm text-muted-foreground">{bnccSkillDescriptions.find(s => s.code === mainSkillCode)?.description}</p>
+                        </div>
+                        {complementaryCodes.map((code: string) => (
+                            <div key={code} className="bg-muted/30 p-3 rounded-lg flex items-center gap-3">
+                                <Badge variant="outline">{code}</Badge>
+                                <span className="text-xs text-muted-foreground truncate">{bnccSkillDescriptions.find(s => s.code === code)?.description}</span>
+                            </div>
+                        ))}
+                    </div>
+
+                    <BlockHeader icon={Users} number={2} title="Metodologia (3 Etapas)" />
+                    <div className="space-y-4">
+                        {content.methodology?.map((step: any, i: number) => {
+                            const actorLabel = isEI ? 'Adulto' : 'Professor';
+                            const participantsLabel = isEI ? 'Crianças' : 'Alunos';
+                            const actorActions = step.teacherActions || step.adultActions || [];
+                            const participantActions = step.studentActions || step.childrenActions || [];
+
                             return (
-                                <div key={code} className="bg-primary/5 border border-primary/10 rounded-lg p-4">
-                                    <Badge variant="secondary" className="px-3 py-1 text-sm font-bold border-primary/20 bg-primary/10 text-primary mb-2">
-                                        {code}
-                                    </Badge>
-                                    {skillDesc && (
-                                        <p className="text-sm text-muted-foreground leading-relaxed">
-                                            {skillDesc.description}
-                                        </p>
+                                <div key={i} className="bg-muted/20 rounded-xl border border-border/50 overflow-hidden">
+                                    <div className="p-4 bg-muted/40 border-b border-border/30 flex justify-between">
+                                        <span className="font-bold text-sm uppercase tracking-wide">{step.stepTitle}</span>
+                                        <Badge variant="outline">{step.timeMinutes} min</Badge>
+                                    </div>
+                                    <div className="p-4 grid md:grid-cols-2 gap-4">
+                                        <div>
+                                            <p className="text-[10px] font-bold uppercase text-muted-foreground mb-2">{actorLabel}</p>
+                                            <ul className="text-sm space-y-1">{actorActions.map((a: string, j: number) => <li key={j}>• {a}</li>)}</ul>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-bold uppercase text-muted-foreground mb-2">{participantsLabel}</p>
+                                            <ul className="text-sm space-y-1">{participantActions.map((a: string, j: number) => <li key={j}>• {a}</li>)}</ul>
+                                        </div>
+                                    </div>
+                                    {step.expectedOutput && (
+                                        <div className="px-4 pb-2">
+                                            <p className="text-[10px] font-bold uppercase text-primary/70 mb-1">Produto/Evidência</p>
+                                            <p className="text-sm text-muted-foreground">{step.expectedOutput}</p>
+                                        </div>
+                                    )}
+                                    {step.materials?.length > 0 && (
+                                        <div className="px-4 pb-4">
+                                            <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1">Materiais</p>
+                                            <div className="flex flex-wrap gap-1">{step.materials.map((m: string, j: number) => <Badge key={j} variant="outline" className="text-[9px]">{m}</Badge>)}</div>
+                                        </div>
                                     )}
                                 </div>
                             );
                         })}
                     </div>
 
-                    {/* Objetivos de Aprendizagem */}
-                    <SectionHeader icon={Target} title="Objetivos de Aprendizagem" />
-                    <ul className="space-y-3">
-                        {content.objectives.map((obj, i) => (
-                            <li key={i} className="flex gap-3 leading-relaxed">
-                                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center font-bold">
-                                    {i + 1}
-                                </span>
-                                {obj}
-                            </li>
-                        ))}
-                    </ul>
-
-                    {/* Competências / Direitos de Aprendizagem */}
-                    <SectionHeader icon={Lightbulb} title={isEI ? "Direitos de Aprendizagem e Desenvolvimento" : "Competências"} />
-                    <ul className="space-y-2">
-                        {content.competencies.map((comp, i) => (
-                            <li key={i} className="flex items-start gap-3 bg-muted/30 p-3 rounded-lg border border-border/50 text-sm">
-                                <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2" />
-                                {comp}
-                            </li>
-                        ))}
-                    </ul>
-
-                    {/* ========== BLOCO 3: EXECUÇÃO E ACOMPANHAMENTO ========== */}
-                    <BlockHeader icon={Users} number={3} title="Execução e Acompanhamento" />
-
-                    {/* Metodologia */}
-                    <SectionHeader icon={ScrollText} title="Metodologia (Sequência Didática)" />
-                    <div className="space-y-5 sm:space-y-6 relative ml-2 sm:ml-3 border-l-2 border-primary/10 pl-5 sm:pl-8 py-2">
-                        {content.methodology.map((m, i) => {
-                            // Remove números iniciais (ex: "1.", "1)", "1 - ", ou apenas "1")
-                            const cleanText = (text: string) => text.replace(/^\d+([\.\)\-\s]+\s*|\s+|$)/, '').trim();
-
-                            const stepTitle = cleanText(m.step || '');
-                            const stepDescription = cleanText(m.description || '');
-
-                            return (
-                                <div key={i} className="relative">
-                                    <div className="absolute -left-[29px] sm:-left-[41px] top-0 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary border-4 border-background flex items-center justify-center text-white text-[10px] sm:text-xs font-bold shadow-sm">
-                                        {i + 1}
-                                    </div>
-                                    <div className="pt-1">
-                                        <p className="text-muted-foreground leading-relaxed text-sm">
-                                            {stepTitle && (
-                                                <span className="font-bold text-primary mr-2 uppercase tracking-tight">
-                                                    {stepTitle}
-                                                    {stepDescription ? ' –' : ''}
-                                                </span>
-                                            )}
-                                            {stepDescription}
-                                        </p>
-                                    </div>
-                                </div>
-                            );
-                        })}
+                    <BlockHeader icon={ClipboardCheck} number={3} title="Avaliação" />
+                    <div className="bg-muted/30 p-6 rounded-xl space-y-4">
+                        <p className="font-bold text-primary">{content.evaluation?.instrument}</p>
+                        <ul className="space-y-1">{content.evaluation?.criteria?.map((c: string, i: number) => <li key={i} className="text-sm flex gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> {c}</li>)}</ul>
                     </div>
 
-                    {/* Recursos Didáticos */}
-                    <SectionHeader icon={Package} title="Recursos Didáticos" />
-                    <div className="flex flex-wrap gap-2">
-                        {content.resources.map((res, i) => (
-                            <Badge key={i} variant="outline" className="rounded-md px-3 py-1 font-normal bg-muted/20">
-                                {res}
-                            </Badge>
-                        ))}
-                    </div>
-
-                    {/* Avaliação */}
-                    <SectionHeader icon={ClipboardCheck} title="Avaliação" />
-                    <div className="bg-muted/30 p-6 rounded-xl border border-border/50 text-muted-foreground whitespace-pre-wrap">
-                        {(() => {
-                            const evalText = content.evaluation || '';
-                            // Se o texto contém lista com "-" ou ";"
-                            if (evalText.includes('-') || evalText.includes(';')) {
-                                // Tenta separar o prefixo "Considerando:" do resto da lista
-                                const parts = evalText.split(/[:\n]/);
-                                const intro = parts[0].includes('considerando') ? parts[0] + ':' : '';
-
-                                // Extrai os itens (removendo o prefixo se existir)
-                                const listItems = evalText
-                                    .replace(intro, '')
-                                    .split(/[-;•\n]/)
-                                    .map(item => item.trim())
-                                    .filter(item => item.length > 0);
-
-                                if (listItems.length > 1) {
-                                    return (
-                                        <div className="space-y-3">
-                                            {intro && <p className="mb-2 font-medium text-foreground/80">{intro}</p>}
-                                            <ul className="space-y-2">
-                                                {listItems.map((item, idx) => (
-                                                    <li key={idx} className="flex gap-2">
-                                                        <span className="text-primary">•</span>
-                                                        <span>{item}</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    );
-                                }
-                            }
-                            return evalText;
-                        })()}
-                    </div>
-
-                    {/* Adequações e Inclusão */}
-                    <SectionHeader icon={Sparkles} title="Adequações e Inclusão" />
-                    <div className="bg-primary/5 p-6 rounded-xl border border-primary/10 text-foreground/90">
-                        {content.adaptations}
-                    </div>
-
-                    {/* Referências */}
-                    <SectionHeader icon={LinkIcon} title="Referências" />
-                    <ul className="space-y-2 text-sm text-muted-foreground">
-                        {content.references.map((ref, i) => (
-                            <li key={i} className="flex items-center gap-2">
-                                <div className="w-1 h-1 rounded-full bg-muted-foreground/50" />
-                                {ref}
-                            </li>
-                        ))}
-                    </ul>
+                    {content.notes && (
+                        <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl text-amber-900 text-sm">
+                            <span className="font-bold">💡 Dica de ouro:</span> {content.notes}
+                        </div>
+                    )}
                 </CardContent>
             </Card>
-
         </div>
     );
 }

@@ -8,22 +8,28 @@ interface QuizLayoutProps {
     open: boolean;
     onClose: () => void;
     title: string;
-    currentStep: number;
-    totalSteps: number;
     onBack?: () => void;
     showBack?: boolean;
     children: ReactNode;
+    // Para progresso tradicional (steps)
+    currentStep?: number;
+    totalSteps?: number;
+    // Para progresso de momentos (3 bolhas)
+    currentMoment?: 1 | 2 | 3;
+    momentLabels?: [string, string, string];
 }
 
 export function QuizLayout({
     open,
     onClose,
     title,
-    currentStep,
-    totalSteps,
     onBack,
     showBack,
-    children
+    children,
+    currentStep,
+    totalSteps,
+    currentMoment,
+    momentLabels
 }: QuizLayoutProps) {
     return (
         <Drawer
@@ -33,13 +39,11 @@ export function QuizLayout({
             }}
             shouldScaleBackground={false}
             direction="bottom"
-            dismissible={false} // Evita fechar arrastando se estiver no meio do quiz
+            dismissible={true}
         >
             <DrawerPortal>
                 <DrawerContent
                     className="!mt-0 !top-0 !bottom-0 !inset-0 !h-screen !max-h-screen rounded-none border-none bg-background flex flex-col overflow-hidden [&>div:first-child]:hidden"
-                    onPointerDownOutside={(e) => e.preventDefault()} // Impede fechar ao clicar fora acidentalmente
-                    onEscapeKeyDown={(e) => e.preventDefault()}
                 >
                     <DrawerHeader className="sr-only">
                         <DrawerTitle>{title}</DrawerTitle>
@@ -47,11 +51,13 @@ export function QuizLayout({
                     </DrawerHeader>
 
                     <QuizHeader
-                        currentStep={currentStep}
-                        totalSteps={totalSteps}
                         title={title}
                         onBack={onBack}
                         showBack={showBack}
+                        currentStep={currentStep}
+                        totalSteps={totalSteps}
+                        currentMoment={currentMoment}
+                        momentLabels={momentLabels}
                     />
 
                     <div className="flex-1 overflow-hidden relative">

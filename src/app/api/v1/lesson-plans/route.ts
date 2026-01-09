@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/server/auth';
 import { prisma } from '@/lib/db';
-import { CreateLessonPlanSchema, type BnccSkillDetail } from '@/lib/schemas/lesson-plan';
+import { CreateLessonPlanSchema, FullLessonPlanContentSchema, type BnccSkillDetail } from '@/lib/schemas/lesson-plan';
 import { canCreateLessonPlan } from '@/services/lesson-plans/get-usage';
 import { incrementLessonPlanUsage } from '@/services/lesson-plans/increment-usage';
 import { generateLessonPlanContent } from '@/services/lesson-plans/generate-content';
@@ -167,10 +167,16 @@ export async function POST(request: NextRequest) {
     }
 
     // 5. Buscar habilidades BNCC completas do banco (com contexto enriquecido)
+    // Deduplicar códigos para evitar erro de contagem se o usuário selecionar a mesma habilidade
+    const uniqueCodes = Array.from(new Set(data.bnccSkillCodes));
+
+    console.log('[POST /api/v1/lesson-plans] Códigos recebidos do frontend:', data.bnccSkillCodes);
+    console.log('[POST /api/v1/lesson-plans] Códigos únicos para busca:', uniqueCodes);
+
     const bnccSkills = await prisma.bnccSkill.findMany({
       where: {
         code: {
-          in: data.bnccSkillCodes,
+          in: uniqueCodes,
         },
       },
       select: {
@@ -183,46 +189,93 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    if (bnccSkills.length !== data.bnccSkillCodes.length) {
+    console.log('[POST /api/v1/lesson-plans] Total de registros retornados:', bnccSkills.length);
+    console.log('[POST /api/v1/lesson-plans] Códigos encontrados:', bnccSkills.map(s => s.code));
+
+    // Verificar se todos os códigos únicos foram encontrados
+    const foundCodes = new Set(bnccSkills.map(s => s.code));
+    const missingCodes = uniqueCodes.filter(code => !foundCodes.has(code));
+
+    if (missingCodes.length > 0) {
+      console.error('[POST /api/v1/lesson-plans] Habilidades não encontradas:', missingCodes);
       return NextResponse.json(
         {
           success: false,
           error: 'Algumas habilidades BNCC não foram encontradas',
+          details: { missingCodes },
         },
         { status: 400 }
       );
     }
 
-    // Mapear para BnccSkillDetail (enriquecido)
-    const skillDetails: BnccSkillDetail[] = bnccSkills.map((skill) => ({
-      code: skill.code,
-      description: skill.description,
-      unitTheme: skill.unitTheme || '',
-      knowledgeObject: skill.knowledgeObject || '',
-      comments: skill.comments || '',
-      curriculumSuggestions: skill.curriculumSuggestions || '',
-    }));
+    // Mapear para BnccSkillDetail (enriquecido), garantindo apenas um por código
+    const skillMap = new Map<string, BnccSkillDetail>();
+    bnccSkills.forEach((skill) => {
+      if (!skillMap.has(skill.code)) {
+        skillMap.set(skill.code, {
+          code: skill.code,
+          description: skill.description,
+          unitTheme: skill.unitTheme || '',
+          knowledgeObject: skill.knowledgeObject || '',
+          comments: skill.comments || '',
+          curriculumSuggestions: skill.curriculumSuggestions || '',
+        } as any);
+      }
+    });
+
+    const skillDetails: BnccSkillDetail[] = Array.from(skillMap.values());
 
     // 6. Gerar conteúdo com IA
     console.log('[POST /api/v1/lesson-plans] Gerando plano com IA...');
 
-    const content = await generateLessonPlanContent({
+    const aiGeneratedContent = await generateLessonPlanContent({
       userId: session.user.id,
-      title: data.title,
+      title: data.title || data.intentRaw || '', // IA vai gerar título se vazio
       educationLevelSlug: data.educationLevelSlug,
       gradeSlug: data.gradeSlug,
       subjectSlug: data.subjectSlug,
       numberOfClasses: data.numberOfClasses,
       bnccSkills: skillDetails,
+      intentRaw: data.intentRaw,
     });
+
+    // Expandir conteúdo para o schema completo (garantir campos legados vazios)
+    const content = FullLessonPlanContentSchema.parse(aiGeneratedContent);
 
     console.log('[POST /api/v1/lesson-plans] Plano gerado com sucesso');
 
-    // 7. Salvar no banco
+    // 7. Gerar título se não fornecido
+    // Prioridade: título do usuário > intentRaw > título gerado pela IA > knowledgeObject > fallback
+    let finalTitle = data.title;
+
+    if (!finalTitle) {
+      // Tentar usar o intentRaw
+      if (data.intentRaw && data.intentRaw.length >= 5) {
+        finalTitle = data.intentRaw;
+      }
+      // Tentar usar o título gerado pela IA
+      else if (content.title && content.title.length >= 5) {
+        finalTitle = content.title;
+      }
+      // Tentar usar o knowledgeObject
+      else if (content.knowledgeObject) {
+        finalTitle = content.knowledgeObject;
+      }
+      // Fallback: usar knowledgeObject da primeira habilidade
+      else if (skillDetails[0]?.knowledgeObject) {
+        finalTitle = skillDetails[0].knowledgeObject;
+      }
+      // Fallback final
+      else {
+        finalTitle = `Plano de ${skillDetails[0]?.code || 'Aula'}`;
+      }
+    }
+
+    // 8. Salvar no banco
     const lessonPlan = await prisma.lessonPlan.create({
       data: {
         userId: session.user.id,
-        title: data.title,
+        title: finalTitle,
         numberOfClasses: data.numberOfClasses,
         duration: data.numberOfClasses * 50, // 50 min por aula
         educationLevelSlug: data.educationLevelSlug,
@@ -235,12 +288,12 @@ export async function POST(request: NextRequest) {
 
     console.log('[POST /api/v1/lesson-plans] Plano salvo:', lessonPlan.id);
 
-    // 8. Incrementar uso mensal
+    // 9. Incrementar uso mensal
     await incrementLessonPlanUsage(session.user.id);
 
     console.log('[POST /api/v1/lesson-plans] Uso incrementado');
 
-    // 9. Retornar plano completo com URLs de download
+    // 10. Retornar plano completo com URLs de download
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     const downloadUrls = {
       docx: `${baseUrl}/api/v1/lesson-plans/${lessonPlan.id}/export/docx`,

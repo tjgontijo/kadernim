@@ -6,78 +6,90 @@ import { toast } from 'sonner';
 import { useDownloadFile } from '@/hooks/use-download-file';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { QuizLayout } from '@/components/client/quiz/QuizLayout';
-
-import { QuestionEducationLevel } from './questions/question-education-level';
-import { QuestionGrade } from './questions/question-grade';
-import { QuestionSubject } from './questions/question-subject';
-import { QuestionTheme } from './questions/question-theme';
-import { QuestionDuration } from './questions/question-duration';
-import { QuestionSkills } from './questions/question-skills';
-import { QuestionReview } from './questions/question-review';
+import { MomentContext, MomentContent, MomentReview } from './moments';
 import { QuestionGenerating } from './questions/question-generating';
 import { QuestionSuccess } from './questions/question-success';
 
 /**
- * Wizard state interface
+ * Skill selection interface
+ */
+interface SkillSelection {
+  code: string;
+  description: string;
+  role: 'main' | 'complementary';
+}
+
+/**
+ * Wizard state interface - novo formato com 3 momentos
  */
 export interface WizardState {
+  // Momento 1: Contexto
   educationLevelSlug?: string;
   educationLevelName?: string;
   gradeSlug?: string;
   gradeName?: string;
   subjectSlug?: string;
   subjectName?: string;
-  title?: string;
   numberOfClasses?: number;
-  bnccSkillCodes?: string[];
-  bnccSkillDetails?: Array<{ code: string; description: string }>;
+  // Momento 2: Conteúdo
+  intentRaw?: string;
+  selectedSkills: SkillSelection[];
+  // Momento 3: Revisão (editável)
+  title?: string;
+  // Resultado
   planId?: string;
 }
 
 /**
- * Question step type
+ * Moment type (apenas 3 visíveis + estados de geração)
  */
-export type QuestionStep =
-  | 'education-level'
-  | 'grade'
-  | 'subject'
-  | 'theme'
-  | 'duration'
-  | 'skills'
-  | 'review'
-  | 'generating'
-  | 'success';
+export type Moment = 'context' | 'content' | 'review' | 'generating' | 'success';
 
 interface CreatePlanDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-const TOTAL_STEPS = 7;
+const MOMENT_LABELS: [string, string, string] = ['Contexto', 'Conteúdo', 'Revisão'];
+
+function getMomentNumber(moment: Moment): 1 | 2 | 3 {
+  switch (moment) {
+    case 'context': return 1;
+    case 'content': return 2;
+    case 'review':
+    case 'generating':
+    case 'success':
+      return 3;
+  }
+}
 
 export function CreatePlanDrawer({ open, onOpenChange }: CreatePlanDrawerProps) {
-  const [currentStep, setCurrentStep] = useState<QuestionStep>('education-level');
-  const [wizardState, setWizardState] = useState<WizardState>({});
-  const [history, setHistory] = useState<QuestionStep[]>(['education-level']);
+  const [currentMoment, setCurrentMoment] = useState<Moment>('context');
+  const [wizardState, setWizardState] = useState<WizardState>({ selectedSkills: [] });
+  const [history, setHistory] = useState<Moment[]>(['context']);
 
   const queryClient = useQueryClient();
   const { downloadFile } = useDownloadFile();
 
-  const stepNumber = getStepNumber(currentStep);
-
   // Mutação para gerar o plano final
   const generateMutation = useMutation({
     mutationFn: async () => {
+      const mainSkill = wizardState.selectedSkills.find(s => s.role === 'main');
+
       const response = await fetch('/api/v1/lesson-plans', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title: wizardState.title,
+          // Título: prioriza o que o usuário definiu, depois intentRaw
+          // Se nenhum, deixa o backend gerar baseado no knowledgeObject
+          title: wizardState.title || wizardState.intentRaw || undefined,
           numberOfClasses: wizardState.numberOfClasses,
           educationLevelSlug: wizardState.educationLevelSlug,
           gradeSlug: wizardState.gradeSlug,
           subjectSlug: wizardState.subjectSlug,
-          bnccSkillCodes: wizardState.bnccSkillCodes,
+          bnccSkillCodes: wizardState.selectedSkills.map(s => s.code),
+          intentRaw: wizardState.intentRaw,
+          skills: wizardState.selectedSkills,
         }),
       });
       const data = await response.json();
@@ -85,15 +97,15 @@ export function CreatePlanDrawer({ open, onOpenChange }: CreatePlanDrawerProps) 
       return data.data;
     },
     onMutate: () => {
-      goToNextStep('generating', {});
+      goToMoment('generating');
     },
     onSuccess: (data) => {
-      // Invalida a lista de planos para disparar o refresh automático na página de trás
       queryClient.invalidateQueries({ queryKey: ['lesson-plans'] });
       queryClient.invalidateQueries({ queryKey: ['lesson-plan-usage'] });
 
       setTimeout(() => {
-        goToNextStep('success', { planId: data.id });
+        setWizardState(prev => ({ ...prev, planId: data.id }));
+        goToMoment('success');
       }, 500);
     },
     onError: (error) => {
@@ -101,34 +113,28 @@ export function CreatePlanDrawer({ open, onOpenChange }: CreatePlanDrawerProps) 
       toast.error('Erro ao gerar plano', {
         description: error instanceof Error ? error.message : 'Tente novamente',
       });
-      goToPreviousStep();
+      goToPreviousMoment();
     },
   });
 
-  const goToNextStep = (nextStep: QuestionStep, updates: Partial<WizardState>) => {
-    setWizardState((prev) => ({ ...prev, ...updates }));
-    setCurrentStep(nextStep);
-    setHistory((prev) => [...prev, nextStep]);
+  const goToMoment = (moment: Moment) => {
+    setCurrentMoment(moment);
+    setHistory(prev => [...prev, moment]);
   };
 
-  const goToPreviousStep = () => {
+  const goToPreviousMoment = () => {
     if (history.length > 1) {
       const newHistory = history.slice(0, -1);
-      const previousStep = newHistory[newHistory.length - 1];
+      const previousMoment = newHistory[newHistory.length - 1];
       setHistory(newHistory);
-      setCurrentStep(previousStep);
+      setCurrentMoment(previousMoment);
     }
   };
 
-  const goToStep = (step: QuestionStep) => {
-    setCurrentStep(step);
-    setHistory((prev) => [...prev, step]);
-  };
-
   const handleClose = () => {
-    setCurrentStep('education-level');
-    setWizardState({});
-    setHistory(['education-level']);
+    setCurrentMoment('context');
+    setWizardState({ selectedSkills: [] });
+    setHistory(['context']);
     onOpenChange(false);
   };
 
@@ -139,129 +145,92 @@ export function CreatePlanDrawer({ open, onOpenChange }: CreatePlanDrawerProps) 
     downloadFile(url, { filename });
   };
 
-  const canGoBack = history.length > 1 && currentStep !== 'generating' && currentStep !== 'success';
+  const canGoBack = history.length > 1 && currentMoment !== 'generating' && currentMoment !== 'success';
+  const momentNumber = getMomentNumber(currentMoment);
 
   return (
     <QuizLayout
       open={open}
       onClose={handleClose}
       title="Criar Novo Plano de Aula"
-      currentStep={stepNumber}
-      totalSteps={TOTAL_STEPS}
-      onBack={goToPreviousStep}
+      currentMoment={momentNumber}
+      momentLabels={MOMENT_LABELS}
+      onBack={goToPreviousMoment}
       showBack={canGoBack}
     >
       <AnimatePresence mode="wait">
         <motion.div
-          key={currentStep}
+          key={currentMoment}
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
           transition={{ duration: 0.3, ease: 'easeInOut' }}
           className="absolute inset-0 overflow-y-auto scrollbar-thin p-6"
         >
-          {currentStep === 'education-level' && (
-            <QuestionEducationLevel
-              value={wizardState.educationLevelSlug}
-              onSelect={(slug, name) =>
-                goToNextStep('grade', {
-                  educationLevelSlug: slug,
-                  educationLevelName: name,
-                })
-              }
+          {/* Momento 1: Contexto */}
+          {currentMoment === 'context' && (
+            <MomentContext
+              data={{
+                educationLevelSlug: wizardState.educationLevelSlug,
+                educationLevelName: wizardState.educationLevelName,
+                gradeSlug: wizardState.gradeSlug,
+                gradeName: wizardState.gradeName,
+                subjectSlug: wizardState.subjectSlug,
+                subjectName: wizardState.subjectName,
+                numberOfClasses: wizardState.numberOfClasses,
+              }}
+              onChange={(updates) => setWizardState(prev => ({ ...prev, ...updates }))}
+              onContinue={() => goToMoment('content')}
             />
           )}
 
-          {currentStep === 'grade' && wizardState.educationLevelSlug && (
-            <QuestionGrade
-              educationLevelSlug={wizardState.educationLevelSlug}
-              value={wizardState.gradeSlug}
-              onSelect={(slug, name) =>
-                goToNextStep('subject', {
-                  gradeSlug: slug,
-                  gradeName: name,
-                })
-              }
-            />
-          )}
-
-          {currentStep === 'subject' &&
-            wizardState.educationLevelSlug &&
-            wizardState.gradeSlug && (
-              <QuestionSubject
-                educationLevelSlug={wizardState.educationLevelSlug}
-                gradeSlug={wizardState.gradeSlug}
-                value={wizardState.subjectSlug}
-                onSelect={(slug, name) =>
-                  goToNextStep('theme', {
-                    subjectSlug: slug,
-                    subjectName: name,
-                  })
-                }
-              />
-            )}
-
-          {currentStep === 'theme' &&
+          {/* Momento 2: Conteúdo */}
+          {currentMoment === 'content' &&
             wizardState.educationLevelSlug &&
             wizardState.gradeSlug &&
             wizardState.subjectSlug && (
-              <QuestionTheme
-                value={wizardState.title || ''}
-                onChange={(value) =>
-                  setWizardState((prev) => ({ ...prev, title: value }))
-                }
-                onContinue={() => goToNextStep('duration', {})}
+              <MomentContent
                 educationLevelSlug={wizardState.educationLevelSlug}
                 gradeSlug={wizardState.gradeSlug}
                 subjectSlug={wizardState.subjectSlug}
+                data={{
+                  intentRaw: wizardState.intentRaw,
+                  selectedSkills: wizardState.selectedSkills,
+                }}
+                onChange={(updates) => setWizardState(prev => ({ ...prev, ...updates }))}
+                onContinue={() => goToMoment('review')}
               />
             )}
 
-          {currentStep === 'duration' && (
-            <QuestionDuration
-              value={wizardState.numberOfClasses}
-              onSelect={(numberOfClasses) =>
-                goToNextStep('skills', { numberOfClasses })
-              }
-            />
-          )}
-
-          {currentStep === 'skills' &&
-            wizardState.educationLevelSlug &&
-            wizardState.gradeSlug &&
-            wizardState.subjectSlug && (
-              <QuestionSkills
-                educationLevelSlug={wizardState.educationLevelSlug}
-                gradeSlug={wizardState.gradeSlug}
-                subjectSlug={wizardState.subjectSlug}
-                theme={wizardState.title}
-                values={wizardState.bnccSkillCodes || []}
-                skillDetails={wizardState.bnccSkillDetails || []}
-                onSelect={(codes, details) =>
-                  setWizardState((prev) => ({
-                    ...prev,
-                    bnccSkillCodes: codes,
-                    bnccSkillDetails: details,
-                  }))
-                }
-                onContinue={() => goToNextStep('review', {})}
-              />
-            )}
-
-          {currentStep === 'review' && (
-            <QuestionReview
-              data={wizardState}
-              onEdit={goToStep}
+          {/* Momento 3: Revisão */}
+          {currentMoment === 'review' && (
+            <MomentReview
+              data={{
+                educationLevelSlug: wizardState.educationLevelSlug,
+                educationLevelName: wizardState.educationLevelName,
+                gradeSlug: wizardState.gradeSlug,
+                gradeName: wizardState.gradeName,
+                subjectSlug: wizardState.subjectSlug,
+                subjectName: wizardState.subjectName,
+                numberOfClasses: wizardState.numberOfClasses,
+                intentRaw: wizardState.intentRaw,
+                selectedSkills: wizardState.selectedSkills,
+                title: wizardState.title,
+              }}
+              onChange={(updates) => setWizardState(prev => ({ ...prev, ...updates }))}
               onGenerate={() => generateMutation.mutate()}
+              isGenerating={generateMutation.isPending}
             />
           )}
 
-          {currentStep === 'generating' && <QuestionGenerating />}
+          {/* Gerando */}
+          {currentMoment === 'generating' && <QuestionGenerating />}
 
-          {currentStep === 'success' && wizardState.planId && wizardState.title && (
+          {/* Sucesso */}
+          {currentMoment === 'success' && wizardState.planId && (
             <QuestionSuccess
               planId={wizardState.planId}
-              title={wizardState.title}
+              title={wizardState.title || wizardState.intentRaw || 'Plano de Aula'}
               onView={() => {
                 window.location.href = `/lesson-plans/${wizardState.planId}`;
               }}
@@ -273,19 +242,4 @@ export function CreatePlanDrawer({ open, onOpenChange }: CreatePlanDrawerProps) 
       </AnimatePresence>
     </QuizLayout>
   );
-}
-
-function getStepNumber(step: QuestionStep): number {
-  const stepMap: Record<QuestionStep, number> = {
-    'education-level': 1,
-    'grade': 2,
-    'subject': 3,
-    'theme': 4,
-    'duration': 5,
-    'skills': 6,
-    'review': 7,
-    'generating': 7,
-    'success': 7,
-  };
-  return stepMap[step] || 1;
 }
