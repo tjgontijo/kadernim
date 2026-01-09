@@ -664,14 +664,13 @@ export async function seedResourceFiles(prisma: PrismaClient) {
       continue
     }
 
-    // Gerar public_id a partir do nome do arquivo (sem extensão)
-    const nameWithoutExt = f.name.split('.').slice(0, -1).join('.')
-    const cloudinaryPublicId = `resources/${resource.id}/${nameWithoutExt}`
+
 
     await prisma.resourceFile.create({
       data: {
         name: f.name,
-        cloudinaryPublicId,
+        cloudinaryPublicId: `legacy-seed-${f.externalId}`,
+        url: f.url,
         resourceId: resource.id,
       },
     })
