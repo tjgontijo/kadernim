@@ -90,13 +90,12 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
   const platformItems: NavItem[] = [
     { title: 'Dashboard', href: '/admin', icon: 'LayoutDashboard' },
     { title: 'Monitoramento IA', href: '/admin/llm-usage', icon: 'Cpu', permission: { action: 'manage', subject: 'all' } },
-    { title: 'Analytics', href: '/admin/analytics', icon: 'BarChart3', permission: { action: 'read', subject: 'Analytics' } },
   ]
 
   const dataItems: NavItem[] = [
     { title: 'Recursos', href: '/admin/resources', icon: 'BookOpen', permission: { action: 'read', subject: 'Resource' } },
     { title: 'Pedidos', href: '/admin/community-requests', icon: 'Sparkles', permission: { action: 'read', subject: 'Resource' } },
-    { title: 'Matérias', href: '/admin/subjects', icon: 'Hash', permission: { action: 'read', subject: 'Subject' } },
+    { title: 'Disciplinas', href: '/admin/subjects', icon: 'Hash', permission: { action: 'read', subject: 'Subject' } },
     { title: 'Usuários', href: '/admin/users', icon: 'Users', permission: { action: 'read', subject: 'User' } },
     { title: 'Automações', href: '/admin/automations', icon: 'Zap', permission: { action: 'manage', subject: 'all' } },
     { title: 'Templates', href: '/admin/templates', icon: 'FileText', permission: { action: 'manage', subject: 'all' } },
@@ -124,12 +123,23 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
               asChild
             >
               <Link href="/admin">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
-                  K
+                <div className="flex size-8 items-center justify-center">
+                  <img
+                    src="/images/system/logo_transparent.png"
+                    alt="Kadernim"
+                    className="h-8 w-auto object-contain group-data-[collapsible=icon]:hidden"
+                  />
+                  <img
+                    src="/images/system/icon-1024x1024.png"
+                    alt="Kadernim"
+                    className="hidden size-8 object-contain group-data-[collapsible=icon]:block"
+                  />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                   <span className="truncate font-semibold">Kadernim</span>
-                  <span className="truncate text-xs text-muted-foreground">Admin</span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    {version ? `v${version}` : 'Admin'}
+                  </span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -221,11 +231,6 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
             />
           </SidebarMenuItem>
         </SidebarMenu>
-        {version && (
-          <div className="px-4 py-2 text-[10px] text-muted-foreground/50 font-mono text-center group-data-[collapsible=icon]:hidden">
-            v{version}
-          </div>
-        )}
       </SidebarFooter>
 
       <SidebarRail />
