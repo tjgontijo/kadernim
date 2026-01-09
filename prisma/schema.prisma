@@ -2,6 +2,7 @@ generator client {
   provider = "prisma-client"
   output   = "./generated/prisma"
 }
+
 datasource db {
   provider = "postgresql"
 }
@@ -15,10 +16,10 @@ enum UserRole {
 }
 
 model EducationLevel {
-  id        String     @id @default(cuid())
-  name      String     @unique
-  slug      String     @unique
-  order     Int        @default(0)
+  id    String @id @default(cuid())
+  name  String @unique
+  slug  String @unique
+  order Int    @default(0)
 
   grades            Grade[]
   resources         Resource[]
@@ -29,10 +30,10 @@ model EducationLevel {
 }
 
 model Grade {
-  id               String         @id @default(cuid())
-  name             String
-  slug             String         @unique
-  order            Int            @default(0)
+  id    String @id @default(cuid())
+  name  String
+  slug  String @unique
+  order Int    @default(0)
 
   educationLevelId String
   educationLevel   EducationLevel @relation(fields: [educationLevelId], references: [id])
@@ -47,10 +48,10 @@ model Grade {
 }
 
 model Subject {
-  id        String          @id @default(cuid())
-  name      String          @unique
-  slug      String          @unique
-  isBncc    Boolean         @default(true)
+  id     String  @id @default(cuid())
+  name   String  @unique
+  slug   String  @unique
+  isBncc Boolean @default(true)
 
   grades            GradeSubject[]
   resources         Resource[]
@@ -61,13 +62,13 @@ model Subject {
 }
 
 model GradeSubject {
-  id        String  @id @default(cuid())
+  id String @id @default(cuid())
 
   gradeId   String
   subjectId String
 
-  grade     Grade   @relation(fields: [gradeId], references: [id], onDelete: Cascade)
-  subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  grade   Grade   @relation(fields: [gradeId], references: [id], onDelete: Cascade)
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
 
   @@unique([gradeId, subjectId])
   @@index([gradeId])
@@ -76,26 +77,26 @@ model GradeSubject {
 }
 
 model User {
-  id               String     @id @default(cuid())
-  name             String
-  email            String     @unique
-  phone            String?
-  emailVerified    Boolean    @default(false)
-  image            String?
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @updatedAt
-  role             UserRole   @default(user)  
-  banned           Boolean    @default(false)
-  
-  accounts     Account[]
-  sessions     Session[]
-  subscription Subscription?
-  resourceAccesses ResourceUserAccess[]
-  lessonPlans  LessonPlan[]
-  lessonPlanUsage LessonPlanUsage[]
-  communityRequests      CommunityRequest[]
-  communityRequestVotes  CommunityRequestVote[]
-  llmUsageLogs           LlmUsageLog[]
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  phone         String?
+  emailVerified Boolean  @default(false)
+  image         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  role          UserRole @default(user)
+  banned        Boolean  @default(false)
+
+  accounts              Account[]
+  sessions              Session[]
+  subscription          Subscription?
+  resourceAccesses      ResourceUserAccess[]
+  lessonPlans           LessonPlan[]
+  lessonPlanUsage       LessonPlanUsage[]
+  communityRequests     CommunityRequest[]
+  communityRequestVotes CommunityRequestVote[]
+  llmUsageLogs          LlmUsageLog[]
 
   @@map("user")
 }
@@ -140,7 +141,7 @@ model Session {
 }
 
 model Verification {
-  id         String   @id @default(cuid())
+  id         String    @id @default(cuid())
   identifier String
   value      String
   expiresAt  DateTime
@@ -154,7 +155,7 @@ model Verification {
 model Organization {
   id        String   @id @default(cuid())
   name      String
-  slug      String? @unique
+  slug      String?  @unique
   logo      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -164,13 +165,13 @@ model Organization {
 }
 
 model Subscription {
-  id            String   @id @default(cuid())
-  userId        String   @unique
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  isActive      Boolean  @default(true)
-  purchaseDate  DateTime @default(now())
-  expiresAt     DateTime? // Calculado automaticamente baseado no plan.durationDays
+  isActive     Boolean   @default(true)
+  purchaseDate DateTime  @default(now())
+  expiresAt    DateTime?
 
   @@index([userId])
   @@index([isActive])
@@ -179,76 +180,74 @@ model Subscription {
 }
 
 model ResourceGrade {
-  id         String   @id @default(cuid())
+  id String @id @default(cuid())
 
   resourceId String
   gradeId    String
 
-  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
-  grade      Grade    @relation(fields: [gradeId], references: [id], onDelete: Cascade)
+  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  grade    Grade    @relation(fields: [gradeId], references: [id], onDelete: Cascade)
 
-  // evita duplicar o mesmo vínculo
   @@unique([resourceId, gradeId])
   @@index([resourceId])
   @@index([gradeId])
-
   @@map("resource_grade")
 }
 
 model ResourceImage {
-  id          String       @id @default(cuid())
-  resourceId  String
-  resource    Resource  @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  id         String   @id @default(cuid())
+  resourceId String
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
 
   cloudinaryPublicId String
-  url         String?
-  alt         String?
-  order       Int @default(0)
-  createdAt   DateTime  @default(now())
+  url                String?
+  alt                String?
+  order              Int      @default(0)
+  createdAt          DateTime @default(now())
 
   @@index([resourceId, order])
   @@map("resource_image")
 }
 
 model ResourceFile {
-  id          String       @id @default(cuid())
-  resourceId  String
-  resource    Resource  @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  id         String   @id @default(cuid())
+  resourceId String
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
 
-  name        String
+  name               String
   cloudinaryPublicId String
-  url         String?
-  fileType    String?
-  sizeBytes   Int?
-  createdAt   DateTime  @default(now())
+  url                String?
+  fileType           String?
+  sizeBytes          Int?
+  createdAt          DateTime @default(now())
 
   @@index([resourceId])
   @@map("resource_file")
 }
 
 model ResourceVideo {
-  id          String       @id @default(cuid())
-  resourceId  String
-  resource    Resource  @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  id         String   @id @default(cuid())
+  resourceId String
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
 
-  title       String
+  title              String
   cloudinaryPublicId String
-  url         String?
-  thumbnail   String?
-  duration    Int?
-  order       Int @default(0)
-  createdAt   DateTime  @default(now())
+  url                String?
+  thumbnail          String?
+  duration           Int?
+  order              Int      @default(0)
+  createdAt          DateTime @default(now())
 
   @@index([resourceId, order])
   @@map("resource_video")
 }
 
 model ResourceUserAccess {
-  id         String   @id @default(cuid())
+  id         String    @id @default(cuid())
   userId     String
   resourceId String
   source     String?
-  grantedAt  DateTime @default(now())
+  grantedAt  DateTime  @default(now())
   expiresAt  DateTime?
 
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -260,27 +259,27 @@ model ResourceUserAccess {
 }
 
 model Resource {
-  id              String             @id @default(cuid())
-  title           String
-  description     String?  
+  id          String  @id @default(cuid())
+  title       String
+  description String?
 
   educationLevelId String
-  educationLevel   EducationLevel    @relation(fields: [educationLevelId], references: [id])
-  
-  subjectId        String
-  subject          Subject           @relation(fields: [subjectId], references: [id])
-  
-  externalId      Int?            @unique
-  isFree          Boolean         @default(false)
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  educationLevel   EducationLevel @relation(fields: [educationLevelId], references: [id])
 
-  images ResourceImage[]
-  files ResourceFile[]
-  videos ResourceVideo[]
+  subjectId String
+  subject   Subject @relation(fields: [subjectId], references: [id])
+
+  externalId Int?     @unique
+  isFree     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  images        ResourceImage[]
+  files         ResourceFile[]
+  videos        ResourceVideo[]
   accessEntries ResourceUserAccess[]
-  grades ResourceGrade[]
-  bnccSkills ResourceBnccSkill[]
+  grades        ResourceGrade[]
+  bnccSkills    ResourceBnccSkill[]
 
   originRequestId String?           @unique
   originRequest   CommunityRequest? @relation(fields: [originRequestId], references: [id])
@@ -294,50 +293,45 @@ model Resource {
 model BnccSkill {
   id String @id @default(cuid())
 
-  code String // nao pode ser @unique
+  code String
 
-  // FK para nossas models (fonte da verdade)
   educationLevelId String
   educationLevel   EducationLevel @relation(fields: [educationLevelId], references: [id])
 
-  gradeId   String?
-  grade     Grade? @relation(fields: [gradeId], references: [id])
+  gradeId String?
+  grade   Grade?  @relation(fields: [gradeId], references: [id])
 
   subjectId String?
   subject   Subject? @relation(fields: [subjectId], references: [id])
 
-  // Campos BNCC
   unitTheme             String?
   knowledgeObject       String?
-  description           String @db.Text
+  description           String  @db.Text
   comments              String? @db.Text
   curriculumSuggestions String? @db.Text
 
-  // Full-Text Search (criado automaticamente por trigger - ver reset-db.sh)
   searchVector Unsupported("tsvector")?
   embedding    Unsupported("vector(1536)")?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  resources ResourceBnccSkill[]
+
+  @@unique([code, gradeId], name: "code_gradeId")
   @@index([educationLevelId])
   @@index([gradeId])
   @@index([subjectId])
   @@index([code])
   @@index([searchVector], type: Gin)
-
-  @@unique([code, gradeId], name: "code_gradeId")
-
-  resources ResourceBnccSkill[]
-
   @@map("bncc_skill")
 }
 
 model ResourceBnccSkill {
-  id          String    @id @default(cuid())
+  id String @id @default(cuid())
 
-  resourceId  String
-  resource    Resource  @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  resourceId String
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
 
   bnccSkillId String
   bnccSkill   BnccSkill @relation(fields: [bnccSkillId], references: [id], onDelete: Cascade)
@@ -354,25 +348,20 @@ model LessonPlan {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Identificação do plano
-  title           String  // Tema da aula (ex: "Frações básicas e suas representações")
-  numberOfClasses Int     // 1, 2 ou 3 aulas
-  duration        Int     // Calculado: numberOfClasses * 50 (minutos)
+  title           String
+  numberOfClasses Int
+  duration        Int
 
-  // Contexto pedagógico (slugs para flexibilidade)
-  educationLevelSlug String  // "educacao-infantil", "ensino-fundamental-1", etc
+  educationLevelSlug String
 
-  // Bifurcação EI vs EF
-  gradeSlug          String? // EF: "ef1-3-ano", "ef2-6-ano", etc
-  subjectSlug        String? // EF: "matematica", "lingua-portuguesa", etc
-  ageRange           String? // EI: "4-5-anos", etc
-  fieldOfExperience  String? // EI: "O eu, o outro e o nós", etc
+  gradeSlug         String?
+  subjectSlug       String?
+  ageRange          String?
+  fieldOfExperience String?
 
-  // Habilidades BNCC selecionadas
-  bnccSkillCodes String[] // Array de códigos BNCC (ex: ["EF03MA09", "EF03MA10"])
+  bnccSkillCodes String[]
 
-  // Conteúdo completo do plano (JSON estruturado)
-  content Json // { identification, bnccSkills, objectives, methodology, resources, evaluation }
+  content Json
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -388,11 +377,11 @@ model LessonPlan {
 model LessonPlanUsage {
   id String @id @default(cuid())
 
-  userId    String
-  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  yearMonth String // "YYYY-MM" (ex: "2026-01", "2026-02")
-  count     Int    @default(0) // Quantos planos criados nesse mês
+  yearMonth String
+  count     Int    @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -404,59 +393,52 @@ model LessonPlanUsage {
 }
 
 enum CommunityRequestStatus {
-  draft           // Rascunho (não publicado)
-  voting          // Em votação (visível para todos)
-  selected        // Selecionado para avaliação de viabilidade
-  approved        // Aprovado para produção (viável)
-  in_production   // Em produção
-  completed       // Produzido e disponível
-  unfeasible      // Inviável (desqualificado com justificativa)
+  draft
+  voting
+  selected
+  approved
+  in_production
+  completed
+  unfeasible
 }
 
 model CommunityRequest {
-  id              String                  @id @default(cuid())
-  
-  title           String                  
-  description     String                  @db.Text
-  votingMonth     String                  // Ex: "2026-02"
+  id String @id @default(cuid())
 
-  // Relações de Categoria
+  title       String
+  description String @db.Text
+  votingMonth String
+
   educationLevelId String
-  educationLevel   EducationLevel         @relation(fields: [educationLevelId], references: [id])
-  
-  gradeId         String?                 // Opcional: para granularidade de ano/série (EF)
-  grade           Grade?                  @relation(fields: [gradeId], references: [id])
+  educationLevel   EducationLevel @relation(fields: [educationLevelId], references: [id])
 
-  subjectId       String
-  subject         Subject                @relation(fields: [subjectId], references: [id])
+  gradeId String?
+  grade   Grade?  @relation(fields: [gradeId], references: [id])
 
-  // Autor
-  userId          String
-  user            User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjectId String
+  subject   Subject @relation(fields: [subjectId], references: [id])
 
-  // Controle de Estado
-  status          CommunityRequestStatus  @default(draft)
-  
-  // Feedback Admin
-  unfeasibleReason String?                @db.Text
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  status CommunityRequestStatus @default(draft)
+
+  unfeasibleReason String? @db.Text
   unfeasibleById   String?
-  
-  // Resultado
-  producedResource Resource?              
 
-  // Contadores denormalizados para performance
-  voteCount       Int                     @default(0)
-  survivedMonths  Int                     @default(0) // Quantas vezes sobreviveu ao corte mensal (max 3)
+  producedResource Resource?
 
-  createdAt       DateTime                @default(now())
-  updatedAt       DateTime                @updatedAt
-  selectedAt      DateTime?               // Quando foi selecionado (top 10)
-  completedAt     DateTime?               // Quando foi marcado como produzido
-  unfeasibleAt    DateTime?               // Para controle de limpeza (30 dias)
+  voteCount      Int @default(0)
+  survivedMonths Int @default(0)
 
-  // Relações
-  votes           CommunityRequestVote[]
-  references      CommunityRequestReference[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  selectedAt   DateTime?
+  completedAt  DateTime?
+  unfeasibleAt DateTime?
+
+  votes      CommunityRequestVote[]
+  references CommunityRequestReference[]
 
   @@index([userId])
   @@index([gradeId])
@@ -467,74 +449,66 @@ model CommunityRequest {
 }
 
 model CommunityRequestVote {
-  id              String            @id @default(cuid())
-  
-  requestId       String
-  request         CommunityRequest  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  id String @id @default(cuid())
 
-  userId          String            
-  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  requestId String
+  request   CommunityRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
 
-  votingMonth     String            // Formato: "2026-02" - para contar votos do mês
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt       DateTime          @default(now())
+  votingMonth String
 
-  @@unique([requestId, userId])     // Um voto por pessoa por pedido
-  @@index([userId, votingMonth])    // Para contar votos usados no mês
+  createdAt DateTime @default(now())
+
+  @@unique([requestId, userId])
+  @@index([userId, votingMonth])
   @@map("community_request_vote")
 }
 
 model CommunityRequestReference {
-  id              String            @id @default(cuid())
-  
-  requestId       String
-  request         CommunityRequest  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  id String @id @default(cuid())
+
+  requestId String
+  request   CommunityRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
 
   cloudinaryPublicId String
-  url             String
-  
-  createdAt       DateTime          @default(now())
+  url                String
+
+  createdAt DateTime @default(now())
 
   @@index([requestId])
   @@map("community_request_reference")
 }
 
-/// Log de uso de LLM (todas as chamadas)
 model LlmUsageLog {
   id String @id @default(cuid())
 
-  // Contexto da chamada
-  userId        String?  // Opcional: se chamada é anônima/sistema
-  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  feature       String   // "lesson-plan-generation", "theme-refinement", "chat", etc
-  operation     String   // Descrição da operação (ex: "Gerar plano de aula EF 3º ano Matemática")
+  feature   String
+  operation String
 
-  // Modelo e tokens
-  model         String   // "gpt-4o-mini", "gpt-4o", "gpt-4-turbo", etc
-  provider      String   @default("openai") // "openai", "anthropic", etc
+  model    String
+  provider String @default("openai")
 
-  inputTokens   Int      // Tokens do prompt
-  outputTokens  Int      // Tokens da resposta
-  totalTokens   Int      // Total (input + output)
+  inputTokens  Int
+  outputTokens Int
+  totalTokens  Int
 
-  // Custo calculado (em USD)
-  inputCost     Float    // Custo do input (baseado no pricing do modelo)
-  outputCost    Float    // Custo do output
-  totalCost     Float    // Custo total em USD
+  inputCost  Float
+  outputCost Float
+  totalCost  Float
 
-  // Métricas de performance
-  latencyMs     Int?     // Tempo de resposta em ms
+  latencyMs Int?
 
-  // Status
-  status        String   // "success", "error", "timeout"
-  errorMessage  String?  // Se status = error
+  status       String
+  errorMessage String?
 
-  // Metadata adicional (JSON flexível)
-  metadata      Json?    // { planId, theme, skillsCount, etc }
+  metadata Json?
 
-  // Timestamps
-  createdAt     DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([userId])
   @@index([feature])
@@ -543,26 +517,24 @@ model LlmUsageLog {
   @@map("llm_usage_log")
 }
 
-/// Agregados diários (pré-calculados para performance)
 model LlmUsageDaily {
   id String @id @default(cuid())
 
-  date          DateTime @db.Date // Data (sem hora)
-  feature       String           // "lesson-plan-generation", etc
-  model         String           // "gpt-4o-mini", etc
+  date    DateTime @db.Date
+  feature String
+  model   String
 
-  // Agregados
-  totalCalls    Int              // Total de chamadas
-  successCalls  Int              // Chamadas bem-sucedidas
-  errorCalls    Int              // Chamadas com erro
+  totalCalls   Int
+  successCalls Int
+  errorCalls   Int
 
-  totalTokens   BigInt           // Total de tokens
-  totalCost     Float            // Custo total em USD
+  totalTokens BigInt
+  totalCost   Float
 
-  avgLatencyMs  Float?           // Latência média
+  avgLatencyMs Float?
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([date, feature, model])
   @@index([date])
@@ -570,22 +542,14 @@ model LlmUsageDaily {
   @@map("llm_usage_daily")
 }
 
-// ==========================================
-// AUTOMATION ENGINE (Kadernim Automation)
-// ==========================================
-
-/// Regra de automação que define qual evento dispara quais ações
 model AutomationRule {
-  id        String   @id @default(cuid())
-  name      String   // Ex: "Notificar Rejeição de Pedido"
-  eventType String   // Ex: "community.request.unfeasible"
-  isActive  Boolean  @default(true)
+  id        String  @id @default(cuid())
+  name      String
+  eventType String
+  isActive  Boolean @default(true)
 
-  // Condições opcionais (JSON para flexibilidade)
-  // Ex: { "voteCount": { "gte": 10 } }
   conditions Json?
 
-  // Descrição para o admin entender o que faz
   description String?
 
   actions AutomationAction[]
@@ -599,17 +563,14 @@ model AutomationRule {
   @@map("automation_rule")
 }
 
-/// Ação vinculada a uma regra de automação
 model AutomationAction {
   id     String         @id @default(cuid())
   ruleId String
   rule   AutomationRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
 
-  type   String // "EMAIL_SEND", "PUSH_NOTIFICATION", "WEBHOOK_CALL", "SLACK_LOG", "DB_UPDATE"
-  order  Int    @default(0) // Ordem de execução
+  type  String
+  order Int    @default(0)
 
-  // Configurações específicas da ação (JSON)
-  // Ex: { "templateId": "rejection-v1", "subject": "Atualização do seu pedido" }
   config Json
 
   createdAt DateTime @default(now())
@@ -620,17 +581,16 @@ model AutomationAction {
   @@map("automation_action")
 }
 
-/// Log de execução de automações (para auditoria e debug)
 model AutomationLog {
-  id       String         @id @default(cuid())
+  id       String            @id @default(cuid())
   ruleId   String
-  rule     AutomationRule @relation(fields: [ruleId], references: [id])
+  rule     AutomationRule    @relation(fields: [ruleId], references: [id])
   actionId String?
   action   AutomationAction? @relation(fields: [actionId], references: [id])
 
-  status  String  // "success", "failed", "retrying"
-  payload Json    // Os dados que dispararam o evento
-  error   String? // Mensagem de erro se falhar
+  status  String
+  payload Json
+  error   String?
 
   executedAt DateTime @default(now())
 
@@ -641,24 +601,20 @@ model AutomationLog {
   @@map("automation_log")
 }
 
-/// Templates de notificação (e-mail, push, whatsapp)
 model NotificationTemplate {
   id   String @id @default(cuid())
-  slug String @unique // Ex: "request-unfeasible", "welcome-email"
-  name String // Nome amigável para o admin
+  slug String @unique
+  name String
 
-  type String // "email", "push", "whatsapp", "slack"
-  
-  // ✅ NOVO: Tipo de evento ao qual este template pertence
-  eventType String // Ex: "user.login", "resource.purchased"
+  type String
 
-  // Conteúdo (suporta variáveis Handlebars: {{user.name}})
-  subject String? // Apenas para e-mail
-  body    String  @db.Text // HTML para e-mail, texto para outros
+  eventType String
 
-  // Metadata
-  description String? // Descrição do propósito do template
-  variables   Json?   // Lista de variáveis disponíveis: ["user.name", "request.title"]
+  subject String?
+  body    String  @db.Text
+
+  description String?
+  variables   Json?
 
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
