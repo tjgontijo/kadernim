@@ -3,7 +3,7 @@ import { prisma } from '@/lib/db'
 import { ResourceDetailSchema } from '@/lib/schemas/resource'
 import { auth } from '@/server/auth/auth'
 import { isStaff } from '@/lib/auth/roles'
-import { CLOUDINARY_CLOUD_NAME } from '@/server/clients/cloudinary/config'
+
 import {
   computeHasAccessForResource,
   type SubscriptionContext,
@@ -51,7 +51,6 @@ export async function GET(
         images: {
           select: {
             id: true,
-            cloudinaryPublicId: true,
             alt: true,
             order: true,
             url: true,
@@ -62,7 +61,6 @@ export async function GET(
           select: {
             id: true,
             title: true,
-            cloudinaryPublicId: true,
             thumbnail: true,
             duration: true,
             order: true,
@@ -112,7 +110,7 @@ export async function GET(
       educationLevel: resource.educationLevel.slug,
       subject: resource.subject.slug,
       hasAccess,
-      thumbUrl: resource.images?.[0]?.url || (resource.images?.[0]?.cloudinaryPublicId ? `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/c_scale,w_800,q_auto,f_auto/${resource.images[0].cloudinaryPublicId}` : null),
+      thumbUrl: resource.images?.[0]?.url || null,
       files: resource.files.map((file: any) => ({
         id: file.id,
         name: file.name,
@@ -120,19 +118,17 @@ export async function GET(
       })),
       images: resource.images.map((img: any) => ({
         id: img.id,
-        cloudinaryPublicId: img.cloudinaryPublicId,
         alt: img.alt,
         order: img.order,
-        url: img.url || `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/c_limit,w_1200,q_auto,f_auto/${img.cloudinaryPublicId}`,
+        url: img.url,
       })),
       videos: (resource.videos || []).map((vid: any) => ({
         id: vid.id,
         title: vid.title,
-        cloudinaryPublicId: vid.cloudinaryPublicId,
         thumbnail: vid.thumbnail,
         duration: vid.duration,
         order: vid.order,
-        url: vid.url || `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/video/upload/q_auto,f_auto/${vid.cloudinaryPublicId}`,
+        url: vid.url,
       })),
     })
 
