@@ -102,7 +102,7 @@ export async function listResourcesService(
       images: {
         where: { order: 0 },
         take: 1,
-        select: { url: true, cloudinaryPublicId: true },
+        select: { url: true },
       },
       grades: {
         include: {
@@ -114,14 +114,9 @@ export async function listResourcesService(
     },
   })
 
-  // Helper to build optimized Cloudinary URL for thumbnails (80x80)
-  const buildThumbUrl = (image: { url: string | null; cloudinaryPublicId: string } | undefined): string | null => {
-    if (!image) return null
-    // Prefer stored url if available
-    if (image.url) return image.url
-    // Otherwise build optimized Cloudinary URL
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
-    return `https://res.cloudinary.com/${cloudName}/image/upload/c_fill,w_80,h_80,q_auto,f_auto/${image.cloudinaryPublicId}`
+  // Helper to get thumb URL from stored url
+  const buildThumbUrl = (image: { url: string | null } | undefined): string | null => {
+    return image?.url || null
   }
 
   const data = resources.map((resource) => ({
