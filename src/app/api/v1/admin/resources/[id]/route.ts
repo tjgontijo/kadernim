@@ -7,9 +7,7 @@ import {
   UpdateResourceSchema,
   ResourceDetailResponseSchema,
 } from '@/lib/schemas/admin/resources'
-import { getFileUrl } from '@/server/clients/cloudinary/file-client'
-import { getImageUrl } from '@/server/clients/cloudinary/image-client'
-import { getVideoUrl } from '@/server/clients/cloudinary/video-client'
+
 
 /**
  * GET /api/v1/admin/resources/:id
@@ -143,9 +141,7 @@ export async function GET(
       subject: resource.subject?.slug,
       externalId: resource.externalId,
       isFree: resource.isFree,
-      thumbUrl: resource.images?.[0]
-        ? `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/c_scale,w_400,q_auto,f_auto/${resource.images[0].cloudinaryPublicId}`
-        : null,
+      thumbUrl: resource.images?.[0]?.url || null,
       grades: resource.grades.map(g => g.grade?.slug).filter(Boolean),
       createdAt: resource.createdAt.toISOString(),
       updatedAt: resource.updatedAt.toISOString(),
@@ -153,7 +149,7 @@ export async function GET(
         id: f.id,
         name: f.name,
         cloudinaryPublicId: f.cloudinaryPublicId,
-        url: f.url || getFileUrl(f.cloudinaryPublicId),
+        url: f.url,
         fileType: f.fileType,
         sizeBytes: f.sizeBytes,
         createdAt: f.createdAt.toISOString(),
@@ -161,7 +157,7 @@ export async function GET(
       images: resource.images.map(img => ({
         id: img.id,
         cloudinaryPublicId: img.cloudinaryPublicId,
-        url: img.url || getImageUrl(img.cloudinaryPublicId),
+        url: img.url,
         alt: img.alt,
         order: img.order,
         createdAt: img.createdAt.toISOString(),
@@ -170,7 +166,7 @@ export async function GET(
         id: vid.id,
         title: vid.title,
         cloudinaryPublicId: vid.cloudinaryPublicId,
-        url: vid.url || getVideoUrl(vid.cloudinaryPublicId),
+        url: vid.url,
         thumbnail: vid.thumbnail,
         duration: vid.duration,
         order: vid.order,
@@ -282,6 +278,7 @@ export async function PUT(
             id: true,
             name: true,
             cloudinaryPublicId: true,
+            url: true,
             fileType: true,
             sizeBytes: true,
             createdAt: true,
@@ -290,7 +287,7 @@ export async function PUT(
         images: {
           take: 1,
           orderBy: { order: 'asc' },
-          select: { cloudinaryPublicId: true },
+          select: { url: true },
         },
         accessEntries: {
           select: { id: true },
@@ -336,16 +333,14 @@ export async function PUT(
       externalId: updated.externalId,
       isFree: updated.isFree,
       grades: updated.grades.map(rg => rg.grade.slug),
-      thumbUrl: updated.images?.[0]
-        ? `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/q_auto,f_auto/${updated.images[0].cloudinaryPublicId}`
-        : null,
+      thumbUrl: updated.images?.[0]?.url || null,
       createdAt: updated.createdAt.toISOString(),
       updatedAt: updated.updatedAt.toISOString(),
       files: updated.files.map((f) => ({
         id: f.id,
         name: f.name,
         cloudinaryPublicId: f.cloudinaryPublicId,
-        url: getFileUrl(f.cloudinaryPublicId),
+        url: f.url,
         fileType: f.fileType,
         sizeBytes: f.sizeBytes,
         createdAt: f.createdAt.toISOString(),
