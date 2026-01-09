@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { verifyDownloadToken } from '@/services/auth/token-service'
 import { checkRateLimit } from '@/server/utils/rate-limit'
-import { getFileUrl } from '@/server/clients/cloudinary/file-client'
+
 import { isStaff } from '@/lib/auth/roles'
 import {
   computeHasAccessForResource,
@@ -49,7 +49,6 @@ export async function GET(request: NextRequest) {
       },
       select: {
         id: true,
-        cloudinaryPublicId: true,
         url: true,
         resource: {
           select: {
@@ -96,8 +95,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const fileUrl = file.url || getFileUrl(file.cloudinaryPublicId)
-    const response = NextResponse.redirect(fileUrl, 302)
+    if (!file.url) {
+      return NextResponse.json({ error: 'URL do arquivo não encontrada' }, { status: 500 })
+    }
+
+    const response = NextResponse.redirect(file.url, 302)
     response.headers.set('Cache-Control', 'private, no-store')
 
     return response
