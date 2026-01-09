@@ -88,7 +88,7 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
 
   // Nav items with permission requirements
   const platformItems: NavItem[] = [
-    { title: 'Dashboard', href: '/admin', icon: 'LayoutDashboard' },
+    { title: 'Geral', href: '/admin', icon: 'LayoutDashboard' },
     { title: 'Monitoramento IA', href: '/admin/llm-usage', icon: 'Cpu', permission: { action: 'manage', subject: 'all' } },
   ]
 
@@ -125,11 +125,6 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
               <Link href="/admin">
                 <div className="flex size-8 items-center justify-center">
                   <img
-                    src="/images/system/logo_transparent.png"
-                    alt="Kadernim"
-                    className="h-8 w-auto object-contain group-data-[collapsible=icon]:hidden"
-                  />
-                  <img
                     src="/images/system/icon-1024x1024.png"
                     alt="Kadernim"
                     className="hidden size-8 object-contain group-data-[collapsible=icon]:block"
@@ -137,7 +132,7 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                   <span className="truncate font-semibold">Kadernim</span>
-                  <span className="truncate text-xs text-muted-foreground">
+                  <span className="truncate text-[8px] text-muted-foreground">
                     {version ? `v${version}` : 'Admin'}
                   </span>
                 </div>
@@ -149,7 +144,7 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Plataforma</SidebarGroupLabel>
+          <SidebarGroupLabel>Dashboards</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {platformItems
