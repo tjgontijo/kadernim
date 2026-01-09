@@ -167,9 +167,7 @@ export async function POST(request: NextRequest) {
         subject: resource.subject.slug,
         externalId: resource.externalId,
         isFree: resource.isFree,
-        thumbUrl: resource.images?.[0]
-          ? `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/q_auto,f_auto/${resource.images[0].cloudinaryPublicId}`
-          : null,
+        thumbUrl: resource.images?.[0]?.url || null,
         createdAt: resource.createdAt.toISOString(),
         updatedAt: resource.updatedAt.toISOString(),
         files: [],
