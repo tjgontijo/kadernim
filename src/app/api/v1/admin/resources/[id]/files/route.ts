@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requirePermission } from '@/server/auth/middleware'
 import { checkRateLimit } from '@/server/utils/rate-limit'
 import { prisma } from '@/lib/db'
-import { uploadFile, getFileUrl } from '@/server/clients/cloudinary/file-client'
+import { uploadFile } from '@/server/clients/cloudinary/file-client'
 
 /**
  * POST /api/v1/admin/resources/:id/files
@@ -82,7 +82,7 @@ export async function POST(
         id: fileRecord.id,
         name: fileRecord.name,
         cloudinaryPublicId: fileRecord.cloudinaryPublicId,
-        url: getFileUrl(fileRecord.cloudinaryPublicId),
+        url: fileRecord.url,
         fileType: fileRecord.fileType,
         sizeBytes: fileRecord.sizeBytes,
         createdAt: fileRecord.createdAt.toISOString(),
