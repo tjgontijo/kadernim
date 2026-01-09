@@ -121,7 +121,7 @@ export const ResourceDetailResponseSchema = z.object({
   files: z.array(z.object({
     id: z.string(),
     name: z.string(),
-    cloudinaryPublicId: z.string(),
+    cloudinaryPublicId: z.string().optional(),
     url: z.string(),
     fileType: z.string().nullable(),
     sizeBytes: z.number().nullable(),
@@ -129,8 +129,8 @@ export const ResourceDetailResponseSchema = z.object({
   })),
   images: z.array(z.object({
     id: z.string(),
-    cloudinaryPublicId: z.string(),
-    url: z.string(),
+    cloudinaryPublicId: z.string().optional(),
+    url: z.string().nullable(),
     alt: z.string().nullable(),
     order: z.number(),
     createdAt: z.string(),
@@ -138,7 +138,8 @@ export const ResourceDetailResponseSchema = z.object({
   videos: z.array(z.object({
     id: z.string(),
     title: z.string(),
-    cloudinaryPublicId: z.string(),
+    cloudinaryPublicId: z.string().optional(),
+    url: z.string().nullable(),
     thumbnail: z.string().nullable(),
     duration: z.number().nullable(),
     order: z.number(),
