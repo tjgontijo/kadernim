@@ -4,7 +4,7 @@ import path from 'path';
 
 // Gerar versão baseada no timestamp
 const now = new Date();
-const version = now.toISOString().replace(/[-T:]/g, '').split('.')[0].slice(0, 12); // formato: YYYYMMDDHHMM
+const version = now.toISOString().slice(0, 10).replace(/-/g, '') + '.' + now.toISOString().slice(11, 16).replace(/:/g, ''); // formato: YYYYMMDD.HHMM
 const versionData = { version, buildAt: now.toISOString() };
 
 // Garantir que a pasta public existe e gravar o version.json
