@@ -146,6 +146,14 @@ export type KadernimEvents = {
             grade: string;
         };
     };
+
+    // Eventos de Campanha
+    'campaign.scheduled': {
+        data: {
+            campaignId: string;
+            scheduledAt?: string; // ISO string
+        };
+    };
 };
 
 /**

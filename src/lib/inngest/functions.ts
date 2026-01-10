@@ -475,6 +475,82 @@ async function executeAction(
 }
 
 /**
+ * Handler: Quando uma campanha de push é agendada
+ * 
+ * - Aguarda até a data de agendamento (se houver)
+ * - Busca as subscrições com base nos filtros de audiência
+ * - Envia o push para os usuários segmentados
+ */
+export const handleCampaignScheduled = inngest.createFunction(
+    {
+        id: 'handle-campaign-scheduled',
+        name: 'Processar Campanha Agendada',
+        retries: 3,
+    },
+    { event: 'campaign.scheduled' },
+    async ({ event, step }) => {
+        const { campaignId, scheduledAt } = event.data;
+
+        // 1. Aguardar até a hora agendada (se definida e for no futuro)
+        if (scheduledAt) {
+            const waitTime = new Date(scheduledAt);
+            if (waitTime > new Date()) {
+                console.log(`[Campaign] Agendando espera até ${scheduledAt} para campanha ${campaignId}`);
+                await step.sleepUntil('wait-for-schedule', waitTime);
+            }
+        }
+
+        // 2. Buscar dados atualizados da campanha e audiência
+        const campaign = await step.run('fetch-campaign', async () => {
+            const data = await prisma.pushCampaign.findUnique({
+                where: { id: campaignId }
+            });
+
+            if (!data) throw new Error(`Campanha ${campaignId} não encontrada`);
+            if (data.status === 'SENT') throw new Error(`Campanha ${campaignId} já foi enviada`);
+
+            return data;
+        });
+
+        // 3. Executar o envio (lógica simplificada para todas as assinaturas por enquanto)
+        // No futuro, aqui entra a lógica de filtro de audience JSON
+        const result = await step.run('send-push-campaign', async () => {
+            console.log(`[Campaign] Enviando push para campanha: ${campaign.title}`);
+
+            // TODO: Aplicar filtros de audiência aqui
+            // Por enquanto, envia para todos (sendPushToAll)
+            const sendResult = await sendPushToAll({
+                title: campaign.title,
+                body: campaign.body,
+                url: campaign.url || undefined,
+                icon: campaign.icon || undefined,
+                image: campaign.imageUrl || undefined,
+                tag: `campaign-${campaign.id}`
+            });
+
+            // Atualizar status e métricas
+            await prisma.pushCampaign.update({
+                where: { id: campaignId },
+                data: {
+                    status: 'SENT',
+                    sentAt: new Date(),
+                    totalSent: sendResult.success
+                }
+            });
+
+            return sendResult;
+        });
+
+        return {
+            processed: true,
+            campaignId,
+            sent: result.success,
+            failed: result.failed
+        };
+    }
+);
+
+/**
  * Lista de todas as funções para registrar no Inngest
  */
 export const functions = [
@@ -482,5 +558,6 @@ export const functions = [
     handleRequestUnfeasible,
     handleCleanupDeleted,
     handleGenericEvent,
+    handleCampaignScheduled,
 ];
 

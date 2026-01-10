@@ -677,8 +677,8 @@ model PushCampaign {
 
   // Status e agendamento
   status      CampaignStatus @default(DRAFT)
-  scheduledAt DateTime?
-  sentAt      DateTime?
+  scheduledAt DateTime? @db.Timestamptz
+  sentAt      DateTime? @db.Timestamptz
 
   // Métricas desnormalizadas
   totalSent    Int @default(0)

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { emitEvent } from '@/lib/inngest';
 
 interface RouteParams {
     params: {
@@ -63,8 +64,17 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
                 imageUrl: body.imageUrl,
                 audience: body.audience,
                 scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : null,
+                status: body.scheduledAt ? 'SCHEDULED' : body.status || 'DRAFT',
             },
         });
+
+        // Emitir evento para o Inngest processar (ou reprogramar) o agendamento
+        if (campaign.scheduledAt && campaign.status === 'SCHEDULED') {
+            await emitEvent('campaign.scheduled', {
+                campaignId: campaign.id,
+                scheduledAt: campaign.scheduledAt.toISOString(),
+            });
+        }
 
         return NextResponse.json({
             success: true,

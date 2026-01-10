@@ -1,56 +1,63 @@
 #!/bin/bash
 set -euo pipefail
 
+# Função para imprimir mensagens em caixas
 print_box() {
   local message="$1"
   local length=${#message}
   local padding=3
   local border_length=$((length + padding * 2))
 
+  echo ""
   printf '┌%*s┐\n' "$border_length" | tr ' ' '-'
   printf '│ %*s │\n' "$((length + padding))" "$message"
   printf '└%*s┘\n' "$border_length" | tr ' ' '-'
 }
 
-print_box "🔄 Removendo diretórios e arquivos de desenvolvimento..."
-rm -rf .next .turbo node_modules/.cache prisma/generated public/sw.js public/manifest.webmanifest public/*.map public/*.js || true
+# 1. Limpeza Inicial do Cloudinary (Obrigatória/Opcional conforme desejo do usuário)
+print_box "🧹 Preparação: Limpeza do Cloudinary"
+echo ""
+read -t 30 -p "❓ Deseja apagar TODOS os arquivos do Cloudinary ante de prosseguir? (s/N): " -n 1 cloud_answer || cloud_answer="n"
+echo ""
 
-print_box "🗑️ Limpando cache do npm..."
+if [[ "$cloud_answer" =~ ^[Ss]$ ]]; then
+  print_box "🧹 Removendo arquivos do Cloudinary..."
+  npx tsx scripts/clear-cloudinary.ts
+fi
+
+# 2. Limpeza de arquivos locais e cache
+print_box "� Limpando arquivos locais e cache..."
+rm -rf .next .turbo node_modules/.cache prisma/generated public/sw.js public/manifest.webmanifest public/*.map public/*.js || true
 npm cache clean --force
 
-print_box "📦 Instalando dependências..."
+# 3. Instalação de dependências
+print_box "📦 Verificando dependências..."
 npm install
 
-print_box "🧨 Resetando schema public e criando extensões ANTES do Prisma..."
-npx prisma db execute --stdin <<'SQL'
-DO $$
-BEGIN
-  EXECUTE 'DROP SCHEMA IF EXISTS public CASCADE';
-  EXECUTE 'CREATE SCHEMA public';
-  EXECUTE 'GRANT ALL ON SCHEMA public TO public';
-END $$;
+# 4. Reset do Banco de Dados e Migrations
+print_box "🗑️ Resetando Banco de Dados e Migrations..."
+rm -rf prisma/migrations || true
 
--- extensões
+# Criar schema e extensões
+npx prisma db execute --stdin <<'EOF'
+DROP SCHEMA IF EXISTS public CASCADE;
+CREATE SCHEMA public;
+GRANT ALL ON SCHEMA public TO public;
 CREATE EXTENSION IF NOT EXISTS vector;
 CREATE EXTENSION IF NOT EXISTS unaccent;
-SQL
+EOF
 
-print_box "🔎 Verificando extensões..."
-npx prisma db execute --stdin <<'SQL'
-SELECT extname, extversion
-FROM pg_extension
-WHERE extname IN ('vector','unaccent')
-ORDER BY extname;
-SQL
+# Criar migration inicial (baseline)
+print_box "📦 Criando migration inicial (init)..."
+npx prisma migrate dev --name init
 
-print_box "📦 Aplicando schema Prisma..."
-npx prisma db push
-
-print_box "🔄 Gerando cliente do Prisma..."
+print_box "🔄 Gerando Prisma Client..."
 npx prisma generate
 
-print_box "🔧 Configurando FTS para bncc_skill (trigger + índice GIN)..."
-npx prisma db execute --stdin <<'SQL'
+# 5. Configurações Customizadas de SQL (Triggers e Índices GIN)
+print_box "🔧 Aplicando Triggers e Índices Customizados..."
+npx prisma db execute --stdin <<'EOF'
+-- Função para atualização automática do searchVector (Full Text Search)
 CREATE OR REPLACE FUNCTION bncc_skill_search_vector_update() RETURNS trigger AS $$
 BEGIN
   NEW."searchVector" :=
@@ -60,58 +67,43 @@ BEGIN
     setweight(to_tsvector('portuguese', unaccent(coalesce(NEW."knowledgeObject", ''))), 'B') ||
     setweight(to_tsvector('portuguese', unaccent(coalesce(NEW."comments", ''))), 'C') ||
     setweight(to_tsvector('portuguese', unaccent(coalesce(NEW."curriculumSuggestions", ''))), 'C');
-
   RETURN NEW;
 END
 $$ LANGUAGE plpgsql;
 
+-- Garantir que o trigger seja recriado
 DROP TRIGGER IF EXISTS bncc_skill_search_vector_trigger ON "bncc_skill";
 CREATE TRIGGER bncc_skill_search_vector_trigger
 BEFORE INSERT OR UPDATE ON "bncc_skill"
 FOR EACH ROW EXECUTE FUNCTION bncc_skill_search_vector_update();
 
-CREATE INDEX IF NOT EXISTS bncc_skill_search_gin
-ON "bncc_skill"
-USING GIN ("searchVector");
-SQL
+-- Índice GIN para busca textual
+CREATE INDEX IF NOT EXISTS bncc_skill_search_gin ON "bncc_skill" USING GIN ("searchVector");
 
-print_box "🌱 Executando seed..."
+-- Índice Vetorial (IA)
+CREATE INDEX IF NOT EXISTS bncc_skill_embedding_idx ON "bncc_skill" USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
+EOF
+
+# 6. População de Dados (Seed)
+print_box "🌱 Populando Banco de Dados (Seed)..."
 TRUNCATE_DB=1 npx prisma db seed
 
-print_box "🔄 Backfill do searchVector (após seed)..."
-npx prisma db execute --stdin <<'SQL'
-UPDATE "bncc_skill"
-SET "updatedAt" = now();
-SQL
+# 7. Finalização (Build e Embeddings)
+print_box "🔄 Atualizando vetores de busca..."
+npx prisma db execute --stdin <<'EOF'
+UPDATE "bncc_skill" SET "updatedAt" = now();
+EOF
 
-print_box "🎯 Criando índice IVFFlat para embeddings..."
-npx prisma db execute --stdin <<'SQL'
-CREATE INDEX IF NOT EXISTS bncc_skill_embedding_idx
-ON "bncc_skill"
-USING ivfflat (embedding vector_cosine_ops)
-WITH (lists = 100);
+print_box "🚀 Gerando build da aplicação..."
+npm run build
 
--- Verificar índice criado
-SELECT
-  indexname,
-  LEFT(indexdef, 80) || '...' as definition
-FROM pg_indexes
-WHERE tablename = 'bncc_skill' AND indexname LIKE '%embedding%';
-SQL
-
-print_box "🚀 Criando build da Aplicação..."
-npm run build || { echo "❌ Erro ao gerar o build"; exit 1; }
-
-# Pergunta sobre embeddings (opcional)
 echo ""
-read -t 30 -p "🧠 Deseja gerar embeddings para as habilidades BNCC? (s/N): " -n 1 answer || answer="n"
+read -t 30 -p "🧠 Deseja gerar embeddings para as habilidades BNCC agora? (s/N): " -n 1 embed_answer || embed_answer="n"
 echo ""
 
-if [[ "$answer" =~ ^[Ss]$ ]]; then
+if [[ "$embed_answer" =~ ^[Ss]$ ]]; then
   print_box "🧠 Gerando embeddings..."
   npx tsx scripts/embed.ts
-else
-  echo "⏭️  Pulando geração de embeddings."
 fi
 
-print_box "✅ Reset concluído com sucesso!"
+print_box "✅ Processo de Reset concluído com sucesso!"

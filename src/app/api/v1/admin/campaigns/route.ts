@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { emitEvent } from '@/lib/inngest';
 
 /**
  * GET /api/v1/admin/campaigns
@@ -63,6 +64,14 @@ export async function POST(request: NextRequest) {
                 status: body.scheduledAt ? 'SCHEDULED' : 'DRAFT',
             },
         });
+
+        // Emitir evento para o Inngest processar o agendamento
+        if (campaign.scheduledAt) {
+            await emitEvent('campaign.scheduled', {
+                campaignId: campaign.id,
+                scheduledAt: campaign.scheduledAt.toISOString(),
+            });
+        }
 
         return NextResponse.json({
             success: true,
