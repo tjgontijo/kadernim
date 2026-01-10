@@ -1,18 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { PushSubscriptionCreateSchema } from '@/lib/schemas/push-notification';
+import { auth } from '@/server/auth';
 
 /**
  * POST /api/v1/notifications/subscribe
  *
- * Registra uma nova subscription de push notification.
- * Modelo simplificado por dispositivo (não vinculado a usuário).
+ * Registra uma nova subscription de push notification vinculada ao usuário autenticado.
+ * Requer autenticação via Better Auth.
  */
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    // 1. Verificar autenticação
+    const session = await auth.api.getSession({
+      headers: req.headers,
+    });
 
-    // Validar com Zod
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Não autenticado. Faça login para ativar notificações.' },
+        { status: 401 }
+      );
+    }
+
+    const userId = session.user.id;
+
+    // 2. Validar payload
+    const body = await req.json();
     const validation = PushSubscriptionCreateSchema.safeParse(body);
 
     if (!validation.success) {
@@ -27,7 +41,7 @@ export async function POST(req: NextRequest) {
 
     const { endpoint, keys } = validation.data;
 
-    // Criar ou atualizar a inscrição (upsert por endpoint)
+    // 3. Criar ou atualizar a subscription (vinculada ao userId)
     const subscription = await prisma.pushSubscription.upsert({
       where: {
         endpoint,
@@ -36,16 +50,18 @@ export async function POST(req: NextRequest) {
         active: true,
         p256dh: keys.p256dh,
         auth: keys.auth,
+        userId, // Atualiza o userId caso o endpoint já exista
       },
       create: {
         endpoint,
         p256dh: keys.p256dh,
         auth: keys.auth,
+        userId,
         active: true,
       },
     });
 
-    console.log(`[Push] Subscription registrada: ${subscription.id}`);
+    console.log(`[Push] Subscription registrada para usuário ${userId}: ${subscription.id}`);
 
     return NextResponse.json(
       { id: subscription.id, success: true },
