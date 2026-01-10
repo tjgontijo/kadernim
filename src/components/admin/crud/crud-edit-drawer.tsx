@@ -47,7 +47,7 @@ export function CrudEditDrawer({
                 <div className={cn("mx-auto w-full flex flex-col h-full overflow-hidden", maxWidth)}>
                     <DrawerHeader className="border-b pb-4 shrink-0 px-6 pt-6 text-left">
                         <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4 min-w-0">
+                            <div className="flex items-center gap-3 min-w-0">
                                 {Icon && (
                                     <div className="h-10 w-10 flex items-center justify-center bg-primary/10 rounded-lg shrink-0">
                                         <Icon className="h-5 w-5 text-primary" />

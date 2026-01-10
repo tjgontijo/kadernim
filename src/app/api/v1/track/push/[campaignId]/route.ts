@@ -60,7 +60,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         if (!url.searchParams.has('utm_source')) {
             url.searchParams.set('utm_source', 'push');
             url.searchParams.set('utm_medium', 'notification');
-            url.searchParams.set('utm_campaign', campaign.name.toLowerCase().replace(/\s+/g, '-'));
+            url.searchParams.set('utm_campaign', campaign.title.toLowerCase().replace(/\s+/g, '-'));
             url.searchParams.set('utm_content', campaign.id);
         }
 

@@ -53,7 +53,7 @@ interface AnalyticsData {
         totalClicked: number;
         ctr: string;
         topCampaign: {
-            name: string;
+            title: string;
             totalSent: number;
             totalClicked: number;
             ctr: string;
@@ -66,7 +66,7 @@ interface AnalyticsData {
     }>;
     campaigns: Array<{
         id: string;
-        name: string;
+        title: string;
         totalSent: number;
         totalClicked: number;
         ctr: string;
@@ -197,7 +197,7 @@ export default function CampaignsAnalyticsPage() {
                             <>
                                 <div className="text-2xl font-bold">{data.kpis.topCampaign.ctr}%</div>
                                 <p className="text-xs text-muted-foreground truncate">
-                                    {data.kpis.topCampaign.name}
+                                    {data.kpis.topCampaign.title}
                                 </p>
                             </>
                         ) : (
@@ -290,7 +290,7 @@ export default function CampaignsAnalyticsPage() {
                             )}
                             {data.campaigns.map((campaign) => (
                                 <TableRow key={campaign.id}>
-                                    <TableCell className="font-medium">{campaign.name}</TableCell>
+                                    <TableCell className="font-medium">{campaign.title}</TableCell>
                                     <TableCell className="text-right">
                                         {campaign.totalSent.toLocaleString()}
                                     </TableCell>

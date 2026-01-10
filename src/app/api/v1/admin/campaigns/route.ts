@@ -53,7 +53,6 @@ export async function POST(request: NextRequest) {
 
         const campaign = await prisma.pushCampaign.create({
             data: {
-                name: body.name,
                 title: body.title,
                 body: body.body,
                 url: body.url,

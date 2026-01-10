@@ -56,7 +56,6 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         const campaign = await prisma.pushCampaign.update({
             where: { id },
             data: {
-                name: body.name,
                 title: body.title,
                 body: body.body,
                 url: body.url,

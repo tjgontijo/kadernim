@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
             ],
             select: {
                 id: true,
-                name: true,
+                title: true,
                 totalSent: true,
                 totalClicked: true,
             },
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
             },
             select: {
                 id: true,
-                name: true,
+                title: true,
                 totalSent: true,
                 totalClicked: true,
                 sentAt: true,

@@ -19,6 +19,7 @@ import {
   Mail,
   Bell,
   MessageCircle,
+  Send,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -78,6 +79,7 @@ const ICON_MAP = {
   Cpu,
   Zap,
   FileText,
+  Send,
 } as const
 
 export function AdminSidebar({ user }: AdminSidebarProps) {
@@ -102,6 +104,7 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
   const platformItems: NavItem[] = [
     { title: 'Geral', href: '/admin', icon: 'LayoutDashboard' },
     { title: 'Monitoramento IA', href: '/admin/llm-usage', icon: 'Cpu', permission: { action: 'manage', subject: 'all' } },
+    { title: 'Analytics Push', href: '/admin/campaigns/analytics', icon: 'BarChart3', permission: { action: 'manage', subject: 'all' } },
   ]
 
   const dataItems: NavItem[] = [
@@ -149,7 +152,7 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
                   <img
                     src="/images/system/icon-1024x1024.png"
                     alt="Kadernim"
-                    className="hidden size-8 object-contain group-data-[collapsible=icon]:block"
+                    className="size-8 object-contain"
                   />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">

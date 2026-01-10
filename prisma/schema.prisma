@@ -666,7 +666,6 @@ model EmailTemplate {
 
 model PushCampaign {
   id       String  @id @default(cuid())
-  name     String
   title    String  @db.VarChar(100)
   body     String  @db.VarChar(255)
   url      String?
