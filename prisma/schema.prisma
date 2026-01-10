@@ -97,6 +97,7 @@ model User {
   communityRequests     CommunityRequest[]
   communityRequestVotes CommunityRequestVote[]
   llmUsageLogs          LlmUsageLog[]
+  pushSubscriptions     PushSubscription[]
 
   @@map("user")
 }
@@ -635,10 +636,13 @@ model PushSubscription {
   endpoint  String   @unique
   p256dh    String
   auth      String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([userId])
   @@index([active])
   @@map("push_subscription")
 }
