@@ -84,7 +84,7 @@ export async function sendPushToAll(payload: PushPayload): Promise<{
   }
 
   const results = await Promise.allSettled(
-    subscriptions.map(sub =>
+    subscriptions.map((sub: any) =>
       sendPushToSubscription(
         {
           id: sub.id,
@@ -101,7 +101,7 @@ export async function sendPushToAll(payload: PushPayload): Promise<{
   let successCount = 0;
   let failedCount = 0;
 
-  results.forEach((result, index) => {
+  results.forEach((result: any, index: number) => {
     if (result.status === 'fulfilled' && result.value.success) {
       successCount++;
     } else {
@@ -149,7 +149,8 @@ export async function sendPushToSubscriptions(
   success: number;
   failed: number;
   errors: string[];
-  userResults: Map<string, boolean>; // userId -> success
+  userResults: Record<string, boolean>; // userId -> success
+  uniqueUsersCount: number;
 }> {
   if (subscriptions.length === 0) {
     return {
@@ -157,7 +158,8 @@ export async function sendPushToSubscriptions(
       success: 0,
       failed: 0,
       errors: [],
-      userResults: new Map()
+      userResults: {},
+      uniqueUsersCount: 0
     };
   }
 
@@ -176,7 +178,7 @@ export async function sendPushToSubscriptions(
   );
 
   const errors: string[] = [];
-  const userResults = new Map<string, boolean>();
+  const userResults: Record<string, boolean> = {};
   let successCount = 0;
   let failedCount = 0;
 
@@ -184,7 +186,10 @@ export async function sendPushToSubscriptions(
     const subscription = subscriptions[index];
     const isSuccess = result.status === 'fulfilled' && result.value.success;
 
-    userResults.set(subscription.userId, isSuccess);
+    // Se o usuário tem múltiplas subscriptions, consideramos sucesso se pelo menos uma funcionar
+    if (!userResults[subscription.userId] || isSuccess) {
+      userResults[subscription.userId] = isSuccess;
+    }
 
     if (isSuccess) {
       successCount++;
@@ -200,8 +205,10 @@ export async function sendPushToSubscriptions(
     }
   });
 
+  const uniqueUsersCount = Object.keys(userResults).length;
+
   console.log(
-    `[Push] Enviado para ${successCount}/${subscriptions.length} subscriptions (${userResults.size} usuários únicos)`
+    `[Push] Enviado para ${successCount}/${subscriptions.length} subscriptions (${uniqueUsersCount} usuários únicos)`
   );
 
   return {
@@ -209,7 +216,8 @@ export async function sendPushToSubscriptions(
     success: successCount,
     failed: failedCount,
     errors,
-    userResults
+    userResults,
+    uniqueUsersCount
   };
 }
 
