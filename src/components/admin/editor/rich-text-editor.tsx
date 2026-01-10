@@ -64,6 +64,11 @@ export function RichTextEditor({ value, onChange, availableVariables = [] }: Ric
         onUpdate: ({ editor }) => {
             onChange(editor.getHTML())
         },
+        editorProps: {
+            attributes: {
+                class: 'outline-none focus:outline-none',
+            },
+        },
     })
 
     if (!editor) return null
@@ -142,45 +147,47 @@ export function RichTextEditor({ value, onChange, availableVariables = [] }: Ric
                 <Separator orientation="vertical" className="h-5 mx-1" />
 
                 {/* Botão de Variáveis */}
-                {availableVariables.length > 0 && (
-                    <>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-7 px-2 gap-1"
-                                    title="Inserir variável"
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className={cn(
+                                "h-7 px-2 gap-1",
+                                availableVariables.length === 0 && "opacity-50 cursor-not-allowed"
+                            )}
+                            disabled={availableVariables.length === 0}
+                            title={availableVariables.length === 0 ? "Selecione um evento para ver as variáveis" : "Inserir variável"}
+                        >
+                            <Variable className="h-3.5 w-3.5" />
+                            <span className="text-[10px]">Variáveis</span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    {availableVariables.length > 0 && (
+                        <DropdownMenuContent align="start" className="w-64 max-h-[400px] overflow-y-auto">
+                            <DropdownMenuLabel className="text-xs">Inserir Variável</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            {availableVariables.map((variable) => (
+                                <DropdownMenuItem
+                                    key={variable.key}
+                                    onClick={() => insertVariable(variable.key)}
+                                    className="flex flex-col items-start gap-1 py-2"
                                 >
-                                    <Variable className="h-3.5 w-3.5" />
-                                    <span className="text-[10px]">Variáveis</span>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start" className="w-64 max-h-[400px] overflow-y-auto">
-                                <DropdownMenuLabel className="text-xs">Inserir Variável</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                {availableVariables.map((variable) => (
-                                    <DropdownMenuItem
-                                        key={variable.key}
-                                        onClick={() => insertVariable(variable.key)}
-                                        className="flex flex-col items-start gap-1 py-2"
-                                    >
-                                        <code className="text-xs font-mono text-primary">
-                                            {`{{${variable.key}}}`}
-                                        </code>
-                                        <span className="text-[10px] text-muted-foreground">
-                                            {variable.label}
-                                            {variable.example && <span className="text-primary"> · Ex: {variable.example}</span>}
-                                        </span>
-                                    </DropdownMenuItem>
-                                ))}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                                    <code className="text-xs font-mono text-primary">
+                                        {`{{${variable.key}}}`}
+                                    </code>
+                                    <span className="text-[10px] text-muted-foreground">
+                                        {variable.label}
+                                        {variable.example && <span className="text-primary"> · Ex: {variable.example}</span>}
+                                    </span>
+                                </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuContent>
+                    )}
+                </DropdownMenu>
 
-                        <Separator orientation="vertical" className="h-5 mx-1" />
-                    </>
-                )}
+                <Separator orientation="vertical" className="h-5 mx-1" />
 
                 {/* Dropdown "Mais Opções" */}
                 <DropdownMenu>
@@ -255,11 +262,16 @@ export function RichTextEditor({ value, onChange, availableVariables = [] }: Ric
                 </Button>
             </div>
 
-            {/* Editor */}
-            <EditorContent
-                editor={editor}
-                className="prose prose-sm max-w-none p-4 min-h-[200px] focus:outline-none"
-            />
+            {/* Editor Container - Clicar aqui foca o editor */}
+            <div
+                className="flex-1 cursor-text"
+                onClick={() => editor.chain().focus().run()}
+            >
+                <EditorContent
+                    editor={editor}
+                    className="prose prose-sm max-w-none p-4 min-h-[200px] focus:outline-none"
+                />
+            </div>
         </div>
     )
 }

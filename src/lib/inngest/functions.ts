@@ -3,8 +3,12 @@ import { prisma } from '@/lib/db';
 import {
     sendEmailFromTemplate,
     extractRecipientEmail,
-    buildTemplateContext
+    extractRecipientPhone,
+    buildTemplateContext,
+    renderTemplate
 } from '@/services/notification/automation-email';
+import { sendPushToAll } from '@/services/notification/push-send';
+
 
 /**
  * Funções Inngest do Kadernim
@@ -12,6 +16,109 @@ import {
  * Cada função aqui é um "handler" que reage a um tipo de evento.
  * O Inngest cuida de filas, retries e logs automaticamente.
  */
+
+/**
+ * Handler: Quando um código OTP é solicitado
+ * 
+ * - Busca templates ativos para 'auth.otp.requested'
+ * - Envia via Email e/ou WhatsApp conforme configurado
+ */
+export const handleOtpRequested = inngest.createFunction(
+    {
+        id: 'handle-otp-requested',
+        name: 'Enviar Código OTP',
+        retries: 2, // OTP é sensível ao tempo, menos retries
+    },
+    { event: 'auth.otp.requested' },
+    async ({ event, step }) => {
+        const { email, otp, expiresIn } = event.data;
+
+        // Buscar dados do usuário para enriquecer o contexto
+        const user = await step.run('fetch-user', async () => {
+            return prisma.user.findUnique({
+                where: { email },
+                select: { id: true, name: true, phone: true }
+            });
+        });
+
+        // Montar contexto de variáveis para os templates
+        const context = {
+            user: {
+                email,
+                name: user?.name || email.split('@')[0],
+                firstName: (user?.name || email.split('@')[0]).split(' ')[0],
+                phone: user?.phone || '',
+            },
+            otp: {
+                code: otp,
+                expiresIn: String(expiresIn),
+            },
+            app: {
+                name: 'Kadernim',
+                url: process.env.NEXT_PUBLIC_APP_URL || 'https://kadernim.com.br',
+            },
+        };
+
+        const results: Array<{ channel: string; success: boolean; error?: string }> = [];
+
+        // Step: Enviar Email (se tiver template ativo)
+        const emailResult = await step.run('send-email-otp', async () => {
+            const template = await prisma.emailTemplate.findFirst({
+                where: { eventType: 'auth.otp.requested', isActive: true }
+            });
+
+            if (!template) {
+                console.log('[OTP] Nenhum template de email ativo para auth.otp.requested');
+                return { channel: 'email', success: false, error: 'Sem template ativo' };
+            }
+
+            try {
+                const result = await sendEmailFromTemplate(template.id, email, context);
+                return { channel: 'email', ...result };
+            } catch (err) {
+                return { channel: 'email', success: false, error: String(err) };
+            }
+        });
+        results.push(emailResult);
+
+        // Step: Enviar WhatsApp (se tiver template ativo E usuário tiver telefone)
+        if (user?.phone) {
+            const whatsappResult = await step.run('send-whatsapp-otp', async () => {
+                const template = await prisma.whatsAppTemplate.findFirst({
+                    where: { eventType: 'auth.otp.requested', isActive: true }
+                });
+
+                if (!template) {
+                    console.log('[OTP] Nenhum template de WhatsApp ativo para auth.otp.requested');
+                    return { channel: 'whatsapp', success: false, error: 'Sem template ativo' };
+                }
+
+                try {
+                    const renderedBody = renderTemplate(template.body, context);
+                    const { sendTextMessage } = await import('@/services/whatsapp/uazapi/send-message');
+                    const result = await sendTextMessage({
+                        phone: user.phone!,
+                        message: renderedBody
+                    });
+                    return { channel: 'whatsapp', success: result.status, error: result.error };
+                } catch (err) {
+                    return { channel: 'whatsapp', success: false, error: String(err) };
+                }
+            });
+            results.push(whatsappResult);
+        }
+
+        const anySuccess = results.some(r => r.success);
+        console.log(`[OTP] Resultado do envio para ${email}:`, results);
+
+        return {
+            processed: true,
+            email,
+            results,
+            success: anySuccess,
+        };
+    }
+);
 
 /**
  * Handler: Quando um pedido da comunidade é marcado como inviável
@@ -219,10 +326,100 @@ async function executeAction(
                 return await sendEmailFromTemplate(templateId, recipientEmail, context);
             }
 
-            case 'PUSH_NOTIFICATION':
-                // TODO: Implementar Web Push
-                console.log(`[Action] PUSH_NOTIFICATION - não implementado ainda`);
-                return { success: true };
+            case 'WHATSAPP_SEND': {
+                const templateId = config.templateId;
+                if (!templateId) {
+                    return { success: false, error: 'Template de WhatsApp não configurado' };
+                }
+
+                // Extrair telefone do destinatário do payload
+                const recipientPhone = extractRecipientPhone(payload);
+                if (!recipientPhone) {
+                    return { success: false, error: 'Telefone do destinatário não encontrado no payload' };
+                }
+
+                // Buscar template
+                const template = await prisma.whatsAppTemplate.findUnique({
+                    where: { id: templateId }
+                });
+
+                if (!template) {
+                    return { success: false, error: `Template de WhatsApp não encontrado: ${templateId}` };
+                }
+
+                if (!template.isActive) {
+                    return { success: false, error: `Template de WhatsApp desativado: ${template.name}` };
+                }
+
+                // Montar contexto e renderizar
+                const context = buildTemplateContext(payload, eventName || 'automation');
+                const renderedBody = renderTemplate(template.body, context);
+
+                console.log(`[Action] WHATSAPP_SEND para ${recipientPhone} usando template ${template.name}`);
+
+                // Enviar via UAZAPI (ou provedor configurado)
+                const { sendTextMessage } = await import('@/services/whatsapp/uazapi/send-message');
+                const result = await sendTextMessage({
+                    phone: recipientPhone,
+                    message: renderedBody
+                });
+
+                return {
+                    success: result.status,
+                    error: result.error
+                };
+            }
+
+            case 'PUSH_NOTIFICATION': {
+                const templateId = config.templateId as string;
+
+                // Valores padrão
+                let title = config.title as string || 'Kadernim';
+                let body = config.body as string || 'Nova notificação';
+                let url = config.url as string || '/';
+                let icon: string | undefined;
+                let badge: string | undefined;
+                let image: string | undefined;
+                let tag = `kadernim-${eventName || 'notification'}`;
+
+                if (templateId) {
+                    // Buscar template de push (PushTemplate)
+                    const template = await prisma.pushTemplate.findUnique({
+                        where: { id: templateId }
+                    });
+
+                    if (template) {
+                        // Renderizar variáveis do template
+                        const context = buildTemplateContext(payload, eventName || 'automation');
+                        title = renderTemplate(template.title, context);
+                        body = renderTemplate(template.body, context);
+                        url = template.url ? renderTemplate(template.url, context) : '/';
+                        icon = template.icon || undefined;
+                        badge = template.badge || undefined;
+                        image = template.image || undefined;
+                        tag = template.tag || tag;
+                    }
+                }
+
+                console.log(`[Action] PUSH_NOTIFICATION: "${title}" para todas subscriptions`);
+
+                const result = await sendPushToAll({
+                    title,
+                    body,
+                    url,
+                    icon,
+                    badge,
+                    image,
+                    tag
+                });
+
+                return {
+                    success: result.success > 0,
+                    error: result.failed > 0
+                        ? `${result.failed} falhas de ${result.total}`
+                        : undefined
+                };
+            }
 
             case 'WEBHOOK_CALL': {
                 const url = config.url;
@@ -281,6 +478,7 @@ async function executeAction(
  * Lista de todas as funções para registrar no Inngest
  */
 export const functions = [
+    handleOtpRequested,
     handleRequestUnfeasible,
     handleCleanupDeleted,
     handleGenericEvent,

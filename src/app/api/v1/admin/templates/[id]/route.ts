@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 const updateTemplateSchema = z.object({
     slug: z.string().min(1).regex(/^[a-z0-9-]+$/).optional(),
     name: z.string().min(1).optional(),
-    type: z.enum(['email', 'whatsapp', 'push', 'slack']).optional(),
+    type: z.enum(['email', 'whatsapp']).optional(),
     eventType: z.string().min(1).optional(),
     subject: z.string().nullable().optional(),
     body: z.string().min(1).optional(),

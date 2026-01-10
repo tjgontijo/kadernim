@@ -3,7 +3,6 @@ import { createAuthMiddleware } from 'better-auth/api'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { prisma } from '@/lib/db'
 import { emailOTP, admin, organization } from 'better-auth/plugins'
-import { authDeliveryService } from '@/services/delivery'
 import { emitEvent } from '@/lib/inngest'
 
 export const auth = betterAuth({
@@ -44,20 +43,15 @@ export const auth = betterAuth({
     organization(),
     emailOTP({
       async sendVerificationOTP({ email, otp, type: _ }) {
-        const result = await authDeliveryService.send({
+        // Emitir evento para o Inngest processar via templates
+        // O handler handleOtpRequested envia por Email e/ou WhatsApp
+        await emitEvent('auth.otp.requested', {
           email,
-          type: 'otp',
-          data: {
-            otp,
-            expiresIn: 15,
-          },
-          channels: ['email', 'whatsapp'],
-        })
+          otp,
+          expiresIn: 15, // minutos
+        });
 
-        if (!result.success) {
-          console.error('[email-otp] Falha ao entregar OTP', result)
-          throw new Error(result.error ?? 'otp_delivery_failed')
-        }
+        console.log(`[email-otp] Evento auth.otp.requested emitido para ${email}`);
       },
     })
   ],

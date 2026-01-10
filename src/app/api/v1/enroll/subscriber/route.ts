@@ -6,6 +6,7 @@ import { buildResourceCacheTag } from '@/server/utils/cache'
 import { revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import { normalizeWhatsApp, validateWhatsApp } from '@/lib/utils/phone'
+import { emitEvent } from '@/lib/inngest'
 
 export const dynamic = 'force-dynamic'
 
@@ -89,6 +90,7 @@ export async function POST(request: NextRequest) {
     const { name, email, phone, expiresAt } = parsed.data
 
     let user = await prisma.user.findUnique({ where: { email } })
+    let isNewUser = false
 
     if (!user) {
       await (auth.api.signUpEmail as unknown as (params: { body: Record<string, unknown> }) => Promise<unknown>)({
@@ -100,6 +102,7 @@ export async function POST(request: NextRequest) {
       })
 
       user = await prisma.user.findUniqueOrThrow({ where: { email } })
+      isNewUser = true
     }
 
     user = await prisma.user.update({
@@ -127,6 +130,16 @@ export async function POST(request: NextRequest) {
         purchaseDate: now,
         expiresAt: expiresAt ?? null,
       },
+    })
+
+    // Emit events
+    if (isNewUser) {
+      await emitEvent('user.signup', { userId: user.id, email, name })
+    }
+    await emitEvent('user.subscription.created', {
+      userId: user.id,
+      planId: subscription.id,
+      planName: 'subscriber',
     })
 
     await revalidateTag(buildResourceCacheTag(user.id), 'max')

@@ -6,7 +6,7 @@
   "scripts": {
     "build": "next build && node ./generate-sw.mjs",
     "dev": "next dev --turbopack",
-    "event": "npx inngest-cli@latest dev",
+    "event": "npx inngest-cli@latest dev -u http://localhost:3000/api/v1/inngest",
     "lint": "eslint",
     "start": "next start"
   },

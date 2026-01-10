@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 const createTemplateSchema = z.object({
     slug: z.string().min(1).regex(/^[a-z0-9-]+$/, 'Slug deve conter apenas letras minúsculas, números e hífens'),
     name: z.string().min(1),
-    type: z.enum(['email', 'whatsapp', 'push', 'slack']),
+    type: z.enum(['email', 'whatsapp']),
     eventType: z.string().min(1), // Ex: 'user.login', 'resource.purchased'
     subject: z.string().nullable().optional(),
     body: z.string().min(1),
@@ -18,7 +18,7 @@ const createTemplateSchema = z.object({
 
 /**
  * GET /api/v1/admin/templates
- * Lista todos os templates de notificação
+ * Lista todos os templates de notificação (Email, Push, WhatsApp)
  */
 export async function GET(request: NextRequest) {
     try {
@@ -27,14 +27,38 @@ export async function GET(request: NextRequest) {
             return authResult;
         }
 
-        const templates = await prisma.notificationTemplate.findMany({
+        // Buscar templates de NotificationTemplate (email)
+        const notificationTemplates = await prisma.notificationTemplate.findMany({
             orderBy: [
                 { type: 'asc' },
                 { name: 'asc' },
             ],
         });
 
-        return NextResponse.json({ success: true, data: templates });
+        // Buscar templates de EmailTemplate
+        const emailTemplates = await prisma.emailTemplate.findMany({
+            orderBy: { name: 'asc' },
+        });
+
+        // Buscar templates de WhatsAppTemplate
+        const whatsappTemplates = await prisma.whatsAppTemplate.findMany({
+            orderBy: { name: 'asc' },
+        });
+
+        // Buscar templates de PushTemplate
+        const pushTemplates = await prisma.pushTemplate.findMany({
+            orderBy: { name: 'asc' },
+        });
+
+        // Unificar todos os templates com type normalizado
+        const allTemplates = [
+            ...notificationTemplates.map(t => ({ ...t, source: 'notification' })),
+            ...emailTemplates.map(t => ({ ...t, type: 'email', source: 'email' })),
+            ...whatsappTemplates.map(t => ({ ...t, type: 'whatsapp', source: 'whatsapp' })),
+            ...pushTemplates.map(t => ({ ...t, type: 'push', source: 'push' })),
+        ];
+
+        return NextResponse.json({ success: true, data: allTemplates });
     } catch (error) {
         console.error('[API] Erro ao listar templates:', error);
         return NextResponse.json(

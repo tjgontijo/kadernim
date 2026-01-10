@@ -5,6 +5,7 @@ import { EnrollmentPayloadSchema } from '@/lib/schemas/enroll'
 import { prisma } from '@/lib/db'
 import { auth } from '@/server/auth/auth'
 import { buildResourceCacheTag } from '@/server/utils/cache'
+import { emitEvent } from '@/lib/inngest'
 
 function validateApiKey(request: NextRequest) {
   const headerKey = request.headers.get('x-api-key')
@@ -44,6 +45,7 @@ export async function POST(request: NextRequest) {
 
     // Verifica se o usuário já existe
     let user = await prisma.user.findUnique({ where: { email } })
+    let isNewUser = false
 
     if (!user) {
       const { randomPassword } = await import('@/lib/utils/password')
@@ -56,6 +58,7 @@ export async function POST(request: NextRequest) {
       })
 
       user = await prisma.user.findUniqueOrThrow({ where: { email } })
+      isNewUser = true
     }
 
     user = await prisma.user.update({
@@ -130,6 +133,17 @@ export async function POST(request: NextRequest) {
         })
       })
     )
+
+    // Emit events
+    if (isNewUser) {
+      await emitEvent('user.signup', { userId: user.id, email, name })
+    }
+    await emitEvent('user.resource.access_granted', {
+      userId: user.id,
+      email,
+      resourceIds: resources.map((r) => r.id),
+      source: store,
+    })
 
     await revalidateTag(buildResourceCacheTag(user.id), 'max')
 

@@ -66,7 +66,7 @@ export const OtpEmail = ({
 
           {/* Security Notice */}
           <Text style={securityText}>
-            🔒 <strong>Segurança:</strong> Nunca compartilhe este código com outras pessoas. A Kadernim nunca pedirá seu código por email.
+            🔒 <strong>Segurança:</strong> Nunca compartilhe códigos e senhas com outras pessoas. Nós nunca pedimos códigos e senhas.
           </Text>
 
           {/* Support */}

@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db';
 import { resendProvider } from '@/services/mail/resend';
+import { renderBaseEmail } from '@/services/mail/templates/base-email';
 
 /**
  * Serviço de envio de notificações para automações
@@ -25,7 +26,8 @@ export function renderTemplate(template: string, context: Record<string, any>): 
 }
 
 /**
- * Envia email usando um template do banco
+ * Envia email usando um template do banco.
+ * O conteúdo é automaticamente envolto pelo template base com header/footer elegantes.
  */
 export async function sendEmailFromTemplate(
     templateId: string,
@@ -34,7 +36,7 @@ export async function sendEmailFromTemplate(
 ): Promise<{ success: boolean; error?: string }> {
     try {
         // 1. Buscar template
-        const template = await prisma.notificationTemplate.findUnique({
+        const template = await prisma.emailTemplate.findUnique({
             where: { id: templateId },
         });
 
@@ -46,27 +48,33 @@ export async function sendEmailFromTemplate(
             return { success: false, error: `Template desativado: ${template.name}` };
         }
 
-        if (template.type !== 'email') {
-            return { success: false, error: `Template não é do tipo email: ${template.type}` };
-        }
-
-        // 2. Renderizar variáveis
+        // 2. Renderizar variáveis no conteúdo e assunto
         const renderedBody = renderTemplate(template.body, context);
         const renderedSubject = template.subject
             ? renderTemplate(template.subject, context)
             : 'Notificação do Kadernim';
+        const renderedPreheader = template.preheader
+            ? renderTemplate(template.preheader, context)
+            : '';
 
-        // 3. Verificar se Resend está configurado
+        // 3. Envolver o conteúdo no template base elegante (header + footer)
+        const finalHtml = await renderBaseEmail({
+            htmlContent: renderedBody,
+            preheader: renderedPreheader,
+        });
+
+        // 4. Verificar se Resend está configurado
         if (!resendProvider.isConfigured()) {
             console.error('[Email] Resend não está configurado');
             return { success: false, error: 'Serviço de email não configurado (RESEND_API_KEY)' };
         }
 
-        // 4. Enviar email
+        // 5. Enviar email
         const result = await resendProvider.send({
             to: recipientEmail,
             subject: renderedSubject,
-            html: renderedBody,
+            html: finalHtml,
+            text: renderedBody.replace(/<[^>]*>?/gm, ''), // Versão texto simples básica
         });
 
         if (!result.success) {
@@ -99,6 +107,22 @@ export function extractRecipientEmail(payload: Record<string, any>): string | nu
     // Campos aninhados
     if (payload.user?.email) return payload.user.email;
     if (payload.author?.email) return payload.author.email;
+
+    return null;
+}
+
+/**
+ * Extrai o telefone do destinatário do payload do evento
+ */
+export function extractRecipientPhone(payload: Record<string, any>): string | null {
+    // Campos diretos
+    if (payload.phone) return payload.phone;
+    if (payload.whatsapp) return payload.whatsapp;
+    if (payload.recipientPhone) return payload.recipientPhone;
+
+    // Campos aninhados
+    if (payload.user?.phone) return payload.user.phone;
+    if (payload.user?.whatsapp) return payload.user.whatsapp;
 
     return null;
 }

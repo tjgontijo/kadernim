@@ -6,6 +6,7 @@ import {
   ResourceListResponseSchema,
 } from '@/lib/schemas/admin/resources'
 import { listResourcesService } from '@/services/resources'
+import { emitEvent } from '@/lib/inngest'
 
 /**
  * GET /api/v1/admin/resources
@@ -157,6 +158,15 @@ export async function POST(request: NextRequest) {
       ...parsed.data,
       adminId: userId,
     }) as any
+
+    // Emit event
+    await emitEvent('resource.created', {
+      resourceId: resource.id,
+      title: resource.title,
+      educationLevel: resource.educationLevel.slug,
+      subject: resource.subject.slug,
+      createdBy: userId,
+    })
 
     return NextResponse.json(
       {

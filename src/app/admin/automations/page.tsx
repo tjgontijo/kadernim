@@ -16,6 +16,7 @@ import {
     AlertTriangle,
     ExternalLink,
     Code,
+    MessageSquare,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -67,6 +68,7 @@ import { getAllEvents, getCategories } from '@/lib/events/catalog';
 // Tipos de ação disponíveis
 const ACTION_TYPES = [
     { value: 'EMAIL_SEND', label: 'Enviar E-mail', icon: Mail, color: 'text-blue-500' },
+    { value: 'WHATSAPP_SEND', label: 'Enviar WhatsApp', icon: MessageSquare, color: 'text-emerald-500' },
     { value: 'PUSH_NOTIFICATION', label: 'Notificação Push', icon: Bell, color: 'text-amber-500' },
     { value: 'WEBHOOK_CALL', label: 'Chamar Webhook (HTTP POST)', icon: Webhook, color: 'text-purple-500' },
 ];
@@ -144,11 +146,21 @@ export default function AutomationsPage() {
     };
 
     const fetchTemplates = async () => {
+        console.log('[Automations] Buscando templates...');
         try {
             const res = await fetch('/api/v1/admin/templates');
+            console.log('[Automations] Resposta:', res.status);
             const json = await res.json();
-            if (json.success) setTemplates(json.data);
-        } catch (error) { }
+            console.log('[Automations] Templates recebidos:', json);
+            if (json.success) {
+                setTemplates(json.data);
+                console.log('[Automations] Templates setados:', json.data.length);
+            } else {
+                console.error('[Automations] Erro na API:', json.error);
+            }
+        } catch (error) {
+            console.error('[Automations] Erro ao buscar templates:', error);
+        }
     };
 
     const resetForm = () => {
@@ -184,6 +196,10 @@ export default function AutomationsPage() {
         // Validações básicas por tipo de ação
         if (formActionType === 'EMAIL_SEND' && !formConfig.templateId) {
             toast.error('Selecione um template de e-mail');
+            return;
+        }
+        if (formActionType === 'WHATSAPP_SEND' && !formConfig.templateId) {
+            toast.error('Selecione um template de WhatsApp');
             return;
         }
         if (formActionType === 'PUSH_NOTIFICATION' && !formConfig.templateId) {
@@ -357,15 +373,15 @@ export default function AutomationsPage() {
 
     // Filtrar templates pelo tipo selecionado
     const filteredTemplates = templates.filter(t => {
-        // Filtrar por tipo de canal (email, push, etc)
+        // Filtrar por tipo de canal (email, push, whatsapp)
         let matchesChannel = false;
         if (formActionType === 'EMAIL_SEND') matchesChannel = t.type === 'email';
+        if (formActionType === 'WHATSAPP_SEND') matchesChannel = t.type === 'whatsapp';
         if (formActionType === 'PUSH_NOTIFICATION') matchesChannel = t.type === 'push';
 
-        // Filtrar por tipo de evento (só mostrar templates do mesmo evento)
-        const matchesEvent = formEventType ? t.eventType === formEventType : true;
-
-        return matchesChannel && matchesEvent;
+        // Nota: Removemos o filtro de eventType para permitir escolher qualquer template do canal
+        // O admin pode querer usar um template genérico para diferentes eventos
+        return matchesChannel;
     });
 
     const getWebhookSamplePayload = (eventType: string) => {
@@ -687,6 +703,34 @@ export default function AutomationsPage() {
                                         ) : (
                                             filteredTemplates.map(t => (
                                                 <SelectItem key={t.id} value={t.id}>{t.name} ({t.slug})</SelectItem>
+                                            ))
+                                        )}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
+
+                        {formActionType === 'WHATSAPP_SEND' && (
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <Label className="text-xs font-bold uppercase tracking-wider">Template de WhatsApp</Label>
+                                    <Link href="/admin/templates/whatsapp" target="_blank" className="text-[10px] font-bold text-primary flex items-center gap-1 hover:underline">
+                                        <ExternalLink className="h-3 w-3" /> Gerenciar Templates
+                                    </Link>
+                                </div>
+                                <Select
+                                    value={formConfig.templateId || ''}
+                                    onValueChange={(val) => setFormConfig({ ...formConfig, templateId: val })}
+                                >
+                                    <SelectTrigger className="h-11 bg-background border-primary/20 w-full">
+                                        <SelectValue placeholder="Escolha um template de WhatsApp..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {filteredTemplates.length === 0 ? (
+                                            <div className="p-4 text-center text-xs text-muted-foreground">Nenhum template de WhatsApp encontrado</div>
+                                        ) : (
+                                            filteredTemplates.map(t => (
+                                                <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
                                             ))
                                         )}
                                     </SelectContent>

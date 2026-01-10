@@ -15,6 +15,10 @@ import {
   Cpu,
   Zap,
   FileText,
+  ChevronRight,
+  Mail,
+  Bell,
+  MessageCircle,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -27,9 +31,17 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
   SidebarRail,
   useSidebar,
 } from '@/components/ui/sidebar'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
 import { useState, useEffect } from 'react'
 import { UserDropdownMenu } from './users/user-dropdown-menu'
 import { defineAbilitiesFor, PermissionAction, PermissionSubject } from '@/lib/auth/permissions'
@@ -98,8 +110,18 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
     { title: 'Disciplinas', href: '/admin/subjects', icon: 'Hash', permission: { action: 'read', subject: 'Subject' } },
     { title: 'Usuários', href: '/admin/users', icon: 'Users', permission: { action: 'read', subject: 'User' } },
     { title: 'Automações', href: '/admin/automations', icon: 'Zap', permission: { action: 'manage', subject: 'all' } },
-    { title: 'Templates', href: '/admin/templates', icon: 'FileText', permission: { action: 'manage', subject: 'all' } },
+    { title: 'Campanhas', href: '/admin/campaigns', icon: 'Send', permission: { action: 'manage', subject: 'all' } },
   ]
+
+  // Template sub-items
+  const templateSubItems = [
+    { title: 'Email', href: '/admin/templates/email', icon: Mail },
+    { title: 'Push', href: '/admin/templates/push', icon: Bell },
+    { title: 'WhatsApp', href: '/admin/templates/whatsapp', icon: MessageCircle },
+  ]
+
+  // Check if any template route is active
+  const isTemplatesActive = pathname.startsWith('/admin/templates')
 
   const configItems: NavItem[] = [
     { title: 'Configurações', href: '/admin/settings', icon: 'Settings' },
@@ -187,6 +209,42 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
                     </SidebarMenuItem>
                   )
                 })}
+
+              {/* Templates Collapsible Menu */}
+              {ability.can('manage', 'all') && (
+                <Collapsible
+                  asChild
+                  defaultOpen={isTemplatesActive}
+                  className="group/collapsible"
+                >
+                  <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton tooltip="Templates" isActive={isTemplatesActive}>
+                        <FileText className="h-4 w-4" />
+                        <span>Templates</span>
+                        <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
+                        {templateSubItems.map((item) => {
+                          const isSubActive = pathname === item.href
+                          return (
+                            <SidebarMenuSubItem key={item.href}>
+                              <SidebarMenuSubButton asChild isActive={isSubActive}>
+                                <Link href={item.href} onClick={handleNavClick}>
+                                  <item.icon className="h-4 w-4" />
+                                  <span>{item.title}</span>
+                                </Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          )
+                        })}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                  </SidebarMenuItem>
+                </Collapsible>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

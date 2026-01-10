@@ -5,6 +5,7 @@ import { CreateLessonPlanSchema, FullLessonPlanContentSchema, type BnccSkillDeta
 import { canCreateLessonPlan } from '@/services/lesson-plans/get-usage';
 import { incrementLessonPlanUsage } from '@/services/lesson-plans/increment-usage';
 import { generateLessonPlanContent } from '@/services/lesson-plans/generate-content';
+import { emitEvent } from '@/lib/inngest';
 
 /**
  * GET /api/v1/lesson-plans
@@ -299,6 +300,15 @@ export async function POST(request: NextRequest) {
       docx: `${baseUrl}/api/v1/lesson-plans/${lessonPlan.id}/export/docx`,
       pdf: `${baseUrl}/api/v1/lesson-plans/${lessonPlan.id}/export/pdf`,
     };
+
+    // Emit event
+    await emitEvent('lesson-plan.created', {
+      lessonPlanId: lessonPlan.id,
+      userId: lessonPlan.userId,
+      title: lessonPlan.title,
+      subject: lessonPlan.subjectSlug || '',
+      grade: lessonPlan.gradeSlug || '',
+    });
 
     return NextResponse.json(
       {

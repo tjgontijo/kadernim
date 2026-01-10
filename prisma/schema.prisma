@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "./generated/prisma"
 }
 
@@ -624,4 +624,141 @@ model NotificationTemplate {
   @@index([eventType])
   @@index([isActive])
   @@map("notification_template")
+}
+
+// =========================================
+// Push Notifications
+// =========================================
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active])
+  @@map("push_subscription")
+}
+
+model EmailTemplate {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String // Nome interno para gestão
+  subject     String // Assunto do e-mail
+  preheader   String? // Texto de apoio que aparece na inbox
+  body        String   @db.Text // Conteúdo HTML gerado
+  content     Json? // Estrutura JSON do EmailBuilderJS
+  eventType   String // Vinculação com o evento do Inngest
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("email_templates")
+}
+
+// ============================================
+// PUSH CAMPAIGNS (Marketing)
+// ============================================
+
+model PushCampaign {
+  id       String  @id @default(cuid())
+  name     String
+  title    String  @db.VarChar(100)
+  body     String  @db.VarChar(255)
+  url      String?
+  icon     String?
+  imageUrl String?
+
+  // Segmentação (filtros JSON)
+  audience Json @default("{}")
+
+  // Status e agendamento
+  status      CampaignStatus @default(DRAFT)
+  scheduledAt DateTime?
+  sentAt      DateTime?
+
+  // Métricas desnormalizadas
+  totalSent    Int @default(0)
+  totalClicked Int @default(0)
+
+  // Tracking
+  clicks PushCampaignClick[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+
+  @@map("push_campaigns")
+}
+
+model PushCampaignClick {
+  id         String   @id @default(cuid())
+  campaignId String
+  userId     String?
+  clickedAt  DateTime @default(now())
+  userAgent  String?
+
+  campaign PushCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+  @@index([clickedAt])
+  @@map("push_campaign_clicks")
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  SENT
+  FAILED
+}
+
+model WhatsAppTemplate {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  body        String   @db.Text
+  eventType   String
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([eventType])
+  @@map("whatsapp_template")
+}
+
+model PushTemplate {
+  id   String @id @default(cuid())
+  slug String @unique
+  name String // Nome interno para gestão
+
+  // Conteúdo da notificação
+  title String // max 100 chars
+  body  String @db.Text // max 500 chars
+
+  // Visual
+  icon  String? // /icons/vote.png ou null = padrão
+  badge String? // /icons/badge.png ou null = padrão
+  image String? // Imagem grande (opcional)
+
+  // Comportamento
+  url String? // /community/{{request.id}}
+  tag String? // community-vote (agrupa notificações)
+
+  // Metadata
+  eventType   String // community.request.voted
+  description String? // Descrição interna
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventType])
+  @@index([isActive])
+  @@map("push_template")
 }

@@ -18,6 +18,15 @@ export const inngest = new Inngest({
  * Adicione novos eventos aqui conforme forem necessários
  */
 export type KadernimEvents = {
+    // Eventos de Autenticação
+    'auth.otp.requested': {
+        data: {
+            email: string;
+            otp: string;
+            expiresIn: number; // minutos
+        };
+    };
+
     // Eventos de Comunidade
     'community.request.created': {
         data: {
@@ -99,8 +108,25 @@ export type KadernimEvents = {
             daysRemaining: number;
         };
     };
+    'user.resource.access_granted': {
+        data: {
+            userId: string;
+            email: string;
+            resourceIds: string[];
+            source: string; // ex: 'yampi:product_123'
+        };
+    };
 
     // Eventos de Recursos
+    'resource.created': {
+        data: {
+            resourceId: string;
+            title: string;
+            educationLevel: string;
+            subject: string;
+            createdBy: string;
+        };
+    };
     'resource.published': {
         data: {
             resourceId: string;
