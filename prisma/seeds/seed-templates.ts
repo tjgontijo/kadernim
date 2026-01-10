@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../generated/prisma';
 
 export async function seedTemplates(prisma: PrismaClient) {
     console.log('📝 Populando templates de notificação...');
