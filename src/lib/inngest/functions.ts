@@ -7,7 +7,8 @@ import {
     buildTemplateContext,
     renderTemplate
 } from '@/services/notification/automation-email';
-import { sendPushToAll } from '@/services/notification/push-send';
+import { sendPushToAll, sendPushToSubscriptions } from '@/services/notification/push-send';
+import { getSegmentedPushSubscriptions, type AudienceFilter } from '@/services/notification/audience-segmentation';
 
 
 /**
@@ -476,7 +477,7 @@ async function executeAction(
 
 /**
  * Handler: Quando uma campanha de push é agendada
- * 
+ *
  * - Aguarda até a data de agendamento (se houver)
  * - Busca as subscrições com base nos filtros de audiência
  * - Envia o push para os usuários segmentados
@@ -512,21 +513,74 @@ export const handleCampaignScheduled = inngest.createFunction(
             return data;
         });
 
-        // 3. Executar o envio (lógica simplificada para todas as assinaturas por enquanto)
-        // No futuro, aqui entra a lógica de filtro de audience JSON
-        const result = await step.run('send-push-campaign', async () => {
-            console.log(`[Campaign] Enviando push para campanha: ${campaign.title}`);
-
-            // TODO: Aplicar filtros de audiência aqui
-            // Por enquanto, envia para todos (sendPushToAll)
-            const sendResult = await sendPushToAll({
-                title: campaign.title,
-                body: campaign.body,
-                url: campaign.url || undefined,
-                icon: campaign.icon || undefined,
-                image: campaign.imageUrl || undefined,
-                tag: `campaign-${campaign.id}`
+        // 3. Atualizar status para SENDING
+        await step.run('update-status-sending', async () => {
+            await prisma.pushCampaign.update({
+                where: { id: campaignId },
+                data: { status: 'SENDING' }
             });
+        });
+
+        // 4. Buscar subscriptions segmentadas baseadas no audience
+        const subscriptions = await step.run('fetch-segmented-subscriptions', async () => {
+            const audience = (campaign.audience as any) || {};
+
+            console.log(`[Campaign] Aplicando segmentação:`, JSON.stringify(audience));
+
+            // Se não tem filtros, envia para todos
+            if (Object.keys(audience).length === 0 ||
+                (!audience.roles?.length &&
+                 !audience.hasSubscription &&
+                 !audience.activeInDays &&
+                 !audience.inactiveForDays)) {
+                console.log(`[Campaign] Sem filtros - enviando para todas as subscriptions ativas`);
+                return await prisma.pushSubscription.findMany({
+                    where: { active: true },
+                    select: {
+                        id: true,
+                        endpoint: true,
+                        auth: true,
+                        p256dh: true,
+                        userId: true,
+                    }
+                });
+            }
+
+            // Aplicar filtros de segmentação
+            const audienceFilter: AudienceFilter = {
+                roles: audience.roles?.length > 0 ? audience.roles : undefined,
+                hasSubscription: audience.hasSubscription || 'all',
+                activeInDays: audience.activeInDays || null,
+                inactiveForDays: audience.inactiveForDays || null,
+            };
+
+            const segmented = await getSegmentedPushSubscriptions(audienceFilter);
+            console.log(`[Campaign] Filtro aplicado - ${segmented.length} subscriptions encontradas`);
+
+            return segmented.map(s => ({
+                id: s.id,
+                endpoint: s.endpoint,
+                auth: s.auth,
+                p256dh: s.p256dh,
+                userId: s.userId,
+            }));
+        });
+
+        // 5. Executar o envio
+        const result = await step.run('send-push-campaign', async () => {
+            console.log(`[Campaign] Enviando push para ${subscriptions.length} subscriptions`);
+
+            const sendResult = await sendPushToSubscriptions(
+                subscriptions,
+                {
+                    title: campaign.title,
+                    body: campaign.body,
+                    url: campaign.url || undefined,
+                    icon: campaign.icon || undefined,
+                    image: campaign.imageUrl || undefined,
+                    tag: `campaign-${campaign.id}`
+                }
+            );
 
             // Atualizar status e métricas
             await prisma.pushCampaign.update({
@@ -545,7 +599,8 @@ export const handleCampaignScheduled = inngest.createFunction(
             processed: true,
             campaignId,
             sent: result.success,
-            failed: result.failed
+            failed: result.failed,
+            uniqueUsers: result.userResults.size
         };
     }
 );
