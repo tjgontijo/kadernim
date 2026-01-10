@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Bell, Sparkles } from 'lucide-react';
 import type { PushSubscriptionCreate } from '@/lib/schemas/push-notification';
+import { useSession } from '@/lib/auth';
 
 type NavigatorWithStandalone = Navigator & {
   standalone?: boolean;
@@ -11,17 +13,20 @@ type NavigatorWithStandalone = Navigator & {
 
 /**
  * PushNotificationSetup
- * 
- * Componente simples que:
- * 1. Detecta quando o app está em modo PWA (standalone)
- * 2. Solicita permissão de notificações uma única vez
- * 3. Registra o endpoint no servidor
- * 
- * Não depende de usuário logado - funciona por dispositivo.
+ *
+ * Componente que solicita permissão de notificações push quando:
+ * 1. O usuário está autenticado (logged in)
+ * 2. O app está instalado como PWA (standalone mode)
+ * 3. O usuário ainda não decidiu sobre notificações (permission === 'default')
+ *
+ * IMPORTANTE iOS:
+ * - No Safari/iOS, Notification.requestPermission() DEVE ser chamado
+ *   diretamente em resposta a uma ação do usuário (user gesture)
  */
 export function PushNotificationSetup() {
   const [showDialog, setShowDialog] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const { data: session } = useSession();
 
   useEffect(() => {
     // Verificar se é PWA instalado
@@ -30,10 +35,12 @@ export function PushNotificationSetup() {
       (navigator as NavigatorWithStandalone).standalone === true;
 
     // Só mostrar se:
-    // 1. É PWA instalado
-    // 2. Suporta notificações e Service Worker e PushManager
-    // 3. Permissão ainda não foi decidida
+    // 1. Usuário está autenticado
+    // 2. É PWA instalado
+    // 3. Suporta notificações e Service Worker e PushManager
+    // 4. Permissão ainda não foi decidida
     if (
+      session?.user && // NOVO: Verificar autenticação
       isStandalone &&
       'Notification' in window &&
       'serviceWorker' in navigator &&
@@ -47,7 +54,7 @@ export function PushNotificationSetup() {
 
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [session]); // NOVO: Adicionar session como dependência
 
   const handleRequestPermission = async () => {
     setIsProcessing(true);
@@ -55,7 +62,6 @@ export function PushNotificationSetup() {
     try {
       // IMPORTANTE: No iOS, Notification.requestPermission() DEVE ser chamado
       // diretamente em resposta a um user gesture (clique do botão)
-      // Por isso chamamos ANTES de qualquer outra coisa
       console.log('🔔 Solicitando permissão de notificações...');
       const permission = await Notification.requestPermission();
 
@@ -63,6 +69,7 @@ export function PushNotificationSetup() {
 
       if (permission !== 'granted') {
         console.log('⏸️ Permissão de notificações negada ou descartada');
+        // Fechar o dialog imediatamente quando negado/descartado
         setShowDialog(false);
         setIsProcessing(false);
         return;
@@ -70,16 +77,21 @@ export function PushNotificationSetup() {
 
       console.log('✅ Permissão concedida! Registrando subscription...');
 
-      // 2. Registrar push subscription
-      await registerPushSubscription();
+      // 2. Registrar push subscription em background
+      registerPushSubscription()
+        .then(() => {
+          console.log('✅ Push notifications configuradas com sucesso');
+        })
+        .catch((error) => {
+          console.error('❌ Erro ao registrar subscription:', error);
+        });
 
-      console.log('✅ Push notifications configuradas com sucesso');
+      // Fechar o dialog IMEDIATAMENTE após a permissão ser concedida
+      // Não esperar a subscription ser registrada
       setShowDialog(false);
     } catch (error) {
       console.error('❌ Erro ao configurar push notifications:', error);
-      // Mostrar erro ao usuário
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      alert(`Erro ao configurar notificações: ${errorMessage}`);
+      setShowDialog(false);
     } finally {
       setIsProcessing(false);
     }
@@ -178,27 +190,57 @@ export function PushNotificationSetup() {
 
   return (
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Receba notificações importantes</DialogTitle>
-          <DialogDescription>
-            Permita notificações para receber atualizações sobre novos recursos, 
-            atividades e novidades do Kadernim.
-          </DialogDescription>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader className="space-y-4 pb-2">
+          {/* Ícone visual */}
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+            <div className="relative">
+              <Bell className="h-8 w-8 text-primary" />
+              <Sparkles className="absolute -right-1 -top-1 h-4 w-4 text-amber-500" />
+            </div>
+          </div>
+
+          <div className="space-y-2 text-center">
+            <DialogTitle className="text-xl font-semibold">
+              Fique por dentro de tudo!
+            </DialogTitle>
+            <DialogDescription className="text-base leading-relaxed">
+              Ative as notificações e seja a primeira a saber sobre novos recursos,
+              atualizações importantes e conteúdos exclusivos do Kadernim.
+            </DialogDescription>
+          </div>
         </DialogHeader>
-        <DialogFooter>
-          <Button 
-            variant="outline" 
-            onClick={handleDismiss}
-            disabled={isProcessing}
-          >
-            Agora não
-          </Button>
-          <Button 
+
+        <DialogFooter className="flex-col gap-3 sm:flex-col pt-4">
+          {/* Botão primário - Destaque */}
+          <Button
             onClick={handleRequestPermission}
             disabled={isProcessing}
+            size="lg"
+            className="w-full text-base font-semibold shadow-lg shadow-primary/20"
           >
-            {isProcessing ? 'Configurando...' : 'Permitir notificações'}
+            {isProcessing ? (
+              <>
+                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                Configurando...
+              </>
+            ) : (
+              <>
+                <Bell className="mr-2 h-5 w-5" />
+                Ativar Notificações
+              </>
+            )}
+          </Button>
+
+          {/* Botão secundário - Menos destaque */}
+          <Button
+            variant="ghost"
+            onClick={handleDismiss}
+            disabled={isProcessing}
+            size="lg"
+            className="w-full text-muted-foreground hover:text-foreground"
+          >
+            Talvez mais tarde
           </Button>
         </DialogFooter>
       </DialogContent>
