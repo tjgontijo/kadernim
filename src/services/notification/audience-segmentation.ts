@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/db';
-import { Prisma } from '../../prisma/generated/prisma';
+import { Prisma } from '@db/client';
 
 /**
  * Audience Segmentation Service
@@ -33,8 +33,9 @@ export function buildUserFilter(audience: AudienceFilter): Prisma.UserWhereInput
   // Filtro por assinatura
   if (audience.hasSubscription === 'subscribers') {
     filters.subscription = {
-      isNot: null,
-      isActive: true,
+      is: {
+        isActive: true,
+      },
     };
   } else if (audience.hasSubscription === 'non-subscribers') {
     filters.OR = [
@@ -86,7 +87,7 @@ export async function getAudienceUserIds(audience: AudienceFilter): Promise<stri
     select: { id: true },
   });
 
-  return users.map((u) => u.id);
+  return users.map((u: { id: string }) => u.id);
 }
 
 /**
