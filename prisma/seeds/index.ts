@@ -8,6 +8,7 @@ import { seedResources } from './seed-resources';
 import { seedResourceFiles } from './seed-resource-files';
 import { seedBnccSkillsInfantil } from './seed-bncc-infantil';
 import { seedBnccSkillsFundamental } from './seed-bncc-fundamental';
+import { seedTemplates } from './seed-templates';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
@@ -21,6 +22,9 @@ async function cleanDatabase() {
   try {
     await prisma.resourceFile.deleteMany()
     await prisma.resource.deleteMany()
+    await prisma.emailTemplate.deleteMany()
+    await prisma.whatsAppTemplate.deleteMany()
+    await prisma.pushTemplate.deleteMany()
     await prisma.bnccSkill.deleteMany()
     await prisma.gradeSubject.deleteMany()
     await prisma.grade.deleteMany()
@@ -52,6 +56,7 @@ async function createInitialData() {
     await seedBnccSkillsFundamental(prisma);
     await seedResources(prisma);
     await seedResourceFiles(prisma);
+    await seedTemplates(prisma);
 
     console.log('✅ População do banco de dados concluída com sucesso!');
   } catch (error) {
