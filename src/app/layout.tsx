@@ -72,12 +72,10 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/icon.png', sizes: 'any', type: 'image/png' },
-      { url: '/images/system/icon-1024x1024.png', sizes: '1024x1024', type: 'image/png' },
+      { url: '/images/icons/apple-icon.png', sizes: '1024x1024', type: 'image/png' }
     ],
     apple: [
-      { url: "/images/system/icon-1024x1024.png", sizes: '1024x1024', type: 'image/png' },
-      { url: "/pwa/apple-icon-180.png", sizes: '180x180', type: 'image/png' },
+      { url: "/images/icons/apple-icon.png", sizes: '1024x1024', type: 'image/png' }
     ],
   },
   // Configurações de OpenGraph para compartilhamento em redes sociais
