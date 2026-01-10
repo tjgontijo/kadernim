@@ -79,6 +79,7 @@ export async function GET(request: NextRequest) {
                 totalSent: true,
                 totalClicked: true,
                 sentAt: true,
+                audience: true,
             },
             orderBy: { sentAt: 'desc' },
             take: 10,
@@ -88,6 +89,48 @@ export async function GET(request: NextRequest) {
             ...c,
             ctr: c.totalSent > 0 ? ((c.totalClicked / c.totalSent) * 100).toFixed(2) : '0.00',
         }));
+
+        // Métricas de usuários únicos (NEW with userId tracking)
+        const uniqueUsersClicked = await prisma.pushCampaignClick.groupBy({
+            by: ['userId'],
+            where: {
+                clickedAt: { gte: startDate },
+                userId: { not: null },
+            },
+            _count: {
+                userId: true,
+            },
+        });
+
+        const totalUniqueUsersClicked = uniqueUsersClicked.length;
+
+        // Contar usuários únicos que receberam notificações (usuários com push subscriptions ativas)
+        const totalUsersWithPush = await prisma.user.count({
+            where: {
+                pushSubscriptions: {
+                    some: {
+                        active: true,
+                    },
+                },
+            },
+        });
+
+        // Top usuários engajados (maior número de cliques)
+        const topEngagedUsers = await prisma.$queryRaw<
+            Array<{ userId: string; userName: string; clickCount: number }>
+        >`
+            SELECT
+                pcc.user_id as "userId",
+                u.name as "userName",
+                COUNT(*)::int as "clickCount"
+            FROM push_campaign_clicks pcc
+            INNER JOIN "user" u ON u.id = pcc.user_id
+            WHERE pcc.clicked_at >= ${startDate}
+            AND pcc.user_id IS NOT NULL
+            GROUP BY pcc.user_id, u.name
+            ORDER BY "clickCount" DESC
+            LIMIT 5
+        `;
 
         return NextResponse.json({
             success: true,
@@ -110,6 +153,12 @@ export async function GET(request: NextRequest) {
                                     : '0.00',
                         }
                         : null,
+                    // NEW: User-based metrics
+                    totalUsersWithPush,
+                    uniqueUsersClicked: totalUniqueUsersClicked,
+                    userEngagementRate: totalUsersWithPush > 0
+                        ? ((totalUniqueUsersClicked / totalUsersWithPush) * 100).toFixed(2)
+                        : '0.00',
                 },
                 daily: dailyData.map((d) => ({
                     date: format(new Date(d.date), 'yyyy-MM-dd'),
@@ -117,6 +166,12 @@ export async function GET(request: NextRequest) {
                     clicked: Number(d.clicked),
                 })),
                 campaigns: campaignRanking,
+                // NEW: Top engaged users
+                topEngagedUsers: topEngagedUsers.map((u) => ({
+                    userId: u.userId,
+                    userName: u.userName,
+                    clickCount: u.clickCount,
+                })),
             },
         });
     } catch (error) {
