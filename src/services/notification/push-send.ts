@@ -129,6 +129,91 @@ export async function sendPushToAll(payload: PushPayload): Promise<{
 }
 
 /**
+ * Envia push notification para subscriptions específicas (com suporte a segmentação)
+ *
+ * @param subscriptions Lista de subscriptions filtradas (ex: por audience)
+ * @param payload Conteúdo da notificação
+ * @returns Métricas de envio + mapping userId -> success
+ */
+export async function sendPushToSubscriptions(
+  subscriptions: Array<{
+    id: string;
+    endpoint: string;
+    auth: string;
+    p256dh: string;
+    userId: string;
+  }>,
+  payload: PushPayload
+): Promise<{
+  total: number;
+  success: number;
+  failed: number;
+  errors: string[];
+  userResults: Map<string, boolean>; // userId -> success
+}> {
+  if (subscriptions.length === 0) {
+    return {
+      total: 0,
+      success: 0,
+      failed: 0,
+      errors: [],
+      userResults: new Map()
+    };
+  }
+
+  const results = await Promise.allSettled(
+    subscriptions.map(sub =>
+      sendPushToSubscription(
+        {
+          id: sub.id,
+          endpoint: sub.endpoint,
+          auth: sub.auth,
+          p256dh: sub.p256dh
+        },
+        payload
+      )
+    )
+  );
+
+  const errors: string[] = [];
+  const userResults = new Map<string, boolean>();
+  let successCount = 0;
+  let failedCount = 0;
+
+  results.forEach((result, index) => {
+    const subscription = subscriptions[index];
+    const isSuccess = result.status === 'fulfilled' && result.value.success;
+
+    userResults.set(subscription.userId, isSuccess);
+
+    if (isSuccess) {
+      successCount++;
+    } else {
+      failedCount++;
+      const errorMsg =
+        result.status === 'rejected'
+          ? result.reason?.message
+          : result.value?.error;
+      if (errorMsg) {
+        errors.push(`${subscription.id} (userId: ${subscription.userId}): ${errorMsg}`);
+      }
+    }
+  });
+
+  console.log(
+    `[Push] Enviado para ${successCount}/${subscriptions.length} subscriptions (${userResults.size} usuários únicos)`
+  );
+
+  return {
+    total: subscriptions.length,
+    success: successCount,
+    failed: failedCount,
+    errors,
+    userResults
+  };
+}
+
+/**
  * Conta subscriptions ativas
  */
 export async function countActiveSubscriptions(): Promise<number> {
