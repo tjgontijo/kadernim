@@ -58,6 +58,9 @@ import {
 } from '@/lib/events/catalog';
 import { PushTemplateForm } from '@/components/admin/templates/push-template-form';
 import { PushTemplatePreview } from '@/components/admin/templates/push-template-preview';
+import { PreviewDialog } from '@/components/admin/shared';
+import { getStatusBadge } from '@/lib/utils/badge-variants';
+import { PermissionGuard } from '@/components/auth/permission-guard';
 
 interface PushTemplate {
   id: string;
@@ -308,15 +311,15 @@ export default function PushTemplatesPage() {
         >
           {template.isActive ? (
             <Badge
-              variant="default"
-              className="bg-emerald-500/10 text-emerald-600 border-emerald-500/10 px-2 h-5 text-[10px] font-bold"
+              variant="outline"
+              className={`${getStatusBadge('ACTIVE')} px-2 h-5 text-[10px] font-bold`}
             >
               ATIVO
             </Badge>
           ) : (
             <Badge
-              variant="secondary"
-              className="px-2 h-5 text-[10px] font-bold opacity-50"
+              variant="outline"
+              className={`${getStatusBadge('INACTIVE')} px-2 h-5 text-[10px] font-bold`}
             >
               INATIVO
             </Badge>
@@ -357,7 +360,7 @@ export default function PushTemplatesPage() {
       <div className="flex items-center gap-2">
         <Bell className="h-3.5 w-3.5 text-amber-500" />
         {template.isActive && (
-          <span className="w-2 h-2 rounded-full bg-emerald-500" />
+          <span className="w-2 h-2 rounded-full bg-success" />
         )}
       </div>
     ),
@@ -371,7 +374,7 @@ export default function PushTemplatesPage() {
   );
 
   return (
-    <>
+    <PermissionGuard action="manage" subject="all">
       <CrudPageShell
         title="Templates de Push"
         subtitle="Configure os modelos de notificação push para sua aplicação."
@@ -475,42 +478,12 @@ export default function PushTemplatesPage() {
       </CrudPageShell>
 
       {/* Preview Dialog */}
-      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="max-w-md p-6 rounded-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5 text-amber-500" />
-              Preview da Notificação
-            </DialogTitle>
-          </DialogHeader>
-          {previewTemplate && (
-            <div className="mt-4">
-              <PushTemplatePreview
-                title={previewTemplate.title}
-                body={previewTemplate.body}
-                icon={previewTemplate.icon}
-                image={previewTemplate.image}
-              />
-
-              {/* Meta Info */}
-              <div className="mt-4 space-y-2 text-xs text-muted-foreground">
-                {previewTemplate.url && (
-                  <div className="flex items-center gap-2">
-                    <LinkIcon className="h-3 w-3" />
-                    <span className="truncate">{previewTemplate.url}</span>
-                  </div>
-                )}
-                {previewTemplate.tag && (
-                  <div className="flex items-center gap-2">
-                    <Tag className="h-3 w-3" />
-                    <span>{previewTemplate.tag}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      <PreviewDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        variant="push"
+        template={previewTemplate}
+      />
 
       {/* Editor Drawer */}
       <CrudEditDrawer
@@ -562,6 +535,6 @@ export default function PushTemplatesPage() {
         cancelText="Cancelar"
         trigger={null}
       />
-    </>
+    </PermissionGuard>
   );
 }

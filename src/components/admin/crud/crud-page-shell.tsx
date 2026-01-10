@@ -85,7 +85,9 @@ export function CrudPageShell({
     isLoading
 }: CrudPageShellProps) {
     const { isMobile } = useBreakpoint()
-    const actualView = useResponsiveView(view)
+
+    // Auto-switch to cards view on mobile/tablet
+    useResponsiveView(view, setView)
 
     return (
         <section className="flex flex-col h-full overflow-hidden bg-background">
@@ -111,7 +113,7 @@ export function CrudPageShell({
                         </div>
                         {/* View Switcher integrated in header container */}
                         <div className="px-6 pb-2">
-                            <ViewSwitcher view={actualView} setView={setView} enabledViews={enabledViews} className="-ml-3" />
+                            <ViewSwitcher view={view} setView={setView} enabledViews={enabledViews} className="-ml-3" />
                         </div>
                     </div>
 
@@ -194,7 +196,7 @@ export function CrudPageShell({
                 ) : (
                     React.Children.map(children, child => {
                         if (React.isValidElement(child) && child.type === CrudDataView) {
-                            return React.cloneElement(child, { view: actualView } as any)
+                            return React.cloneElement(child, { view } as any)
                         }
                         return child
                     })

@@ -2,9 +2,15 @@ import { generateSW } from 'workbox-build';
 import fs from 'fs';
 import path from 'path';
 
-// Gerar versão baseada no timestamp
+// Gerar versão baseada no timestamp local
 const now = new Date();
-const version = now.toISOString().slice(0, 10).replace(/-/g, '') + '.' + now.toISOString().slice(11, 16).replace(/:/g, ''); // formato: YYYYMMDD.HHMM
+const year = now.getFullYear();
+const month = String(now.getMonth() + 1).padStart(2, '0');
+const day = String(now.getDate()).padStart(2, '0');
+const hour = String(now.getHours()).padStart(2, '0');
+const minute = String(now.getMinutes()).padStart(2, '0');
+
+const version = `${year}${month}${day}.${hour}${minute}`; // formato: YYYYMMDD.HHMM
 const versionData = { version, buildAt: now.toISOString() };
 
 // Garantir que a pasta public existe e gravar o version.json

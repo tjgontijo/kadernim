@@ -30,6 +30,9 @@ import {
 } from '@/components/admin/crud';
 import { toast } from 'sonner';
 import { WhatsAppTemplateForm } from '@/components/admin/templates/whatsapp-template-form';
+import { PreviewDialog } from '@/components/admin/shared';
+import { getStatusBadge } from '@/lib/utils/badge-variants';
+import { PermissionGuard } from '@/components/auth/permission-guard';
 
 interface WhatsAppTemplate {
     id: string;
@@ -250,15 +253,15 @@ export default function WhatsAppTemplatesPage() {
                 >
                     {template.isActive ? (
                         <Badge
-                            variant="default"
-                            className="bg-emerald-500/10 text-emerald-600 border-emerald-500/10 px-2 h-5 text-[10px] font-bold"
+                            variant="outline"
+                            className={`${getStatusBadge('ACTIVE')} px-2 h-5 text-[10px] font-bold`}
                         >
                             ATIVO
                         </Badge>
                     ) : (
                         <Badge
-                            variant="secondary"
-                            className="px-2 h-5 text-[10px] font-bold opacity-50"
+                            variant="outline"
+                            className={`${getStatusBadge('INACTIVE')} px-2 h-5 text-[10px] font-bold`}
                         >
                             INATIVO
                         </Badge>
@@ -294,7 +297,7 @@ export default function WhatsAppTemplatesPage() {
             <div className="flex items-center gap-2">
                 <MessageCircle className="h-3.5 w-3.5 text-emerald-500" />
                 {template.isActive && (
-                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    <span className="w-2 h-2 rounded-full bg-success" />
                 )}
             </div>
         ),
@@ -308,7 +311,7 @@ export default function WhatsAppTemplatesPage() {
     );
 
     return (
-        <>
+        <PermissionGuard action="manage" subject="all">
             <CrudPageShell
                 title="Templates de WhatsApp"
                 subtitle="Gerencie as mensagens automáticas enviadas via WhatsApp."
@@ -412,50 +415,12 @@ export default function WhatsAppTemplatesPage() {
             </CrudPageShell>
 
             {/* Preview Dialog */}
-            <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-                <DialogContent className="max-w-md p-6 rounded-2xl">
-                    <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2">
-                            <MessageCircle className="h-5 w-5 text-emerald-500" />
-                            Preview do WhatsApp
-                        </DialogTitle>
-                    </DialogHeader>
-                    {previewTemplate && (
-                        <div className="mt-4">
-                            {/* WhatsApp Balloon Preview */}
-                            <div className="bg-[#e5ddd5] dark:bg-zinc-900 rounded-xl p-4 shadow-inner border relative overflow-hidden">
-                                <div className="absolute inset-0 opacity-10 pointer-events-none bg-[url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')] bg-repeat" />
-
-                                <div className="relative bg-white dark:bg-emerald-950 rounded-lg p-3 shadow-sm max-w-[85%] self-start border-l-4 border-emerald-500">
-                                    <p className="text-sm whitespace-pre-wrap break-words">
-                                        {previewTemplate.body || 'Sua mensagem aparecerá aqui...'}
-                                    </p>
-                                    <div className="flex justify-end mt-1">
-                                        <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                                            {format(new Date(), 'HH:mm')}
-                                            <span className="text-blue-500">✓✓</span>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Meta Info */}
-                            <div className="mt-4 space-y-2 text-xs text-muted-foreground">
-                                <div className="flex items-center gap-2">
-                                    <span className="font-bold text-muted-foreground uppercase text-[10px]">Slug:</span>
-                                    <span className="font-mono">{previewTemplate.slug}</span>
-                                </div>
-                                {previewTemplate.description && (
-                                    <div className="flex flex-col gap-1 pt-1">
-                                        <span className="font-bold text-muted-foreground uppercase text-[10px]">Descrição:</span>
-                                        <span>{previewTemplate.description}</span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                </DialogContent>
-            </Dialog>
+            <PreviewDialog
+                open={previewOpen}
+                onOpenChange={setPreviewOpen}
+                variant="whatsapp"
+                template={previewTemplate}
+            />
 
             {/* Editor Drawer */}
             <CrudEditDrawer
@@ -524,6 +489,6 @@ export default function WhatsAppTemplatesPage() {
                     <Plus className="h-6 w-6" />
                 </Button>
             </div>
-        </>
+        </PermissionGuard>
     );
 }

@@ -11,7 +11,6 @@ import { HeaderActionsProvider } from '@/components/admin/header-actions'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { AdminContent } from '@/components/admin/admin-content'
 import { ResourceProvider } from '@/contexts/resource-context'
-import { MobileNav } from '@/components/client/layout/navigation/MobileNav'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,13 +34,13 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   return (
     <ResourceProvider>
       <HeaderActionsProvider>
-        <SidebarProvider>
+        <SidebarProvider defaultOpen={false}>
           <div className="flex h-screen w-full bg-muted/10 overflow-hidden">
             <AdminSidebar user={user} />
 
             <SidebarInset className="flex flex-col min-h-0 h-full overflow-hidden">
               <AdminHeader />
-              <main className="flex-1 overflow-y-auto p-6">
+              <main className="flex-1 overflow-y-auto">
                 <AdminContent user={user}>
                   {children}
                 </AdminContent>
@@ -49,7 +48,6 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             </SidebarInset>
           </div>
         </SidebarProvider>
-        <MobileNav />
       </HeaderActionsProvider>
     </ResourceProvider>
   )

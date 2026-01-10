@@ -34,6 +34,7 @@ import {
 import { UserEditDrawer, UserCreateDrawer } from '@/components/admin/users'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { getRoleBadge as getRoleBadgeClass } from '@/lib/utils/badge-variants'
 
 interface User {
     id: string
@@ -144,15 +145,15 @@ export default function AdminUsersCrudPage() {
     }
 
     const getRoleBadge = (role: string) => {
-        const variants: Record<string, { class: string; icon: React.ReactNode }> = {
-            admin: { class: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: <Crown className="h-3 w-3" /> },
-            subscriber: { class: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', icon: <Package className="h-3 w-3" /> },
-            user: { class: 'bg-slate-500/10 text-slate-600 border-slate-500/20', icon: <Users className="h-3 w-3" /> },
+        const icons: Record<string, React.ReactNode> = {
+            admin: <Crown className="h-3 w-3" />,
+            subscriber: <Package className="h-3 w-3" />,
+            user: <Users className="h-3 w-3" />,
         }
-        const v = variants[role] || variants.user
+        const icon = icons[role] || icons.user
         return (
-            <Badge variant="outline" className={cn("gap-1 font-medium", v.class)}>
-                {v.icon}
+            <Badge variant="outline" className={cn("gap-1 font-medium", getRoleBadgeClass(role))}>
+                {icon}
                 {role === 'admin' ? 'Admin' : role === 'subscriber' ? 'Assinante' : 'Usuário'}
             </Badge>
         )

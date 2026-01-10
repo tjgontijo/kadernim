@@ -8,34 +8,13 @@ import {
     Mail,
     Bell,
     Webhook,
-    CheckCircle2,
-    XCircle,
-    Layout,
     Pencil,
-    History,
-    AlertTriangle,
     ExternalLink,
     Code,
     MessageSquare,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog';
 import {
     Select,
     SelectContent,
@@ -48,8 +27,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import {
     CrudPageShell,
     CrudDataView,
@@ -64,6 +41,8 @@ import {
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { getAllEvents, getCategories } from '@/lib/events/catalog';
+import { getStatusBadge } from '@/lib/utils/badge-variants';
+import { PermissionGuard } from '@/components/auth/permission-guard';
 
 // Tipos de ação disponíveis
 const ACTION_TYPES = [
@@ -84,22 +63,10 @@ interface AutomationRule {
     createdAt: string;
 }
 
-interface AutomationLog {
-    id: string;
-    status: string;
-    payload: any;
-    error: string | null;
-    executedAt: string;
-    rule: { name: string };
-    action?: { type: string };
-}
-
 export default function AutomationsPage() {
     const [view, setView] = useState<ViewType>('list');
-    const [mode, setMode] = useState<'rules' | 'logs'>('rules');
     const [loading, setLoading] = useState(true);
     const [rules, setRules] = useState<AutomationRule[]>([]);
-    const [logs, setLogs] = useState<AutomationLog[]>([]);
     const [templates, setTemplates] = useState<any[]>([]);
 
     // Pagination/Search
@@ -130,14 +97,9 @@ export default function AutomationsPage() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [rulesRes, logsRes] = await Promise.all([
-                fetch('/api/v1/admin/automations'),
-                fetch('/api/v1/admin/automations/logs?limit=50'),
-            ]);
-            const rulesJson = await rulesRes.json();
-            const logsJson = await logsRes.json();
-            if (rulesJson.success) setRules(rulesJson.data);
-            if (logsJson.success) setLogs(logsJson.data);
+            const res = await fetch('/api/v1/admin/automations');
+            const json = await res.json();
+            if (json.success) setRules(json.data);
         } catch (error) {
             toast.error('Erro ao buscar dados');
         } finally {
@@ -146,20 +108,14 @@ export default function AutomationsPage() {
     };
 
     const fetchTemplates = async () => {
-        console.log('[Automations] Buscando templates...');
         try {
             const res = await fetch('/api/v1/admin/templates');
-            console.log('[Automations] Resposta:', res.status);
             const json = await res.json();
-            console.log('[Automations] Templates recebidos:', json);
             if (json.success) {
                 setTemplates(json.data);
-                console.log('[Automations] Templates setados:', json.data.length);
-            } else {
-                console.error('[Automations] Erro na API:', json.error);
             }
         } catch (error) {
-            console.error('[Automations] Erro ao buscar templates:', error);
+            console.error('Erro ao buscar templates:', error);
         }
     };
 
@@ -328,9 +284,9 @@ export default function AutomationsPage() {
             render: (rule) => (
                 <button onClick={() => handleToggle(rule)} className="focus:outline-none">
                     {rule.isActive ? (
-                        <Badge variant="default" className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 border-emerald-500/20 px-2 h-5 text-[10px] font-bold uppercase tracking-wider">ATIVO</Badge>
+                        <Badge variant="outline" className={`${getStatusBadge('ACTIVE')} px-2 h-5 text-[10px] font-bold uppercase tracking-wider`}>ATIVO</Badge>
                     ) : (
-                        <Badge variant="secondary" className="px-2 h-5 text-[10px] font-bold uppercase tracking-wider opacity-50">INATIVO</Badge>
+                        <Badge variant="outline" className={`${getStatusBadge('INACTIVE')} px-2 h-5 text-[10px] font-bold uppercase tracking-wider`}>INATIVO</Badge>
                     )}
                 </button>
             )
@@ -373,14 +329,10 @@ export default function AutomationsPage() {
 
     // Filtrar templates pelo tipo selecionado
     const filteredTemplates = templates.filter(t => {
-        // Filtrar por tipo de canal (email, push, whatsapp)
         let matchesChannel = false;
         if (formActionType === 'EMAIL_SEND') matchesChannel = t.type === 'email';
         if (formActionType === 'WHATSAPP_SEND') matchesChannel = t.type === 'whatsapp';
         if (formActionType === 'PUSH_NOTIFICATION') matchesChannel = t.type === 'push';
-
-        // Nota: Removemos o filtro de eventType para permitir escolher qualquer template do canal
-        // O admin pode querer usar um template genérico para diferentes eventos
         return matchesChannel;
     });
 
@@ -397,7 +349,7 @@ export default function AutomationsPage() {
     };
 
     return (
-        <>
+        <PermissionGuard action="manage" subject="all">
             <CrudPageShell
                 title="Automações"
                 subtitle="Gerencie gatilhos e reações automáticas do sistema."
@@ -415,32 +367,12 @@ export default function AutomationsPage() {
                 limit={limit}
                 onPageChange={setPage}
                 onLimitChange={setLimit}
-                totalItems={mode === 'rules' ? filteredRules.length : logs.length}
-                totalPages={Math.ceil((mode === 'rules' ? filteredRules.length : logs.length) / limit)}
-                hasMore={mode === 'rules' ? (page * limit < filteredRules.length) : (page * limit < logs.length)}
+                totalItems={filteredRules.length}
+                totalPages={Math.ceil(filteredRules.length / limit)}
+                hasMore={page * limit < filteredRules.length}
                 isLoading={loading}
-                actions={
-                    <div className="flex items-center bg-muted/50 border rounded-lg p-1">
-                        <Button
-                            variant={mode === 'rules' ? 'secondary' : 'ghost'}
-                            size="sm"
-                            className="h-7 text-xs font-semibold px-3"
-                            onClick={() => setMode('rules')}
-                        >
-                            Regras
-                        </Button>
-                        <Button
-                            variant={mode === 'logs' ? 'secondary' : 'ghost'}
-                            size="sm"
-                            className="h-7 text-xs font-semibold px-3"
-                            onClick={() => setMode('logs')}
-                        >
-                            Histórico
-                        </Button>
-                    </div>
-                }
             >
-                {mode === 'rules' ? (
+                <div className="p-4 md:p-6 pb-20">
                     <CrudDataView
                         data={filteredRules}
                         view={view}
@@ -481,85 +413,7 @@ export default function AutomationsPage() {
                             />
                         }
                     />
-                ) : (
-                    <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
-                        <Table>
-                            <TableHeader className="bg-muted/50">
-                                <TableRow>
-                                    <TableHead className="w-12"></TableHead>
-                                    <TableHead className="text-[11px] font-bold uppercase tracking-wider h-10">Automação</TableHead>
-                                    <TableHead className="text-[11px] font-bold uppercase tracking-wider h-10">Ação</TableHead>
-                                    <TableHead className="text-[11px] font-bold uppercase tracking-wider h-10">Status</TableHead>
-                                    <TableHead className="text-[11px] font-bold uppercase tracking-wider h-10 text-right pr-6">Data</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {logs.length === 0 && (
-                                    <TableRow>
-                                        <TableCell colSpan={5} className="text-center py-12 text-sm text-muted-foreground italic">
-                                            Nenhum histórico disponível
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                                {logs.slice((page - 1) * limit, page * limit).map((log) => {
-                                    const actionInfo = log.action?.type ? getActionInfo(log.action.type) : null;
-                                    return (
-                                        <TableRow key={log.id} className="group hover:bg-muted/30 transition-colors">
-                                            <TableCell className="pl-4">
-                                                {log.status === 'success' ? (
-                                                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                                                ) : (
-                                                    <XCircle className="h-4 w-4 text-rose-500" />
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex flex-col">
-                                                    <span className="font-medium text-sm">{log.rule?.name}</span>
-                                                    {log.error && <span className="text-[10px] text-rose-500 font-mono truncate max-w-[200px]">{log.error}</span>}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                {actionInfo && (
-                                                    <div className="flex items-center gap-1.5 opacity-70">
-                                                        <actionInfo.icon className={cn("h-3.5 w-3.5", actionInfo.color)} />
-                                                        <span className="text-xs font-medium">{actionInfo.label}</span>
-                                                    </div>
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Dialog>
-                                                    <DialogTrigger asChild>
-                                                        <Button variant="ghost" size="sm" className="h-7 text-[10px] font-bold uppercase tracking-wider px-2 hover:bg-primary/10 hover:text-primary">
-                                                            Payload
-                                                        </Button>
-                                                    </DialogTrigger>
-                                                    <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col p-6 rounded-2xl">
-                                                        <DialogHeader>
-                                                            <DialogTitle className="text-lg font-bold">Conteúdo da Execução</DialogTitle>
-                                                            <DialogDescription className="text-xs uppercase font-mono">{log.rule?.name}</DialogDescription>
-                                                        </DialogHeader>
-                                                        <div className="mt-4 flex-1 overflow-auto rounded-xl bg-muted p-4 border font-mono text-xs">
-                                                            {JSON.stringify(log.payload, null, 2)}
-                                                        </div>
-                                                        {log.error && (
-                                                            <div className="mt-4 p-3 bg-destructive/10 border border-destructive/20 rounded-xl">
-                                                                <p className="text-[10px] font-bold text-destructive uppercase mb-1">Erro:</p>
-                                                                <p className="text-xs font-mono">{log.error}</p>
-                                                            </div>
-                                                        )}
-                                                    </DialogContent>
-                                                </Dialog>
-                                            </TableCell>
-                                            <TableCell className="text-right pr-6 tabular-nums text-xs text-muted-foreground">
-                                                {format(new Date(log.executedAt), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })}
-                            </TableBody>
-                        </Table>
-                    </div>
-                )}
+                </div>
             </CrudPageShell>
 
             <CrudEditDrawer
@@ -661,7 +515,7 @@ export default function AutomationsPage() {
                             </Label>
                             <Select value={formActionType} onValueChange={(val) => {
                                 setFormActionType(val)
-                                setFormConfig({}) // Reset config when type changes
+                                setFormConfig({})
                             }}>
                                 <SelectTrigger className="h-11 rounded-lg bg-muted/30 w-full">
                                     <SelectValue placeholder="Selecione o que o sistema deve fazer..." />
@@ -686,7 +540,7 @@ export default function AutomationsPage() {
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between">
                                     <Label className="text-xs font-bold uppercase tracking-wider">Template de E-mail</Label>
-                                    <Link href="/admin/templates" target="_blank" className="text-[10px] font-bold text-primary flex items-center gap-1 hover:underline">
+                                    <Link href="/admin/templates/email" target="_blank" className="text-[10px] font-bold text-primary flex items-center gap-1 hover:underline">
                                         <ExternalLink className="h-3 w-3" /> Gerenciar Templates
                                     </Link>
                                 </div>
@@ -742,7 +596,7 @@ export default function AutomationsPage() {
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between">
                                     <Label className="text-xs font-bold uppercase tracking-wider">Template de Push</Label>
-                                    <Link href="/admin/templates" target="_blank" className="text-[10px] font-bold text-primary flex items-center gap-1 hover:underline">
+                                    <Link href="/admin/templates/push" target="_blank" className="text-[10px] font-bold text-primary flex items-center gap-1 hover:underline">
                                         <ExternalLink className="h-3 w-3" /> Gerenciar Templates
                                     </Link>
                                 </div>
@@ -806,6 +660,6 @@ export default function AutomationsPage() {
                 confirmText="Excluir"
                 cancelText="Cancelar"
             />
-        </>
+        </PermissionGuard>
     );
 }

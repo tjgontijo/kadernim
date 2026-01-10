@@ -6,11 +6,9 @@ import {
   LayoutDashboard,
   BookOpen,
   Users,
-  Building2,
   BarChart3,
   Settings,
   Hash,
-  Tags,
   Sparkles,
   Cpu,
   Zap,
@@ -20,6 +18,7 @@ import {
   Bell,
   MessageCircle,
   Send,
+  Activity,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -51,8 +50,15 @@ import { UserRoleType } from '@/types/user-role'
 type NavItem = {
   title: string
   href: string
-  icon: string
+  icon: keyof typeof ICON_MAP
   permission?: { action: PermissionAction; subject: PermissionSubject }
+  subItems?: SubNavItem[]
+}
+
+type SubNavItem = {
+  title: string
+  href: string
+  icon: any
 }
 
 interface AdminSidebarProps {
@@ -70,16 +76,15 @@ const ICON_MAP = {
   LayoutDashboard,
   BookOpen,
   Users,
-  Building2,
   BarChart3,
   Settings,
   Hash,
-  Tags,
   Sparkles,
   Cpu,
   Zap,
   FileText,
   Send,
+  Activity,
 } as const
 
 export function AdminSidebar({ user }: AdminSidebarProps) {
@@ -100,41 +105,116 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
   const userRole = (user.role || 'user') as UserRoleType
   const ability = defineAbilitiesFor(userRole)
 
-  // Nav items with permission requirements
-  const platformItems: NavItem[] = [
-    { title: 'Geral', href: '/admin', icon: 'LayoutDashboard' },
-    { title: 'Monitoramento IA', href: '/admin/llm-usage', icon: 'Cpu', permission: { action: 'manage', subject: 'all' } },
-    { title: 'Analytics Push', href: '/admin/campaigns/analytics', icon: 'BarChart3', permission: { action: 'manage', subject: 'all' } },
-  ]
-
-  const dataItems: NavItem[] = [
-    { title: 'Recursos', href: '/admin/resources', icon: 'BookOpen', permission: { action: 'read', subject: 'Resource' } },
-    { title: 'Pedidos', href: '/admin/community-requests', icon: 'Sparkles', permission: { action: 'read', subject: 'Resource' } },
-    { title: 'Disciplinas', href: '/admin/subjects', icon: 'Hash', permission: { action: 'read', subject: 'Subject' } },
-    { title: 'Usuários', href: '/admin/users', icon: 'Users', permission: { action: 'read', subject: 'User' } },
-    { title: 'Automações', href: '/admin/automations', icon: 'Zap', permission: { action: 'manage', subject: 'all' } },
-    { title: 'Campanhas', href: '/admin/campaigns', icon: 'Send', permission: { action: 'manage', subject: 'all' } },
-  ]
-
-  // Template sub-items
-  const templateSubItems = [
-    { title: 'Email', href: '/admin/templates/email', icon: Mail },
-    { title: 'Push', href: '/admin/templates/push', icon: Bell },
-    { title: 'WhatsApp', href: '/admin/templates/whatsapp', icon: MessageCircle },
-  ]
-
-  // Check if any template route is active
-  const isTemplatesActive = pathname.startsWith('/admin/templates')
-
-  const configItems: NavItem[] = [
-    { title: 'Configurações', href: '/admin/settings', icon: 'Settings' },
-  ]
-
   // Handler to close sidebar on mobile when clicking a menu item
   const handleNavClick = () => {
     if (isMobile) {
       setOpenMobile(false)
     }
+  }
+
+  // Dashboards Section
+  const dashboardItems: NavItem[] = [
+    { title: 'Geral', href: '/admin', icon: 'LayoutDashboard' },
+    { title: 'Analytics Push', href: '/admin/campaigns/analytics', icon: 'BarChart3', permission: { action: 'manage', subject: 'all' } },
+    { title: 'Analytics Automações', href: '/admin/automations/analytics', icon: 'Activity', permission: { action: 'manage', subject: 'all' } },
+    { title: 'Monitoramento IA', href: '/admin/llm-usage', icon: 'Cpu', permission: { action: 'manage', subject: 'all' } },
+  ]
+
+  // Gestão de Dados Section
+  const dataItems: NavItem[] = [
+    { title: 'Recursos', href: '/admin/resources', icon: 'BookOpen', permission: { action: 'read', subject: 'Resource' } },
+    { title: 'Pedidos', href: '/admin/community-requests', icon: 'Sparkles', permission: { action: 'read', subject: 'Resource' } },
+    { title: 'Disciplinas', href: '/admin/subjects', icon: 'Hash', permission: { action: 'read', subject: 'Subject' } },
+    { title: 'Usuários', href: '/admin/users', icon: 'Users', permission: { action: 'read', subject: 'User' } },
+  ]
+
+  // Comunicação Section
+  const communicationItems: NavItem[] = [
+    { title: 'Automações', href: '/admin/automations', icon: 'Zap', permission: { action: 'manage', subject: 'all' } },
+    { title: 'Campanhas', href: '/admin/campaigns', icon: 'Send', permission: { action: 'manage', subject: 'all' } },
+    {
+      title: 'Templates',
+      href: '/admin/templates',
+      icon: 'FileText',
+      permission: { action: 'manage', subject: 'all' },
+      subItems: [
+        { title: 'Email', href: '/admin/templates/email', icon: Mail },
+        { title: 'Push', href: '/admin/templates/push', icon: Bell },
+        { title: 'WhatsApp', href: '/admin/templates/whatsapp', icon: MessageCircle },
+      ]
+    },
+  ]
+
+  // Config Section
+  const configItems: NavItem[] = [
+    { title: 'Configurações', href: '/admin/settings', icon: 'Settings' },
+  ]
+
+  // Helper to check if a menu with subitems should be active
+  const isMenuActive = (item: NavItem): boolean => {
+    if (item.subItems) {
+      return item.subItems.some(sub => pathname === sub.href || pathname.startsWith(`${sub.href}/`))
+    }
+    return pathname === item.href || pathname.startsWith(`${item.href}/`)
+  }
+
+  // Render menu item (with or without subitems)
+  const renderMenuItem = (item: NavItem) => {
+    const Icon = ICON_MAP[item.icon]
+    const hasSubItems = item.subItems && item.subItems.length > 0
+
+    if (hasSubItems) {
+      const isActive = isMenuActive(item)
+
+      return (
+        <Collapsible
+          key={item.href}
+          asChild
+          defaultOpen={isActive}
+          className="group/collapsible"
+        >
+          <SidebarMenuItem>
+            <CollapsibleTrigger asChild>
+              <SidebarMenuButton tooltip={item.title}>
+                {Icon && <Icon className="h-4 w-4" />}
+                <span>{item.title}</span>
+                <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+              </SidebarMenuButton>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <SidebarMenuSub>
+                {item.subItems!.map((subItem) => {
+                  const isSubActive = pathname === subItem.href || pathname.startsWith(`${subItem.href}/`)
+                  return (
+                    <SidebarMenuSubItem key={subItem.href}>
+                      <SidebarMenuSubButton asChild isActive={isSubActive}>
+                        <Link href={subItem.href} onClick={handleNavClick}>
+                          <subItem.icon className="h-4 w-4" />
+                          <span>{subItem.title}</span>
+                        </Link>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  )
+                })}
+              </SidebarMenuSub>
+            </CollapsibleContent>
+          </SidebarMenuItem>
+        </Collapsible>
+      )
+    }
+
+    const isActive = pathname === item.href || (pathname.startsWith(`${item.href}/`) && item.href !== '/admin')
+
+    return (
+      <SidebarMenuItem key={item.href}>
+        <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
+          <Link href={item.href} onClick={handleNavClick}>
+            {Icon && <Icon className="h-4 w-4" />}
+            <span>{item.title}</span>
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    )
   }
 
   return (
@@ -150,7 +230,7 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
               <Link href="/admin">
                 <div className="flex size-8 items-center justify-center">
                   <img
-                    src="/images/system/icon-1024x1024.png"
+                    src="/images/icons/icon-1024x1024.png"
                     alt="Kadernim"
                     className="size-8 object-contain"
                   />
@@ -168,110 +248,50 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
       </SidebarHeader>
 
       <SidebarContent>
+        {/* Dashboards */}
         <SidebarGroup>
           <SidebarGroupLabel>Dashboards</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {platformItems
+              {dashboardItems
                 .filter((item) => !item.permission || ability.can(item.permission.action, item.permission.subject))
-                .map((item) => {
-                  const Icon = ICON_MAP[item.icon as keyof typeof ICON_MAP]
-                  const isActive = pathname === item.href
-                  return (
-                    <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
-                        <Link href={item.href} onClick={handleNavClick}>
-                          {Icon && <Icon className="h-4 w-4" />}
-                          <span>{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  )
-                })}
+                .map(renderMenuItem)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
+        {/* Gestão de Dados */}
         <SidebarGroup>
-          <SidebarGroupLabel>Dados</SidebarGroupLabel>
+          <SidebarGroupLabel>Gestão de Dados</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {dataItems
                 .filter((item) => !item.permission || ability.can(item.permission.action, item.permission.subject))
-                .map((item) => {
-                  const Icon = ICON_MAP[item.icon as keyof typeof ICON_MAP]
-                  const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
-                  return (
-                    <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
-                        <Link href={item.href} onClick={handleNavClick}>
-                          {Icon && <Icon className="h-4 w-4" />}
-                          <span>{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  )
-                })}
-
-              {/* Templates Collapsible Menu */}
-              {ability.can('manage', 'all') && (
-                <Collapsible
-                  asChild
-                  defaultOpen={isTemplatesActive}
-                  className="group/collapsible"
-                >
-                  <SidebarMenuItem>
-                    <CollapsibleTrigger asChild>
-                      <SidebarMenuButton tooltip="Templates" isActive={isTemplatesActive}>
-                        <FileText className="h-4 w-4" />
-                        <span>Templates</span>
-                        <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                      </SidebarMenuButton>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <SidebarMenuSub>
-                        {templateSubItems.map((item) => {
-                          const isSubActive = pathname === item.href
-                          return (
-                            <SidebarMenuSubItem key={item.href}>
-                              <SidebarMenuSubButton asChild isActive={isSubActive}>
-                                <Link href={item.href} onClick={handleNavClick}>
-                                  <item.icon className="h-4 w-4" />
-                                  <span>{item.title}</span>
-                                </Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          )
-                        })}
-                      </SidebarMenuSub>
-                    </CollapsibleContent>
-                  </SidebarMenuItem>
-                </Collapsible>
-              )}
+                .map(renderMenuItem)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
+        {/* Comunicação */}
         <SidebarGroup>
-          <SidebarGroupLabel>Configurações</SidebarGroupLabel>
+          <SidebarGroupLabel>Comunicação</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {communicationItems
+                .filter((item) => !item.permission || ability.can(item.permission.action, item.permission.subject))
+                .map(renderMenuItem)}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Configurações */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Sistema</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {configItems
                 .filter((item) => !item.permission || ability.can(item.permission.action, item.permission.subject))
-                .map((item) => {
-                  const Icon = ICON_MAP[item.icon as keyof typeof ICON_MAP]
-                  const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
-                  return (
-                    <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
-                        <Link href={item.href} onClick={handleNavClick}>
-                          {Icon && <Icon className="h-4 w-4" />}
-                          <span>{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  )
-                })}
+                .map(renderMenuItem)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

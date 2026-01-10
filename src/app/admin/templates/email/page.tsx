@@ -10,12 +10,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
@@ -30,6 +25,9 @@ import {
 } from '@/components/admin/crud';
 import { toast } from 'sonner';
 import { EmailTemplateForm } from '@/components/admin/templates/email-template-form';
+import { PreviewDialog } from '@/components/admin/shared';
+import { getStatusBadge } from '@/lib/utils/badge-variants';
+import { PermissionGuard } from '@/components/auth/permission-guard';
 
 interface EmailTemplate {
     id: string;
@@ -274,15 +272,15 @@ export default function EmailTemplatesPage() {
                 >
                     {template.isActive ? (
                         <Badge
-                            variant="default"
-                            className="bg-emerald-500/10 text-emerald-600 border-emerald-500/10 px-2 h-5 text-[10px] font-bold"
+                            variant="outline"
+                            className={`${getStatusBadge('ACTIVE')} px-2 h-5 text-[10px] font-bold`}
                         >
                             ATIVO
                         </Badge>
                     ) : (
                         <Badge
-                            variant="secondary"
-                            className="px-2 h-5 text-[10px] font-bold opacity-50"
+                            variant="outline"
+                            className={`${getStatusBadge('INACTIVE')} px-2 h-5 text-[10px] font-bold`}
                         >
                             INATIVO
                         </Badge>
@@ -318,7 +316,7 @@ export default function EmailTemplatesPage() {
             <div className="flex items-center gap-2">
                 <Mail className="h-3.5 w-3.5 text-blue-500" />
                 {template.isActive && (
-                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    <span className="w-2 h-2 rounded-full bg-success" />
                 )}
             </div>
         ),
@@ -332,7 +330,7 @@ export default function EmailTemplatesPage() {
     );
 
     return (
-        <>
+        <PermissionGuard action="manage" subject="all">
             <CrudPageShell
                 title="Templates de Email"
                 subtitle="Configure os modelos de email para notificações e automações."
@@ -436,59 +434,12 @@ export default function EmailTemplatesPage() {
             </CrudPageShell>
 
             {/* Preview Dialog */}
-            <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-                <DialogContent className="max-w-4xl p-0 overflow-hidden rounded-2xl border-none bg-transparent">
-                    {previewTemplate && (
-                        <div className="flex flex-col h-[80vh] bg-background border rounded-2xl overflow-hidden shadow-2xl">
-                            <DialogHeader className="p-4 border-b bg-muted/30">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center">
-                                            <Mail className="h-5 w-5 text-blue-500" />
-                                        </div>
-                                        <div>
-                                            <DialogTitle className="text-base font-semibold">
-                                                Preview do Email
-                                            </DialogTitle>
-                                            <p className="text-xs text-muted-foreground">
-                                                Visualização de como o cliente receberá a mensagem
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </DialogHeader>
-
-                            {/* Email Envelope View */}
-                            <div className="flex-1 overflow-auto bg-muted/50 p-4 md:p-8 flex justify-center">
-                                <div className="w-full max-w-[600px] bg-white shadow-sm border rounded-lg overflow-hidden flex flex-col h-fit min-h-full">
-                                    {/* Meta Info */}
-                                    <div className="p-4 border-b bg-muted/5 space-y-2">
-                                        <div className="flex items-start gap-2">
-                                            <span className="text-[10px] font-bold text-muted-foreground uppercase w-12 pt-0.5">Assunto:</span>
-                                            <span className="text-sm font-medium">{previewTemplate.subject}</span>
-                                        </div>
-                                        {previewTemplate.preheader && (
-                                            <div className="flex items-start gap-2">
-                                                <span className="text-[10px] font-bold text-muted-foreground uppercase w-12 pt-0.5">Preheader:</span>
-                                                <span className="text-xs text-muted-foreground">{previewTemplate.preheader}</span>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Webview of HTML Body */}
-                                    <div className="flex-1 bg-white">
-                                        <iframe
-                                            srcDoc={previewTemplate.body}
-                                            title="Email Body Preview"
-                                            className="w-full h-full min-h-[400px] border-none"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </DialogContent>
-            </Dialog>
+            <PreviewDialog
+                open={previewOpen}
+                onOpenChange={setPreviewOpen}
+                variant="email"
+                template={previewTemplate}
+            />
 
             {/* Editor Drawer */}
             <CrudEditDrawer
@@ -557,6 +508,6 @@ export default function EmailTemplatesPage() {
                     <Plus className="h-6 w-6" />
                 </Button>
             </div>
-        </>
+        </PermissionGuard>
     );
 }

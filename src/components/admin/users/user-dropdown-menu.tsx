@@ -14,8 +14,8 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { LogOut } from 'lucide-react'
-import { signOutAction } from '@/app/admin/actions'
+import { ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
 
 interface UserDropdownMenuProps {
   userName: string
@@ -73,14 +73,12 @@ export function UserDropdownMenu({ userName, userEmail, userImage }: UserDropdow
           <p className="text-xs leading-none text-muted-foreground">{userEmail}</p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <form action={signOutAction} className="w-full">
-          <DropdownMenuItem asChild>
-            <button className="w-full cursor-pointer">
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Sair</span>
-            </button>
-          </DropdownMenuItem>
-        </form>
+        <DropdownMenuItem asChild>
+          <Link href="/resources" className="cursor-pointer">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            <span>Voltar ao Portal</span>
+          </Link>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )
