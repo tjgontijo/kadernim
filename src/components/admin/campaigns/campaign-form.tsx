@@ -451,14 +451,7 @@ export function CampaignForm({ initialData, onSubmit, isLoading }: CampaignFormP
                                                             newDate.setMonth(date.getMonth());
                                                             newDate.setDate(date.getDate());
 
-                                                            // Formato: YYYY-MM-DDTHH:mm
-                                                            const year = newDate.getFullYear();
-                                                            const month = String(newDate.getMonth() + 1).padStart(2, '0');
-                                                            const day = String(newDate.getDate()).padStart(2, '0');
-                                                            const hours = String(newDate.getHours()).padStart(2, '0');
-                                                            const minutes = String(newDate.getMinutes()).padStart(2, '0');
-
-                                                            field.onChange(`${year}-${month}-${day}T${hours}:${minutes}`);
+                                                            field.onChange(newDate.toISOString());
                                                         }
                                                     }}
                                                     disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
@@ -470,11 +463,14 @@ export function CampaignForm({ initialData, onSubmit, isLoading }: CampaignFormP
                                                         <Label className="text-xs mb-2 block">Horário</Label>
                                                         <Input
                                                             type="time"
-                                                            value={field.value ? field.value.split('T')[1] || '12:00' : '12:00'}
+                                                            value={selectedDate ? `${String(selectedDate.getHours()).padStart(2, '0')}:${String(selectedDate.getMinutes()).padStart(2, '0')}` : '12:00'}
                                                             onChange={(e) => {
                                                                 if (selectedDate && e.target.value) {
-                                                                    const dateStr = field.value?.split('T')[0] || format(selectedDate, 'yyyy-MM-dd');
-                                                                    field.onChange(`${dateStr}T${e.target.value}`);
+                                                                    const [hours, minutes] = e.target.value.split(':');
+                                                                    const newDate = new Date(selectedDate);
+                                                                    newDate.setHours(parseInt(hours));
+                                                                    newDate.setMinutes(parseInt(minutes));
+                                                                    field.onChange(newDate.toISOString());
                                                                 }
                                                             }}
                                                             className="h-9"
