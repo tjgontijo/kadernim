@@ -530,9 +530,9 @@ export const handleCampaignScheduled = inngest.createFunction(
             // Se não tem filtros, envia para todos
             if (Object.keys(audience).length === 0 ||
                 (!audience.roles?.length &&
-                 !audience.hasSubscription &&
-                 !audience.activeInDays &&
-                 !audience.inactiveForDays)) {
+                    !audience.hasSubscription &&
+                    !audience.activeInDays &&
+                    !audience.inactiveForDays)) {
                 console.log(`[Campaign] Sem filtros - enviando para todas as subscriptions ativas`);
                 return await prisma.pushSubscription.findMany({
                     where: { active: true },
@@ -557,7 +557,7 @@ export const handleCampaignScheduled = inngest.createFunction(
             const segmented = await getSegmentedPushSubscriptions(audienceFilter);
             console.log(`[Campaign] Filtro aplicado - ${segmented.length} subscriptions encontradas`);
 
-            return segmented.map(s => ({
+            return segmented.map((s: any) => ({
                 id: s.id,
                 endpoint: s.endpoint,
                 auth: s.auth,
@@ -600,7 +600,7 @@ export const handleCampaignScheduled = inngest.createFunction(
             campaignId,
             sent: result.success,
             failed: result.failed,
-            uniqueUsers: result.userResults.size
+            uniqueUsers: result.uniqueUsersCount
         };
     }
 );
