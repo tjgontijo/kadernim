@@ -2,9 +2,8 @@ import { prisma } from '@/lib/db'
 import { CommunityFilters, CommunityRequestInput } from '@/lib/schemas/community'
 import { getCurrentYearMonth } from '@/lib/utils/date'
 import { emitEvent } from '@/lib/events/emit'
-
-const MAX_VOTES_PER_MONTH = 5
-const MAX_REQUESTS_PER_MONTH = 1
+import { getCommunityConfig, getVoteLimitByRole } from '@/services/config/system-config'
+import { UserRole } from '@prisma/client'
 
 /**
  * Lists community requests with pagination and filters.
@@ -82,33 +81,39 @@ export async function getCommunityRequests(filters: CommunityFilters & { current
 
 /**
  * Creates a new community request.
- * Enforces: 1 request per month, and must have voted at least once.
+ * Enforces: configurable request limit per month, and must have voted minimum times.
  */
-export async function createCommunityRequest(userId: string, data: CommunityRequestInput) {
+export async function createCommunityRequest(userId: string, userRole: UserRole, data: CommunityRequestInput) {
     const currentMonth = getCurrentYearMonth()
+    const config = await getCommunityConfig()
 
-    // 1. Check if user has already made a request this month
-    const existingRequest = await prisma.communityRequest.findFirst({
-        where: {
-            userId,
-            votingMonth: currentMonth,
-        },
-    })
-
-    if (existingRequest) {
-        throw new Error('Você já criou um pedido este mês.')
+    // 1. Check if user can create (role check)
+    if (userRole === 'user') {
+        throw new Error('Você precisa ser assinante para criar solicitações.')
     }
 
-    // 2. Check if user has voted at least once this month
-    const hasVoted = await prisma.communityRequestVote.findFirst({
+    // 2. Check if user has already made max requests this month
+    const existingRequests = await prisma.communityRequest.count({
         where: {
             userId,
             votingMonth: currentMonth,
         },
     })
 
-    if (!hasVoted) {
-        throw new Error('Você precisa votar em pelo menos um pedido antes de sugerir o seu.')
+    if (existingRequests >= config.requests.limit) {
+        throw new Error(`Você já criou ${config.requests.limit} pedido(s) este mês.`)
+    }
+
+    // 3. Check if user has voted enough this month
+    const voteCount = await prisma.communityRequestVote.count({
+        where: {
+            userId,
+            votingMonth: currentMonth,
+        },
+    })
+
+    if (voteCount < config.requests.minVotes) {
+        throw new Error(`Você precisa votar em pelo menos ${config.requests.minVotes} pedido(s) antes de sugerir o seu.`)
     }
 
     const request = await prisma.communityRequest.create({
@@ -135,10 +140,18 @@ export async function createCommunityRequest(userId: string, data: CommunityRequ
 
 /**
  * Casts a vote for a community request.
- * Enforces: 5 votes per month total, 1 vote per request.
+ * Enforces: configurable votes per month by role, 1 vote per request, cannot vote on own request.
  */
-export async function voteForRequest(userId: string, requestId: string) {
+export async function voteForRequest(userId: string, userRole: UserRole, requestId: string) {
     const currentMonth = getCurrentYearMonth()
+    const config = await getCommunityConfig()
+
+    // Get vote limit based on user role
+    const maxVotes = getVoteLimitByRole(userRole, config)
+
+    if (maxVotes === 0) {
+        throw new Error('Você precisa ser assinante para votar.')
+    }
 
     return await prisma.$transaction(async (tx) => {
         // 1. Check total votes this month
@@ -149,8 +162,8 @@ export async function voteForRequest(userId: string, requestId: string) {
             },
         })
 
-        if (totalVotes >= MAX_VOTES_PER_MONTH) {
-            throw new Error(`Você já atingiu seu limite de ${MAX_VOTES_PER_MONTH} votos este mês.`)
+        if (totalVotes >= maxVotes) {
+            throw new Error(`Você já atingiu seu limite de ${maxVotes} votos este mês.`)
         }
 
         // 2. Check if already voted for THIS request
@@ -167,7 +180,17 @@ export async function voteForRequest(userId: string, requestId: string) {
             throw new Error('Você já votou neste pedido.')
         }
 
-        // 3. Create vote
+        // 3. Check if user is trying to vote on their own request
+        const request = await tx.communityRequest.findUnique({
+            where: { id: requestId },
+            select: { userId: true }
+        })
+
+        if (request?.userId === userId) {
+            throw new Error('Você não pode votar na sua própria solicitação.')
+        }
+
+        // 4. Create vote
         await tx.communityRequestVote.create({
             data: {
                 requestId,
@@ -176,7 +199,7 @@ export async function voteForRequest(userId: string, requestId: string) {
             },
         })
 
-        // 4. Increment counter in Request
+        // 5. Increment counter in Request
         const updatedRequest = await tx.communityRequest.update({
             where: { id: requestId },
             data: {

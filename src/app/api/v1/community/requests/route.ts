@@ -54,20 +54,14 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        // 2. Validar role (subscriber ou admin)
+        // 2. Get user with role
         const user = await prisma.user.findUnique({
             where: { id: session.user.id },
             select: { role: true },
         })
 
-        if (!user || (user.role !== 'subscriber' && user.role !== 'admin')) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Apenas assinantes podem sugerir novos recursos',
-                },
-                { status: 403 }
-            )
+        if (!user) {
+            return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 })
         }
 
         const body = await request.json()
@@ -77,7 +71,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Dados inválidos', details: parsed.error.format() }, { status: 400 })
         }
 
-        const result = await createCommunityRequest(session.user.id, parsed.data)
+        const result = await createCommunityRequest(session.user.id, user.role, parsed.data)
 
         return NextResponse.json({ success: true, data: result })
     } catch (error: any) {

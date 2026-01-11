@@ -19,23 +19,17 @@ export async function POST(
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        // Validar role (subscriber ou admin)
+        // Get user with role
         const user = await prisma.user.findUnique({
             where: { id: session.user.id },
             select: { role: true },
         })
 
-        if (!user || (user.role !== 'subscriber' && user.role !== 'admin')) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Apenas assinantes podem votar',
-                },
-                { status: 403 }
-            )
+        if (!user) {
+            return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 })
         }
 
-        const result = await voteForRequest(session.user.id, id)
+        const result = await voteForRequest(session.user.id, user.role, id)
 
         return NextResponse.json({ success: true, data: result })
     } catch (error: any) {
