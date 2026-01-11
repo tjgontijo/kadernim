@@ -11,6 +11,7 @@ import {
     Search,
     RefreshCw
 } from 'lucide-react';
+import { DashPageShell } from '@/components/admin/dash/dash-page-shell';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -179,12 +180,10 @@ export default function LlmUsagePage() {
     }
 
     return (
-        <div className="space-y-6 pb-10">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Monitoramento de IA</h1>
-                    <p className="text-muted-foreground">Analise o uso, custos e performance dos modelos LLM.</p>
-                </div>
+        <DashPageShell
+            title="Monitoramento de IA"
+            subtitle="Analise o uso, custos e performance dos modelos LLM."
+            actions={(
                 <div className="flex items-center gap-2">
                     <Button
                         variant="outline"
@@ -203,8 +202,8 @@ export default function LlmUsagePage() {
                         </TabsList>
                     </Tabs>
                 </div>
-            </div>
-
+            )}
+        >
             {data.alerts?.level !== 'ok' && (
                 <Alert variant={data.alerts.level === 'critical' ? 'destructive' : 'default'} className={data.alerts.level === 'warning' ? 'border-amber-200 bg-amber-50 text-amber-900' : ''}>
                     <AlertCircle className="h-4 w-4" />
@@ -403,93 +402,73 @@ export default function LlmUsagePage() {
                             {logs.map((log) => (
                                 <TableRow key={log.id}>
                                     <TableCell className="font-medium">
-                                        <div className="flex flex-col">
-                                            <span>{log.user?.name || 'Sistema'}</span>
-                                            <span className="text-xs text-muted-foreground">{log.user?.email || 'anônimo'}</span>
-                                        </div>
+                                        {log.user ? `${log.user.name} (${log.user.email})` : 'N/A'}
                                     </TableCell>
-                                    <TableCell className="text-xs capitalize">{log.feature.replace(/-/g, ' ')}</TableCell>
-                                    <TableCell className="max-w-[200px] truncate text-xs" title={log.operation}>{log.operation}</TableCell>
+                                    <TableCell>{log.feature}</TableCell>
+                                    <TableCell>{log.operation}</TableCell>
                                     <TableCell>{getStatusBadge(log.status)}</TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex flex-col items-end">
-                                            <span className="font-mono text-xs">{log.totalTokens.toLocaleString()}</span>
-                                            <span className="text-[10px] text-muted-foreground italic">
-                                                {log.inputTokens}/{log.outputTokens}
-                                            </span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="text-right font-mono text-xs">
-                                        <div className="flex flex-col items-end">
-                                            <span>${log.totalCost.toFixed(4)}</span>
-                                            <span className="text-[10px] text-muted-foreground italic">
-                                                ${log.inputCost.toFixed(4)}/${log.outputCost.toFixed(4)}
-                                            </span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="text-right text-xs">{log.latencyMs ? `${(log.latencyMs / 1000).toFixed(2)}s` : '-'}</TableCell>
+                                    <TableCell className="text-right">{log.totalTokens.toLocaleString()}</TableCell>
+                                    <TableCell className="text-right">${log.totalCost.toFixed(4)}</TableCell>
+                                    <TableCell className="text-right">{log.latencyMs ? `${log.latencyMs} ms` : 'N/A'}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
                     </Table>
+                    <div className="mt-4">
+                        <Pagination>
+                            <PaginationContent>
+                                <PaginationItem>
+                                    <PaginationPrevious
+                                        href="#"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            if (logPage > 1) setLogPage(logPage - 1);
+                                        }}
+                                        className={logPage <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                    />
+                                </PaginationItem>
 
-                    {logTotalPages > 1 && (
-                        <div className="mt-4">
-                            <Pagination>
-                                <PaginationContent>
-                                    <PaginationItem>
-                                        <PaginationPrevious
-                                            href="#"
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                if (logPage > 1) setLogPage(logPage - 1);
-                                            }}
-                                            className={logPage <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                                        />
-                                    </PaginationItem>
+                                {Array.from({ length: Math.min(5, logTotalPages) }).map((_, i) => {
+                                    // Simple logic to show a few pages
+                                    let pageNum = logPage;
+                                    if (logPage <= 3) pageNum = i + 1;
+                                    else if (logPage >= logTotalPages - 2) pageNum = logTotalPages - 4 + i;
+                                    else pageNum = logPage - 2 + i;
 
-                                    {Array.from({ length: Math.min(5, logTotalPages) }).map((_, i) => {
-                                        // Simple logic to show a few pages
-                                        let pageNum = logPage;
-                                        if (logPage <= 3) pageNum = i + 1;
-                                        else if (logPage >= logTotalPages - 2) pageNum = logTotalPages - 4 + i;
-                                        else pageNum = logPage - 2 + i;
+                                    if (pageNum < 1 || pageNum > logTotalPages) return null;
 
-                                        if (pageNum < 1 || pageNum > logTotalPages) return null;
+                                    return (
+                                        <PaginationItem key={pageNum}>
+                                            <PaginationLink
+                                                href="#"
+                                                isActive={logPage === pageNum}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    setLogPage(pageNum);
+                                                }}
+                                                className="cursor-pointer"
+                                            >
+                                                {pageNum}
+                                            </PaginationLink>
+                                        </PaginationItem>
+                                    );
+                                })}
 
-                                        return (
-                                            <PaginationItem key={pageNum}>
-                                                <PaginationLink
-                                                    href="#"
-                                                    isActive={logPage === pageNum}
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        setLogPage(pageNum);
-                                                    }}
-                                                    className="cursor-pointer"
-                                                >
-                                                    {pageNum}
-                                                </PaginationLink>
-                                            </PaginationItem>
-                                        );
-                                    })}
-
-                                    <PaginationItem>
-                                        <PaginationNext
-                                            href="#"
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                if (logPage < logTotalPages) setLogPage(logPage + 1);
-                                            }}
-                                            className={logPage >= logTotalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                                        />
-                                    </PaginationItem>
-                                </PaginationContent>
-                            </Pagination>
-                        </div>
-                    )}
+                                <PaginationItem>
+                                    <PaginationNext
+                                        href="#"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            if (logPage < logTotalPages) setLogPage(logPage + 1);
+                                        }}
+                                        className={logPage >= logTotalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                    />
+                                </PaginationItem>
+                            </PaginationContent>
+                        </Pagination>
+                    </div>
                 </CardContent>
             </Card>
-        </div>
+        </DashPageShell>
     );
 }

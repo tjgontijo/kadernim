@@ -3,7 +3,8 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
-import { LogOut, Settings, User, ShieldCheck, Sun, Moon, Monitor } from 'lucide-react'
+import { LogOut, Settings, User, ShieldCheck } from 'lucide-react'
+import { ThemeSwitcherItem } from '@/components/shared/theme-switcher-item'
 import { useTheme } from 'next-themes'
 import { authClient } from '@/lib/auth/auth-client'
 import { UserRole } from '@/types/user-role'
@@ -127,29 +128,9 @@ export function SystemHeader() {
               </Link>
             </DropdownMenuItem>
 
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
-                <Sun className="h-4 w-4 mr-2 dark:hidden" />
-                <Moon className="h-4 w-4 mr-2 hidden dark:block" />
-                <span>Tema</span>
-              </DropdownMenuSubTrigger>
-              <DropdownMenuPortal>
-                <DropdownMenuSubContent>
-                  <DropdownMenuItem onClick={() => setTheme('system')}>
-                    <Monitor className="h-4 w-4 mr-2" />
-                    <span>Sistema</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setTheme('light')}>
-                    <Sun className="h-4 w-4 mr-2" />
-                    <span>Claro</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setTheme('dark')}>
-                    <Moon className="h-4 w-4 mr-2" />
-                    <span>Escuro</span>
-                  </DropdownMenuItem>
-                </DropdownMenuSubContent>
-              </DropdownMenuPortal>
-            </DropdownMenuSub>
+            <DropdownMenuSeparator />
+
+            <ThemeSwitcherItem />
 
             <DropdownMenuSeparator />
 

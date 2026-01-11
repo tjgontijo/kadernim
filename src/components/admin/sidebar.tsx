@@ -23,11 +23,9 @@ import {
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -42,8 +40,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
-import { useState, useEffect } from 'react'
-import { UserDropdownMenu } from './users/user-dropdown-menu'
+import { useEffect, useState } from 'react'
 import { defineAbilitiesFor, PermissionAction, PermissionSubject } from '@/lib/auth/permissions'
 import { UserRoleType } from '@/types/user-role'
 
@@ -99,9 +96,6 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
       .catch(() => console.log('Version file not found'))
   }, [])
 
-  const userName = user.name || 'Usuário'
-  const userEmail = user.email || ''
-  const userImage = user.image
   const userRole = (user.role || 'user') as UserRoleType
   const ability = defineAbilitiesFor(userRole)
 
@@ -219,37 +213,9 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
 
   return (
     <Sidebar collapsible="icon" variant="inset">
-      <SidebarHeader className="border-b">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-              asChild
-            >
-              <Link href="/admin">
-                <div className="flex size-8 items-center justify-center">
-                  <img
-                    src="/images/icons/icon-1024x1024.png"
-                    alt="Kadernim"
-                    className="size-8 object-contain"
-                  />
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                  <span className="truncate font-semibold">Kadernim</span>
-                  <span className="truncate text-[8px] text-muted-foreground">
-                    {version ? `v${version}` : 'Admin'}
-                  </span>
-                </div>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarHeader>
-
-      <SidebarContent>
+      <SidebarContent className="pt-12">
         {/* Dashboards */}
-        <SidebarGroup>
+        <SidebarGroup className="mt-2">
           <SidebarGroupLabel>Dashboards</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -296,18 +262,6 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-
-      <SidebarFooter className="border-t">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <UserDropdownMenu
-              userName={userName}
-              userEmail={userEmail}
-              userImage={userImage}
-            />
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
 
       <SidebarRail />
     </Sidebar>

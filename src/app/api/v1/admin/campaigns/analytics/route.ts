@@ -57,13 +57,13 @@ export async function GET(request: NextRequest) {
             Array<{ date: string; sent: number; clicked: number }>
         >`
             SELECT 
-                DATE(sent_at) as date,
-                SUM(total_sent) as sent,
-                SUM(total_clicked) as clicked
+                DATE("sentAt") as date,
+                SUM("totalSent") as sent,
+                SUM("totalClicked") as clicked
             FROM push_campaigns
-            WHERE sent_at >= ${startDate}
+            WHERE "sentAt" >= ${startDate}
             AND status = 'SENT'
-            GROUP BY DATE(sent_at)
+            GROUP BY DATE("sentAt")
             ORDER BY date ASC
         `;
 
@@ -120,14 +120,14 @@ export async function GET(request: NextRequest) {
             Array<{ userId: string; userName: string; clickCount: number }>
         >`
             SELECT
-                pcc.user_id as "userId",
+                pcc."userId" as "userId",
                 u.name as "userName",
                 COUNT(*)::int as "clickCount"
             FROM push_campaign_clicks pcc
-            INNER JOIN "user" u ON u.id = pcc.user_id
-            WHERE pcc.clicked_at >= ${startDate}
-            AND pcc.user_id IS NOT NULL
-            GROUP BY pcc.user_id, u.name
+            INNER JOIN "user" u ON u.id = pcc."userId"
+            WHERE pcc."clickedAt" >= ${startDate}
+            AND pcc."userId" IS NOT NULL
+            GROUP BY pcc."userId", u.name
             ORDER BY "clickCount" DESC
             LIMIT 5
         `;

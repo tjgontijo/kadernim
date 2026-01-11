@@ -16,6 +16,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { DashPageShell } from '@/components/admin/dash/dash-page-shell';
 import {
     Tabs,
     TabsList,
@@ -115,14 +116,10 @@ export default function CampaignsAnalyticsPage() {
     if (!data) return <div>Erro ao carregar dados.</div>;
 
     return (
-        <div className="space-y-6 pb-10">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Analytics de Push</h1>
-                    <p className="text-muted-foreground">
-                        Acompanhe o desempenho das suas campanhas de marketing
-                    </p>
-                </div>
+        <DashPageShell
+            title="Analytics de Push"
+            subtitle="Acompanhe o desempenho das suas campanhas de marketing"
+            actions={(
                 <div className="flex items-center gap-2">
                     <Link href="/admin/campaigns">
                         <Button variant="outline" size="sm">
@@ -145,8 +142,8 @@ export default function CampaignsAnalyticsPage() {
                         </TabsList>
                     </Tabs>
                 </div>
-            </div>
-
+            )}
+        >
             {/* KPIs */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card>
@@ -311,6 +308,6 @@ export default function CampaignsAnalyticsPage() {
                     </Table>
                 </CardContent>
             </Card>
-        </div>
+        </DashPageShell>
     );
 }

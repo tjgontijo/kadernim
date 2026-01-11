@@ -6,8 +6,7 @@ import { UserRole } from '@/types/user-role'
 import { isStaff } from '@/lib/auth/roles'
 
 import { AdminSidebar } from '@/components/admin/sidebar'
-import { AdminHeader } from '@/components/admin/header'
-import { HeaderActionsProvider } from '@/components/admin/header-actions'
+import { GlobalHeader } from '@/components/admin/global-header'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { AdminContent } from '@/components/admin/admin-content'
 import { ResourceProvider } from '@/contexts/resource-context'
@@ -33,22 +32,23 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
   return (
     <ResourceProvider>
-      <HeaderActionsProvider>
-        <SidebarProvider defaultOpen={false}>
-          <div className="flex h-screen w-full bg-muted/10 overflow-hidden">
-            <AdminSidebar user={user} />
+      <SidebarProvider defaultOpen={false}>
+        {/* Global Header - Fixed at top, full width */}
+        <GlobalHeader user={user} />
 
-            <SidebarInset className="flex flex-col min-h-0 h-full overflow-hidden">
-              <AdminHeader />
-              <main className="flex-1 overflow-y-auto">
-                <AdminContent user={user}>
-                  {children}
-                </AdminContent>
-              </main>
-            </SidebarInset>
-          </div>
-        </SidebarProvider>
-      </HeaderActionsProvider>
+        {/* Main Layout - Below header with pt-14 offset */}
+        <div className="flex h-screen w-full bg-muted/10 overflow-hidden pt-14">
+          <AdminSidebar user={user} />
+
+          <SidebarInset className="flex flex-col min-h-0 h-full overflow-hidden">
+            <main className="flex-1 overflow-y-auto">
+              <AdminContent user={user}>
+                {children}
+              </AdminContent>
+            </main>
+          </SidebarInset>
+        </div>
+      </SidebarProvider>
     </ResourceProvider>
   )
 }

@@ -1,3 +1,5 @@
+'use client'
+
 import { Activity } from 'lucide-react';
 import { CrudPageShell } from '@/components/admin/crud';
 import { Skeleton } from '@/components/ui/skeleton';
