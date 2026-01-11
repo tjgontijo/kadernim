@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Loader2, Sparkles } from 'lucide-react';
+import { Send, Loader2, Sparkles, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
@@ -35,6 +35,7 @@ export interface CommunityWizardState {
     // BNCC Integration
     hasBnccAlignment?: boolean;
     bnccSkillCodes?: string[];
+    bnccSkillDescription?: string;
 
     // Content
     title?: string;
@@ -193,8 +194,11 @@ export function CreateRequestDrawer({ open, onOpenChange }: CreateRequestDrawerP
                             gradeSlug={wizardState.gradeSlug!}
                             subjectSlug={wizardState.subjectSlug!}
                             selectedSkills={wizardState.bnccSkillCodes || []}
-                            maxSkills={config?.bncc?.maxSkills || 5}
-                            onChange={(skills) => setWizardState(prev => ({ ...prev, bnccSkillCodes: skills }))}
+                            onChange={(updates) => setWizardState(prev => ({
+                                ...prev,
+                                bnccSkillCodes: updates.codes,
+                                bnccSkillDescription: updates.description
+                            }))}
                             onContinue={() => goToNextStep('content', {})}
                         />
                     )}
@@ -218,75 +222,98 @@ export function CreateRequestDrawer({ open, onOpenChange }: CreateRequestDrawerP
                             title="Tudo pronto?"
                             description="Revise as informações antes de enviar."
                         >
-                            <div className="bg-muted/30 rounded-[32px] p-6 border-2 border-border/50 space-y-4 mb-6">
+                            <div className="space-y-12 mb-10 pb-6 pr-2">
+                                {/* Seção 1: Contexto Pedagógico */}
                                 {wizardState.hasBnccAlignment && (
-                                    <div className="grid grid-cols-3 gap-4">
-                                        <div>
-                                            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">Etapa</div>
-                                            <div className="text-sm font-bold truncate">{wizardState.educationLevelName}</div>
+                                    <div className="space-y-8">
+                                        <div className="flex items-center gap-2">
+                                            <h4 className="text-sm font-bold text-primary tracking-tight">Contexto Pedagógico</h4>
+                                            <div className="flex-1 h-px bg-primary/10" />
                                         </div>
-                                        <div>
-                                            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">Ano</div>
-                                            <div className="text-sm font-bold truncate">{wizardState.gradeName}</div>
-                                        </div>
-                                        <div>
-                                            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">Disciplina</div>
-                                            <div className="text-sm font-bold truncate">{wizardState.subjectName}</div>
+
+                                        <div className="space-y-8 pl-1">
+                                            {/* Etapa, Ano e Disciplina Empilhados */}
+                                            <div className="space-y-6">
+                                                <div className="space-y-1">
+                                                    <div className="text-[11px] font-medium text-muted-foreground/60 uppercase tracking-widest">Etapa de Ensino</div>
+                                                    <div className="text-base font-semibold text-foreground">{wizardState.educationLevelName}</div>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <div className="text-[11px] font-medium text-muted-foreground/60 uppercase tracking-widest">Ano / Faixa Etária</div>
+                                                    <div className="text-base font-semibold text-foreground">{wizardState.gradeName}</div>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <div className="text-[11px] font-medium text-muted-foreground/60 uppercase tracking-widest">Componente Curricular</div>
+                                                    <div className="text-base font-semibold text-foreground">{wizardState.subjectName}</div>
+                                                </div>
+                                            </div>
+
+                                            {/* Habilidade Principal - Clean Display */}
+                                            {wizardState.bnccSkillCodes && wizardState.bnccSkillCodes.length > 0 && (
+                                                <div className="space-y-3 pt-4 border-t border-border/50">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="text-[11px] font-medium text-muted-foreground/60 uppercase tracking-widest">Habilidade Principal</div>
+                                                        <span className="px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-bold rounded-md">
+                                                            {wizardState.bnccSkillCodes[0]}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-sm font-medium text-foreground leading-relaxed">
+                                                        {wizardState.bnccSkillDescription}
+                                                    </p>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 )}
 
-                                {!wizardState.hasBnccAlignment && (
-                                    <div className="inline-flex items-center px-3 py-1 rounded-full bg-muted text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                                        Material Geral (Sem BNCC)
+                                {/* Seção 2: Detalhes do Pedido */}
+                                <div className="space-y-8">
+                                    <div className="flex items-center gap-2">
+                                        <h4 className="text-sm font-bold text-primary tracking-tight">Detalhes da Sugestão</h4>
+                                        <div className="flex-1 h-px bg-primary/10" />
+                                        {!wizardState.hasBnccAlignment && (
+                                            <span className="text-[9px] font-bold uppercase tracking-widest bg-muted px-2 py-0.5 rounded text-muted-foreground">Material Geral</span>
+                                        )}
                                     </div>
-                                )}
 
-                                <div>
-                                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">Título</div>
-                                    <div className="text-lg font-black">{wizardState.title}</div>
+                                    <div className="space-y-8 pl-1">
+                                        {/* Título */}
+                                        <div className="space-y-1.5">
+                                            <div className="text-[11px] font-medium text-muted-foreground/60 uppercase tracking-widest">Título do Material</div>
+                                            <div className="text-xl font-bold text-foreground leading-tight">
+                                                {wizardState.title}
+                                            </div>
+                                        </div>
+
+                                        {/* Descrição */}
+                                        <div className="space-y-2">
+                                            <div className="text-[11px] font-medium text-muted-foreground/60 uppercase tracking-widest">O que você precisa</div>
+                                            <div className="text-sm font-medium text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                                                {wizardState.description}
+                                            </div>
+                                        </div>
+
+                                        {/* Anexos */}
+                                        {wizardState.attachments && wizardState.attachments.length > 0 && (
+                                            <div className="space-y-3 pt-4 border-t border-border/50">
+                                                <div className="text-[11px] font-medium text-muted-foreground/60 uppercase tracking-widest">Referências Anexadas</div>
+                                                <div className="flex flex-col gap-2">
+                                                    {wizardState.attachments.map((file, i) => (
+                                                        <div key={i} className="flex items-center gap-2.5 py-1 text-sm font-medium text-foreground/80">
+                                                            <CheckCircle2 className="h-4 w-4 text-primary/40 shrink-0" />
+                                                            <span className="truncate flex-1">{file.name}</span>
+                                                            <span className="text-[10px] text-muted-foreground/40 font-mono italic">{(file.size / 1024 / 1024).toFixed(2)}MB</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                                <div>
-                                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">Descrição</div>
-                                    <div className="text-sm font-medium text-muted-foreground leading-relaxed line-clamp-4">
-                                        {wizardState.description}
-                                    </div>
-                                </div>
-
-                                {wizardState.bnccSkillCodes && wizardState.bnccSkillCodes.length > 0 && (
-                                    <div>
-                                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">Habilidades BNCC</div>
-                                        <div className="flex flex-wrap gap-1.5">
-                                            {wizardState.bnccSkillCodes.map(code => (
-                                                <span key={code} className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-bold">
-                                                    {code}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {wizardState.attachments && wizardState.attachments.length > 0 && (
-                                    <div>
-                                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">Anexos de Referência</div>
-                                        <div className="text-sm font-bold text-muted-foreground italic">
-                                            {wizardState.attachments.length} arquivo(s) selecionado(s)
-                                        </div>
-                                    </div>
-                                )}
-
-                                {wizardState.attachments && wizardState.attachments.length > 0 && (
-                                    <div>
-                                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">Anexos de Referência</div>
-                                        <div className="text-sm font-bold text-muted-foreground italic">
-                                            {wizardState.attachments.length} arquivo(s) selecionado(s)
-                                        </div>
-                                    </div>
-                                )}
                             </div>
 
                             <QuizAction
-                                label="Publicar Sugestão"
+                                label="Enviar Sugestão"
                                 icon={Send}
                                 onClick={handleSubmit}
                             />
@@ -297,7 +324,7 @@ export function CreateRequestDrawer({ open, onOpenChange }: CreateRequestDrawerP
                     {currentStep === 'submitting' && (
                         <div className="h-full flex flex-col items-center justify-center space-y-6">
                             <Loader2 className="h-16 w-16 text-primary animate-spin" />
-                            <h2 className="text-2xl font-black">Enviando seu pedido...</h2>
+                            <h2 className="text-2xl font-bold">Enviando seu pedido...</h2>
                         </div>
                     )}
 
@@ -308,14 +335,14 @@ export function CreateRequestDrawer({ open, onOpenChange }: CreateRequestDrawerP
                                 <Sparkles className="h-12 w-12 fill-current" />
                             </div>
                             <div className="space-y-2">
-                                <h2 className="text-4xl font-black">Sugestão Enviada!</h2>
+                                <h2 className="text-4xl font-bold">Sugestão Enviada!</h2>
                                 <p className="text-xl text-muted-foreground font-medium">
                                     Agora é com a comunidade. Divulgue seu pedido para ganhar votos!
                                 </p>
                             </div>
                             <Button
                                 size="lg"
-                                className="h-16 px-12 rounded-2xl font-black text-xl"
+                                className="h-16 px-12 rounded-2xl font-bold text-xl"
                                 onClick={handleClose}
                             >
                                 Voltar para os Pedidos

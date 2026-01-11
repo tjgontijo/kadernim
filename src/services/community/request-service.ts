@@ -2,7 +2,7 @@ import { prisma } from '@/lib/db'
 import { CommunityFilters, CommunityRequestInput } from '@/lib/schemas/community'
 import { getCurrentYearMonth } from '@/lib/utils/date'
 import { emitEvent } from '@/lib/events/emit'
-import { getCommunityConfig, getVoteLimitByRole } from '@/services/config/system-config'
+import { getCommunityConfig } from '@/services/config/system-config'
 import { type UserRoleType } from '@/types/user-role'
 
 /**
@@ -115,17 +115,8 @@ export async function createCommunityRequest(
         throw new Error(`Você já criou ${config.requests.limit} pedido(s) este mês.`)
     }
 
-    // 3. Check if user has voted enough this month
-    const voteCount = await prisma.communityRequestVote.count({
-        where: {
-            userId,
-            votingMonth: currentMonth,
-        },
-    })
-
-    if (voteCount < config.requests.minVotes) {
-        throw new Error(`Você precisa votar em pelo menos ${config.requests.minVotes} pedido(s) antes de sugerir o seu.`)
-    }
+    // 3. (Removed) Check if user has voted enough this month
+    // We removed the minVotes requirement as per user request.
 
     const request = await prisma.communityRequest.create({
         data: {
@@ -173,25 +164,14 @@ export async function voteForRequest(userId: string, userRole: UserRoleType, req
     const currentMonth = getCurrentYearMonth()
     const config = await getCommunityConfig()
 
-    // Get vote limit based on user role
-    const maxVotes = getVoteLimitByRole(userRole, config)
-
-    if (maxVotes === 0) {
+    // Check if user is subscriber
+    if (userRole === 'user') {
         throw new Error('Você precisa ser assinante para votar.')
     }
 
     return await prisma.$transaction(async (tx) => {
-        // 1. Check total votes this month
-        const totalVotes = await tx.communityRequestVote.count({
-            where: {
-                userId,
-                votingMonth: currentMonth,
-            },
-        })
-
-        if (totalVotes >= maxVotes) {
-            throw new Error(`Você já atingiu seu limite de ${maxVotes} votos este mês.`)
-        }
+        // 1. (Removed) Check total votes this month
+        // Users can now vote on unlimited different requests.
 
         // 2. Check if already voted for THIS request
         const existingVote = await tx.communityRequestVote.findUnique({

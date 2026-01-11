@@ -40,7 +40,7 @@ function ScaffoldHeader({ title, action, className }: ScaffoldHeaderProps) {
     );
 }
 
-// --- LINE 2: HIGHLIGHT (VoteProgress, Stats, Banners) ---
+// --- LINE 2: HIGHLIGHT (CommunityUsage, Stats, Banners) ---
 interface ScaffoldHighlightProps {
     children: React.ReactNode;
     className?: string;

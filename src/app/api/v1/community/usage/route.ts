@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/server/auth/auth'
-import { getCommunityVoteUsage } from '@/services/community/get-usage'
+import { getCommunityUsage } from '@/services/community/get-usage'
 
 /**
  * GET /api/v1/community/usage
- * Returns the monthly voting usage for the authenticated user.
+ * Returns the monthly usage (requests) for the authenticated user.
  */
 export async function GET(request: Request) {
     try {
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
             return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
         }
 
-        const usage = await getCommunityVoteUsage(session.user.id)
+        const usage = await getCommunityUsage(session.user.id)
 
         return NextResponse.json({
             success: true,
@@ -22,6 +22,6 @@ export async function GET(request: Request) {
         })
     } catch (error) {
         console.error('[GET /api/v1/community/usage] Error:', error)
-        return NextResponse.json({ success: false, error: 'Erro ao buscar uso de votos' }, { status: 500 })
+        return NextResponse.json({ success: false, error: 'Erro ao buscar uso da comunidade' }, { status: 500 })
     }
 }

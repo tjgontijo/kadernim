@@ -5,61 +5,16 @@ export async function seedSystemConfig(prisma: PrismaClient) {
 
   const configs = [
     // ============================================
-    // COMMUNITY - Votos por Role
-    // ============================================
-    {
-      key: 'community.votes.subscriber',
-      value: '5',
-      type: 'number' as const,
-      category: 'community',
-      label: 'Votos por mês (assinante)',
-      description: 'Número máximo de votos mensais para usuários assinantes'
-    },
-    {
-      key: 'community.votes.editor',
-      value: '10',
-      type: 'number' as const,
-      category: 'community',
-      label: 'Votos por mês (editor)',
-      description: 'Número máximo de votos mensais para editores'
-    },
-    {
-      key: 'community.votes.manager',
-      value: '20',
-      type: 'number' as const,
-      category: 'community',
-      label: 'Votos por mês (gerente)',
-      description: 'Número máximo de votos mensais para gerentes'
-    },
-    {
-      key: 'community.votes.admin',
-      value: '999',
-      type: 'number' as const,
-      category: 'community',
-      label: 'Votos por mês (admin)',
-      description: 'Número máximo de votos mensais para administradores'
-    },
-
-    // ============================================
     // COMMUNITY - Solicitações
     // ============================================
     {
       key: 'community.requests.limit',
-      value: '1',
+      value: '10',
       type: 'number' as const,
       category: 'community',
       label: 'Solicitações por mês',
       description: 'Número máximo de solicitações que um usuário pode criar por mês'
     },
-    {
-      key: 'community.requests.minVotes',
-      value: '1',
-      type: 'number' as const,
-      category: 'community',
-      label: 'Votos mínimos para criar',
-      description: 'Número mínimo de votos necessários antes de poder criar uma solicitação'
-    },
-
     // ============================================
     // COMMUNITY - Uploads
     // ============================================
@@ -78,18 +33,6 @@ export async function seedSystemConfig(prisma: PrismaClient) {
       category: 'community',
       label: 'Máx tamanho por arquivo (MB)',
       description: 'Tamanho máximo permitido por arquivo em megabytes'
-    },
-
-    // ============================================
-    // COMMUNITY - BNCC
-    // ============================================
-    {
-      key: 'community.bncc.maxSkills',
-      value: '5',
-      type: 'number' as const,
-      category: 'community',
-      label: 'Máx habilidades BNCC',
-      description: 'Número máximo de habilidades BNCC que podem ser selecionadas por solicitação'
     },
   ];
 

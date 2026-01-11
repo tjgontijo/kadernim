@@ -1,17 +1,17 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Sparkles, Heart } from 'lucide-react'
+import { Sparkles, Lightbulb } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-interface VoteProgressProps {
+interface CommunityUsageProps {
     used: number
     total: number
     className?: string
     lean?: boolean
 }
 
-export function VoteProgress({ used, total, className, lean }: VoteProgressProps) {
+export function CommunityUsage({ used, total, className, lean }: CommunityUsageProps) {
     const remaining = Math.max(0, total - used)
 
     // Calculate days until next month
@@ -35,7 +35,7 @@ export function VoteProgress({ used, total, className, lean }: VoteProgressProps
                     ))}
                 </div>
                 <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/80">
-                    {remaining} {remaining === 1 ? 'Voto' : 'Votos'}
+                    {remaining} {remaining === 1 ? 'Pedido' : 'Pedidos'}
                 </div>
             </div>
         )
@@ -46,11 +46,11 @@ export function VoteProgress({ used, total, className, lean }: VoteProgressProps
             <div className="flex items-center justify-between gap-4 relative z-10">
                 <div className="flex items-center gap-3">
                     <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0 shadow-inner">
-                        <Heart className={cn("h-4 w-4 sm:h-5 sm:w-5 fill-current pulse-subtle")} />
+                        <Lightbulb className={cn("h-4 w-4 sm:h-5 sm:w-5 fill-current pulse-subtle")} />
                     </div>
                     <div className="flex flex-col">
                         <span className="text-[9px] font-black uppercase tracking-wider text-muted-foreground/50 leading-none mb-0.5">
-                            Votos
+                            Pedidos
                         </span>
                         <div className="flex items-baseline gap-1">
                             <span className="text-xl sm:text-2xl font-black text-foreground tabular-nums leading-none">{remaining}</span>
@@ -108,4 +108,3 @@ export function VoteProgress({ used, total, className, lean }: VoteProgressProps
         </div>
     )
 }
-

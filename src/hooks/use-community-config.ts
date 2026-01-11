@@ -5,22 +5,12 @@ import { useQuery } from '@tanstack/react-query';
 interface CommunityConfigResponse {
     success: boolean;
     data: {
-        votes: {
-            subscriber: number;
-            editor: number;
-            manager: number;
-            admin: number;
-        };
         requests: {
             limit: number;
-            minVotes: number;
         };
         uploads: {
             maxFiles: number;
             maxSizeMB: number;
-        };
-        bncc: {
-            maxSkills: number;
         };
     };
 }

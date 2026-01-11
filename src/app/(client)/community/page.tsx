@@ -8,7 +8,7 @@ import { motion } from 'framer-motion'
 import { useBreakpoint } from '@/hooks/use-breakpoint'
 import { useSession } from '@/lib/auth/auth-client'
 import { UpsellBanner } from '@/components/client/shared/UpsellBanner'
-import { VoteProgress } from '@/components/client/community/vote-progress'
+import { CommunityUsage } from '@/components/client/community/community-usage'
 import { RequestCard } from '@/components/client/community/request-card'
 import { CreateRequestDrawer } from '@/components/client/community/create-request-drawer'
 import { EmptyState as CommunityEmptyState } from '@/components/client/community/empty-state'
@@ -353,7 +353,7 @@ export default function CommunityPage() {
 
                 {!isLoadingUsage && usage && (
                     <div className="flex-1 max-w-sm">
-                        <VoteProgress used={usage.used} total={usage.limit} />
+                        <CommunityUsage used={usage.used} total={usage.limit} />
                     </div>
                 )}
             </div>

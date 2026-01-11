@@ -78,56 +78,30 @@ export function clearConfigCache() {
 // Community Config Helpers
 // ============================================
 
+/**
+ * Retorna as configurações da comunidade que ainda são relevantes.
+ * Removemos limites de votos e outras restrições desnecessárias.
+ */
 export async function getCommunityConfig() {
   const [
-    votesSubscriber,
-    votesEditor,
-    votesManager,
-    votesAdmin,
     requestsLimit,
-    requestsMinVotes,
     uploadsMaxFiles,
     uploadsMaxSizeMB,
-    bnccMaxSkills,
   ] = await Promise.all([
-    getConfig('community.votes.subscriber', 5),
-    getConfig('community.votes.editor', 10),
-    getConfig('community.votes.manager', 20),
-    getConfig('community.votes.admin', 999),
-    getConfig('community.requests.limit', 1),
-    getConfig('community.requests.minVotes', 1),
+    getConfig('community.requests.limit', 2),
     getConfig('community.uploads.maxFiles', 5),
     getConfig('community.uploads.maxSizeMB', 2),
-    getConfig('community.bncc.maxSkills', 5),
   ])
 
   return {
-    votes: {
-      subscriber: votesSubscriber,
-      editor: votesEditor,
-      manager: votesManager,
-      admin: votesAdmin,
-    },
     requests: {
       limit: requestsLimit,
-      minVotes: requestsMinVotes,
     },
     uploads: {
       maxFiles: uploadsMaxFiles,
       maxSizeMB: uploadsMaxSizeMB,
-    },
-    bncc: {
-      maxSkills: bnccMaxSkills,
-    },
+    }
   }
 }
 
-export function getVoteLimitByRole(role: UserRoleType, config: Awaited<ReturnType<typeof getCommunityConfig>>) {
-  switch (role) {
-    case 'admin': return config.votes.admin
-    case 'manager': return config.votes.manager
-    case 'editor': return config.votes.editor
-    case 'subscriber': return config.votes.subscriber
-    default: return 0 // user não pode votar
-  }
-}
+// getVoteLimitByRole removed - votes are now unlimited for subscribers

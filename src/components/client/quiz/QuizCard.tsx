@@ -56,8 +56,11 @@ export function QuizCard({
                 )}>
                     {title}
                 </h3>
-                {description && !compact && (
-                    <p className="text-xs font-semibold text-muted-foreground line-clamp-1 mt-0.5 opacity-80">
+                {description && (
+                    <p className={cn(
+                        "font-semibold text-muted-foreground mt-0.5 opacity-80",
+                        compact ? "text-[10px] line-clamp-1" : "text-xs line-clamp-2"
+                    )}>
                         {description}
                     </p>
                 )}
