@@ -39,6 +39,7 @@ export interface CommunityWizardState {
     // Content
     title?: string;
     description?: string;
+    attachments?: File[];
 }
 
 /**
@@ -87,18 +88,28 @@ export function CreateRequestDrawer({ open, onOpenChange }: CreateRequestDrawerP
     const handleSubmit = async () => {
         try {
             setCurrentStep('submitting');
+
+            const formData = new FormData();
+            formData.append('title', wizardState.title || '');
+            formData.append('description', wizardState.description || '');
+            formData.append('hasBnccAlignment', String(!!wizardState.hasBnccAlignment));
+
+            if (wizardState.hasBnccAlignment) {
+                if (wizardState.educationLevelId) formData.append('educationLevelId', wizardState.educationLevelId);
+                if (wizardState.gradeId) formData.append('gradeId', wizardState.gradeId);
+                if (wizardState.subjectId) formData.append('subjectId', wizardState.subjectId);
+                if (wizardState.bnccSkillCodes) {
+                    wizardState.bnccSkillCodes.forEach(code => formData.append('bnccSkillCodes', code));
+                }
+            }
+
+            if (wizardState.attachments) {
+                wizardState.attachments.forEach(file => formData.append('attachments', file));
+            }
+
             const response = await fetch('/api/v1/community/requests', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    title: wizardState.title,
-                    description: wizardState.description,
-                    hasBnccAlignment: wizardState.hasBnccAlignment,
-                    educationLevelId: wizardState.educationLevelId,
-                    gradeId: wizardState.gradeId,
-                    subjectId: wizardState.subjectId,
-                    bnccSkillCodes: wizardState.bnccSkillCodes || [],
-                }),
+                body: formData,
             });
             const data = await response.json();
             if (!data.success) throw new Error(data.error || 'Erro ao enviar pedido');
@@ -188,11 +199,14 @@ export function CreateRequestDrawer({ open, onOpenChange }: CreateRequestDrawerP
                         />
                     )}
 
-                    {/* 4. Conteúdo (Título + Descrição) */}
+                    {/* 4. Conteúdo (Título + Descrição + Upload) */}
                     {currentStep === 'content' && (
                         <QuestionContent
                             title={wizardState.title || ''}
                             description={wizardState.description || ''}
+                            attachments={wizardState.attachments || []}
+                            maxFiles={config?.uploads?.maxFiles || 5}
+                            maxSizeMB={config?.uploads?.maxSizeMB || 2}
                             onChange={(updates) => setWizardState(prev => ({ ...prev, ...updates }))}
                             onContinue={() => goToNextStep('review', {})}
                         />
@@ -248,6 +262,24 @@ export function CreateRequestDrawer({ open, onOpenChange }: CreateRequestDrawerP
                                                     {code}
                                                 </span>
                                             ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {wizardState.attachments && wizardState.attachments.length > 0 && (
+                                    <div>
+                                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">Anexos de Referência</div>
+                                        <div className="text-sm font-bold text-muted-foreground italic">
+                                            {wizardState.attachments.length} arquivo(s) selecionado(s)
+                                        </div>
+                                    </div>
+                                )}
+
+                                {wizardState.attachments && wizardState.attachments.length > 0 && (
+                                    <div>
+                                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">Anexos de Referência</div>
+                                        <div className="text-sm font-bold text-muted-foreground italic">
+                                            {wizardState.attachments.length} arquivo(s) selecionado(s)
                                         </div>
                                     </div>
                                 )}

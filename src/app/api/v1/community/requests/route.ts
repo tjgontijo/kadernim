@@ -43,6 +43,8 @@ export async function GET(request: NextRequest) {
     }
 }
 
+import { uploadCommunityReference } from '@/server/clients/cloudinary/community-client'
+
 /**
  * POST /api/v1/community/requests
  * Creates a new community request.
@@ -54,7 +56,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        // 2. Get user with role
+        // 1. Get user with role
         const user = await prisma.user.findUnique({
             where: { id: session.user.id },
             select: { role: true },
@@ -64,14 +66,51 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 })
         }
 
-        const body = await request.json()
-        const parsed = CommunityRequestSchema.safeParse(body)
+        // 2. Parse FormData
+        const formData = await request.formData()
 
+        const body = {
+            title: formData.get('title') as string,
+            description: formData.get('description') as string,
+            hasBnccAlignment: formData.get('hasBnccAlignment') === 'true',
+            educationLevelId: formData.get('educationLevelId') as string || undefined,
+            gradeId: formData.get('gradeId') as string || undefined,
+            subjectId: formData.get('subjectId') as string || undefined,
+            bnccSkillCodes: formData.getAll('bnccSkillCodes') as string[],
+        }
+
+        const parsed = CommunityRequestSchema.safeParse(body)
         if (!parsed.success) {
             return NextResponse.json({ error: 'Dados inválidos', details: parsed.error.format() }, { status: 400 })
         }
 
-        const result = await createCommunityRequest(session.user.id, user.role, parsed.data)
+        // 3. Process Attachments
+        const attachments = formData.getAll('attachments') as File[]
+        const uploadResults = []
+
+        if (attachments.length > 0) {
+            // Usamos um ID temporário ou o timestamp para a pasta, já que o RequestId ainda não existe
+            // O ideal é salvar o request e depois fazer o upload, ou usar um UUID pré-gerado
+            const tempFolderId = `temp_${Date.now()}`
+
+            for (const file of attachments) {
+                const result = await uploadCommunityReference(file, 'community/uploads', tempFolderId)
+                uploadResults.push({
+                    cloudinaryPublicId: result.publicId,
+                    url: result.url,
+                    fileName: file.name,
+                    fileType: file.type,
+                    fileSize: file.size,
+                })
+            }
+        }
+
+        const result = await createCommunityRequest(
+            session.user.id,
+            user.role as any,
+            parsed.data,
+            uploadResults
+        )
 
         return NextResponse.json({ success: true, data: result })
     } catch (error: any) {

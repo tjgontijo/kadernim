@@ -20,12 +20,16 @@ export async function uploadCommunityReference(
 ): Promise<CommunityReferenceUploadResult> {
     // Validate file size
     if (file.size > MAX_FILE_SIZE) {
-        throw new Error(`Image must be smaller than ${MAX_FILE_SIZE / 1024 / 1024}MB`)
+        const sizeMB = MAX_FILE_SIZE / 1024 / 1024;
+        throw new Error(`Arquivo muito grande. O limite é ${sizeMB}MB`);
     }
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-        throw new Error('File must be an image')
+    // Validate file type (Images or PDF)
+    const isImage = file.type.startsWith('image/');
+    const isPdf = file.type === 'application/pdf';
+
+    if (!isImage && !isPdf) {
+        throw new Error('Tipo de arquivo não suportado. Use imagens ou PDF.');
     }
 
     // Convert File to Buffer
@@ -33,18 +37,24 @@ export async function uploadCommunityReference(
     const buffer = Buffer.from(arrayBuffer)
 
     return new Promise((resolve, reject) => {
-        cloudinary.uploader.upload_stream(
-            {
-                folder: `${folder}/${requestId}`,
-                public_id: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
-                resource_type: 'image',
-                quality: 'auto',
-                format: 'webp',
-                tags: ['community', 'reference', requestId],
-                context: {
-                    requestId: requestId,
-                },
+        const uploadOptions: any = {
+            folder: `${folder}/${requestId}`,
+            public_id: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
+            resource_type: isImage ? 'image' : 'raw',
+            tags: ['community', 'reference', requestId],
+            context: {
+                requestId: requestId,
             },
+        };
+
+        // Add image specific optimizations
+        if (isImage) {
+            uploadOptions.quality = 'auto';
+            uploadOptions.format = 'webp';
+        }
+
+        cloudinary.uploader.upload_stream(
+            uploadOptions,
             (
                 error: UploadApiErrorResponse | undefined,
                 result: UploadApiResponse | undefined

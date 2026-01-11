@@ -83,7 +83,18 @@ export async function getCommunityRequests(filters: CommunityFilters & { current
  * Creates a new community request.
  * Enforces: configurable request limit per month, and must have voted minimum times.
  */
-export async function createCommunityRequest(userId: string, userRole: UserRoleType, data: CommunityRequestInput) {
+export async function createCommunityRequest(
+    userId: string,
+    userRole: UserRoleType,
+    data: CommunityRequestInput,
+    uploads?: Array<{
+        cloudinaryPublicId: string;
+        url: string;
+        fileName: string;
+        fileType: string;
+        fileSize: number;
+    }>
+) {
     const currentMonth = getCurrentYearMonth()
     const config = await getCommunityConfig()
 
@@ -128,6 +139,16 @@ export async function createCommunityRequest(userId: string, userRole: UserRoleT
             userId,
             votingMonth: currentMonth,
             status: 'voting',
+            uploads: uploads && uploads.length > 0 ? {
+                create: uploads.map(u => ({
+                    userId,
+                    cloudinaryPublicId: u.cloudinaryPublicId,
+                    url: u.url,
+                    fileName: u.fileName,
+                    fileType: u.fileType,
+                    fileSize: u.fileSize,
+                }))
+            } : undefined
         },
     })
 
