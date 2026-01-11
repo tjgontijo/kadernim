@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/db'
-import { UserRole } from '@prisma/client'
+import { type UserRoleType } from '@/types/user-role'
 
 // Cache em memória (5 minutos)
 const configCache = new Map<string, { value: any; expiresAt: number }>()
@@ -122,7 +122,7 @@ export async function getCommunityConfig() {
   }
 }
 
-export function getVoteLimitByRole(role: UserRole, config: Awaited<ReturnType<typeof getCommunityConfig>>) {
+export function getVoteLimitByRole(role: UserRoleType, config: Awaited<ReturnType<typeof getCommunityConfig>>) {
   switch (role) {
     case 'admin': return config.votes.admin
     case 'manager': return config.votes.manager

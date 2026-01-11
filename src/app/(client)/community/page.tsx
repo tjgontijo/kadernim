@@ -10,7 +10,7 @@ import { VoteProgress } from '@/components/client/community/vote-progress'
 import { RequestCard } from '@/components/client/community/request-card'
 import { CreateRequestDrawer } from '@/components/client/community/create-request-drawer'
 import { EmptyState as CommunityEmptyState } from '@/components/client/community/empty-state'
-import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import {
     Drawer,
@@ -45,6 +45,7 @@ export default function CommunityPage() {
     const [mounted, setMounted] = useState(false)
     const [searchQuery, setSearchQuery] = useState('')
     const [debouncedQuery, setDebouncedQuery] = useState('')
+    const [activeTab, setActiveTab] = useState<'all' | 'mine'>('all')
 
     // Check if user is subscriber
     const userRole = session?.user?.role ?? 'user'
@@ -140,7 +141,7 @@ export default function CommunityPage() {
         fetchNextPage,
         hasNextPage,
     } = useInfiniteQuery({
-        queryKey: ['community.requests', debouncedQuery, level, grade, subject],
+        queryKey: ['community.requests', debouncedQuery, level, grade, subject, activeTab],
         queryFn: async ({ pageParam = 1 }) => {
             const params = new URLSearchParams({
                 page: String(pageParam),
@@ -148,7 +149,8 @@ export default function CommunityPage() {
                 ...(debouncedQuery && { q: debouncedQuery }),
                 ...(level !== 'all' && { educationLevelSlug: level }),
                 ...(grade !== 'all' && { gradeSlug: grade }),
-                ...(subject !== 'all' && { subjectSlug: subject })
+                ...(subject !== 'all' && { subjectSlug: subject }),
+                ...(activeTab === 'mine' && { userId: session?.user?.id })
             })
             const res = await fetch(`/api/v1/community/requests?${params}`)
             if (!res.ok) throw new Error('Erro ao carregar pedidos')
@@ -160,6 +162,23 @@ export default function CommunityPage() {
             return page < totalPages ? page + 1 : undefined
         },
     })
+
+    const { data: rankingData } = useQuery({
+        queryKey: ['community.ranking'],
+        queryFn: async () => {
+            const params = new URLSearchParams({
+                page: '1',
+                limit: '3',
+            })
+            const res = await fetch(`/api/v1/community/requests?${params}`)
+            if (!res.ok) throw new Error('Erro ao carregar ranking')
+            return res.json()
+        },
+    })
+
+    const ranking = useMemo(() => {
+        return rankingData?.data?.items || []
+    }, [rankingData])
 
     const voteMutation = useMutation({
         mutationFn: async (requestId: string) => {
@@ -285,12 +304,35 @@ export default function CommunityPage() {
                 }
             />
 
-            {/* LINHA 2: Highlight (Progresso) */}
-            {!isLoadingUsage && usage && (
-                <PageScaffold.Highlight>
-                    <VoteProgress used={usage.used} total={usage.limit} />
-                </PageScaffold.Highlight>
-            )}
+            {/* LINHA 2: Highlight (Progresso) ou Abas */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                <div className="flex p-1 bg-muted/50 rounded-2xl w-fit">
+                    <button
+                        onClick={() => setActiveTab('all')}
+                        className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'all'
+                            ? 'bg-background text-foreground shadow-sm'
+                            : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                    >
+                        Todas
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('mine')}
+                        className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'mine'
+                            ? 'bg-background text-foreground shadow-sm'
+                            : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                    >
+                        Minhas Solicitações
+                    </button>
+                </div>
+
+                {!isLoadingUsage && usage && (
+                    <div className="flex-1 max-w-sm">
+                        <VoteProgress used={usage.used} total={usage.limit} />
+                    </div>
+                )}
+            </div>
 
             {/* LINHA 3: Controls (Busca e Filtro) */}
             <PageScaffold.Controls>
@@ -386,19 +428,54 @@ export default function CommunityPage() {
                 )}
             </PageScaffold.Controls>
 
+            {/* Ranking dos Top 3 (Apenas na aba 'Todas' e sem busca) */}
+            {activeTab === 'all' && !debouncedQuery && ranking.length > 0 && (
+                <section className="mb-12">
+                    <div className="flex items-center gap-2 mb-6">
+                        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                            <Vote className="h-4 w-4 text-primary" />
+                        </div>
+                        <h2 className="text-xl font-black text-foreground uppercase tracking-tight">Top Pedidos do Mês</h2>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {ranking.map((request: any, index: number) => (
+                            <RequestCard
+                                key={`ranking-${request.id}`}
+                                request={request}
+                                onVote={(id) => voteMutation.mutate(id)}
+                                isVoting={voteMutation.isPending}
+                                rank={index + 1}
+                                isHighlighted={true}
+                                disabled={!isSubscriber}
+                            />
+                        ))}
+                    </div>
+                </section>
+            )}
+
+            {/* Divisor Visual se houver ranking */}
+            {activeTab === 'all' && !debouncedQuery && ranking.length > 0 && (
+                <div className="h-px bg-border/50 w-full mb-12" />
+            )}
+
             {/* Grid de Pedidos */}
             <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-4 sm:px-0">
                 {requests.length > 0 ? (
-                    requests.map((request, index) => (
-                        <RequestCard
-                            key={request.id}
-                            request={request}
-                            onVote={(id) => voteMutation.mutate(id)}
-                            isVoting={voteMutation.isPending}
-                            rank={index + 1}
-                            disabled={!isSubscriber}
-                        />
-                    ))
+                    requests.map((request: any, index: number) => {
+                        // Se estivermos na aba 'Todas' e sem busca, pulamos os 3 primeiros que já estão no ranking
+                        if (activeTab === 'all' && !debouncedQuery && index < 3) return null;
+
+                        return (
+                            <RequestCard
+                                key={request.id}
+                                request={request}
+                                onVote={(id) => voteMutation.mutate(id)}
+                                isVoting={voteMutation.isPending}
+                                rank={index + 1}
+                                disabled={!isSubscriber}
+                            />
+                        );
+                    })
                 ) : (
                     <div className="col-span-full py-10">
                         <CommunityEmptyState onCreateClick={() => setCreateDrawerOpen(true)} />

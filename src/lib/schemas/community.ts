@@ -13,9 +13,11 @@ export const CommunityRequestStatusSchema = z.enum([
 export const CommunityRequestSchema = z.object({
     title: z.string().min(5, 'Título deve ter pelo menos 5 caracteres').max(100),
     description: z.string().min(20, 'Descrição deve ter pelo menos 20 caracteres').max(1000),
-    educationLevelId: z.string().cuid(),
+    hasBnccAlignment: z.boolean().default(false),
+    educationLevelId: z.string().cuid().optional().nullable(),
     gradeId: z.string().cuid().optional().nullable(),
-    subjectId: z.string().cuid(),
+    subjectId: z.string().cuid().optional().nullable(),
+    bnccSkillCodes: z.array(z.string()).default([]),
 })
 
 export const CommunityFilterSchema = z.object({

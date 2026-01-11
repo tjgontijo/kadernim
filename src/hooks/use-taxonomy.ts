@@ -3,12 +3,14 @@
 import { useQuery } from '@tanstack/react-query';
 
 export interface EducationLevel {
+    id: string;
     slug: string;
     name: string;
     order: number;
 }
 
 export interface Grade {
+    id: string;
     slug: string;
     name: string;
     order: number;
@@ -16,6 +18,7 @@ export interface Grade {
 }
 
 export interface Subject {
+    id: string;
     slug: string;
     name: string;
 }

@@ -12,14 +12,14 @@ import { QuizLayout } from '@/components/client/quiz/QuizLayout';
 import { QuizStep } from '@/components/client/quiz/QuizStep';
 import { QuizAction } from '@/components/client/quiz/QuizAction';
 
-import { QuestionEducationLevel } from './questions/question-education-level';
-import { QuestionGrade } from './questions/question-grade';
-import { QuestionSubject } from './questions/question-subject';
-import { QuestionRefineDescription } from './questions/question-refine-description';
-import { QuestionSelectTitle } from './questions/question-select-title';
+import { QuestionBnccAlignment } from './questions/question-bncc-alignment';
+import { QuestionTaxonomy } from './questions/question-taxonomy';
+import { QuestionBnccSkills } from './questions/question-bncc-skills';
+import { QuestionContent } from './questions/question-content';
+import { useCommunityConfig } from '@/hooks/use-community-config';
 
 /**
- * Wizard state interface - Segue a mesma estrutura do Plano de Aula
+ * Wizard state interface - Atualizada Fase 03
  */
 export interface CommunityWizardState {
     educationLevelId?: string;
@@ -31,21 +31,24 @@ export interface CommunityWizardState {
     subjectId?: string;
     subjectSlug?: string;
     subjectName?: string;
-    rawDescription?: string;
-    selectedDescription?: string;
+
+    // BNCC Integration
+    hasBnccAlignment?: boolean;
+    bnccSkillCodes?: string[];
+
+    // Content
     title?: string;
+    description?: string;
 }
 
 /**
- * Question step type - Ordem: Etapa → Ano → Disciplina → Descrição → Refine → Title → Review
+ * Question step type - Novo Fluxo Fase 03
  */
 export type CommunityStep =
-    | 'education-level'
-    | 'grade'
-    | 'subject'
-    | 'description'
-    | 'refine'
-    | 'select-title'
+    | 'bncc-alignment'
+    | 'taxonomy'
+    | 'bncc-skills'
+    | 'content'
     | 'review'
     | 'submitting'
     | 'success';
@@ -55,15 +58,16 @@ interface CreateRequestDrawerProps {
     onOpenChange: (open: boolean) => void;
 }
 
-const TOTAL_STEPS = 7;
-
 export function CreateRequestDrawer({ open, onOpenChange }: CreateRequestDrawerProps) {
     const queryClient = useQueryClient();
-    const [currentStep, setCurrentStep] = useState<CommunityStep>('education-level');
-    const [wizardState, setWizardState] = useState<CommunityWizardState>({});
-    const [history, setHistory] = useState<CommunityStep[]>(['education-level']);
+    const { data: config } = useCommunityConfig();
 
-    const stepNumber = getStepNumber(currentStep);
+    const [currentStep, setCurrentStep] = useState<CommunityStep>('bncc-alignment');
+    const [wizardState, setWizardState] = useState<CommunityWizardState>({});
+    const [history, setHistory] = useState<CommunityStep[]>(['bncc-alignment']);
+
+    const totalSteps = wizardState.hasBnccAlignment ? 5 : 3;
+    const stepNumber = getStepNumber(currentStep, !!wizardState.hasBnccAlignment);
 
     const goToNextStep = (nextStep: CommunityStep, updates: Partial<CommunityWizardState>) => {
         setWizardState((prev) => ({ ...prev, ...updates }));
@@ -80,16 +84,6 @@ export function CreateRequestDrawer({ open, onOpenChange }: CreateRequestDrawerP
         }
     };
 
-    // Avança para seleção de título após escolher descrição
-    const handleDescriptionSelected = (description: string) => {
-        goToNextStep('select-title', { selectedDescription: description });
-    };
-
-    // Após selecionar título, avança para review
-    const handleTitleSelected = (title: string) => {
-        goToNextStep('review', { title });
-    };
-
     const handleSubmit = async () => {
         try {
             setCurrentStep('submitting');
@@ -98,10 +92,12 @@ export function CreateRequestDrawer({ open, onOpenChange }: CreateRequestDrawerP
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     title: wizardState.title,
-                    description: wizardState.selectedDescription || wizardState.rawDescription,
+                    description: wizardState.description,
+                    hasBnccAlignment: wizardState.hasBnccAlignment,
                     educationLevelId: wizardState.educationLevelId,
                     gradeId: wizardState.gradeId,
                     subjectId: wizardState.subjectId,
+                    bnccSkillCodes: wizardState.bnccSkillCodes || [],
                 }),
             });
             const data = await response.json();
@@ -120,16 +116,15 @@ export function CreateRequestDrawer({ open, onOpenChange }: CreateRequestDrawerP
     };
 
     const handleClose = () => {
-        setCurrentStep('education-level');
+        setCurrentStep('bncc-alignment');
         setWizardState({});
-        setHistory(['education-level']);
+        setHistory(['bncc-alignment']);
         onOpenChange(false);
     };
 
     const canGoBack = history.length > 1 &&
         currentStep !== 'submitting' &&
-        currentStep !== 'success' &&
-        currentStep !== 'select-title';
+        currentStep !== 'success';
 
     return (
         <QuizLayout
@@ -137,7 +132,7 @@ export function CreateRequestDrawer({ open, onOpenChange }: CreateRequestDrawerP
             onClose={handleClose}
             title="Sugerir Novo Material"
             currentStep={stepNumber}
-            totalSteps={TOTAL_STEPS}
+            totalSteps={totalSteps}
             onBack={goToPreviousStep}
             showBack={canGoBack}
         >
@@ -150,118 +145,89 @@ export function CreateRequestDrawer({ open, onOpenChange }: CreateRequestDrawerP
                     transition={{ duration: 0.3, ease: 'easeInOut' }}
                     className="absolute inset-0 overflow-y-auto scrollbar-thin p-6"
                 >
-                    {/* 1. Etapa de Ensino */}
-                    {currentStep === 'education-level' && (
-                        <QuestionEducationLevel
-                            value={wizardState.educationLevelId}
-                            onSelect={(id, name, slug) =>
-                                goToNextStep('grade', {
-                                    educationLevelId: id,
-                                    educationLevelName: name,
-                                    educationLevelSlug: slug,
-                                })
-                            }
+                    {/* 1. Alinhamento BNCC? */}
+                    {currentStep === 'bncc-alignment' && (
+                        <QuestionBnccAlignment
+                            onSelect={(hasAlignment) => {
+                                if (hasAlignment) {
+                                    goToNextStep('taxonomy', { hasBnccAlignment: true });
+                                } else {
+                                    goToNextStep('content', {
+                                        hasBnccAlignment: false,
+                                        educationLevelId: undefined,
+                                        gradeId: undefined,
+                                        subjectId: undefined,
+                                        bnccSkillCodes: []
+                                    });
+                                }
+                            }}
                         />
                     )}
 
-                    {/* 2. Ano/Faixa Etária (filtrado pela etapa) */}
-                    {currentStep === 'grade' && wizardState.educationLevelSlug && (
-                        <QuestionGrade
+                    {/* 2. Taxonomia (Fluxo BNCC) */}
+                    {currentStep === 'taxonomy' && (
+                        <QuestionTaxonomy
                             educationLevelSlug={wizardState.educationLevelSlug}
-                            value={wizardState.gradeId}
-                            onSelect={(id, name, slug) =>
-                                goToNextStep('subject', {
-                                    gradeId: id,
-                                    gradeName: name,
-                                    gradeSlug: slug,
-                                })
-                            }
-                        />
-                    )}
-
-                    {/* 3. Componente Curricular (filtrado pelo ano) */}
-                    {currentStep === 'subject' && wizardState.gradeSlug && (
-                        <QuestionSubject
-                            educationLevelSlug={wizardState.educationLevelSlug || ''}
                             gradeSlug={wizardState.gradeSlug}
-                            value={wizardState.subjectId}
-                            onSelect={(id: string, name: string, slug: string) =>
-                                goToNextStep('description', {
-                                    subjectId: id,
-                                    subjectName: name,
-                                    subjectSlug: slug,
-                                })
-                            }
+                            subjectSlug={wizardState.subjectSlug}
+                            onChange={(updates) => setWizardState(prev => ({ ...prev, ...updates }))}
+                            onContinue={() => goToNextStep('bncc-skills', {})}
                         />
                     )}
 
-
-                    {/* 4. Descrição Livre */}
-                    {currentStep === 'description' && (
-                        <QuizStep
-                            title="O que devemos criar?"
-                            description="Descreva sua ideia livremente. A IA vai te ajudar a estruturar."
-                        >
-                            <div className="space-y-6">
-                                <textarea
-                                    className="w-full h-48 bg-muted/50 border-2 border-border/50 rounded-[32px] p-6 font-medium focus:border-primary focus:ring-0 transition-all outline-none resize-none"
-                                    placeholder="Descreva o material que você precisa..."
-                                    value={wizardState.rawDescription || ''}
-                                    onChange={(e) =>
-                                        setWizardState((prev) => ({ ...prev, rawDescription: e.target.value }))
-                                    }
-                                />
-
-                                <QuizAction
-                                    label="Melhorar com IA"
-                                    icon={Sparkles}
-                                    disabled={!wizardState.rawDescription || wizardState.rawDescription.length < 20}
-                                    onClick={() => goToNextStep('refine', {})}
-                                />
-                            </div>
-                        </QuizStep>
-                    )}
-
-                    {/* 5. Refinamento IA */}
-                    {currentStep === 'refine' && (
-                        <QuestionRefineDescription
-                            rawDescription={wizardState.rawDescription || ''}
-                            educationLevelName={wizardState.educationLevelName || ''}
-                            subjectName={wizardState.subjectName || ''}
-                            gradeNames={[wizardState.gradeName || '']}
-                            onSelect={handleDescriptionSelected}
+                    {/* 3. BNCC Skills (Fluxo BNCC) */}
+                    {currentStep === 'bncc-skills' && (
+                        <QuestionBnccSkills
+                            educationLevelSlug={wizardState.educationLevelSlug!}
+                            gradeSlug={wizardState.gradeSlug!}
+                            subjectSlug={wizardState.subjectSlug!}
+                            selectedSkills={wizardState.bnccSkillCodes || []}
+                            maxSkills={config?.bncc?.maxSkills || 5}
+                            onChange={(skills) => setWizardState(prev => ({ ...prev, bnccSkillCodes: skills }))}
+                            onContinue={() => goToNextStep('content', {})}
                         />
                     )}
 
-                    {/* 6. Seleção de Título */}
-                    {currentStep === 'select-title' && (
-                        <QuestionSelectTitle
-                            description={wizardState.selectedDescription || wizardState.rawDescription || ''}
-                            onSelect={handleTitleSelected}
+                    {/* 4. Conteúdo (Título + Descrição) */}
+                    {currentStep === 'content' && (
+                        <QuestionContent
+                            title={wizardState.title || ''}
+                            description={wizardState.description || ''}
+                            onChange={(updates) => setWizardState(prev => ({ ...prev, ...updates }))}
+                            onContinue={() => goToNextStep('review', {})}
                         />
                     )}
 
-                    {/* 7. Revisão Final */}
+                    {/* 5. Revisão Final */}
                     {currentStep === 'review' && (
                         <QuizStep
                             title="Tudo pronto?"
                             description="Revise as informações antes de enviar."
                         >
                             <div className="bg-muted/30 rounded-[32px] p-6 border-2 border-border/50 space-y-4 mb-6">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">Etapa</div>
-                                        <div className="text-sm font-bold">{wizardState.educationLevelName}</div>
+                                {wizardState.hasBnccAlignment && (
+                                    <div className="grid grid-cols-3 gap-4">
+                                        <div>
+                                            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">Etapa</div>
+                                            <div className="text-sm font-bold truncate">{wizardState.educationLevelName}</div>
+                                        </div>
+                                        <div>
+                                            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">Ano</div>
+                                            <div className="text-sm font-bold truncate">{wizardState.gradeName}</div>
+                                        </div>
+                                        <div>
+                                            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">Disciplina</div>
+                                            <div className="text-sm font-bold truncate">{wizardState.subjectName}</div>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">Ano</div>
-                                        <div className="text-sm font-bold">{wizardState.gradeName}</div>
+                                )}
+
+                                {!wizardState.hasBnccAlignment && (
+                                    <div className="inline-flex items-center px-3 py-1 rounded-full bg-muted text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                        Material Geral (Sem BNCC)
                                     </div>
-                                </div>
-                                <div>
-                                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">Disciplina</div>
-                                    <div className="text-sm font-bold">{wizardState.subjectName}</div>
-                                </div>
+                                )}
+
                                 <div>
                                     <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">Título</div>
                                     <div className="text-lg font-black">{wizardState.title}</div>
@@ -269,9 +235,22 @@ export function CreateRequestDrawer({ open, onOpenChange }: CreateRequestDrawerP
                                 <div>
                                     <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">Descrição</div>
                                     <div className="text-sm font-medium text-muted-foreground leading-relaxed line-clamp-4">
-                                        {wizardState.selectedDescription || wizardState.rawDescription}
+                                        {wizardState.description}
                                     </div>
                                 </div>
+
+                                {wizardState.bnccSkillCodes && wizardState.bnccSkillCodes.length > 0 && (
+                                    <div>
+                                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">Habilidades BNCC</div>
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {wizardState.bnccSkillCodes.map(code => (
+                                                <span key={code} className="px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-bold">
+                                                    {code}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <QuizAction
@@ -317,17 +296,26 @@ export function CreateRequestDrawer({ open, onOpenChange }: CreateRequestDrawerP
     );
 }
 
-function getStepNumber(step: CommunityStep): number {
+function getStepNumber(step: CommunityStep, hasBncc: boolean): number {
+    if (!hasBncc) {
+        const stepMap: Partial<Record<CommunityStep, number>> = {
+            'bncc-alignment': 1,
+            'content': 2,
+            'review': 3,
+            'submitting': 3,
+            'success': 3,
+        };
+        return stepMap[step] || 1;
+    }
+
     const stepMap: Record<CommunityStep, number> = {
-        'education-level': 1,
-        'grade': 2,
-        'subject': 3,
-        'description': 4,
-        'refine': 5,
-        'select-title': 6,
-        'review': 7,
-        'submitting': 7,
-        'success': 7,
+        'bncc-alignment': 1,
+        'taxonomy': 2,
+        'bncc-skills': 3,
+        'content': 4,
+        'review': 5,
+        'submitting': 5,
+        'success': 5,
     };
     return stepMap[step] || 1;
 }

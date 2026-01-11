@@ -19,14 +19,24 @@ interface RequestCardProps {
         subject: { name: string }
         grade?: { name: string } | null
         createdAt: string
+        hasBnccAlignment?: boolean
+        bnccSkillCodes?: string[]
     }
     onVote: (id: string) => void
     isVoting: boolean
     rank?: number
+    isHighlighted?: boolean
     disabled?: boolean
 }
 
-export function RequestCard({ request, onVote, isVoting, rank, disabled = false }: RequestCardProps) {
+export function RequestCard({
+    request,
+    onVote,
+    isVoting,
+    rank,
+    isHighlighted = false,
+    disabled = false
+}: RequestCardProps) {
     const isTrending = rank !== undefined && rank <= 3
     return (
         <motion.div
@@ -35,11 +45,18 @@ export function RequestCard({ request, onVote, isVoting, rank, disabled = false 
             animate={{ opacity: 1, y: 0 }}
             whileHover={{ y: -8, scale: 1.02 }}
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            className="h-full"
+            className="h-full relative"
         >
+            {isTrending && (
+                <div className="absolute -top-3 -left-3 h-10 w-10 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center font-black text-xl shadow-xl shadow-primary/30 z-10 border-4 border-background">
+                    {rank}
+                </div>
+            )}
+
             <Card className={cn(
                 "h-full group hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 border-2 rounded-[32px] overflow-hidden flex flex-col",
-                request.hasVoted ? "border-primary/20 bg-primary/[0.01]" : "border-border/50"
+                request.hasVoted ? "border-primary/20 bg-primary/[0.01]" : "border-border/50",
+                isHighlighted && "border-primary/40 shadow-xl shadow-primary/5 bg-gradient-to-br from-background to-primary/[0.03]"
             )}>
                 {/* Header: Meta info */}
                 <div className="p-5 flex flex-wrap gap-2 items-center justify-between border-b border-border/40 bg-muted/5 group-hover:bg-primary/[0.04] transition-colors">
@@ -54,6 +71,11 @@ export function RequestCard({ request, onVote, isVoting, rank, disabled = false 
                                 Em Alta
                             </Badge>
                         )}
+                        {request.hasBnccAlignment && (
+                            <Badge variant="secondary" className="bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest border-none rounded-full px-3">
+                                BNCC
+                            </Badge>
+                        )}
                     </div>
 
                     <div className="flex items-center gap-1.5 text-[11px] font-black text-muted-foreground uppercase opacity-60">
@@ -64,9 +86,25 @@ export function RequestCard({ request, onVote, isVoting, rank, disabled = false 
 
                 {/* Body: Title & Description */}
                 <div className="p-6 pb-4 space-y-3 flex-grow">
-                    <Badge variant="outline" className="text-[9px] font-black uppercase border-primary/30 text-primary rounded-lg py-0">
-                        {request.grade?.name || request.educationLevel.name}
-                    </Badge>
+                    <div className="flex flex-wrap gap-2">
+                        <Badge variant="outline" className="text-[9px] font-black uppercase border-primary/30 text-primary rounded-lg py-0">
+                            {request.grade?.name || request.educationLevel.name}
+                        </Badge>
+                        {request.hasBnccAlignment && request.bnccSkillCodes && request.bnccSkillCodes.length > 0 && (
+                            <div className="flex gap-1">
+                                {request.bnccSkillCodes.slice(0, 2).map(code => (
+                                    <span key={code} className="text-[9px] font-bold text-muted-foreground bg-muted px-1.5 py-0 rounded border border-border/50">
+                                        {code}
+                                    </span>
+                                ))}
+                                {request.bnccSkillCodes.length > 2 && (
+                                    <span className="text-[9px] font-bold text-muted-foreground bg-muted px-1.5 py-0 rounded border border-border/50">
+                                        +{request.bnccSkillCodes.length - 2}
+                                    </span>
+                                )}
+                            </div>
+                        )}
+                    </div>
                     <h3 className="text-xl font-black leading-tight text-foreground group-hover:text-primary transition-colors line-clamp-2">
                         {request.title}
                     </h3>

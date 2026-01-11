@@ -3,7 +3,7 @@ import { CommunityFilters, CommunityRequestInput } from '@/lib/schemas/community
 import { getCurrentYearMonth } from '@/lib/utils/date'
 import { emitEvent } from '@/lib/events/emit'
 import { getCommunityConfig, getVoteLimitByRole } from '@/services/config/system-config'
-import { UserRole } from '@prisma/client'
+import { type UserRoleType } from '@/types/user-role'
 
 /**
  * Lists community requests with pagination and filters.
@@ -83,7 +83,7 @@ export async function getCommunityRequests(filters: CommunityFilters & { current
  * Creates a new community request.
  * Enforces: configurable request limit per month, and must have voted minimum times.
  */
-export async function createCommunityRequest(userId: string, userRole: UserRole, data: CommunityRequestInput) {
+export async function createCommunityRequest(userId: string, userRole: UserRoleType, data: CommunityRequestInput) {
     const currentMonth = getCurrentYearMonth()
     const config = await getCommunityConfig()
 
@@ -118,10 +118,16 @@ export async function createCommunityRequest(userId: string, userRole: UserRole,
 
     const request = await prisma.communityRequest.create({
         data: {
-            ...data,
+            title: data.title,
+            description: data.description,
+            hasBnccAlignment: data.hasBnccAlignment,
+            educationLevelId: data.hasBnccAlignment ? data.educationLevelId : null,
+            gradeId: data.hasBnccAlignment ? data.gradeId : null,
+            subjectId: data.hasBnccAlignment ? data.subjectId : null,
+            bnccSkillCodes: data.bnccSkillCodes || [],
             userId,
             votingMonth: currentMonth,
-            status: 'voting', // Pedidos criados já entram em votação
+            status: 'voting',
         },
     })
 
@@ -142,7 +148,7 @@ export async function createCommunityRequest(userId: string, userRole: UserRole,
  * Casts a vote for a community request.
  * Enforces: configurable votes per month by role, 1 vote per request, cannot vote on own request.
  */
-export async function voteForRequest(userId: string, userRole: UserRole, requestId: string) {
+export async function voteForRequest(userId: string, userRole: UserRoleType, requestId: string) {
     const currentMonth = getCurrentYearMonth()
     const config = await getCommunityConfig()
 
