@@ -9,6 +9,7 @@ import { seedResourceFiles } from './seed-resource-files';
 import { seedBnccSkillsInfantil } from './seed-bncc-infantil';
 import { seedBnccSkillsFundamental } from './seed-bncc-fundamental';
 import { seedTemplates } from './seed-templates';
+import { seedSystemConfig } from './seed-system-config';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
@@ -50,6 +51,7 @@ async function createInitialData() {
     await cleanDatabase();
     console.log('✅ Banco de dados limpo.');
 
+    await seedSystemConfig(prisma);
     await seedUsers(prisma);
     await seedTaxonomy(prisma);
     await seedBnccSkillsInfantil(prisma);

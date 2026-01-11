@@ -7,6 +7,9 @@ CREATE TYPE "CommunityRequestStatus" AS ENUM ('draft', 'voting', 'selected', 'ap
 -- CreateEnum
 CREATE TYPE "CampaignStatus" AS ENUM ('DRAFT', 'SCHEDULED', 'SENDING', 'SENT', 'FAILED');
 
+-- CreateEnum
+CREATE TYPE "ConfigType" AS ENUM ('string', 'number', 'boolean', 'json');
+
 -- CreateTable
 CREATE TABLE "education_level" (
     "id" TEXT NOT NULL,
@@ -280,15 +283,18 @@ CREATE TABLE "community_request" (
     "title" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "votingMonth" TEXT NOT NULL,
-    "educationLevelId" TEXT NOT NULL,
+    "educationLevelId" TEXT,
     "gradeId" TEXT,
-    "subjectId" TEXT NOT NULL,
+    "subjectId" TEXT,
     "userId" TEXT NOT NULL,
     "status" "CommunityRequestStatus" NOT NULL DEFAULT 'draft',
+    "hasBnccAlignment" BOOLEAN NOT NULL DEFAULT false,
+    "bnccSkillCodes" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "unfeasibleReason" TEXT,
     "unfeasibleById" TEXT,
     "voteCount" INTEGER NOT NULL DEFAULT 0,
     "survivedMonths" INTEGER NOT NULL DEFAULT 0,
+    "commentCount" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "selectedAt" TIMESTAMP(3),
@@ -516,6 +522,50 @@ CREATE TABLE "push_template" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "push_template_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "system_config" (
+    "id" TEXT NOT NULL,
+    "key" TEXT NOT NULL,
+    "value" TEXT NOT NULL,
+    "type" "ConfigType" NOT NULL,
+    "label" TEXT,
+    "description" TEXT,
+    "category" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "system_config_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "community_request_upload" (
+    "id" TEXT NOT NULL,
+    "requestId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "cloudinaryPublicId" TEXT NOT NULL,
+    "url" TEXT NOT NULL,
+    "fileName" TEXT NOT NULL,
+    "fileType" TEXT NOT NULL,
+    "fileSize" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "community_request_upload_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "community_request_comment" (
+    "id" TEXT NOT NULL,
+    "requestId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "parentId" TEXT,
+    "content" TEXT NOT NULL,
+    "isEdited" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "community_request_comment_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -782,6 +832,24 @@ CREATE INDEX "push_template_eventType_idx" ON "push_template"("eventType");
 -- CreateIndex
 CREATE INDEX "push_template_isActive_idx" ON "push_template"("isActive");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "system_config_key_key" ON "system_config"("key");
+
+-- CreateIndex
+CREATE INDEX "system_config_category_idx" ON "system_config"("category");
+
+-- CreateIndex
+CREATE INDEX "community_request_upload_requestId_idx" ON "community_request_upload"("requestId");
+
+-- CreateIndex
+CREATE INDEX "community_request_comment_requestId_idx" ON "community_request_comment"("requestId");
+
+-- CreateIndex
+CREATE INDEX "community_request_comment_userId_idx" ON "community_request_comment"("userId");
+
+-- CreateIndex
+CREATE INDEX "community_request_comment_parentId_idx" ON "community_request_comment"("parentId");
+
 -- AddForeignKey
 ALTER TABLE "grade" ADD CONSTRAINT "grade_educationLevelId_fkey" FOREIGN KEY ("educationLevelId") REFERENCES "education_level"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
@@ -852,13 +920,13 @@ ALTER TABLE "lesson_plan" ADD CONSTRAINT "lesson_plan_userId_fkey" FOREIGN KEY (
 ALTER TABLE "lesson_plan_usage" ADD CONSTRAINT "lesson_plan_usage_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "community_request" ADD CONSTRAINT "community_request_educationLevelId_fkey" FOREIGN KEY ("educationLevelId") REFERENCES "education_level"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "community_request" ADD CONSTRAINT "community_request_educationLevelId_fkey" FOREIGN KEY ("educationLevelId") REFERENCES "education_level"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "community_request" ADD CONSTRAINT "community_request_gradeId_fkey" FOREIGN KEY ("gradeId") REFERENCES "grade"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "community_request" ADD CONSTRAINT "community_request_subjectId_fkey" FOREIGN KEY ("subjectId") REFERENCES "subject"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "community_request" ADD CONSTRAINT "community_request_subjectId_fkey" FOREIGN KEY ("subjectId") REFERENCES "subject"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "community_request" ADD CONSTRAINT "community_request_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -889,3 +957,18 @@ ALTER TABLE "push_subscription" ADD CONSTRAINT "push_subscription_userId_fkey" F
 
 -- AddForeignKey
 ALTER TABLE "push_campaign_clicks" ADD CONSTRAINT "push_campaign_clicks_campaignId_fkey" FOREIGN KEY ("campaignId") REFERENCES "push_campaigns"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "community_request_upload" ADD CONSTRAINT "community_request_upload_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "community_request"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "community_request_upload" ADD CONSTRAINT "community_request_upload_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "community_request_comment" ADD CONSTRAINT "community_request_comment_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "community_request"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "community_request_comment" ADD CONSTRAINT "community_request_comment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "community_request_comment" ADD CONSTRAINT "community_request_comment_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "community_request_comment"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -88,16 +88,18 @@ model User {
   role          UserRole @default(user)
   banned        Boolean  @default(false)
 
-  accounts              Account[]
-  sessions              Session[]
-  subscription          Subscription?
-  resourceAccesses      ResourceUserAccess[]
-  lessonPlans           LessonPlan[]
-  lessonPlanUsage       LessonPlanUsage[]
-  communityRequests     CommunityRequest[]
-  communityRequestVotes CommunityRequestVote[]
-  llmUsageLogs          LlmUsageLog[]
-  pushSubscriptions     PushSubscription[]
+  accounts                 Account[]
+  sessions                 Session[]
+  subscription             Subscription?
+  resourceAccesses         ResourceUserAccess[]
+  lessonPlans              LessonPlan[]
+  lessonPlanUsage          LessonPlanUsage[]
+  communityRequests        CommunityRequest[]
+  communityRequestVotes    CommunityRequestVote[]
+  communityRequestUploads  CommunityRequestUpload[]
+  communityRequestComments CommunityRequestComment[]
+  llmUsageLogs             LlmUsageLog[]
+  pushSubscriptions        PushSubscription[]
 
   @@map("user")
 }
@@ -410,19 +412,24 @@ model CommunityRequest {
   description String @db.Text
   votingMonth String
 
-  educationLevelId String
-  educationLevel   EducationLevel @relation(fields: [educationLevelId], references: [id])
+  // Taxonomia (OPCIONAL - para fluxo simplificado)
+  educationLevelId String?
+  educationLevel   EducationLevel? @relation(fields: [educationLevelId], references: [id])
 
   gradeId String?
   grade   Grade?  @relation(fields: [gradeId], references: [id])
 
-  subjectId String
-  subject   Subject @relation(fields: [subjectId], references: [id])
+  subjectId String?
+  subject   Subject? @relation(fields: [subjectId], references: [id])
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   status CommunityRequestStatus @default(draft)
+
+  // BNCC
+  hasBnccAlignment Boolean  @default(false)
+  bnccSkillCodes   String[] @default([])
 
   unfeasibleReason String? @db.Text
   unfeasibleById   String?
@@ -431,6 +438,7 @@ model CommunityRequest {
 
   voteCount      Int @default(0)
   survivedMonths Int @default(0)
+  commentCount   Int @default(0)
 
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -440,6 +448,8 @@ model CommunityRequest {
 
   votes      CommunityRequestVote[]
   references CommunityRequestReference[]
+  uploads    CommunityRequestUpload[]
+  comments   CommunityRequestComment[]
 
   @@index([userId])
   @@index([gradeId])
@@ -764,4 +774,90 @@ model PushTemplate {
   @@index([eventType])
   @@index([isActive])
   @@map("push_template")
+}
+
+// ============================================
+// SYSTEM CONFIG (Configurações Centralizadas)
+// ============================================
+
+enum ConfigType {
+  string
+  number
+  boolean
+  json
+}
+
+model SystemConfig {
+  id String @id @default(cuid())
+
+  key   String     @unique // Ex: "community.votes.subscriber"
+  value String // Valor serializado (JSON ou string)
+  type  ConfigType // Tipo do valor para parsing
+
+  // Metadata
+  label       String? // Label amigável para admin
+  description String? // Descrição do que configura
+  category    String? // Categoria para agrupamento (community, lesson-plans, etc)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@map("system_config")
+}
+
+// ============================================
+// COMMUNITY REQUEST - Uploads do Usuário
+// ============================================
+
+model CommunityRequestUpload {
+  id        String           @id @default(cuid())
+  requestId String
+  request   CommunityRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Cloudinary
+  cloudinaryPublicId String
+  url                String
+
+  // Metadata
+  fileName String
+  fileType String // 'image/png' | 'image/jpeg' | 'application/pdf'
+  fileSize Int // bytes
+
+  createdAt DateTime @default(now())
+
+  @@index([requestId])
+  @@map("community_request_upload")
+}
+
+// ============================================
+// COMMUNITY REQUEST - Comentários
+// ============================================
+
+model CommunityRequestComment {
+  id        String           @id @default(cuid())
+  requestId String
+  request   CommunityRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Thread (opcional - para respostas aninhadas)
+  parentId String?
+  parent   CommunityRequestComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  CommunityRequestComment[] @relation("CommentReplies")
+
+  content  String  @db.Text
+  isEdited Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([requestId])
+  @@index([userId])
+  @@index([parentId])
+  @@map("community_request_comment")
 }
