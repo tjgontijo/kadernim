@@ -3,6 +3,8 @@
 import { useState, useMemo, useEffect } from 'react'
 import { Plus, Filter, Loader2, Sparkles, Users, Vote, Lightbulb } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+import { motion } from 'framer-motion'
 import { useBreakpoint } from '@/hooks/use-breakpoint'
 import { useSession } from '@/lib/auth/auth-client'
 import { UpsellBanner } from '@/components/client/shared/UpsellBanner'
@@ -306,24 +308,46 @@ export default function CommunityPage() {
 
             {/* LINHA 2: Highlight (Progresso) ou Abas */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                <div className="flex p-1 bg-muted/50 rounded-2xl w-fit">
+                <div className="relative flex p-1.5 bg-gradient-to-br from-muted/80 to-muted/40 rounded-[20px] w-fit border border-border/30 shadow-inner">
+                    <div
+                        className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 rounded-[20px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                        aria-hidden="true"
+                    />
                     <button
                         onClick={() => setActiveTab('all')}
-                        className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'all'
-                            ? 'bg-background text-foreground shadow-sm'
-                            : 'text-muted-foreground hover:text-foreground'
-                            }`}
+                        className={cn(
+                            "relative px-8 py-3 rounded-2xl text-sm font-black uppercase tracking-wider transition-all duration-300",
+                            activeTab === 'all'
+                                ? 'bg-background text-foreground shadow-lg shadow-primary/5 scale-105'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
+                        )}
                     >
-                        Todas
+                        {activeTab === 'all' && (
+                            <motion.div
+                                layoutId="activeTab"
+                                className="absolute inset-0 bg-gradient-to-br from-background to-background/95 rounded-2xl border border-border/50"
+                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                            />
+                        )}
+                        <span className="relative z-10">Todas</span>
                     </button>
                     <button
                         onClick={() => setActiveTab('mine')}
-                        className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'mine'
-                            ? 'bg-background text-foreground shadow-sm'
-                            : 'text-muted-foreground hover:text-foreground'
-                            }`}
+                        className={cn(
+                            "relative px-8 py-3 rounded-2xl text-sm font-black uppercase tracking-wider transition-all duration-300",
+                            activeTab === 'mine'
+                                ? 'bg-background text-foreground shadow-lg shadow-primary/5 scale-105'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
+                        )}
                     >
-                        Minhas Solicitações
+                        {activeTab === 'mine' && (
+                            <motion.div
+                                layoutId="activeTab"
+                                className="absolute inset-0 bg-gradient-to-br from-background to-background/95 rounded-2xl border border-border/50"
+                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                            />
+                        )}
+                        <span className="relative z-10">Minhas Solicitações</span>
                     </button>
                 </div>
 
@@ -430,12 +454,28 @@ export default function CommunityPage() {
 
             {/* Ranking dos Top 3 (Apenas na aba 'Todas' e sem busca) */}
             {activeTab === 'all' && !debouncedQuery && ranking.length > 0 && (
-                <section className="mb-12">
-                    <div className="flex items-center gap-2 mb-6">
-                        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                            <Vote className="h-4 w-4 text-primary" />
+                <motion.section
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="mb-12 relative"
+                >
+                    {/* Efeito de brilho de fundo */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 rounded-[40px] blur-3xl -z-10" aria-hidden="true" />
+
+                    <div className="flex items-center gap-3 mb-8">
+                        <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center border border-primary/20 shadow-lg shadow-primary/10">
+                            <Vote className="h-6 w-6 text-primary" />
                         </div>
-                        <h2 className="text-xl font-black text-foreground uppercase tracking-tight">Top Pedidos do Mês</h2>
+                        <div>
+                            <h2 className="text-2xl font-black text-foreground uppercase tracking-tight flex items-center gap-2">
+                                Top Pedidos do Mês
+                                <span className="text-primary">🔥</span>
+                            </h2>
+                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-0.5">
+                                Os mais votados pela comunidade
+                            </p>
+                        </div>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {ranking.map((request: any, index: number) => (
@@ -450,7 +490,7 @@ export default function CommunityPage() {
                             />
                         ))}
                     </div>
-                </section>
+                </motion.section>
             )}
 
             {/* Divisor Visual se houver ranking */}
