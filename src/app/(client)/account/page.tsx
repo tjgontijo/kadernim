@@ -14,10 +14,16 @@ import {
     Sparkles,
     Camera,
     Pencil,
-    Settings
+    Settings,
+    Smartphone,
+    RefreshCw,
+    Trash2,
+    LogOut,
+    Shield,
+    Download,
+    AlertCircle
 } from 'lucide-react'
-import imageCompression from 'browser-image-compression'
-import { format, formatDistanceToNow, differenceInDays } from 'date-fns'
+import { format, differenceInDays } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -37,6 +43,18 @@ import {
 } from '@/lib/utils/phone'
 import { AvatarCropper } from '@/components/ui/avatar-cropper'
 import { ProfileSkeleton } from '@/components/client/shared/skeletons/profile-skeleton'
+import { usePwa } from '@/hooks/use-pwa'
+import { signOut } from '@/lib/auth'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 interface AccountData {
     id: string
@@ -64,6 +82,21 @@ export default function AccountPage() {
     const [tempAvatar, setTempAvatar] = useState<string | null>(null)
     const [isCropOpen, setIsCropOpen] = useState(false)
     const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false)
+    const [showClearCacheDialog, setShowClearCacheDialog] = useState(false)
+    const [showLogoutAllDialog, setShowLogoutAllDialog] = useState(false)
+    const [isCheckingUpdate, setIsCheckingUpdate] = useState(false)
+    const [isRevokingSessions, setIsRevokingSessions] = useState(false)
+
+    const {
+        version,
+        isPwa,
+        hasUpdate,
+        isUpdating,
+        checkForUpdate,
+        applyUpdate,
+        clearCache,
+        isClearing,
+    } = usePwa()
 
     const { data: account, isLoading } = useQuery<AccountData>({
         queryKey: ['account'],
@@ -183,7 +216,55 @@ export default function AccountPage() {
         }
     }
 
+    const handleCheckUpdate = async () => {
+        setIsCheckingUpdate(true)
+        try {
+            const hasNewUpdate = await checkForUpdate()
+            if (hasNewUpdate) {
+                toast.success('Nova versão disponível!')
+            } else {
+                toast.info('Você já está na versão mais recente')
+            }
+        } catch {
+            toast.error('Erro ao verificar atualizações')
+        } finally {
+            setIsCheckingUpdate(false)
+        }
+    }
 
+    const handleClearCache = async () => {
+        try {
+            await clearCache()
+            toast.success('Cache limpo com sucesso! Recarregando...')
+            setTimeout(() => window.location.reload(), 1000)
+        } catch {
+            toast.error('Erro ao limpar cache')
+        }
+        setShowClearCacheDialog(false)
+    }
+
+    const handleRevokeAllSessions = async () => {
+        setIsRevokingSessions(true)
+        try {
+            const res = await fetch('/api/v1/account/sessions', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ revokeAll: true }),
+            })
+            if (!res.ok) throw new Error('Erro ao revogar sessões')
+            toast.success('Todas as sessões foram encerradas')
+            await signOut({ fetchOptions: { onSuccess: () => { window.location.href = '/login' } } })
+        } catch {
+            toast.error('Erro ao encerrar sessões')
+        } finally {
+            setIsRevokingSessions(false)
+            setShowLogoutAllDialog(false)
+        }
+    }
+
+    const handleLogout = async () => {
+        await signOut({ fetchOptions: { onSuccess: () => { window.location.href = '/login' } } })
+    }
 
     if (isLoading) {
         return <ProfileSkeleton />
@@ -510,6 +591,166 @@ export default function AccountPage() {
                     )}
                 </CardContent>
             </Card>
+
+            {/* Card: Gerenciamento do App */}
+            <Card className="border-none shadow-xl shadow-foreground/5 bg-card/50 backdrop-blur-sm overflow-hidden">
+                <CardHeader className="p-8 pb-0">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="p-3 bg-slate-500/10 rounded-2xl">
+                                <Smartphone className="h-6 w-6 text-slate-600" />
+                            </div>
+                            <div>
+                                <CardTitle className="text-xl font-black tracking-tight">Aplicativo</CardTitle>
+                                <CardDescription className="font-medium">Gerenciamento e configurações do app</CardDescription>
+                            </div>
+                        </div>
+                        {version && (
+                            <Badge variant="outline" className="font-mono text-xs">
+                                v{version.version}
+                            </Badge>
+                        )}
+                    </div>
+                </CardHeader>
+
+                <CardContent className="p-8 space-y-4">
+                    {/* Status do App */}
+                    <div className="p-4 rounded-2xl bg-muted/30 space-y-3">
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground font-medium">Modo de instalação</span>
+                            <Badge variant={isPwa ? "default" : "secondary"} className="font-bold">
+                                {isPwa ? 'App Instalado' : 'Navegador'}
+                            </Badge>
+                        </div>
+                        {version && (
+                            <div className="flex items-center justify-between">
+                                <span className="text-sm text-muted-foreground font-medium">Versão atual</span>
+                                <span className="font-mono text-sm font-bold">{version.version}</span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Atualização */}
+                    {hasUpdate ? (
+                        <Button
+                            onClick={applyUpdate}
+                            disabled={isUpdating}
+                            className="w-full h-14 rounded-2xl font-black uppercase tracking-widest text-xs bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/20"
+                        >
+                            {isUpdating ? (
+                                <Loader2 className="h-4 w-4 mr-3 animate-spin" />
+                            ) : (
+                                <Download className="h-4 w-4 mr-3" />
+                            )}
+                            {isUpdating ? 'Atualizando...' : 'Instalar Atualização'}
+                        </Button>
+                    ) : (
+                        <Button
+                            variant="outline"
+                            onClick={handleCheckUpdate}
+                            disabled={isCheckingUpdate}
+                            className="w-full h-14 rounded-2xl font-black uppercase tracking-widest text-xs border-muted-foreground/10 hover:bg-muted transition-all active:scale-[0.98]"
+                        >
+                            {isCheckingUpdate ? (
+                                <Loader2 className="h-4 w-4 mr-3 animate-spin" />
+                            ) : (
+                                <RefreshCw className="h-4 w-4 mr-3" />
+                            )}
+                            {isCheckingUpdate ? 'Verificando...' : 'Verificar Atualizações'}
+                        </Button>
+                    )}
+
+                    {/* Limpar Cache */}
+                    <Button
+                        variant="outline"
+                        onClick={() => setShowClearCacheDialog(true)}
+                        disabled={isClearing}
+                        className="w-full h-14 rounded-2xl font-black uppercase tracking-widest text-xs border-muted-foreground/10 hover:bg-muted transition-all active:scale-[0.98]"
+                    >
+                        {isClearing ? (
+                            <Loader2 className="h-4 w-4 mr-3 animate-spin" />
+                        ) : (
+                            <Trash2 className="h-4 w-4 mr-3" />
+                        )}
+                        {isClearing ? 'Limpando...' : 'Limpar Cache do App'}
+                    </Button>
+
+                    <div className="pt-4 border-t border-border/50 space-y-4">
+                        {/* Sair de todas as sessões */}
+                        <Button
+                            variant="outline"
+                            onClick={() => setShowLogoutAllDialog(true)}
+                            className="w-full h-14 rounded-2xl font-black uppercase tracking-widest text-xs border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950/50 transition-all active:scale-[0.98]"
+                        >
+                            <Shield className="h-4 w-4 mr-3" />
+                            Sair de Todos os Dispositivos
+                        </Button>
+
+                        {/* Sair */}
+                        <Button
+                            variant="ghost"
+                            onClick={handleLogout}
+                            className="w-full h-14 rounded-2xl font-black uppercase tracking-widest text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-all active:scale-[0.98]"
+                        >
+                            <LogOut className="h-4 w-4 mr-3" />
+                            Sair da Conta
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Dialog: Limpar Cache */}
+            <AlertDialog open={showClearCacheDialog} onOpenChange={setShowClearCacheDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="flex items-center gap-2">
+                            <AlertCircle className="h-5 w-5 text-amber-500" />
+                            Limpar Cache do Aplicativo
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Isso irá remover todos os dados em cache do aplicativo. Você continuará logado, mas precisará baixar os dados novamente. A página será recarregada após a limpeza.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleClearCache} className="bg-amber-600 hover:bg-amber-700">
+                            Limpar Cache
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Dialog: Sair de Todas as Sessões */}
+            <AlertDialog open={showLogoutAllDialog} onOpenChange={setShowLogoutAllDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="flex items-center gap-2">
+                            <Shield className="h-5 w-5 text-red-500" />
+                            Sair de Todos os Dispositivos
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Isso irá encerrar todas as suas sessões ativas em todos os dispositivos, incluindo este. Você precisará fazer login novamente.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isRevokingSessions}>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleRevokeAllSessions}
+                            disabled={isRevokingSessions}
+                            className="bg-red-600 hover:bg-red-700"
+                        >
+                            {isRevokingSessions ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    Encerrando...
+                                </>
+                            ) : (
+                                'Sair de Todos'
+                            )}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             <AvatarCropper
                 image={tempAvatar}
