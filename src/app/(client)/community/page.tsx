@@ -102,9 +102,9 @@ export default function CommunityPage() {
         setSubject('all');
     }, [level])
 
-    // Carregar Disciplinas quando Ano mudar
+    // Carregar Disciplinas quando Etapa ou Ano mudar
     useEffect(() => {
-        if (grade === 'all' && level === 'all') {
+        if (level === 'all') {
             setSubjects([]);
             setSubject('all');
             return;
@@ -419,7 +419,7 @@ export default function CommunityPage() {
 
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Componente / Campo</label>
-                                        <Select value={subject} onValueChange={setSubject} disabled={grade === 'all' && level !== 'educacao-infantil'}>
+                                        <Select value={subject} onValueChange={setSubject} disabled={level === 'all'}>
                                             <SelectTrigger className="h-14 w-full bg-muted/30 border-border/50 rounded-2xl text-sm font-bold">
                                                 <SelectValue placeholder={level === 'educacao-infantil' ? 'Campo de Exp.' : 'Componente'} />
                                             </SelectTrigger>

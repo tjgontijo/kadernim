@@ -76,10 +76,9 @@ export default function LessonPlansPage() {
     }
   }, [level]);
 
+  // Reseta disciplinas quando o ano muda para garantir validade
   useEffect(() => {
-    if (grade === 'all') {
-      setSubject('all');
-    }
+    setSubject('all');
   }, [grade]);
 
   const filteredPlans = useMemo(() => {
@@ -318,7 +317,7 @@ export default function LessonPlansPage() {
 
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Componente / Campo</label>
-                    <Select value={subject} onValueChange={setSubject} disabled={grade === 'all' && level !== 'educacao-infantil'}>
+                    <Select value={subject} onValueChange={setSubject} disabled={level === 'all'}>
                       <SelectTrigger className="h-14 w-full bg-muted/30 border-border/50 rounded-2xl text-sm font-bold">
                         <SelectValue placeholder={level === 'educacao-infantil' ? 'Campo de Exp.' : 'Componente'} />
                       </SelectTrigger>

@@ -65,9 +65,9 @@ export function ResourceFilters({ onFiltersChange, tab = 'all' }: ResourceFilter
     setSubject('all');
   }, [level])
 
-  // Carregar Disciplinas quando Ano mudar
+  // Carregar Disciplinas quando Etapa ou Ano mudar
   useEffect(() => {
-    if (grade === 'all' && level === 'all') {
+    if (level === 'all') {
       setSubjects([]);
       setSubject('all');
       return;
@@ -208,7 +208,7 @@ export function ResourceFilters({ onFiltersChange, tab = 'all' }: ResourceFilter
               <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                 {level === 'educacao-infantil' ? 'Campo de Experiência' : 'Componente / Matéria'}
               </label>
-              <Select value={subject} onValueChange={setSubject} disabled={grade === 'all' && level !== 'educacao-infantil'}>
+              <Select value={subject} onValueChange={setSubject} disabled={level === 'all'}>
                 <SelectTrigger className="h-14 w-full bg-muted/30 border-border/50 rounded-2xl text-sm font-bold">
                   <SelectValue placeholder={level === 'educacao-infantil' ? 'Campo de Exp.' : 'Componente'} />
                 </SelectTrigger>
