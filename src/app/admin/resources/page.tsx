@@ -14,9 +14,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useAdminResources } from '@/hooks/use-admin-resources'
+import { useAdminResources } from '@/hooks/admin/use-admin-resources'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/index'
 import { CrudPageShell } from '@/components/admin/crud/crud-page-shell'
 import { CrudDataView } from '@/components/admin/crud/crud-data-view'
 import { ViewType } from '@/components/admin/crud/types'
@@ -25,12 +25,12 @@ import {
   ResourcesTableView,
 } from '@/components/client/resources'
 import { ResourceEditDrawer } from '@/components/client/resources/resource-drawer'
-import { useResourceMeta } from '@/hooks/use-resource-meta'
-import { useBreakpoint } from '@/hooks/use-breakpoint'
+import { useResourceMeta } from '@/hooks/entities/use-resources'
+import { useMobile } from '@/hooks/layout/use-mobile'
 
 export default function AdminResourcesPage() {
   const router = useRouter()
-  const { isMobile } = useBreakpoint()
+  const { isMobile } = useMobile()
   const [view, setView] = useState<ViewType>('list')
   const { data: metaData } = useResourceMeta()
 

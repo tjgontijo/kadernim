@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Info, Sparkles, ChevronDown, ChevronUp, Search, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QuizStep } from '@/components/client/quiz/QuizStep';
-import { useBnccSkills } from '@/hooks/use-taxonomy';
+import { useBnccSkills } from '@/hooks/entities/use-taxonomy';
 
 interface QuestionSkillsProps {
   educationLevelSlug: string;

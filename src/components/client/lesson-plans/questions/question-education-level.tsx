@@ -3,7 +3,7 @@
 import { GraduationCap, Baby, School } from 'lucide-react';
 import { QuizStep } from '@/components/client/quiz/QuizStep';
 import { QuizChoice, type QuizOption } from '@/components/client/quiz/QuizChoice';
-import { useEducationLevels } from '@/hooks/use-taxonomy';
+import { useEducationLevels } from '@/hooks/entities/use-taxonomy';
 
 interface QuestionEducationLevelProps {
   value?: string;

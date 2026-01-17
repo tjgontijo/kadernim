@@ -12,7 +12,7 @@ export const Footer: React.FC = () => {
           <span className="text-xl font-bold text-foreground">Kadernim</span>
         </div>
         <p className="text-muted-foreground text-center text-sm max-w-sm mb-6">
-          Devolvendo o tempo livre que a professora merece, um material de cada vez.
+          Devolvendo o tempo livre que o professor merece, um material de cada vez.
         </p>
         <div className="text-xs text-muted-foreground/60">
           © {new Date().getFullYear()} Kadernim. Todos os direitos reservados.

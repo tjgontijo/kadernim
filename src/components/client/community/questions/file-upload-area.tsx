@@ -2,7 +2,7 @@
 
 import React, { useRef, useState } from 'react';
 import { Upload, X, FileText, Image as ImageIcon, AlertCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/index';
 import { Button } from '@/components/ui/button';
 
 interface FileUploadAreaProps {

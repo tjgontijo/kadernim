@@ -1,6 +1,6 @@
 'use client';
 
-import { useEducationLevels, useGrades, useSubjects } from '@/hooks/use-taxonomy';
+import { useEducationLevels, useGrades, useSubjects } from '@/hooks/entities/use-taxonomy';
 import { QuizStep } from '@/components/client/quiz/QuizStep';
 import { QuizSelect } from '@/components/client/quiz/QuizSelect';
 import { QuizAction } from '@/components/client/quiz/QuizAction';

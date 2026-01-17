@@ -9,7 +9,7 @@ import { useTheme } from 'next-themes'
 import { authClient } from '@/lib/auth/auth-client'
 import { UserRole } from '@/types/user-role'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/index'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,7 +22,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuPortal,
 } from '@/components/ui/dropdown-menu'
-import { useSessionQuery } from '@/hooks/useSessionQuery'
+import { useSessionQuery } from '@/hooks/auth/use-session'
 
 export function SystemHeader() {
   const { data: session } = useSessionQuery()

@@ -9,8 +9,8 @@ export default function ServiceWorkerRegister() {
   const [currentVersion, setCurrentVersion] = useState<string | null>(null)
 
   useEffect(() => {
-    // Busca a versão local (do arquivo gerado no build)
-    fetch('/version.json')
+    // Busca a versão local (do arquivo gerado no build) com cache-busting
+    fetch('/version.json?v=' + Date.now())
       .then(res => res.json())
       .then(data => setCurrentVersion(data.version))
       .catch(() => console.error('[PWA] Erro ao carregar versão local'))

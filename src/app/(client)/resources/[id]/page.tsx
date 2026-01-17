@@ -4,14 +4,14 @@ import { useEffect, useState, useCallback } from 'react'
 import Image from 'next/image'
 import { ArrowLeft } from 'lucide-react'
 import { AspectRatio } from '@/components/ui/aspect-ratio'
-import { DownloadList } from '@/components/ui/download-list'
+import { DownloadList } from '@/components/shared/download-list'
 import { BadgeEducationLevel } from '@/components/client/resources/BadgeEducationLevel'
 import { BadgeSubject } from '@/components/client/resources/BadgeSubject'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import type { ResourceDetail } from '@/lib/schemas/resource'
 import { ResourceImageCarousel } from '@/components/client/resources/ResourceImageCarousel'
-import { LazyImage } from '@/components/ui/lazy-image'
+import { LazyImage } from '@/components/shared/lazy-image'
 
 export default function ResourceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const [resource, setResource] = useState<ResourceDetail | null>(null)

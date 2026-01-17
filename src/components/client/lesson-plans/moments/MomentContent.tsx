@@ -3,12 +3,12 @@
 import { useState } from 'react';
 import { Sparkles, List, MessageSquare, Search, Loader2, Check, Star, X } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/index';
 import { QuizStep } from '@/components/client/quiz/QuizStep';
 import { QuizAction } from '@/components/client/quiz/QuizAction';
 import { QuizSkillPicker } from '@/components/client/quiz/QuizSkillPicker';
 import { QuizTextInput } from '@/components/client/quiz/QuizTextInput';
-import { useBnccThemes, useBnccSkills } from '@/hooks/use-taxonomy';
+import { useBnccThemes, useBnccSkills } from '@/hooks/entities/use-taxonomy';
 import { Button } from '@/components/ui/button';
 
 interface SkillSelection {

@@ -1,6 +1,5 @@
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { ArrowRight, Star, Heart } from 'lucide-react';
+import { Star, Heart, ChevronDown } from 'lucide-react';
 
 export const Hero: React.FC = () => {
   return (
@@ -29,18 +28,11 @@ export const Hero: React.FC = () => {
           </h1>
 
           <p className="mt-6 text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto font-medium">
-            Uma biblioteca viva com atividades prontas, plano de aula alinhado à BNCC e uma comunidade de professoras que decide o que entra na plataforma.
+            Uma biblioteca viva com atividades prontas, plano de aula alinhado à BNCC e uma comunidade de professores que decide o que entra na plataforma.
           </p>
 
           <div className="mt-6 font-handwriting text-primary/80 rotate-1">
             ~ Todo mês, novos recursos pedagógicos prontos chegam até você.
-          </div>
-
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button size="lg" className="w-full sm:w-auto group">
-              Quero simplificar minha rotina
-              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
           </div>
 
           <div className="mt-12 flex flex-wrap justify-center gap-6 text-sm font-semibold text-muted-foreground">
@@ -48,6 +40,11 @@ export const Hero: React.FC = () => {
               <Heart className="h-4 w-4 text-destructive fill-destructive" />
               Feito por quem entende de sala de aula
             </span>
+          </div>
+
+          {/* Scroll Indicator */}
+          <div className="mt-16 flex justify-center animate-bounce">
+            <ChevronDown className="h-8 w-8 text-muted-foreground/50" />
           </div>
 
         </div>

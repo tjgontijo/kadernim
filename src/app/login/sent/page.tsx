@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Clock, Edit3 } from 'lucide-react'
 import { authClient } from '@/lib/auth/auth-client'
-import { Spinner } from '@/components/ui/spinner'
+import { Spinner } from '@/components/shared/spinner'
 import { InstallPWA } from '@/components/pwa/InstallPWA'
 import { toast } from 'sonner'
 

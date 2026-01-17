@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress"
 import { toast } from "sonner"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { DeleteConfirmDialog } from "@/components/admin/crud/delete-confirm-dialog"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils/index"
 
 interface FileData {
   id: string

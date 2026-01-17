@@ -40,9 +40,9 @@ import {
     UpdateResourceSchema,
     type UpdateResourceInput,
 } from '@/lib/schemas/admin/resources'
-import { useResourceMeta } from '@/hooks/use-resource-meta'
+import { useResourceMeta } from '@/hooks/entities/use-resources'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/index'
 import { ResourceBnccManager } from '@/components/admin/resources/edit/resource-bncc-manager'
 
 interface ResourceCategorizationFormProps {

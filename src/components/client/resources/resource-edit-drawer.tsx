@@ -12,7 +12,7 @@ import {
     Trash2,
     Globe
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/index'
 import {
     Drawer,
     DrawerContent,

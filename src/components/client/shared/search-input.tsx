@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Search, X, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/index';
 import { Button } from '@/components/ui/button';
 
 interface SearchInputProps extends React.InputHTMLAttributes<HTMLInputElement> {

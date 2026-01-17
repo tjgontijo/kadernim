@@ -16,7 +16,7 @@ import { QuestionBnccAlignment } from './questions/question-bncc-alignment';
 import { QuestionTaxonomy } from './questions/question-taxonomy';
 import { QuestionBnccSkills } from './questions/question-bncc-skills';
 import { QuestionContent } from './questions/question-content';
-import { useCommunityConfig } from '@/hooks/use-community-config';
+import { useCommunityConfig } from '@/hooks/entities/use-community';
 
 /**
  * Wizard state interface - Atualizada Fase 03

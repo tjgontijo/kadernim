@@ -36,7 +36,7 @@ import { Badge } from '@/components/ui/badge';
 import { type LessonPlanResponse } from '@/lib/schemas/lesson-plan';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useDownloadFile } from '@/hooks/use-download-file';
+import { useDownloadFile } from '@/hooks/utils/use-download-file';
 
 interface PlanViewerProps {
     plan: LessonPlanResponse;

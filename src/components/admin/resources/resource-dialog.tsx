@@ -16,8 +16,8 @@ import {
 } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { CreateResourceSchema, UpdateResourceSchema } from '@/lib/schemas/admin/resources'
-import { useCreateAdminResource, useUpdateAdminResource } from '@/hooks/use-admin-resources'
-import { useResourceMeta } from '@/hooks/use-resource-meta'
+import { useCreateAdminResource, useUpdateAdminResource } from '@/hooks/admin/use-admin-resources'
+import { useResourceMeta } from '@/hooks/entities/use-resources'
 
 interface ResourceDialogProps {
   open: boolean

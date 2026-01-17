@@ -37,7 +37,7 @@ import { ResourceImagesManager } from '@/components/admin/resources/edit/resourc
 import { ResourceVideosManager } from '@/components/admin/resources/edit/resource-videos-manager'
 import { DeleteConfirmDialog } from '@/components/admin/crud/delete-confirm-dialog'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/index'
 
 interface ResourceDetail {
   id: string

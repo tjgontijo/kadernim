@@ -43,7 +43,7 @@ import {
 } from 'recharts';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/index';
 import Link from 'next/link';
 
 interface AnalyticsData {

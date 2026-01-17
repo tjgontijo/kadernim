@@ -32,7 +32,8 @@ export function usePwa(): UsePwaReturn {
   useEffect(() => {
     const loadVersion = async () => {
       try {
-        const res = await fetch('/version.json')
+        // Cache-busting para garantir que pegamos a versão real
+        const res = await fetch('/version.json?v=' + Date.now())
         const data = await res.json()
         setVersion(data)
       } catch {
@@ -52,22 +53,38 @@ export function usePwa(): UsePwaReturn {
     loadVersion()
     checkPwaStatus()
 
-    // Get SW registration
+    // Get SW registration and setup listeners
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.ready.then(reg => {
         setRegistration(reg)
-        // Check if there's already a waiting worker
+
+        // Se já houver um esperando, ativa o aviso imediatamente
         if (reg.waiting) {
           setHasUpdate(true)
         }
+
+        // Escutar se o SW encontrar uma atualização em segundo plano
+        reg.addEventListener('updatefound', () => {
+          const installingWorker = reg.installing
+          if (!installingWorker) return
+
+          installingWorker.addEventListener('statechange', () => {
+            if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              setHasUpdate(true)
+            }
+          })
+        })
       })
 
-      // Listen for new updates
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
+      // Listen for new updates taking control
+      const handleControllerChange = () => {
         if (isUpdating) {
           window.location.reload()
         }
-      })
+      }
+
+      navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange)
+      return () => navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange)
     }
   }, [isUpdating])
 
@@ -95,10 +112,22 @@ export function usePwa(): UsePwaReturn {
 
   // Apply pending update
   const applyUpdate = useCallback(() => {
-    if (!registration?.waiting) return
+    if (registration?.waiting) {
+      setIsUpdating(true)
+      registration.waiting.postMessage({ type: 'SKIP_WAITING' })
+      return
+    }
 
-    setIsUpdating(true)
-    registration.waiting.postMessage({ type: 'SKIP_WAITING' })
+    // Se não houver um worker esperando mas o usuário forçou, tentamos atualizar o registro
+    if (registration) {
+      setIsUpdating(true)
+      registration.update().then(() => {
+        if (!registration.waiting) {
+          // Se mesmo após atualizar não houver nada, recarregamos forçado
+          window.location.reload()
+        }
+      })
+    }
   }, [registration])
 
   // Clear all caches

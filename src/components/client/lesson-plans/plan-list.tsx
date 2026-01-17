@@ -1,6 +1,6 @@
 'use client';
 
-import { useLessonPlans } from '@/hooks/use-lesson-plans';
+import { useLessonPlans } from '@/hooks/entities/use-lesson-plans';
 import { PlanCard } from './plan-card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';

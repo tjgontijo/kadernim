@@ -34,16 +34,16 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/index'
 import {
     applyWhatsAppMask,
     removeWhatsAppMask,
     normalizeWhatsApp,
     denormalizeWhatsApp
 } from '@/lib/utils/phone'
-import { AvatarCropper } from '@/components/ui/avatar-cropper'
+import { AvatarCropper } from '@/components/shared/avatar-cropper'
 import { ProfileSkeleton } from '@/components/client/shared/skeletons/profile-skeleton'
-import { usePwa } from '@/hooks/use-pwa'
+import { usePwa } from '@/hooks/utils/use-pwa'
 import { signOut } from '@/lib/auth'
 import {
     AlertDialog,
@@ -71,6 +71,10 @@ interface AccountData {
         purchaseDate: string
         expiresAt: string | null
     } | null
+    latestVersion?: {
+        version: string
+        buildAt: string
+    } | null
 }
 
 export default function AccountPage() {
@@ -88,9 +92,9 @@ export default function AccountPage() {
     const [isRevokingSessions, setIsRevokingSessions] = useState(false)
 
     const {
-        version,
+        version: localVersion,
         isPwa,
-        hasUpdate,
+        hasUpdate: swHasUpdate,
         isUpdating,
         checkForUpdate,
         applyUpdate,
@@ -106,6 +110,11 @@ export default function AccountPage() {
             return res.json()
         },
     })
+
+    // Lógica de cross-check: Se a API reportar uma versão superior, forçamos o aviso
+    const apiVersion = account?.latestVersion?.version
+    const hasUpdate = swHasUpdate || (!!localVersion && !!apiVersion && localVersion.version !== apiVersion)
+    const version = localVersion || account?.latestVersion
 
     const updateMutation = useMutation({
         mutationFn: async (data: { name?: string; phone?: string | null }) => {
@@ -623,9 +632,17 @@ export default function AccountPage() {
                             </Badge>
                         </div>
                         {version && (
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm text-muted-foreground font-medium">Versão atual</span>
-                                <span className="font-mono text-sm font-bold">{version.version}</span>
+                            <div className="flex flex-col gap-1.5 pt-2">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm text-muted-foreground font-medium">Sua versão</span>
+                                    <span className="font-mono text-sm font-bold text-foreground">{localVersion?.version || '---'}</span>
+                                </div>
+                                {localVersion?.version !== apiVersion && apiVersion && (
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm text-emerald-600 font-bold">Nova disponível</span>
+                                        <span className="font-mono text-sm font-bold text-emerald-600">{apiVersion}</span>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>

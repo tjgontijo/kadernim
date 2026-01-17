@@ -2,8 +2,8 @@
 
 import * as React from 'react'
 import { LayoutGrid, List, Kanban } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { useBreakpoint } from '@/hooks/use-breakpoint'
+import { cn } from '@/lib/utils/index'
+import { useMobile } from '@/hooks/layout/use-mobile'
 import { ViewType } from './types'
 
 type ViewSwitcherProps = {
@@ -25,7 +25,7 @@ export function ViewSwitcher({
   className,
   enabledViews = ['list', 'cards']
 }: ViewSwitcherProps) {
-  const { isBelow } = useBreakpoint()
+  const { isBelow } = useMobile()
   const isSmallScreen = isBelow('desktop')
 
   const visibleTabs = React.useMemo(

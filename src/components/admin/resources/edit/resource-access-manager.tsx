@@ -30,7 +30,7 @@ import {
 import { format, addMonths, addYears } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { DeleteConfirmDialog } from "@/components/admin/crud/delete-confirm-dialog"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils/index"
 
 interface User {
   id: string

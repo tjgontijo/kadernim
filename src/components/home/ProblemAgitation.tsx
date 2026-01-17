@@ -9,7 +9,7 @@ export const ProblemAgitation: React.FC = () => {
         {/* Bloco 1 - Identificação do Problema */}
         <div className="max-w-3xl mx-auto mb-20">
           <h2 className="text-3xl font-bold text-center text-foreground mb-10">
-            Se você é professora, provavelmente já viveu isso:
+            Se você é professor, provavelmente já viveu isso:
           </h2>
 
           <div className="bg-muted/30 p-8 rounded-3xl border border-dashed border-destructive/30 relative">
@@ -57,7 +57,7 @@ export const ProblemAgitation: React.FC = () => {
                   Você passa a ter acesso a um <strong>único lugar com tudo organizado.</strong>
                 </p>
                 <p className="text-lg text-muted-foreground mb-6">
-                  Uma plataforma feita para professoras que querem praticidade. Todo mês, em média, <strong className="text-secondary-foreground bg-secondary/20 px-1 rounded">50 novos materiais pedagógicos</strong> são adicionados.
+                  Uma plataforma feita para professores que querem praticidade. Todo mês, em média, <strong className="text-secondary-foreground bg-secondary/20 px-1 rounded">20 novos materiais pedagógicos</strong> são adicionados.
                 </p>
 
                 <div className="bg-card rounded-xl p-6 shadow-sm border border-secondary/10">
@@ -65,7 +65,7 @@ export const ProblemAgitation: React.FC = () => {
                     <Check className="h-5 w-5 text-success" />
                     Simples assim:
                   </h3>
-                  <p className="text-muted-foreground">Você entra, escolhe, baixa e usa. Sem complicação.</p>
+                  <p className="text-muted-foreground">Você entra, escolhe, imprime e usa. Sem complicação.</p>
                 </div>
               </div>
 

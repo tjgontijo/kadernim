@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useBnccSkills } from '@/hooks/use-taxonomy';
+import { useBnccSkills } from '@/hooks/entities/use-taxonomy';
 import { QuizStep } from '@/components/client/quiz/QuizStep';
 import { QuizChoice } from '@/components/client/quiz/QuizChoice';
 import { Search, X, Loader2, Info, Sparkles, BookOpen } from 'lucide-react';

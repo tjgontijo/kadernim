@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { useDownloadFile } from '@/hooks/use-download-file';
+import { useDownloadFile } from '@/hooks/utils/use-download-file';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { QuizLayout } from '@/components/client/quiz/QuizLayout';
 import { MomentContext, MomentContent, MomentReview } from './moments';

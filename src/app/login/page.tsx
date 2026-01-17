@@ -10,7 +10,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { authClient } from '@/lib/auth/auth-client'
-import { Spinner } from '@/components/ui/spinner'
+import { Spinner } from '@/components/shared/spinner'
 import { InstallPWA } from '@/components/pwa/InstallPWA'
 import { toast } from 'sonner'
 

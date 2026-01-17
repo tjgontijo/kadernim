@@ -1,0 +1,13 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+Allow: /plans
+
+# Disallow internal and auth routes
+Disallow: /api/
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /account/
+Disallow: /login/
+
+Sitemap: https://kadernim.com.br/sitemap.xml

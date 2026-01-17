@@ -4,8 +4,8 @@ import { useState, useCallback } from 'react'
 import { ResourceGrid } from '@/components/client/resources/ResourceGrid'
 import { ResourceFilters } from '@/components/client/resources/ResourceFilters'
 import { ResourceTabs } from '@/components/client/resources/ResourceTabs'
-import { useResourcesSummaryQuery } from '@/hooks/use-resources-summary-query'
-import { useSessionQuery } from '@/hooks/useSessionQuery'
+import { useResourcesSummaryQuery } from '@/hooks/entities/use-resources'
+import { useSessionQuery } from '@/hooks/auth/use-session'
 import { Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
@@ -23,7 +23,7 @@ interface Filters {
 export default function ResourcesPage() {
   const PAGE_SIZE = 20
 
-  const [tab, setTab] = useState<'all' | 'mine' | 'free'>('all')
+  const [tab, setTab] = useState<'all' | 'mine' | 'free'>('mine')
   const [filtersByTab, setFiltersByTab] = useState<Record<string, Filters>>({
     all: {},
     mine: {},

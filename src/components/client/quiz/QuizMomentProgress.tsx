@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/index';
 
 interface QuizMomentProgressProps {
     currentMoment: 1 | 2 | 3;

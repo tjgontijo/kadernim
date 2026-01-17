@@ -11,9 +11,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
-import { useBreakpoint } from '@/hooks/use-breakpoint'
-import { useResponsiveView } from '@/hooks/use-responsive-view'
-import { cn } from '@/lib/utils'
+import { useMobile } from '@/hooks/layout/use-mobile'
+import { useResponsiveView } from '@/hooks/layout/use-responsive-view'
+import { cn } from '@/lib/utils/index'
 import { ViewSwitcher } from './view-switcher'
 import { CrudDataView } from './crud-data-view'
 import { ViewType } from './types'
@@ -84,7 +84,7 @@ export function CrudPageShell({
     children,
     isLoading
 }: CrudPageShellProps) {
-    const { isMobile } = useBreakpoint()
+    const { isMobile } = useMobile()
 
     // Auto-switch to cards view on mobile/tablet
     useResponsiveView(view, setView)

@@ -58,7 +58,13 @@ export function UpsellBanner({
 
         <div className="flex flex-col items-center gap-4 shrink-0 w-full lg:w-auto">
           <Button
-            onClick={() => onSubscribe?.()}
+            onClick={() => {
+              if (onSubscribe) {
+                onSubscribe()
+              } else {
+                window.open("https://seguro.profdidatica.com.br/r/TMNDJH4WEN?utm_source=app&utm_medium=upsell_banner&utm_campaign=launch", "_blank")
+              }
+            }}
             size="lg"
             className="w-full lg:w-auto h-14 px-10 rounded-xl text-base font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-3"
           >

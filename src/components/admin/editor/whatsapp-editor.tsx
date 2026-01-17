@@ -15,7 +15,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils/index"
 import type { EventVariable } from "@/lib/events/catalog"
 
 interface WhatsAppEditorProps {

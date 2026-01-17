@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from '@/services/auth/session-service'
 import { prisma } from '@/lib/db'
+import fs from 'fs'
+import path from 'path'
 
 export const dynamic = 'force-dynamic'
 
@@ -42,7 +44,18 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 })
         }
 
-        return NextResponse.json(user)
+        // Buscar versão atual do app para cross-check do PWA
+        const versionPath = path.join(process.cwd(), 'public/version.json')
+        let latestVersion = null
+        try {
+            if (fs.existsSync(versionPath)) {
+                latestVersion = JSON.parse(fs.readFileSync(versionPath, 'utf-8'))
+            }
+        } catch (e) {
+            console.error('[Account API] Error reading version.json', e)
+        }
+
+        return NextResponse.json({ ...user, latestVersion })
     } catch (error) {
         console.error('[GET /api/v1/account]', error)
         return NextResponse.json(

@@ -3,9 +3,9 @@
 import { useState, useMemo, useEffect } from 'react'
 import { Plus, Filter, Loader2, Sparkles, Users, Vote, Lightbulb } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/index'
 import { motion } from 'framer-motion'
-import { useBreakpoint } from '@/hooks/use-breakpoint'
+import { useMobile } from '@/hooks/layout/use-mobile'
 import { useSession } from '@/lib/auth/auth-client'
 import { UpsellBanner } from '@/components/client/shared/UpsellBanner'
 import { CommunityUsage } from '@/components/client/community/community-usage'
@@ -22,7 +22,7 @@ import {
     DrawerDescription,
     DrawerTrigger,
 } from "@/components/ui/drawer"
-import { useCommunityUsage } from '@/hooks/use-community-usage'
+import { useCommunityUsage } from '@/hooks/entities/use-community'
 import { triggerConfetti } from '@/lib/utils/confetti'
 import { PageScaffold } from '@/components/client/shared/page-scaffold'
 import { SearchInput } from '@/components/client/shared/search-input'
@@ -42,7 +42,7 @@ interface FilterOption {
 }
 
 export default function CommunityPage() {
-    const { isMobile } = useBreakpoint()
+    const { isMobile } = useMobile()
     const { data: session, isPending: isSessionLoading } = useSession()
     const [mounted, setMounted] = useState(false)
     const [searchQuery, setSearchQuery] = useState('')

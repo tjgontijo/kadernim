@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import type { Swiper as SwiperType } from 'swiper'
 import { Autoplay, Zoom } from 'swiper/modules'
-import { LazyImage } from '@/components/ui/lazy-image'
+import { LazyImage } from '@/components/shared/lazy-image'
 
 import 'swiper/css'
 import 'swiper/css/zoom'

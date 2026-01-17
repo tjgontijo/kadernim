@@ -1,13 +1,13 @@
 import { useEffect } from 'react'
 import { ViewType } from '@/components/admin/crud/types'
-import { useBreakpoint } from './use-breakpoint'
+import { useMobile } from './use-mobile'
 
 /**
  * Hook que força a visualização em cards em telas menores que tablet (< 1024px)
  * e permite escolha manual em telas maiores
  */
 export function useResponsiveView(view: ViewType, setView: (view: ViewType) => void): void {
-    const { isBelow } = useBreakpoint()
+    const { isBelow } = useMobile()
 
     useEffect(() => {
         if (isBelow('tablet')) {

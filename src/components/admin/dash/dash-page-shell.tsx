@@ -3,7 +3,7 @@
 import React from 'react'
 import { z } from 'zod'
 
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/index'
 
 export const dashPageShellPropsSchema = z.object({
   title: z.string(),

@@ -38,10 +38,10 @@ import {
     DropdownMenuTrigger,
     DropdownMenuItem,
 } from '@/components/ui/dropdown-menu'
-import { useAdminUsers, useUpdateAdminUser, useDeleteAdminUser } from '@/hooks/use-admin-users'
+import { useAdminUsers, useUpdateAdminUser, useDeleteAdminUser } from '@/hooks/admin/use-admin-users'
 import { toast } from 'sonner'
-import { useIsMobile } from '@/hooks/use-mobile'
-import { cn } from '@/lib/utils'
+import { useIsMobile } from '@/hooks/layout/use-mobile'
+import { cn } from '@/lib/utils/index'
 import {
     Select,
     SelectContent,

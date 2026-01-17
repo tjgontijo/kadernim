@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { FileText, LayoutGrid, User, Sparkles, ShieldCheck } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useSessionQuery } from '@/hooks/useSessionQuery';
+import { cn } from '@/lib/utils/index';
+import { useSessionQuery } from '@/hooks/auth/use-session';
 import { UserRole } from '@/types/user-role';
 
 export function MobileNav() {

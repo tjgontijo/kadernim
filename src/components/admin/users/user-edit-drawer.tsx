@@ -12,7 +12,7 @@ import {
     Camera,
     Lock
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/index'
 import {
     Drawer,
     DrawerContent,
@@ -43,7 +43,7 @@ import {
     useUploadUserAvatar,
     useUserAccess,
     useToggleUserAccess
-} from '@/hooks/use-admin-users'
+} from '@/hooks/admin/use-admin-users'
 import { toast } from 'sonner'
 import imageCompression from 'browser-image-compression'
 import {
@@ -52,7 +52,7 @@ import {
     normalizeWhatsApp,
     denormalizeWhatsApp
 } from '@/lib/utils/phone'
-import { AvatarCropper } from '@/components/ui/avatar-cropper'
+import { AvatarCropper } from '@/components/shared/avatar-cropper'
 
 type UserData = {
     id: string

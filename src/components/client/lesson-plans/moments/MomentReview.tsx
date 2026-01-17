@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Pencil, Check, Star, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/index';
 import { QuizStep } from '@/components/client/quiz/QuizStep';
 import { QuizAction } from '@/components/client/quiz/QuizAction';
 

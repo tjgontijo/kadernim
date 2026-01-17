@@ -4,7 +4,7 @@ import { useMemo, useRef } from 'react';
 import { QuizStep } from '@/components/client/quiz/QuizStep';
 import { QuizSelect } from '@/components/client/quiz/QuizSelect';
 import { QuizAction } from '@/components/client/quiz/QuizAction';
-import { useEducationLevels, useGrades, useSubjects } from '@/hooks/use-taxonomy';
+import { useEducationLevels, useGrades, useSubjects } from '@/hooks/entities/use-taxonomy';
 
 interface MomentContextData {
     educationLevelSlug?: string;

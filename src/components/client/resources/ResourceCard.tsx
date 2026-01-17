@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { LazyImage } from '@/components/ui/lazy-image'
+import { LazyImage } from '@/components/shared/lazy-image'
 import { Lock } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { AspectRatio } from '@/components/ui/aspect-ratio'

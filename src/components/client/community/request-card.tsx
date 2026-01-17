@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { Heart, User, Calendar, BookOpen, GraduationCap, Flame } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/index'
 import { Badge } from '@/components/ui/badge'
 
 interface RequestCardProps {

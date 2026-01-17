@@ -1,7 +1,7 @@
 'use client';
 
 import { LucideIcon, Check } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/index';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QuizCard } from './QuizCard';
 import { QuizAction } from './QuizAction';

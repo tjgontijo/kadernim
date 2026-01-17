@@ -7,7 +7,7 @@ import { Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useSidebar } from '@/components/ui/sidebar'
 import { UserDropdownMenuGlobal } from './users/user-dropdown-menu-global'
-import { useBreakpoint } from '@/hooks/use-breakpoint'
+import { useMobile } from '@/hooks/layout/use-mobile'
 
 interface GlobalHeaderProps {
   user: {
@@ -21,7 +21,7 @@ interface GlobalHeaderProps {
 
 export function GlobalHeader({ user }: GlobalHeaderProps) {
   const { toggleSidebar } = useSidebar()
-  const { isBelow } = useBreakpoint()
+  const { isBelow } = useMobile()
   const isMobileOrTablet = isBelow('desktop')
   const [version, setVersion] = useState<string | null>(null)
 

@@ -43,14 +43,14 @@ export const SolutionFeatures: React.FC = () => {
             </div>
             <h3 className="text-xl font-bold text-foreground mb-3">Comunidade que decide</h3>
             <p className="text-muted-foreground leading-relaxed">
-              Todo mês, os recursos mais votados pelas professoras entram na plataforma. Você não só usa. Você ajuda a decidir o que será criado.
+              Todo mês, os recursos mais votados pelos professores entram na plataforma. Você não só usa. Você ajuda a decidir o que será criado.
             </p>
           </div>
         </div>
 
         {/* Bloco 5 - Para quem é */}
         <div className="max-w-4xl mx-auto bg-card rounded-[2.5rem] p-8 md:p-12 border-2 border-primary/10">
-          <h3 className="text-2xl font-bold text-center mb-10 text-foreground">Essa plataforma é para professoras que:</h3>
+          <h3 className="text-2xl font-bold text-center mb-10 text-foreground">Essa plataforma é para professores que:</h3>
 
           <div className="grid sm:grid-cols-2 gap-6">
             {[

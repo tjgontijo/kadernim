@@ -2,9 +2,9 @@
 
 import { useState, useMemo } from 'react';
 import { Search, Check, Star, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/index';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useBnccSkills } from '@/hooks/use-taxonomy';
+import { useBnccSkills } from '@/hooks/entities/use-taxonomy';
 
 interface SkillSelection {
     code: string;

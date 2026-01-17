@@ -11,6 +11,12 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        source: '/version.json',
+        headers: [
+          { key: 'Cache-Control', value: 'public, s-maxage=0, must-revalidate' },
+        ],
+      },
+      {
         source: '/api/v1/auth/:path*',
         headers: [
           { key: 'Access-Control-Allow-Origin', value: '*' },

@@ -8,19 +8,27 @@ interface FAQItem {
 const faqs: FAQItem[] = [
   {
     question: "Os materiais são alinhados à BNCC?",
-    answer: "Sim! Todos os materiais possuem indicação das habilidades da BNCC trabalhadas. Além disso, nosso Gerador de Planos de Aula cria o planejamento completo com os códigos da base automaticamente para você."
+    answer: "Grande parte dos nossos materiais possui alinhamento à BNCC com a indicação das habilidades. Também oferecemos recursos criativos complementares para enriquecer sua aula. Para garantir 100% de alinhamento, você pode usar nosso Gerador de Planos de Aula, que utiliza a base oficial para criar seus planejamentos."
   },
   {
-    question: "Posso cancelar quando quiser?",
-    answer: "Com certeza. Não acreditamos em prender ninguém. Se em algum mês você sentir que não precisa, pode cancelar a renovação com um clique no seu painel. Sem multas, sem letras miúdas."
+    question: "Como funciona a garantia e o cancelamento?",
+    answer: "Oferecemos uma garantia incondicional de 7 dias conforme a lei. Experimente tudo e, se não gostar, devolvemos seu dinheiro integralmente. Como o plano Pro é anual, você garante um ano inteiro de acesso a todas as atualizações e novos materiais que lançamos toda semana."
+  },
+  {
+    question: "Como funciona o Gerador de Planos de Aula?",
+    answer: "Nosso gerador utiliza Inteligência Artificial treinada para criar planos de aula completos, estruturados e alinhados às suas necessidades pedagógicas. Você informa o tema, a série e as habilidades (opcional), e em segundos tem um planejamento pronto para baixar em Word ou PDF."
+  },
+  {
+    question: "Posso solicitar materiais que não encontrei?",
+    answer: "Sim! Como assinante Pro, você faz parte da nossa comunidade colaborativa. Se precisar de um material específico que ainda não temos, você pode abrir um pedido. Os temas mais votados pelos outros professores entram para a nossa fila de produção semanal."
   },
   {
     question: "Para quais séries são os materiais?",
-    answer: "Atualmente, focamos na Educação Infantil e Fundamental I (1º ao 5º ano). Cobrimos alfabetização, matemática, ciências, história, geografia e datas comemorativas."
+    answer: "Focamos na Educação Infantil e Fundamental I (1º ao 5º ano). Nossa biblioteca cobre alfabetização, matemática, ciências, história, geografia e temas sazonais/datas comemorativas."
   },
   {
-    question: "Como recebo os materiais?",
-    answer: "O acesso é 100% online. Assim que sua assinatura é confirmada, você recebe login e senha para entrar na nossa plataforma. Lá você pode pesquisar, visualizar e baixar tudo na hora."
+    question: "Posso baixar os materiais para imprimir?",
+    answer: "Sim! Todos os materiais e planos gerados podem ser baixados em formato PDF ou Word (DOCX), prontos para impressão ou para você fazer seus próprios ajustes finais."
   }
 ];
 

@@ -11,7 +11,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/index'
 import { PermissionGuard } from '@/components/auth/permission-guard'
 import { useAbility } from '@/components/auth/permission-guard'
 

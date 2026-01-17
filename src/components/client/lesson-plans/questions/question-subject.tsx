@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { QuizStep } from '@/components/client/quiz/QuizStep';
 import { QuizChoice, type QuizOption } from '@/components/client/quiz/QuizChoice';
-import { useSubjects } from '@/hooks/use-taxonomy';
+import { useSubjects } from '@/hooks/entities/use-taxonomy';
 
 interface QuestionSubjectProps {
   educationLevelSlug: string;

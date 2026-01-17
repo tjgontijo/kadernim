@@ -1,7 +1,7 @@
 'use client'
 
 import { Library, Target, Gift, Sparkles, LucideIcon } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/index'
 
 export type ResourceTab = 'mine' | 'free' | 'all' | 'new' | 'featured'
 

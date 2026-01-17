@@ -3,8 +3,8 @@
 import { Progress } from '@/components/ui/progress';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useLessonPlanUsage } from '@/hooks/use-lesson-plan-usage';
-import { cn } from '@/lib/utils';
+import { useLessonPlanUsage } from '@/hooks/entities/use-lesson-plans';
+import { cn } from '@/lib/utils/index';
 
 export function UsageStats() {
     const { data, isLoading, error } = useLessonPlanUsage();

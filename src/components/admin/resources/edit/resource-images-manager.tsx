@@ -34,7 +34,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/index'
 import { DeleteConfirmDialog } from '@/components/admin/crud/delete-confirm-dialog'
 import imageCompression from 'browser-image-compression'
 

@@ -2,15 +2,15 @@
 
 import { Plus, Filter, GraduationCap, Sparkles, Zap, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useBreakpoint } from '@/hooks/use-breakpoint';
+import { useMobile } from '@/hooks/layout/use-mobile';
 import { useSession } from '@/lib/auth/auth-client';
 import { UpsellBanner } from '@/components/client/shared/UpsellBanner';
 import { CreatePlanDrawer } from '@/components/client/lesson-plans/create-plan-drawer';
 import { PlanCard } from '@/components/client/lesson-plans/plan-card';
 import { EmptyState } from '@/components/client/lesson-plans/empty-state';
-import { useLessonPlans } from '@/hooks/use-lesson-plans';
-import { useLessonPlanUsage } from '@/hooks/use-lesson-plan-usage';
-import { useEducationLevels, useGrades, useSubjects } from '@/hooks/use-taxonomy';
+import { useLessonPlans } from '@/hooks/entities/use-lesson-plans';
+import { useLessonPlanUsage } from '@/hooks/entities/use-lesson-plans';
+import { useEducationLevels, useGrades, useSubjects } from '@/hooks/entities/use-taxonomy';
 import { Progress } from '@/components/ui/progress';
 import { PageScaffold } from '@/components/client/shared/page-scaffold';
 import { SearchInput } from '@/components/client/shared/search-input';
@@ -37,7 +37,7 @@ import { PageScaffoldSkeleton } from '@/components/client/shared/skeletons/page-
 import { PlanCardSkeleton } from '@/components/client/shared/skeletons/plan-card-skeleton';
 
 export default function LessonPlansPage() {
-  const { isMobile } = useBreakpoint();
+  const { isMobile } = useMobile();
   const { data: session, isPending: isSessionLoading } = useSession();
   const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');

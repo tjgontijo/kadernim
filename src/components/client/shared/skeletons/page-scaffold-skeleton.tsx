@@ -1,6 +1,6 @@
 import { Skeleton } from '@/components/ui/skeleton'
 import { PageScaffold } from '@/components/client/shared/page-scaffold'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/index'
 
 interface PageScaffoldSkeletonProps {
     showHighlight?: boolean

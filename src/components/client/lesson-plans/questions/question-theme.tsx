@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { QuizStep } from '@/components/client/quiz/QuizStep';
 import { QuizChoice, type QuizOption } from '@/components/client/quiz/QuizChoice';
-import { useBnccThemes } from '@/hooks/use-taxonomy';
+import { useBnccThemes } from '@/hooks/entities/use-taxonomy';
 import { useMutation } from '@tanstack/react-query';
 
 interface RefinedTheme {

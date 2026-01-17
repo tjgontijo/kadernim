@@ -20,20 +20,13 @@ export const BREAKPOINTS = {
 export type Breakpoint = keyof typeof BREAKPOINTS
 
 /**
- * Hook que retorna informações sobre o tamanho da tela atual
+ * Hook que retorna informações sobre o tamanho da tela atual.
+ * Renomeado de useMobile para useMobile para seguir padrões do Shadcn.
  * 
  * @example
- * const { isMobile, isTablet, isDesktop, width, isAbove, isBelow } = useBreakpoint()
- * 
- * if (isMobile) {
- *   // Renderiza versão mobile
- * }
- * 
- * if (isAbove('lg')) {
- *   // Tela maior que 1024px
- * }
+ * const { isMobile, isTablet, isDesktop, width, isAbove, isBelow } = useMobile()
  */
-export function useBreakpoint() {
+export function useMobile() {
     const [width, setWidth] = useState<number>(0)
     const [isMounted, setIsMounted] = useState(false)
 
@@ -94,7 +87,7 @@ export function useBreakpoint() {
         isBelow,
         isBetween,
 
-        // Atalhos comuns (compatibilidade com use-mobile.ts)
+        // Atalhos comuns
         isMobile: isMounted ? width < BREAKPOINTS.mobile : false,
         isTablet: isMounted ? isBetween('mobile', 'desktop') : false,
         isDesktop: isMounted ? width >= BREAKPOINTS.desktop : true, // Default p/ desktop no server
@@ -111,9 +104,9 @@ export function useBreakpoint() {
 
 /**
  * Hook legado para compatibilidade com código existente
- * @deprecated Use useBreakpoint() ao invés
+ * @deprecated Use useMobile() ao invés e desestruture { isMobile }
  */
 export function useIsMobile() {
-    const { isMobile } = useBreakpoint()
+    const { isMobile } = useMobile()
     return isMobile
 }

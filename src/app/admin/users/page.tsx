@@ -19,7 +19,7 @@ import { CrudPageShell } from '@/components/admin/crud/crud-page-shell'
 import { CrudDataView } from '@/components/admin/crud/crud-data-view'
 import { DeleteConfirmDialog } from '@/components/admin/crud/delete-confirm-dialog'
 import { PermissionGuard } from '@/components/auth/permission-guard'
-import { useDataTable } from '@/hooks/use-data-table'
+import { useDataTable } from '@/hooks/utils/use-data-table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -33,7 +33,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { UserEditDrawer, UserCreateDrawer } from '@/components/admin/users'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/index'
 import { getRoleBadge as getRoleBadgeClass } from '@/lib/utils/badge-variants'
 
 interface User {

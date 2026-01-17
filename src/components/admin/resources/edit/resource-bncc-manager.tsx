@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Loader2, BookOpen, CheckCircle2 } from "lucide-react"
 import { toast } from "sonner"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils/index"
 
 interface BnccSkill {
     id: string
