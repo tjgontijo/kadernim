@@ -22,15 +22,16 @@ export default function ServiceWorkerRegister() {
     navigator.serviceWorker
       .register('/sw.js')
       .then((registration) => {
-        console.log('[PWA] Service Worker registrado')
+        console.log('[PWA] Service Worker registrado');
 
-        const notifyUpdate = (newWorker: ServiceWorker) => {
-          // Busca a nova versão do servidor
+        const checkVersionAndNotify = (worker: ServiceWorker) => {
           fetch('/version.json?t=' + Date.now())
             .then(res => res.json())
             .then(data => {
-              const newVersion = data.version
-              const versionDisplay = currentVersion ? `v${currentVersion} → v${newVersion}` : `v${newVersion}`
+              const newVersion = data.version;
+              if (newVersion === currentVersion) return; // Evita notificar a versão atual
+
+              const versionDisplay = currentVersion ? `v${currentVersion} → v${newVersion}` : `v${newVersion}`;
 
               toast('Nova versão disponível!', {
                 description: versionDisplay,
@@ -38,35 +39,60 @@ export default function ServiceWorkerRegister() {
                 action: {
                   label: 'Atualizar',
                   onClick: () => {
-                    newWorker.postMessage({ type: 'SKIP_WAITING' })
+                    worker.postMessage({ type: 'SKIP_WAITING' });
                   },
                 },
-              })
+              });
             })
-        }
+            .catch(() => {
+              // Fallback se não conseguir pegar a versão: notifica de qualquer jeito
+              toast('Nova versão disponível!', {
+                description: 'Clique para atualizar e receber as novidades.',
+                duration: Infinity,
+                action: {
+                  label: 'Atualizar',
+                  onClick: () => {
+                    worker.postMessage({ type: 'SKIP_WAITING' });
+                  },
+                },
+              });
+            });
+        };
 
         if (registration.waiting) {
-          notifyUpdate(registration.waiting)
+          checkVersionAndNotify(registration.waiting);
         }
 
         registration.addEventListener('updatefound', () => {
-          const newWorker = registration.installing
-          if (!newWorker) return
+          const newWorker = registration.installing;
+          if (!newWorker) return;
 
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              notifyUpdate(newWorker)
+              checkVersionAndNotify(newWorker);
             }
-          })
-        })
+          });
+        });
 
         navigator.serviceWorker.addEventListener('controllerchange', () => {
-          window.location.reload()
-        })
+          window.location.reload();
+        });
 
-        // Verificar a cada 5 minutos
-        const interval = setInterval(() => registration.update(), 5 * 60 * 1000)
-        return () => clearInterval(interval)
+        // Verificar a cada 1 minuto (em vez de 5)
+        const interval = setInterval(() => registration.update(), 60 * 1000);
+
+        // Forçar verificação quando o app volta para o primeiro plano (foreground)
+        const handleVisibilityChange = () => {
+          if (document.visibilityState === 'visible') {
+            registration.update();
+          }
+        };
+        window.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+          clearInterval(interval);
+          window.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
       })
       .catch((error) => console.error('[PWA] Erro ao registrar SW:', error))
   }, [currentVersion])
