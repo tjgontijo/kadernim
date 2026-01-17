@@ -6,6 +6,7 @@ import { FileText, LayoutGrid, User, Sparkles, ShieldCheck } from 'lucide-react'
 import { cn } from '@/lib/utils/index';
 import { useSessionQuery } from '@/hooks/auth/use-session';
 import { UserRole } from '@/types/user-role';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export function MobileNav() {
     const pathname = usePathname();
@@ -38,17 +39,50 @@ export function MobileNav() {
                                 key={item.href}
                                 href={item.href}
                                 className={cn(
-                                    "flex flex-col items-center justify-center gap-0.5 flex-1 py-2",
-                                    "transition-all duration-200",
+                                    "flex flex-col items-center justify-center gap-0.5 flex-1 py-2 relative",
+                                    "transition-colors duration-200",
                                     isActive
-                                        ? "text-primary"
-                                        : "text-muted-foreground"
+                                        ? "text-primary pointer-events-none outline-none" // Previne múltiplos cliques se já estiver ativo
+                                        : "text-muted-foreground hover:text-foreground"
                                 )}
                             >
-                                <Icon className="h-4 w-4" />
-                                <span className="text-[10px] font-medium">
-                                    {item.label}
-                                </span>
+                                <motion.div
+                                    whileTap={isActive ? {} : { scale: 0.85 }} // Restaurado efeito original
+                                    className="flex flex-col items-center justify-center w-full"
+                                >
+                                    <div className="relative">
+                                        <Icon className={cn(
+                                            "h-5 w-5 mb-0.5 transition-transform duration-300",
+                                            isActive && "scale-110"
+                                        )} />
+
+                                        {/* Indicador de item ativo (bolinha ou background suave) */}
+                                        {isActive && (
+                                            <motion.div
+                                                layoutId="nav-glow"
+                                                className="absolute inset-0 bg-primary/20 blur-lg rounded-full -z-10"
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                exit={{ opacity: 0 }}
+                                            />
+                                        )}
+                                    </div>
+                                    <span className={cn(
+                                        "text-[10px] font-bold tracking-tight transition-all",
+                                        isActive ? "opacity-100 scale-100" : "opacity-80 scale-95"
+                                    )}>
+                                        {item.label}
+                                    </span>
+                                </motion.div>
+
+                                {/* Barrinha inferior para o item ativo */}
+                                {isActive && (
+                                    <motion.div
+                                        layoutId="nav-indicator"
+                                        className="absolute bottom-0 h-0.5 w-6 bg-primary rounded-full shadow-[0_0_8px_rgba(var(--primary),0.5)]"
+                                        transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                                    />
+                                )}
                             </Link>
                         );
                     })}
