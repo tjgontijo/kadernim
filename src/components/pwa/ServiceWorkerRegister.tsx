@@ -15,14 +15,26 @@ export default function ServiceWorkerRegister() {
       .then(data => setCurrentVersion(data.version))
       .catch(() => console.error('[PWA] Erro ao carregar versão local'))
 
-    if (process.env.NODE_ENV !== 'production' || typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+    // No ambiente local/dev, permitimos SW se o arquivo existir, mas por padrão desativamos 
+    // para não interferir no Hot Refresh (HRM).
+    // Para testar Push, precisamos dele ativo.
+    const isDev = process.env.NODE_ENV === 'development';
+    const enableInDev = true; // Forçamos true para o teste do usuário
+
+    if ((!isDev && process.env.NODE_ENV !== 'production') || typeof window === 'undefined' || !('serviceWorker' in navigator)) {
       return
     }
 
+    if (isDev && !enableInDev) {
+      return
+    }
+
+    const swFile = isDev ? '/sw-dev.js' : '/sw.js';
+
     navigator.serviceWorker
-      .register('/sw.js')
+      .register(swFile)
       .then((registration) => {
-        console.log('[PWA] Service Worker registrado');
+        console.log(`[PWA] Service Worker (${swFile}) registrado`);
 
         const checkVersionAndNotify = (worker: ServiceWorker) => {
           fetch('/version.json?t=' + Date.now())

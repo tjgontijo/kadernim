@@ -90,15 +90,21 @@ export function usePwa(): UsePwaReturn {
 
   // Check for updates manually
   const checkForUpdate = useCallback(async (): Promise<boolean> => {
-    if (!registration) return false
-
     try {
-      await registration.update()
+      // 1. Cross-check via rede imediatamente (Bypass SW cache se possível)
+      const res = await fetch('/version.json?v=' + Date.now())
+      const data = await res.json()
 
-      // Small delay to let the update process
-      await new Promise(resolve => setTimeout(resolve, 500))
+      const remoteVersion = data.version
+      const isNewVersion = version && remoteVersion !== version.version
 
-      if (registration.waiting) {
+      // 2. Notificar o Service Worker para procurar mudanças
+      if (registration) {
+        await registration.update()
+      }
+
+      // 3. Se detectamos via rede que é novo, ou se o SW já está com um esperando
+      if (isNewVersion || (registration && registration.waiting)) {
         setHasUpdate(true)
         return true
       }
@@ -106,9 +112,17 @@ export function usePwa(): UsePwaReturn {
       return false
     } catch (error) {
       console.error('[PWA] Error checking for update:', error)
+      // Fallback: tenta pelo menos o update do SW
+      if (registration) {
+        await registration.update()
+        if (registration.waiting) {
+          setHasUpdate(true)
+          return true
+        }
+      }
       return false
     }
-  }, [registration])
+  }, [registration, version])
 
   // Apply pending update
   const applyUpdate = useCallback(() => {

@@ -29,24 +29,23 @@ export function PushNotificationSetup() {
   const { data: session } = useSession();
 
   useEffect(() => {
+    // No ambiente local/dev, permitimos testar sem estar em standalone
+    const isDev = process.env.NODE_ENV === 'development';
+
     // Verificar se é PWA instalado
     const isStandalone =
       window.matchMedia('(display-mode: standalone)').matches ||
       (navigator as NavigatorWithStandalone).standalone === true;
 
-    // Só mostrar se:
-    // 1. Usuário está autenticado
-    // 2. É PWA instalado
-    // 3. Suporta notificações e Service Worker e PushManager
-    // 4. Permissão ainda não foi decidida
-    if (
-      session?.user && // NOVO: Verificar autenticação
-      isStandalone &&
-      'Notification' in window &&
-      'serviceWorker' in navigator &&
-      'PushManager' in window &&
-      Notification.permission === 'default'
-    ) {
+    // Se as notificações não forem suportadas, não faz nada
+    if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+      return;
+    }
+
+    if (!session?.user) return;
+
+    // CASO 1: Permissão ainda não foi decidida -> Mostrar diálogo
+    if (Notification.permission === 'default' && (isStandalone || isDev)) {
       // Aguardar 3 segundos após o app carregar
       const timer = setTimeout(() => {
         setShowDialog(true);
@@ -54,7 +53,15 @@ export function PushNotificationSetup() {
 
       return () => clearTimeout(timer);
     }
-  }, [session]); // NOVO: Adicionar session como dependência
+
+    // CASO 2: Permissão já concedida -> Garantir que o registro está atualizado no servidor
+    if (Notification.permission === 'granted' && (isStandalone || isDev)) {
+      console.log('🔔 Permissão já concedida, garantindo registro de push...');
+      registerPushSubscription()
+        .then(() => console.log('✅ Push sync ok'))
+        .catch(err => console.error('❌ Erro no sync de push:', err));
+    }
+  }, [session]);
 
   const handleRequestPermission = async () => {
     setIsProcessing(true);

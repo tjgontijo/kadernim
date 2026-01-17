@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -11,6 +11,8 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Calendar } from '@/components/ui/calendar'
+import { useSession } from '@/lib/auth'
+import { toast } from 'sonner'
 import {
     Select,
     SelectContent,
@@ -123,9 +125,47 @@ export function CampaignForm({ initialData, onSubmit, isLoading }: CampaignFormP
         },
     })
 
+    const { data: session } = useSession()
+    const [isTesting, setIsTesting] = useState(false)
+    const [testAudiencType, setTestAudienceType] = useState<'me' | 'role'>('me')
+    const [testRole, setTestRole] = useState('admin')
+
     const title = watch('title')
     const body = watch('body')
-    const selectedIcon = watch('icon')
+    const url = watch('url')
+    const icon = watch('icon')
+
+    const handleTestPush = async () => {
+        setIsTesting(true)
+        try {
+            const payload = {
+                title: title || 'Título de Teste',
+                body: body || 'Mensagem de teste do Kadernim',
+                url: url || '/',
+                icon: icon || 'bell',
+                userId: testAudiencType === 'me' ? session?.user?.id : undefined,
+                role: testAudiencType === 'role' ? testRole : undefined,
+            }
+
+            const response = await fetch('/api/v1/notifications/test-push', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            })
+
+            const result = await response.json()
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Erro ao enviar teste')
+            }
+
+            toast.success(result.message || 'Teste enviado com sucesso!')
+        } catch (error: any) {
+            toast.error(error.message)
+        } finally {
+            setIsTesting(false)
+        }
+    }
 
     return (
         <form id="crud-form" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -493,6 +533,70 @@ export function CampaignForm({ initialData, onSubmit, isLoading }: CampaignFormP
                             }}
                         />
                     </div>
+                </CardContent>
+            </Card>
+
+            {/* Seção: Teste de Envio */}
+            <Card className="border-primary/20 bg-primary/5">
+                <CardContent className="pt-6 space-y-4">
+                    <div className="flex items-center gap-2 mb-2">
+                        <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                        <h3 className="text-sm font-semibold text-foreground">
+                            Teste de Envio (Apenas para você)
+                        </h3>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                        Envie esta notificação agora mesmo para validar o visual e o destino.
+                    </p>
+
+                    <div className="flex flex-col sm:flex-row gap-4 items-end">
+                        <div className="flex-1 space-y-2 w-full">
+                            <Label className="text-xs">Para quem enviar?</Label>
+                            <Select
+                                value={testAudiencType}
+                                onValueChange={(val: any) => setTestAudienceType(val)}
+                            >
+                                <SelectTrigger className="bg-background">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="me">Apenas para mim (meu usuário)</SelectItem>
+                                    <SelectItem value="role">Para todos de um cargo (Role)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {testAudiencType === 'role' && (
+                            <div className="flex-1 space-y-2 w-full">
+                                <Label className="text-xs">Cargo (Role)</Label>
+                                <Select value={testRole} onValueChange={setTestRole}>
+                                    <SelectTrigger className="bg-background">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="admin">Administradores</SelectItem>
+                                        <SelectItem value="subscriber">Assinantes</SelectItem>
+                                        <SelectItem value="user">Usuários comuns</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
+
+                        <Button
+                            type="button"
+                            variant="default"
+                            disabled={isTesting || !title || !body}
+                            onClick={handleTestPush}
+                            className="shrink-0"
+                        >
+                            {isTesting ? 'Enviando...' : 'Enviar Teste'}
+                        </Button>
+                    </div>
+                    {(!title || !body) && (
+                        <p className="text-[10px] text-amber-600 font-medium">
+                            * Preencha título e mensagem para habilitar o teste.
+                        </p>
+                    )}
                 </CardContent>
             </Card>
         </form>

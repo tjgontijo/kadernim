@@ -1,17 +1,19 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
-import { sendPushToAll, countActiveSubscriptions } from '@/services/notification/push-send';
+import { sendPushToAll, sendPushToSubscriptions, countActiveSubscriptions } from '@/services/notification/push-send';
+import { prisma } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
 /**
  * POST /api/v1/notifications/test-push
  *
- * Envia uma notificação push de teste para todos os dispositivos.
+ * Envia uma notificação push de teste.
+ * Pode ser para todos, por role ou por userId específico.
  * Requer autenticação de admin.
  */
-export async function POST() {
+export async function POST(req: Request) {
   try {
     const session = await auth.api.getSession({
       headers: await headers()
@@ -29,25 +31,55 @@ export async function POST() {
       );
     }
 
-    const activeCount = await countActiveSubscriptions();
+    const { title, body, url, icon, role, userId } = await req.json().catch(() => ({}));
 
-    if (activeCount === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Nenhuma subscription ativa encontrada',
-          message: 'Instale o PWA e permita notificações primeiro'
-        },
-        { status: 404 }
+    const payload = {
+      title: title || 'Teste de Notificação',
+      body: body || 'Esta é uma notificação de teste do Kadernim!',
+      url: url || '/',
+      tag: 'test-notification',
+      icon: icon || undefined
+    };
+
+    let result;
+
+    if (role || userId) {
+      // Buscar subscriptions específicas de forma mais direta
+      const subscriptions = await prisma.pushSubscription.findMany({
+        where: {
+          active: true,
+          OR: [
+            userId ? { userId } : {},
+            role ? { user: { role } } : {}
+          ].filter(f => Object.keys(f).length > 0)
+        }
+      });
+
+      if (subscriptions.length === 0) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Nenhum dispositivo ativo encontrado para esta audiência',
+            message: 'Certifique-se de que o seu navegador permitiu notificações e que o Service Worker está ativo.'
+          },
+          { status: 200 }
+        );
+      }
+
+      result = await sendPushToSubscriptions(
+        subscriptions.map(s => ({
+          id: s.id,
+          endpoint: s.endpoint,
+          auth: s.auth,
+          p256dh: s.p256dh,
+          userId: s.userId
+        })),
+        payload
       );
+    } else {
+      // Enviar para todos
+      result = await sendPushToAll(payload);
     }
-
-    const result = await sendPushToAll({
-      title: 'Teste de Notificação',
-      body: 'Esta é uma notificação de teste do Kadernim!',
-      url: '/',
-      tag: 'test-notification'
-    });
 
     return NextResponse.json({
       success: result.success > 0,
