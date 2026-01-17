@@ -2,17 +2,21 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils/index';
+import { PullToRefresh } from '@/components/pwa/PullToRefresh';
 
 interface PageScaffoldProps {
     children: React.ReactNode;
     className?: string;
+    onRefresh?: () => Promise<void> | void;
 }
 
-export function PageScaffold({ children, className }: PageScaffoldProps) {
+export function PageScaffold({ children, className, onRefresh }: PageScaffoldProps) {
     return (
-        <div className={cn("w-full max-w-7xl mx-auto space-y-5 sm:space-y-6 pb-20", className)}>
-            {children}
-        </div>
+        <PullToRefresh onRefresh={onRefresh}>
+            <div className={cn("w-full max-w-7xl mx-auto space-y-5 sm:space-y-6 pb-20", className)}>
+                {children}
+            </div>
+        </PullToRefresh>
     );
 }
 
