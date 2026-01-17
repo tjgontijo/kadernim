@@ -95,7 +95,8 @@ const swConfig = {
   ],
   // Adicionar suporte a mensagens para update detection
   additionalManifestEntries: [
-    { url: '/offline', revision: null }
+    { url: '/offline', revision: null },
+    { url: '/version.json', revision: version } // Força mudança no sw.js em cada build
   ],
   // Configuração para offline fallback
   navigateFallback: '/offline',
