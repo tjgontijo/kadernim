@@ -29,7 +29,7 @@ export function MobileNav() {
                 "border border-border/50 rounded-2xl",
                 "shadow-lg shadow-black/5"
             )}>
-                <div className="flex items-center justify-around h-14 px-2">
+                <div className="flex items-center justify-around h-16 px-2">
                     {navItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = pathname.startsWith(item.href);
@@ -52,7 +52,7 @@ export function MobileNav() {
                                 >
                                     <div className="relative">
                                         <Icon className={cn(
-                                            "h-5 w-5 mb-0.5 transition-transform duration-300",
+                                            "h-6 w-6 mb-0.5 transition-transform duration-300",
                                             isActive && "scale-110"
                                         )} />
 
@@ -60,7 +60,7 @@ export function MobileNav() {
                                         {isActive && (
                                             <motion.div
                                                 layoutId="nav-glow"
-                                                className="absolute inset-0 bg-primary/20 blur-lg rounded-full -z-10"
+                                                className="absolute inset-0 bg-primary/20 blur-xl rounded-full -z-10"
                                                 initial={{ opacity: 0 }}
                                                 animate={{ opacity: 1 }}
                                                 exit={{ opacity: 0 }}
@@ -68,7 +68,7 @@ export function MobileNav() {
                                         )}
                                     </div>
                                     <span className={cn(
-                                        "text-[10px] font-bold tracking-tight transition-all",
+                                        "text-xs font-bold tracking-tight transition-all",
                                         isActive ? "opacity-100 scale-100" : "opacity-80 scale-95"
                                     )}>
                                         {item.label}
@@ -79,7 +79,7 @@ export function MobileNav() {
                                 {isActive && (
                                     <motion.div
                                         layoutId="nav-indicator"
-                                        className="absolute bottom-0 h-0.5 w-6 bg-primary rounded-full shadow-[0_0_8px_rgba(var(--primary),0.5)]"
+                                        className="absolute bottom-0 h-1 w-8 bg-primary rounded-full shadow-[0_0_10px_rgba(var(--primary),0.6)]"
                                         transition={{ type: "spring", stiffness: 350, damping: 30 }}
                                     />
                                 )}
