@@ -96,6 +96,15 @@ export async function POST(req: Request) {
       result = await sendPushToAll(payload);
     }
 
+    // Log detalhado para debug
+    console.log('[Push] Resultado do teste:', {
+      success: result.success,
+      total: result.total,
+      failed: result.failed,
+      errorsCount: result.errors.length,
+      errors: result.errors.slice(0, 5) // Primeiros 5 erros apenas
+    });
+
     return NextResponse.json({
       success: result.success > 0,
       message: `Enviado para ${result.success} de ${result.total} dispositivo(s)`,

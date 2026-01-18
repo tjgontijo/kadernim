@@ -7,8 +7,18 @@ const vapidSubject = process.env.VAPID_SUBJECT || 'mailto:contato@kadernim.com.b
 const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '';
 const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || '';
 
+// Validar e configurar VAPID
+let vapidConfigured = false;
 if (vapidPublicKey && vapidPrivateKey) {
-  webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
+  try {
+    webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
+    vapidConfigured = true;
+    console.log('[Push] VAPID configurado com sucesso');
+  } catch (error) {
+    console.error('[Push] Erro ao configurar VAPID:', error);
+  }
+} else {
+  console.warn('[Push] VAPID keys não configuradas - push notifications não funcionarão');
 }
 
 /**
@@ -18,6 +28,15 @@ export async function sendPushToSubscription(
   subscription: { id: string; endpoint: string; auth: string; p256dh: string },
   payload: PushPayload
 ): Promise<{ success: boolean; error?: string }> {
+  // Verificar se VAPID está configurado
+  if (!vapidConfigured) {
+    console.error('[Push] Tentativa de envio sem VAPID configurado');
+    return {
+      success: false,
+      error: 'VAPID não configurado - impossível enviar push notifications'
+    };
+  }
+
   const pushSubscription = {
     endpoint: subscription.endpoint,
     keys: {
@@ -26,19 +45,26 @@ export async function sendPushToSubscription(
     }
   };
 
+  const payloadData = {
+    title: payload.title,
+    body: payload.body,
+    url: payload.url || '/',
+    tag: payload.tag || `kadernim-${Date.now()}`,
+    icon: payload.icon || '/images/icons/apple-icon.png',
+    badge: payload.badge || '/pwa/manifest-icon-192.maskable.png',
+    image: payload.image || undefined
+  };
+
   try {
-    await webpush.sendNotification(
+    console.log(`[Push] Enviando para endpoint: ${subscription.endpoint.substring(0, 50)}...`);
+    console.log(`[Push] Payload: ${JSON.stringify(payloadData)}`);
+
+    const result = await webpush.sendNotification(
       pushSubscription,
-      JSON.stringify({
-        title: payload.title,
-        body: payload.body,
-        url: payload.url || '/',
-        tag: payload.tag || `kadernim-${Date.now()}`,
-        icon: payload.icon || '/icons/icon-192x192.png',
-        badge: payload.badge || '/icons/badge-72x72.png',
-        image: payload.image || undefined
-      })
+      JSON.stringify(payloadData)
     );
+
+    console.log(`[Push] Resposta do push service: statusCode=${result.statusCode}`);
 
     // Atualizar timestamp de último uso
     await prisma.pushSubscription.update({
@@ -48,7 +74,13 @@ export async function sendPushToSubscription(
 
     return { success: true };
   } catch (error: unknown) {
-    const err = error as { statusCode?: number; message?: string };
+    const err = error as { statusCode?: number; message?: string; body?: string };
+
+    console.error(`[Push] Erro ao enviar para ${subscription.id}:`, {
+      statusCode: err.statusCode,
+      message: err.message,
+      body: err.body
+    });
 
     // Endpoint expirado (410) ou não encontrado (404)
     if (err.statusCode === 410 || err.statusCode === 404) {
@@ -61,7 +93,7 @@ export async function sendPushToSubscription(
 
     return {
       success: false,
-      error: err.message || 'Erro desconhecido ao enviar push'
+      error: `[${err.statusCode || 'unknown'}] ${err.message || 'Erro desconhecido ao enviar push'}`
     };
   }
 }
