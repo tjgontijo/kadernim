@@ -98,18 +98,10 @@ const swConfig = {
   ],
   // Adicionar suporte a mensagens para update detection
   additionalManifestEntries: [
-    { url: '/offline', revision: null },
     { url: '/version.json', revision: version } // Força mudança no sw.js em cada build
   ],
-  // Configuração para offline fallback
-  navigateFallback: '/offline',
-  navigateFallbackDenylist: [
-    /^\/_next/,
-    /^\/api\//,
-    /^\/login/,
-    /\?_rsc=/,
-    /\.[^/]+$/
-  ],
+  // NOTA: navigateFallback removido para evitar tela offline persistente
+  // O fallback será tratado pelo próprio Next.js
 };
 
 generateSW(swConfig).then(({ count, size }) => {
