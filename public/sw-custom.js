@@ -15,21 +15,12 @@ self.addEventListener('activate', (event) => {
 
 // --- PUSH NOTIFICATIONS ---
 
-console.log('[SW] Push notification handler registrado');
-
 // Escutar evento de Push
 self.addEventListener('push', (event) => {
-  console.log('[SW] Evento push recebido!', event);
-
-  if (!event.data) {
-    console.warn('[SW] Push event sem data');
-    return;
-  }
+  if (!event.data) return;
 
   try {
     const data = event.data.json();
-    console.log('[SW] Push data parseado:', data);
-
     const title = data.title || 'Kadernim';
 
     // Helper para validar se o valor é um caminho válido (URL ou path relativo)
@@ -50,12 +41,8 @@ self.addEventListener('push', (event) => {
       requireInteraction: true
     };
 
-    console.log('[SW] Exibindo notificação:', title, options);
-
     event.waitUntil(
       self.registration.showNotification(title, options)
-        .then(() => console.log('[SW] Notificação exibida com sucesso'))
-        .catch(err => console.error('[SW] Erro ao exibir notificação:', err))
     );
   } catch (error) {
     console.error('[SW] Erro ao processar push data:', error);
