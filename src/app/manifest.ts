@@ -23,20 +23,12 @@ export default function manifest(): MetadataRoute.Manifest {
     background_color: '#F4F6F8', // Cor de fundo do splash nativo
     theme_color: '#2563EB', // Cor da status bar
     icons: [
-      // Ícones normais (any) - OBRIGATÓRIO para iOS
       {
-        src: '/pwa/apple-icon-180.png',
-        sizes: '180x180',
-        type: 'image/png',
-        purpose: 'any'
-      },
-      {
-        src: '/images/system/icon-1024x1024.png',
+        src: '/images/icons/apple-icon.png',
         sizes: '1024x1024',
         type: 'image/png',
         purpose: 'any'
       },
-      // Ícones maskable para Android adaptativo
       {
         src: '/pwa/manifest-icon-192.maskable.png',
         sizes: '192x192',

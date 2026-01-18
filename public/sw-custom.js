@@ -22,11 +22,15 @@ self.addEventListener('push', (event) => {
   try {
     const data = event.data.json();
     const title = data.title || 'Kadernim';
+
+    // Helper para validar se o valor é um caminho válido (URL ou path relativo)
+    const isPath = (val) => val && (val.startsWith('/') || val.startsWith('http'));
+
     const options = {
-      body: data.body || '',
-      icon: data.icon || '/icons/icon-192x192.png',
-      badge: data.badge || '/icons/badge-72x72.png',
-      image: data.image || undefined,
+      body: data.body,
+      icon: isPath(data.icon) ? data.icon : '/images/icons/apple-icon.png',
+      badge: isPath(data.badge) ? data.badge : '/pwa/manifest-icon-192.maskable.png',
+      image: isPath(data.image) ? data.image : undefined,
       tag: data.tag || 'kadernim-push',
       data: {
         url: data.url || '/'
@@ -48,7 +52,7 @@ self.addEventListener('push', (event) => {
     event.waitUntil(
       self.registration.showNotification('Kadernim', {
         body: text,
-        icon: '/icons/icon-192x192.png'
+        icon: '/images/icons/apple-icon.png'
       })
     );
   }

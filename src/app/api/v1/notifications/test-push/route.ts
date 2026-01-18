@@ -33,12 +33,27 @@ export async function POST(req: Request) {
 
     const { title, body, url, icon, role, userId } = await req.json().catch(() => ({}));
 
+    const iconMapping: Record<string, string> = {
+      bell: '/icons/bell.png',
+      gift: '/icons/gift.png',
+      star: '/icons/star.png',
+      sparkles: '/icons/sparkles.png',
+      heart: '/icons/heart.png',
+      zap: '/icons/zap.png',
+      megaphone: '/icons/megaphone.png',
+      party: '/icons/party.png',
+      lightbulb: '/icons/lightbulb.png',
+      book: '/icons/book.png',
+      trophy: '/icons/trophy.png',
+      flame: '/icons/flame.png',
+    };
+
     const payload = {
       title: title || 'Teste de Notificação',
       body: body || 'Esta é uma notificação de teste do Kadernim!',
       url: url || '/',
       tag: 'test-notification',
-      icon: icon || undefined
+      icon: (icon && iconMapping[icon]) || icon || '/icon.png'
     };
 
     let result;
