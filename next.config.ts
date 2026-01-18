@@ -8,8 +8,24 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ['@tanstack/react-query'],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/sw.js',
+        destination: '/sw.js',
+      },
+    ]
+  },
   async headers() {
     return [
+      {
+        source: '/sw.js',
+        headers: [
+          { key: 'Content-Type', value: 'application/javascript; charset=utf-8' },
+          { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' },
+          { key: 'Service-Worker-Allowed', value: '/' },
+        ],
+      },
       {
         source: '/version.json',
         headers: [

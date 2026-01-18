@@ -9,13 +9,21 @@ export default function ServiceWorkerRegister() {
   const [currentVersion, setCurrentVersion] = useState<string | null>(null)
 
   useEffect(() => {
+    // Service Worker apenas em produção
+    const isProduction = process.env.NODE_ENV === 'production'
+
+    if (!isProduction) {
+      console.log('[PWA] Service Worker desabilitado em desenvolvimento')
+      return
+    }
+
     // Busca a versão local (do arquivo gerado no build) com cache-busting
     fetch('/version.json?v=' + Date.now())
       .then(res => res.json())
       .then(data => setCurrentVersion(data.version))
       .catch(() => console.error('[PWA] Erro ao carregar versão local'))
 
-    // Forçamos o uso do sw.js de produção para garantir consistência
+    // Service Worker servido via rewrite do Next.js (public/sw.js)
     const swFile = '/sw.js';
 
     if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {

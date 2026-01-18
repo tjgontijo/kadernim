@@ -22,8 +22,8 @@ fs.writeFileSync(path.join(publicDir, 'version.json'), JSON.stringify(versionDat
 console.log(`📌 Versão do build gerada: ${version}`);
 
 const swConfig = {
-  // Gerar dentro do .next/static para Vercel servir corretamente
-  swDest: '.next/static/sw.js',
+  // Gerar em public/ para servir como arquivo estático
+  swDest: 'public/sw.js',
   globDirectory: '.next',
   globPatterns: [
     'static/**/*.{js,css,woff2}',
@@ -113,29 +113,9 @@ const swConfig = {
 };
 
 generateSW(swConfig).then(({ count, size }) => {
-  console.log(`✅ Service worker gerado com sucesso!`);
+  console.log(`✅ Service worker gerado com sucesso em public/sw.js!`);
   console.log(`📦 ${count} arquivos pré-cacheados, totalizando ${(size / 1024 / 1024).toFixed(2)} MB.`);
-
-  // Copiar também para public/ para desenvolvimento local
-  const swSource = path.join(process.cwd(), '.next', 'static', 'sw.js');
-  const swDest = path.join(publicDir, 'sw.js');
-  try {
-    fs.copyFileSync(swSource, swDest);
-    console.log(`📄 SW copiado para public/sw.js para desenvolvimento local.`);
-  } catch (err) {
-    console.warn(`⚠️ Não foi possível copiar sw.js para public/:`, err.message);
-  }
-
-  // Copiar source map se existir
-  const mapSource = swSource + '.map';
-  const mapDest = swDest + '.map';
-  if (fs.existsSync(mapSource)) {
-    try {
-      fs.copyFileSync(mapSource, mapDest);
-    } catch (err) {
-      // Ignorar erro do map
-    }
-  }
+  console.log(`🚀 Em produção, /sw.js será servido via rewrite do Next.js`);
 }).catch((error) => {
   console.error('❌ Erro ao gerar service worker:', error);
   process.exit(1);
