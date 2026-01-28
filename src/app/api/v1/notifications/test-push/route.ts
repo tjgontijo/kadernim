@@ -15,19 +15,22 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(req: Request) {
   try {
+    // 1. Verificar Session (Admin)
     const session = await auth.api.getSession({
       headers: await headers()
     });
 
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
-    }
+    const isAdmin = session?.user?.role === 'admin';
 
-    // Verificar se é admin
-    if (session.user.role !== 'admin') {
+    // 2. Verificar API Key (Header x-api-key)
+    const headerKey = req.headers.get('x-api-key');
+    const expectedKey = process.env.WEBHOOK_API_KEY;
+    const isValidApiKey = expectedKey && headerKey === expectedKey;
+
+    if (!isAdmin && !isValidApiKey) {
       return NextResponse.json(
-        { error: 'Acesso restrito a administradores' },
-        { status: 403 }
+        { error: 'Não autorizado. Use uma sessão de Admin ou x-api-key válida.' },
+        { status: 401 }
       );
     }
 
