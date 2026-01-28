@@ -7,16 +7,12 @@ import { Bell, Sparkles } from 'lucide-react';
 import type { PushSubscriptionCreate } from '@/lib/schemas/push-notification';
 import { useSession } from '@/lib/auth';
 
-type NavigatorWithStandalone = Navigator & {
-  standalone?: boolean;
-};
-
 /**
  * PushNotificationSetup
  *
  * Componente que solicita permissão de notificações push quando:
  * 1. O usuário está autenticado (logged in)
- * 2. O app está instalado como PWA (standalone mode)
+ * 2. O navegador suporta Push Notifications
  * 3. O usuário ainda não decidiu sobre notificações (permission === 'default')
  *
  * IMPORTANTE iOS:
@@ -29,23 +25,17 @@ export function PushNotificationSetup() {
   const { data: session } = useSession();
 
   useEffect(() => {
-    // No ambiente local/dev, permitimos testar sem estar em standalone
-    const isDev = process.env.NODE_ENV === 'development';
-
-    // Verificar se é PWA instalado
-    const isStandalone =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      (navigator as NavigatorWithStandalone).standalone === true;
-
     // Se as notificações não forem suportadas, não faz nada
     if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+      console.log('🔔 Push notifications não suportadas neste navegador');
       return;
     }
 
+    // Só solicitar se usuário estiver logado
     if (!session?.user) return;
 
     // CASO 1: Permissão ainda não foi decidida -> Mostrar diálogo
-    if (Notification.permission === 'default' && (isStandalone || isDev)) {
+    if (Notification.permission === 'default') {
       // Aguardar 3 segundos após o app carregar
       const timer = setTimeout(() => {
         setShowDialog(true);
@@ -55,7 +45,7 @@ export function PushNotificationSetup() {
     }
 
     // CASO 2: Permissão já concedida -> Garantir que o registro está atualizado no servidor
-    if (Notification.permission === 'granted' && (isStandalone || isDev)) {
+    if (Notification.permission === 'granted') {
       console.log('🔔 Permissão já concedida, garantindo registro de push...');
       registerPushSubscription()
         .then(() => console.log('✅ Push sync ok'))
