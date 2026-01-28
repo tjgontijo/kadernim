@@ -1,0 +1,29 @@
+@host = https://app.kadernim.com.br
+@apiKey = {{$dotenv WEBHOOK_API_KEY}}
+
+### Verificar dispositivos registrados (Exige Admin logado)
+GET {{host}}/api/v1/notifications/test-push HTTP/1.1
+
+### Enviar push de teste para a LP de Vendas
+POST {{host}}/api/v1/notifications/test-push HTTP/1.1
+x-api-key: {{apiKey}}
+Content-Type: application/json
+
+{
+  "title": "Conheça nossos planos! ✨",
+  "body": "Clique para conferir as melhores opções para sua carreira.",
+  "url": "/plans",
+  "icon": "sparkles"
+}
+
+### Enviar push de teste para TODOS
+POST {{host}}/api/v1/notifications/test-push HTTP/1.1
+x-api-key: {{apiKey}}
+Content-Type: application/json
+
+{
+  "title": "Olá do Kadernim! 🚀",
+  "body": "Se você recebeu isso no celular, o push do PWA está funcionando perfeitamente.",
+  "url": "/resources",
+  "icon": "zap"
+}
