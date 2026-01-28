@@ -64,7 +64,11 @@ self.addEventListener('notificationclick', (event) => {
     event.notification.close();
 
     const urlToOpen = event.notification.data?.url || '/';
-    const fullUrl = new URL(urlToOpen, self.location.origin).href;
+    // Adicionar marcador para indicar que veio de push (evita splash screen)
+    const urlWithMarker = urlToOpen.includes('?')
+        ? `${urlToOpen}&from=push`
+        : `${urlToOpen}?from=push`;
+    const fullUrl = new URL(urlWithMarker, self.location.origin).href;
 
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true })
@@ -82,7 +86,7 @@ self.addEventListener('notificationclick', (event) => {
 
                             // Tentar navegar para a nova URL
                             if (focusedClient && 'navigate' in focusedClient) {
-                                return focusedClient.navigate(urlToOpen);
+                                return focusedClient.navigate(urlWithMarker);
                             }
                         } catch (err) {
                             console.warn('[SW] Erro ao focar/navegar, abrindo nova janela:', err);
@@ -92,7 +96,7 @@ self.addEventListener('notificationclick', (event) => {
 
                 // 2. Fallback: abrir nova janela
                 if (clients.openWindow) {
-                    return clients.openWindow(urlToOpen);
+                    return clients.openWindow(urlWithMarker);
                 }
             })
     );
