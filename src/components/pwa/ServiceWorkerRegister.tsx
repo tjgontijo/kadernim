@@ -1,11 +1,9 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { toast } from 'sonner'
 
 export default function ServiceWorkerRegister() {
   const registrationRef = useRef<ServiceWorkerRegistration | null>(null)
-  const hasShownUpdateToast = useRef(false)
 
   useEffect(() => {
     // Service Worker apenas em produção
@@ -31,26 +29,15 @@ export default function ServiceWorkerRegister() {
         registrationRef.current = registration
         console.log('[PWA] Service Worker registrado')
 
-        // Função para mostrar toast de atualização (apenas uma vez)
-        const showUpdateToast = (worker: ServiceWorker) => {
-          if (hasShownUpdateToast.current) return
-          hasShownUpdateToast.current = true
-
-          toast('Nova versão disponível!', {
-            description: 'Clique para atualizar o aplicativo.',
-            duration: Infinity,
-            action: {
-              label: 'Atualizar',
-              onClick: () => {
-                worker.postMessage({ type: 'SKIP_WAITING' })
-              },
-            },
-          })
+        // Função para atualizar automaticamente
+        const autoUpdate = (worker: ServiceWorker) => {
+          console.log('[PWA] Nova versão detectada, atualizando automaticamente...')
+          worker.postMessage({ type: 'SKIP_WAITING' })
         }
 
-        // Se já tem um SW aguardando, mostrar toast
+        // Se já tem um SW aguardando, atualizar
         if (registration.waiting) {
-          showUpdateToast(registration.waiting)
+          autoUpdate(registration.waiting)
         }
 
         // Escutar quando um novo SW for instalado
@@ -61,7 +48,7 @@ export default function ServiceWorkerRegister() {
           newWorker.addEventListener('statechange', () => {
             // Novo SW instalado e há um controller ativo (significa que é uma atualização)
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              showUpdateToast(newWorker)
+              autoUpdate(newWorker)
             }
           })
         })
