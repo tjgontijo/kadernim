@@ -9,19 +9,6 @@ export function AppSplashScreen() {
     const [isStandalone, setIsStandalone] = useState(false);
 
     useEffect(() => {
-        // Se veio de um clique em notificação push, não mostra splash
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('from') === 'push') {
-            // Limpar o parâmetro da URL sem recarregar a página
-            urlParams.delete('from');
-            const newUrl = urlParams.toString()
-                ? `${window.location.pathname}?${urlParams.toString()}`
-                : window.location.pathname;
-            window.history.replaceState({}, '', newUrl);
-            setIsVisible(false);
-            return;
-        }
-
         // Verificar se já foi mostrado nesta sessão para evitar repetir em navegação
         const hasShown = sessionStorage.getItem('splash-shown');
         if (hasShown) {
@@ -33,9 +20,16 @@ export function AppSplashScreen() {
         const standalone = window.matchMedia('(display-mode: standalone)').matches;
         setIsStandalone(standalone);
 
-        // Se não for standalone, não mostramos o splash (especialmente em desktop)
+        // Se não for standalone, não mostramos o splash
         if (!standalone) {
             setIsVisible(false);
+            return;
+        }
+
+        // Se não entrou pela raiz, é deep link - não mostrar splash
+        if (window.location.pathname !== '/') {
+            setIsVisible(false);
+            sessionStorage.setItem('splash-shown', 'true'); // Evita splash em navegações futuras
             return;
         }
 
