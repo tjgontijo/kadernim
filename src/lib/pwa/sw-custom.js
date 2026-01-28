@@ -18,10 +18,17 @@ self.addEventListener('activate', (event) => {
 
 // Escutar evento de Push
 self.addEventListener('push', (event) => {
-    if (!event.data) return;
+    console.log('[SW] Evento de Push recebido!');
+
+    if (!event.data) {
+        console.warn('[SW] Push recebido mas sem dados.');
+        return;
+    }
 
     try {
         const data = event.data.json();
+        console.log('[SW] Dados do Push (JSON):', data);
+
         const title = data.title || 'Kadernim';
 
         // Helper para validar se o valor é um caminho válido (URL ou path relativo)
@@ -42,14 +49,17 @@ self.addEventListener('push', (event) => {
             requireInteraction: true
         };
 
+        console.log('[SW] Exibindo notificação:', title, options);
         event.waitUntil(
             self.registration.showNotification(title, options)
         );
     } catch (error) {
-        console.error('[SW] Erro ao processar push data:', error);
+        console.error('[SW] Erro ao processar push data (provavelmente não é JSON):', error);
 
         // Fallback para texto plano se não for JSON
         const text = event.data.text();
+        console.log('[SW] Fallback para texto:', text);
+
         event.waitUntil(
             self.registration.showNotification('Kadernim', {
                 body: text,
@@ -61,6 +71,7 @@ self.addEventListener('push', (event) => {
 
 // Escutar clique na notificação
 self.addEventListener('notificationclick', (event) => {
+    console.log('[SW] Notificação clicada!', event.notification.tag);
     event.notification.close();
 
     const urlToOpen = event.notification.data?.url || '/';
@@ -68,10 +79,12 @@ self.addEventListener('notificationclick', (event) => {
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true })
             .then((windowClients) => {
+                console.log(`[SW] Buscando janelas abertas para focar: ${windowClients.length}`);
                 // Se já tiver uma janela aberta, focar nela e navegar
                 for (let i = 0; i < windowClients.length; i++) {
                     const client = windowClients[i];
                     if (client.url.includes(location.origin) && 'focus' in client) {
+                        console.log('[SW] Focando em janela existente:', client.url);
                         return client.focus().then((focusedClient) => {
                             if (focusedClient) return focusedClient.navigate(urlToOpen);
                             return undefined;
@@ -80,6 +93,7 @@ self.addEventListener('notificationclick', (event) => {
                 }
                 // Se não tiver janela, abrir uma nova
                 if (clients.openWindow) {
+                    console.log('[SW] Abrindo nova janela:', urlToOpen);
                     return clients.openWindow(urlToOpen);
                 }
 
