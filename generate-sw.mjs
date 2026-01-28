@@ -19,6 +19,17 @@ if (!fs.existsSync(publicDir)) {
   fs.mkdirSync(publicDir, { recursive: true });
 }
 fs.writeFileSync(path.join(publicDir, 'version.json'), JSON.stringify(versionData, null, 2));
+
+// Garantir que o sw-custom.js (source of truth em src) seja copiado para public
+const swCustomSource = path.join(process.cwd(), 'src', 'lib', 'pwa', 'sw-custom.js');
+const swCustomDest = path.join(publicDir, 'sw-custom.js');
+if (fs.existsSync(swCustomSource)) {
+  fs.copyFileSync(swCustomSource, swCustomDest);
+  console.log('✅ sw-custom.js copiado para public/');
+} else {
+  console.warn('⚠️ Alerta: src/lib/pwa/sw-custom.js não encontrado para cópia.');
+}
+
 console.log(`📌 Versão do build gerada: ${version}`);
 
 const swConfig = {
