@@ -25,6 +25,15 @@ export function PushNotificationSetup() {
   const { data: session } = useSession();
 
   useEffect(() => {
+    // Debug: estado atual
+    console.log('🔔 [PushNotificationSetup] useEffect executado', {
+      sessionUser: session?.user?.email || 'não logado',
+      notificationSupported: 'Notification' in window,
+      swSupported: 'serviceWorker' in navigator,
+      pushManagerSupported: 'PushManager' in window,
+      permission: typeof Notification !== 'undefined' ? Notification.permission : 'N/A',
+    });
+
     // Se as notificações não forem suportadas, não faz nada
     if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
       console.log('🔔 Push notifications não suportadas neste navegador');
@@ -32,12 +41,19 @@ export function PushNotificationSetup() {
     }
 
     // Só solicitar se usuário estiver logado
-    if (!session?.user) return;
+    if (!session?.user) {
+      console.log('🔔 Usuário não logado, aguardando sessão...');
+      return;
+    }
+
+    console.log('🔔 Usuário logado:', session.user.email, '| Permissão:', Notification.permission);
 
     // CASO 1: Permissão ainda não foi decidida -> Mostrar diálogo
     if (Notification.permission === 'default') {
+      console.log('🔔 Permissão não decidida, agendando modal em 3s...');
       // Aguardar 3 segundos após o app carregar
       const timer = setTimeout(() => {
+        console.log('🔔 Abrindo modal de permissão');
         setShowDialog(true);
       }, 3000);
 
@@ -50,6 +66,11 @@ export function PushNotificationSetup() {
       registerPushSubscription()
         .then(() => console.log('✅ Push sync ok'))
         .catch(err => console.error('❌ Erro no sync de push:', err));
+    }
+
+    // CASO 3: Permissão negada
+    if (Notification.permission === 'denied') {
+      console.log('🔔 Permissão NEGADA pelo usuário. Não é possível solicitar novamente.');
     }
   }, [session]);
 
