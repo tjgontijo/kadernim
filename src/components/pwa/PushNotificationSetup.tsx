@@ -25,35 +25,18 @@ export function PushNotificationSetup() {
   const { data: session } = useSession();
 
   useEffect(() => {
-    // Debug: estado atual
-    console.log('🔔 [PushNotificationSetup] useEffect executado', {
-      sessionUser: session?.user?.email || 'não logado',
-      notificationSupported: 'Notification' in window,
-      swSupported: 'serviceWorker' in navigator,
-      pushManagerSupported: 'PushManager' in window,
-      permission: typeof Notification !== 'undefined' ? Notification.permission : 'N/A',
-    });
-
     // Se as notificações não forem suportadas, não faz nada
     if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
-      console.log('🔔 Push notifications não suportadas neste navegador');
       return;
     }
 
     // Só solicitar se usuário estiver logado
-    if (!session?.user) {
-      console.log('🔔 Usuário não logado, aguardando sessão...');
-      return;
-    }
-
-    console.log('🔔 Usuário logado:', session.user.email, '| Permissão:', Notification.permission);
+    if (!session?.user) return;
 
     // CASO 1: Permissão ainda não foi decidida -> Mostrar diálogo
     if (Notification.permission === 'default') {
-      console.log('🔔 Permissão não decidida, agendando modal em 3s...');
       // Aguardar 3 segundos após o app carregar
       const timer = setTimeout(() => {
-        console.log('🔔 Abrindo modal de permissão');
         setShowDialog(true);
       }, 3000);
 
@@ -62,15 +45,8 @@ export function PushNotificationSetup() {
 
     // CASO 2: Permissão já concedida -> Garantir que o registro está atualizado no servidor
     if (Notification.permission === 'granted') {
-      console.log('🔔 Permissão já concedida, garantindo registro de push...');
       registerPushSubscription()
-        .then(() => console.log('✅ Push sync ok'))
         .catch(err => console.error('❌ Erro no sync de push:', err));
-    }
-
-    // CASO 3: Permissão negada
-    if (Notification.permission === 'denied') {
-      console.log('🔔 Permissão NEGADA pelo usuário. Não é possível solicitar novamente.');
     }
   }, [session]);
 
@@ -80,32 +56,25 @@ export function PushNotificationSetup() {
     try {
       // IMPORTANTE: No iOS, Notification.requestPermission() DEVE ser chamado
       // diretamente em resposta a um user gesture (clique do botão)
-      console.log('🔔 Solicitando permissão de notificações...');
       const permission = await Notification.requestPermission();
 
-      console.log(`🔔 Permissão: ${permission}`);
-
       if (permission !== 'granted') {
-        console.log('⏸️ Permissão de notificações negada ou descartada');
         // Fechar o dialog imediatamente quando negado/descartado
         setShowDialog(false);
         setIsProcessing(false);
         return;
       }
 
-      console.log('✅ Permissão concedida! Registrando subscription...');
-
       // 2. Registrar push subscription em background
       registerPushSubscription()
         .then(() => {
-          console.log('✅ Push notifications configuradas com sucesso');
+          // Registro concluído com sucesso
         })
         .catch((error) => {
           console.error('❌ Erro ao registrar subscription:', error);
         });
 
       // Fechar o dialog IMEDIATAMENTE após a permissão ser concedida
-      // Não esperar a subscription ser registrada
       setShowDialog(false);
     } catch (error) {
       console.error('❌ Erro ao configurar push notifications:', error);
@@ -121,20 +90,13 @@ export function PushNotificationSetup() {
     }
 
     try {
-      console.log('🔄 Aguardando Service Worker estar pronto...');
-
       // 1. Aguardar Service Worker estar pronto
       const registration = await navigator.serviceWorker.ready;
-
-      console.log('✅ Service Worker pronto!');
 
       // 2. Verificar se já existe subscription
       let subscription = await registration.pushManager.getSubscription();
 
-      if (subscription) {
-        console.log('ℹ️ Subscription já existe, atualizando no servidor...');
-      } else {
-        console.log('🆕 Criando nova subscription...');
+      if (!subscription) {
 
         // 3. Se não existe, criar uma nova
         const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -157,13 +119,10 @@ export function PushNotificationSetup() {
           return outputArray;
         };
 
-        // Criar subscription
         subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
         });
-
-        console.log('✅ Subscription criada!');
       }
 
       // 4. Enviar para o servidor
@@ -181,20 +140,11 @@ export function PushNotificationSetup() {
         },
       };
 
-      console.log('📤 Enviando subscription para o servidor...');
-
-      const response = await fetch('/api/v1/notifications/subscribe', {
+      await fetch('/api/v1/notifications/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Erro ao registrar subscription no servidor');
-      }
-
-      console.log('✅ Subscription registrada no servidor!');
     } catch (error) {
       console.error('❌ Erro ao registrar subscription:', error);
       throw error;
@@ -202,7 +152,6 @@ export function PushNotificationSetup() {
   };
 
   const handleDismiss = () => {
-    console.log('⏸️ Usuário dispensou o prompt de notificações');
     setShowDialog(false);
   };
 
