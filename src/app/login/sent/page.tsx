@@ -23,6 +23,7 @@ function OTPSentContent() {
   const [form, setForm] = useState<VerifyState>({ email: '', otp: '' })
   const [verifyStatus, setVerifyStatus] = useState<SubmissionState>('idle')
   const [resendStatus, setResendStatus] = useState<ResendState>('idle')
+  const callbackURL = searchParams.get('callbackURL')
   const [countdown, setCountdown] = useState(60)
 
   // Referência para o input de OTP
@@ -77,7 +78,7 @@ function OTPSentContent() {
         return
       }
 
-      router.push('/resources')
+      router.push(callbackURL || '/resources')
     } catch (cause) {
       console.error('[otp] erro ao verificar código', cause)
       toast.error('Falha ao verificar código. Tente novamente.')

@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 
-import { useRouter } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Mail } from 'lucide-react'
@@ -43,8 +43,10 @@ interface OtpClientTimingLog {
   error?: string
 }
 
-export default function RequestOtpPage() {
+function RequestOtpContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const callbackURL = searchParams.get('callbackURL') || ''
   const [status, setStatus] = useState<SubmissionState>('idle')
 
   const {
@@ -119,7 +121,8 @@ export default function RequestOtpPage() {
         return
       }
 
-      router.push(`/login/sent?email=${encodeURIComponent(data.email)}`)
+      const nextUrl = `/login/sent?email=${encodeURIComponent(data.email)}${callbackURL ? `&callbackURL=${encodeURIComponent(callbackURL)}` : ''}`
+      router.push(nextUrl)
     } catch (cause) {
       console.error('[otp] erro ao solicitar OTP', cause)
       const message = 'Falha na comunicação com o servidor. Tente novamente.'
@@ -204,5 +207,17 @@ export default function RequestOtpPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function RequestOtpPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Spinner className="h-8 w-8 text-primary" />
+      </div>
+    }>
+      <RequestOtpContent />
+    </Suspense>
   )
 }

@@ -151,7 +151,10 @@ export async function POST(request: NextRequest) {
       {
         message: 'Matrícula processada com sucesso',
         userId: user.id,
-        granted: resources.map((resource) => resource.externalId),
+        granted: resources.map((resource) => ({
+          id: resource.id,
+          externalId: resource.externalId,
+        })),
         missing_product_ids: product_ids.filter(
           (productId) => !resources.some((resource) => resource.externalId === productId)
         ),
