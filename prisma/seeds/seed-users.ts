@@ -4,7 +4,8 @@ import { UserRole, type UserRoleType } from '@/types/users/user-role';
 
 const usersData = [
   { name: "Thiago Gontijo", email: "tjgontijo@gmail.com", password: "Thi##123", phone: "5561982482100", role: UserRole.admin },
-  { name: "Arilson Souza", email: "arilson@arilsonsouza.com.br", password: "123senha@", phone: "5561992532101", role: UserRole.admin }
+  { name: "Arilson Souza", email: "arilson@arilsonsouza.com.br", password: "123senha@", phone: "5561992532101", role: UserRole.admin },
+  { name: "Tatiana Gontijo", email: "tatianaparanhoscr@gmail.com", password: "Thi##123", phone: "5561981218195", role: UserRole.user }
 ]
 
 export async function seedUsers(prisma: PrismaClient) {
