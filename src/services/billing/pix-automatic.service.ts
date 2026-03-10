@@ -93,8 +93,8 @@ export class PixAutomaticService {
         return {
             subscription,
             authorizationId: authResponse.id,
-            qrCodePayload: authResponse.immediateQrCode?.payload,
-            qrCodeImage: authResponse.immediateQrCode?.encodedImage,
+            qrCodePayload: authResponse.payload,
+            qrCodeImage: authResponse.encodedImage,
             expirationDate: authResponse.immediateQrCode?.expirationDate
         }
     }

@@ -312,7 +312,7 @@ CREATE TABLE "bncc_skill" (
     "comments" TEXT,
     "curriculumSuggestions" TEXT,
     "searchVector" tsvector,
-    "embedding" vector(1536),
+    "embedding" vector,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -549,8 +549,8 @@ CREATE TABLE "push_campaigns" (
     "imageUrl" TEXT,
     "audience" JSONB NOT NULL DEFAULT '{}',
     "status" "CampaignStatus" NOT NULL DEFAULT 'DRAFT',
-    "scheduledAt" TIMESTAMPTZ,
-    "sentAt" TIMESTAMPTZ,
+    "scheduledAt" TIMESTAMPTZ(6),
+    "sentAt" TIMESTAMPTZ(6),
     "totalSent" INTEGER NOT NULL DEFAULT 0,
     "totalClicked" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -817,6 +817,12 @@ CREATE INDEX "bncc_skill_code_idx" ON "bncc_skill"("code");
 CREATE INDEX "bncc_skill_searchVector_idx" ON "bncc_skill" USING GIN ("searchVector");
 
 -- CreateIndex
+CREATE INDEX "bncc_skill_embedding_idx" ON "bncc_skill"("embedding");
+
+-- CreateIndex
+CREATE INDEX "bncc_skill_search_gin" ON "bncc_skill" USING GIN ("searchVector");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "bncc_skill_code_gradeId_key" ON "bncc_skill"("code", "gradeId");
 
 -- CreateIndex
@@ -1000,19 +1006,19 @@ ALTER TABLE "session" ADD CONSTRAINT "session_userId_fkey" FOREIGN KEY ("userId"
 ALTER TABLE "subscription" ADD CONSTRAINT "subscription_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "invoice" ADD CONSTRAINT "invoice_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "invoice" ADD CONSTRAINT "invoice_subscriptionId_fkey" FOREIGN KEY ("subscriptionId") REFERENCES "subscription"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "invoice" ADD CONSTRAINT "invoice_subscriptionId_fkey" FOREIGN KEY ("subscriptionId") REFERENCES "subscription"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "invoice" ADD CONSTRAINT "invoice_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "billing_audit_log" ADD CONSTRAINT "billing_audit_log_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "resource_grade" ADD CONSTRAINT "resource_grade_resourceId_fkey" FOREIGN KEY ("resourceId") REFERENCES "resource"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "resource_grade" ADD CONSTRAINT "resource_grade_gradeId_fkey" FOREIGN KEY ("gradeId") REFERENCES "grade"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "resource_grade" ADD CONSTRAINT "resource_grade_gradeId_fkey" FOREIGN KEY ("gradeId") REFERENCES "grade"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "resource_grade" ADD CONSTRAINT "resource_grade_resourceId_fkey" FOREIGN KEY ("resourceId") REFERENCES "resource"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "resource_image" ADD CONSTRAINT "resource_image_resourceId_fkey" FOREIGN KEY ("resourceId") REFERENCES "resource"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -1024,19 +1030,19 @@ ALTER TABLE "resource_file" ADD CONSTRAINT "resource_file_resourceId_fkey" FOREI
 ALTER TABLE "resource_video" ADD CONSTRAINT "resource_video_resourceId_fkey" FOREIGN KEY ("resourceId") REFERENCES "resource"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "resource_user_access" ADD CONSTRAINT "resource_user_access_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "resource_user_access" ADD CONSTRAINT "resource_user_access_resourceId_fkey" FOREIGN KEY ("resourceId") REFERENCES "resource"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "resource_user_access" ADD CONSTRAINT "resource_user_access_resourceId_fkey" FOREIGN KEY ("resourceId") REFERENCES "resource"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "resource_user_access" ADD CONSTRAINT "resource_user_access_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "resource" ADD CONSTRAINT "resource_educationLevelId_fkey" FOREIGN KEY ("educationLevelId") REFERENCES "education_level"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "resource" ADD CONSTRAINT "resource_subjectId_fkey" FOREIGN KEY ("subjectId") REFERENCES "subject"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "resource" ADD CONSTRAINT "resource_originRequestId_fkey" FOREIGN KEY ("originRequestId") REFERENCES "community_request"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "resource" ADD CONSTRAINT "resource_originRequestId_fkey" FOREIGN KEY ("originRequestId") REFERENCES "community_request"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "resource" ADD CONSTRAINT "resource_subjectId_fkey" FOREIGN KEY ("subjectId") REFERENCES "subject"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "bncc_skill" ADD CONSTRAINT "bncc_skill_educationLevelId_fkey" FOREIGN KEY ("educationLevelId") REFERENCES "education_level"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -1048,10 +1054,10 @@ ALTER TABLE "bncc_skill" ADD CONSTRAINT "bncc_skill_gradeId_fkey" FOREIGN KEY ("
 ALTER TABLE "bncc_skill" ADD CONSTRAINT "bncc_skill_subjectId_fkey" FOREIGN KEY ("subjectId") REFERENCES "subject"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "resource_bncc_skill" ADD CONSTRAINT "resource_bncc_skill_resourceId_fkey" FOREIGN KEY ("resourceId") REFERENCES "resource"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "resource_bncc_skill" ADD CONSTRAINT "resource_bncc_skill_bnccSkillId_fkey" FOREIGN KEY ("bnccSkillId") REFERENCES "bncc_skill"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "resource_bncc_skill" ADD CONSTRAINT "resource_bncc_skill_bnccSkillId_fkey" FOREIGN KEY ("bnccSkillId") REFERENCES "bncc_skill"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "resource_bncc_skill" ADD CONSTRAINT "resource_bncc_skill_resourceId_fkey" FOREIGN KEY ("resourceId") REFERENCES "resource"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "lesson_plan" ADD CONSTRAINT "lesson_plan_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -1087,10 +1093,10 @@ ALTER TABLE "llm_usage_log" ADD CONSTRAINT "llm_usage_log_userId_fkey" FOREIGN K
 ALTER TABLE "automation_action" ADD CONSTRAINT "automation_action_ruleId_fkey" FOREIGN KEY ("ruleId") REFERENCES "automation_rule"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "automation_log" ADD CONSTRAINT "automation_log_ruleId_fkey" FOREIGN KEY ("ruleId") REFERENCES "automation_rule"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "automation_log" ADD CONSTRAINT "automation_log_actionId_fkey" FOREIGN KEY ("actionId") REFERENCES "automation_action"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "automation_log" ADD CONSTRAINT "automation_log_actionId_fkey" FOREIGN KEY ("actionId") REFERENCES "automation_action"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "automation_log" ADD CONSTRAINT "automation_log_ruleId_fkey" FOREIGN KEY ("ruleId") REFERENCES "automation_rule"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "push_subscription" ADD CONSTRAINT "push_subscription_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -1105,10 +1111,10 @@ ALTER TABLE "community_request_upload" ADD CONSTRAINT "community_request_upload_
 ALTER TABLE "community_request_upload" ADD CONSTRAINT "community_request_upload_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "community_request_comment" ADD CONSTRAINT "community_request_comment_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "community_request_comment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "community_request_comment" ADD CONSTRAINT "community_request_comment_requestId_fkey" FOREIGN KEY ("requestId") REFERENCES "community_request"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "community_request_comment" ADD CONSTRAINT "community_request_comment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "community_request_comment" ADD CONSTRAINT "community_request_comment_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "community_request_comment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
