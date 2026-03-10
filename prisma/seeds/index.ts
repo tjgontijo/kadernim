@@ -10,6 +10,7 @@ import { seedBnccSkillsInfantil } from './seed-bncc-infantil';
 import { seedBnccSkillsFundamental } from './seed-bncc-fundamental';
 import { seedTemplates } from './seed-templates';
 import { seedSystemConfig } from './seed-system-config';
+import { seedBilling } from './seed-billing';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
@@ -59,6 +60,7 @@ async function createInitialData() {
     await seedResources(prisma);
     await seedResourceFiles(prisma);
     await seedTemplates(prisma);
+    await seedBilling(prisma);
 
     console.log('✅ População do banco de dados concluída com sucesso!');
   } catch (error) {
