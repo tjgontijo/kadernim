@@ -10,7 +10,6 @@ import { AppEvent } from './types'
 export async function emitEvent(event: AppEvent) {
     const { type, payload } = event
 
-    console.log(`[EventBus] Emitting: ${type}`, payload)
 
     // TODO: Integrated with Inngest or BullMQ in the next phase
     // await inngest.send({ name: type, data: payload })

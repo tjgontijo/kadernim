@@ -88,9 +88,14 @@ model User {
   role          UserRole @default(user)
   banned        Boolean  @default(false)
 
+  // Billing (Asaas)
+  asaasCustomerId String?  @unique
+  asaasWalletId   String?  // Opcional: Para controle de carteiras específicas
+
   accounts                 Account[]
   sessions                 Session[]
   subscription             Subscription?
+  invoices                 Invoice[]
   resourceAccesses         ResourceUserAccess[]
   lessonPlans              LessonPlan[]
   lessonPlanUsage          LessonPlanUsage[]
@@ -100,6 +105,7 @@ model User {
   communityRequestComments CommunityRequestComment[]
   llmUsageLogs             LlmUsageLog[]
   pushSubscriptions        PushSubscription[]
+  auditLogs                BillingAuditLog[]
 
   @@map("user")
 }
@@ -172,14 +178,153 @@ model Subscription {
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  isActive     Boolean   @default(true)
+  // Asaas Integration
+  asaasId              String?            @unique // ID da assinatura ou autorização Pix Automático
+  status               SubscriptionStatus @default(INACTIVE)
+  paymentMethod        PaymentMethod?
+  pixAutomaticAuthId   String?            @unique // ID específico da autorização Pix Automático
+
+  isActive     Boolean   @default(false)
   purchaseDate DateTime  @default(now())
   expiresAt    DateTime?
+  canceledAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  invoices Invoice[]
 
   @@index([userId])
+  @@index([asaasId])
+  @@index([status])
   @@index([isActive])
   @@index([expiresAt])
   @@map("subscription")
+}
+
+model Invoice {
+  id        String @id @default(cuid())
+  userId    String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  subscriptionId String?
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  // Asaas Integration
+  asaasId        String  @unique // ID da cobrança (pay_...)
+  status         InvoiceStatus @default(PENDING)
+  paymentMethod  PaymentMethod
+  value          Float
+  netValue       Float?  // Valor líquido após taxas e splits
+  description    String?
+  billingType    String  // PIX, CREDIT_CARD, etc
+
+  // Datas
+  dueDate     DateTime
+  paidAt      DateTime?
+  refundedAt  DateTime?
+
+  // Links
+  invoiceUrl  String? // Link da fatura no Asaas
+  bankSlipUrl String? // Link do boleto (se houver)
+  pixQrCode   String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([subscriptionId])
+  @@index([asaasId])
+  @@index([status])
+  @@map("invoice")
+}
+
+model SplitConfig {
+  id          String    @id @default(cuid())
+  companyName String
+  cnpj        String
+  walletId    String    @unique
+  isActive    Boolean   @default(true)
+
+  // Regras
+  splitType       SplitType @default(PERCENTAGE)
+  percentualValue Float?    // Ex: 30.0 para 30%
+  fixedValue      Float?    // Ex: 10.0 para R$ 10,00
+
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("split_config")
+}
+
+model BillingAuditLog {
+  id     String @id @default(cuid())
+
+  userId    String?   // Ação do sistema (webhook) pode não ter userId
+  user      User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  actor     AuditActor @default(SYSTEM)
+
+  action    String     // Ex: "PAYMENT_RECEIVED", "SUBSCRIPTION_CREATED"
+  entity    String     // Ex: "Invoice", "Subscription"
+  entityId  String
+
+  // Contexto Asaas
+  asaasEventId   String?  @unique
+  asaasPaymentId String?
+
+  previousState  Json?
+  newState       Json?
+  metadata       Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([entity, entityId])
+  @@index([asaasEventId])
+  @@map("billing_audit_log")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  INACTIVE
+  OVERDUE
+  CANCELED
+  EXPIRED
+}
+
+enum InvoiceStatus {
+  PENDING
+  CONFIRMED
+  RECEIVED
+  OVERDUE
+  REFUNDED
+  REFUND_REQUESTED
+  CHARGEBACK_REQUESTED
+  CHARGEBACK_DISPUTE
+  AWAITING_CHARGEBACK_REVERSAL
+  DUNNING_REQUESTED
+  DUNNING_RECEIVED
+  AWAITING_RISK_ANALYSIS
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  PIX
+  PIX_AUTOMATIC
+  BOLETO
+}
+
+enum SplitType {
+  PERCENTAGE
+  FIXED
+}
+
+enum AuditActor {
+  USER
+  ADMIN
+  SYSTEM
 }
 
 model ResourceGrade {

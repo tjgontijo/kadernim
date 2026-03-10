@@ -26,7 +26,6 @@ export { Prisma }
 
 // Log de inicialização
 if (process.env.NODE_ENV === 'production') {
-  //console.log('[prisma] Inicializado em produção')
 }
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma

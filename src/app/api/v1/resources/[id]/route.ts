@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { ResourceDetailSchema } from '@/lib/schemas/resource'
+import { ResourceDetailSchema } from '@/schemas/resources/resource-schemas'
 import { auth } from '@/server/auth/auth'
 import { isStaff } from '@/lib/auth/roles'
 

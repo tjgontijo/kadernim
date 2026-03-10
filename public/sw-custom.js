@@ -1,5 +1,6 @@
 // Custom Service Worker logic for Kadernim PWA
-// This file is imported by the generated sw.js
+// This file is copied to public/sw-custom.js during the build process
+// Source: src/lib/pwa/sw-custom.js
 
 // Listen for the SKIP_WAITING message from the client
 self.addEventListener('message', (event) => {
@@ -63,26 +64,36 @@ self.addEventListener('notificationclick', (event) => {
     event.notification.close();
 
     const urlToOpen = event.notification.data?.url || '/';
+    const fullUrl = new URL(urlToOpen, self.location.origin).href;
 
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true })
-            .then((windowClients) => {
-                // Se já tiver uma janela aberta, focar nela e navegar
-                for (let i = 0; i < windowClients.length; i++) {
-                    const client = windowClients[i];
-                    if (client.url.includes(location.origin) && 'focus' in client) {
-                        return client.focus().then((focusedClient) => {
-                            if (focusedClient) return focusedClient.navigate(urlToOpen);
-                            return undefined;
-                        });
+            .then(async (windowClients) => {
+                // 1. Procurar uma janela já aberta do nosso domínio
+                for (const client of windowClients) {
+                    if (client.url.includes(self.location.origin) && 'focus' in client) {
+                        try {
+                            const focusedClient = await client.focus();
+
+                            // Se já está na URL correta, só foca
+                            if (focusedClient && focusedClient.url === fullUrl) {
+                                return focusedClient;
+                            }
+
+                            // Tentar navegar para a nova URL
+                            if (focusedClient && 'navigate' in focusedClient) {
+                                return focusedClient.navigate(urlToOpen);
+                            }
+                        } catch (err) {
+                            console.warn('[SW] Erro ao focar/navegar, abrindo nova janela:', err);
+                        }
                     }
                 }
-                // Se não tiver janela, abrir uma nova
+
+                // 2. Fallback: abrir nova janela
                 if (clients.openWindow) {
                     return clients.openWindow(urlToOpen);
                 }
-
-                return undefined;
             })
     );
 });

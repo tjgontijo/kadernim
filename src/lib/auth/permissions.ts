@@ -1,4 +1,4 @@
-import { UserRoleType } from "@/types/user-role";
+import { UserRoleType } from "@/types/users/user-role";
 
 export type PermissionAction = 'create' | 'read' | 'update' | 'delete' | 'manage';
 export type PermissionSubject = 'Resource' | 'User' | 'Subject' | 'Organization' | 'Analytics' | 'all';

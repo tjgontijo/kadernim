@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requirePermission } from '@/server/auth/middleware';
-import { EmailTemplateUpdateSchema } from '@/lib/schemas/email-template';
+import { EmailTemplateUpdateSchema } from '@/schemas/templates/email-template-schemas';
 
 export const dynamic = 'force-dynamic';
 

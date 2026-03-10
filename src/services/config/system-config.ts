@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/db'
-import { type UserRoleType } from '@/types/user-role'
+import { type UserRoleType } from '@/types/users/user-role'
 
 // Cache em memória (5 minutos)
 const configCache = new Map<string, { value: any; expiresAt: number }>()

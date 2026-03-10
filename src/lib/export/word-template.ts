@@ -12,7 +12,7 @@ import {
     AlignmentType,
     ShadingType,
 } from 'docx';
-import { type LessonPlanResponse } from '@/lib/schemas/lesson-plan';
+import { type LessonPlanResponse } from '@/schemas/lesson-plans/lesson-plan-schemas';
 
 /**
  * Formata o slug de nível educacional para terminologia BNCC

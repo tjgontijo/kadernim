@@ -65,7 +65,6 @@ export async function DELETE(
     const resolvedParams = await params
     const { id: resourceId, videoId } = resolvedParams
 
-    console.log(`[DELETE VIDEO] Resource: ${resourceId}, Video: ${videoId}`)
 
     // Verify video exists and belongs to resource
     const video = await prisma.resourceVideo.findUnique({
@@ -90,14 +89,12 @@ export async function DELETE(
 
     // Delete from Cloudinary
     try {
-      console.log(`[DELETE VIDEO] Deleting from Cloudinary: ${video.cloudinaryPublicId}`)
       await deleteVideo(video.cloudinaryPublicId)
     } catch (cloudinaryError) {
       console.error('[DELETE VIDEO] Cloudinary deletion error:', cloudinaryError)
     }
 
     // Delete from database
-    console.log(`[DELETE VIDEO] Deleting from DB: ${videoId}`)
     await deleteResourceVideo(resourceId, videoId)
 
     return NextResponse.json(

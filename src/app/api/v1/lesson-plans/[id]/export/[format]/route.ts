@@ -3,7 +3,7 @@ import { auth } from '@/server/auth';
 import { prisma } from '@/lib/db';
 import { generateWordDocument } from '@/lib/export/word-template';
 import { generatePDFBuffer } from '@/lib/export/pdf-template';
-import { type LessonPlanResponse } from '@/lib/schemas/lesson-plan';
+import { type LessonPlanResponse } from '@/schemas/lesson-plans/lesson-plan-schemas';
 
 /**
  * GET /api/v1/lesson-plans/[id]/export/[format]

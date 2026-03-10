@@ -109,9 +109,7 @@ export async function logLlmUsage(params: LogLlmUsageParams) {
 
         // Debug no terminal se tokens forem encontrados
         if (totalTokens > 0) {
-            console.log(`[LLM Usage] ${params.feature} | ${params.model} | IN: ${inputTokens} | OUT: ${outputTokens} | $${totalCost.toFixed(4)}`);
         } else if (params.rawUsage) {
-            console.log('[LLM DEBUG] Falha ao extrair tokens do objeto:', JSON.stringify(params.rawUsage, null, 2));
         }
     } catch (error) {
         // NUNCA quebrar operação por falha no log

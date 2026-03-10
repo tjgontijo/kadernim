@@ -7,7 +7,7 @@ import {
     StyleSheet,
     renderToBuffer
 } from '@react-pdf/renderer';
-import { type LessonPlanResponse, type LessonPlanContent } from '@/lib/schemas/lesson-plan';
+import { type LessonPlanResponse, type LessonPlanContent } from '@/schemas/lesson-plans/lesson-plan-schemas';
 
 const styles = StyleSheet.create({
     page: {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requirePermission } from '@/server/auth/middleware'
 import { checkRateLimit } from '@/server/utils/rate-limit'
-import { BulkDeleteResourcesSchema } from '@/lib/schemas/admin/resources'
+import { BulkDeleteResourcesSchema } from '@/schemas/resources/admin-resource-schemas'
 
 /**
  * POST /api/v1/admin/resources/bulk/delete

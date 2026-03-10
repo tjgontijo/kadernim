@@ -7,11 +7,11 @@ import { cn } from '@/lib/utils/index'
 import { motion } from 'framer-motion'
 import { useMobile } from '@/hooks/layout/use-mobile'
 import { useSession } from '@/lib/auth/auth-client'
-import { UpsellBanner } from '@/components/client/shared/UpsellBanner'
-import { CommunityUsage } from '@/components/client/community/community-usage'
-import { RequestCard } from '@/components/client/community/request-card'
-import { CreateRequestDrawer } from '@/components/client/community/create-request-drawer'
-import { EmptyState as CommunityEmptyState } from '@/components/client/community/empty-state'
+import { UpsellBanner } from '@/components/dashboard/shared/UpsellBanner'
+import { CommunityUsage } from '@/components/dashboard/community/community-usage'
+import { RequestCard } from '@/components/dashboard/community/request-card'
+import { CreateRequestDrawer } from '@/components/dashboard/community/create-request-drawer'
+import { EmptyState as CommunityEmptyState } from '@/components/dashboard/community/empty-state'
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import {
@@ -22,10 +22,10 @@ import {
     DrawerDescription,
     DrawerTrigger,
 } from "@/components/ui/drawer"
-import { useCommunityUsage } from '@/hooks/entities/use-community'
+import { useCommunityUsage } from '@/hooks/community/use-community'
 import { triggerConfetti } from '@/lib/utils/confetti'
-import { PageScaffold } from '@/components/client/shared/page-scaffold'
-import { SearchInput } from '@/components/client/shared/search-input'
+import { PageScaffold } from '@/components/dashboard/shared/page-scaffold'
+import { SearchInput } from '@/components/dashboard/shared/search-input'
 import {
     Select,
     SelectContent,
@@ -33,8 +33,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
-import { PageScaffoldSkeleton } from '@/components/client/shared/skeletons/page-scaffold-skeleton'
-import { RequestCardSkeleton } from '@/components/client/shared/skeletons/request-card-skeleton'
+import { PageScaffoldSkeleton } from '@/components/dashboard/shared/skeletons/page-scaffold-skeleton'
+import { RequestCardSkeleton } from '@/components/dashboard/shared/skeletons/request-card-skeleton'
 
 interface FilterOption {
     slug: string

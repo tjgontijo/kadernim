@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requirePermission } from '@/server/auth/middleware'
-import { UserRole } from '@/types/user-role'
+import { UserRole } from '@/types/users/user-role'
 import { checkRateLimit } from '@/server/utils/rate-limit'
 import { prisma } from '@/lib/db'
 import {
   UpdateResourceSchema,
   ResourceDetailResponseSchema,
-} from '@/lib/schemas/admin/resources'
+} from '@/schemas/resources/admin-resource-schemas'
 
 
 /**

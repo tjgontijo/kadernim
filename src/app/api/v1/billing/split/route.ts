@@ -1,0 +1,57 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@/server/auth/auth'
+import { SplitService } from '@/services/billing/split.service'
+import { SplitUpdateSchema } from '@/schemas/billing/split-schemas'
+import { billingLog } from '@/services/billing/logger'
+
+/**
+ * GET: Retrieves the current active split configuration
+ * Restricted to Admins
+ */
+export async function GET(request: NextRequest) {
+    try {
+        const session = await auth.api.getSession({ headers: request.headers })
+
+        if (!session || session.user.role !== 'admin') {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+
+        const config = await SplitService.getConfig()
+
+        return NextResponse.json(config || { error: 'No active split configuration' }, { status: config ? 200 : 404 })
+    } catch (error: any) {
+        billingLog('error', 'Split configuration GET failed', { error: error.message })
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+    }
+}
+
+/**
+ * PUT: Updates/Creates the active split configuration
+ * Restricted to Admins
+ */
+export async function PUT(request: NextRequest) {
+    try {
+        const session = await auth.api.getSession({ headers: request.headers })
+
+        if (!session || session.user.role !== 'admin') {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+
+        const body = await request.json()
+        const parsed = SplitUpdateSchema.safeParse(body)
+
+        if (!parsed.success) {
+            return NextResponse.json({
+                error: 'Invalid data',
+                details: parsed.error.format()
+            }, { status: 400 })
+        }
+
+        const updated = await SplitService.updateConfig(parsed.data, session.user.id)
+
+        return NextResponse.json(updated, { status: 200 })
+    } catch (error: any) {
+        billingLog('error', 'Split configuration PUT failed', { error: error.message })
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+    }
+}

@@ -69,7 +69,6 @@ export const handleOtpRequested = inngest.createFunction(
             });
 
             if (!template) {
-                console.log('[OTP] Nenhum template de email ativo para auth.otp.requested');
                 return { channel: 'email', success: false, error: 'Sem template ativo' };
             }
 
@@ -90,7 +89,6 @@ export const handleOtpRequested = inngest.createFunction(
                 });
 
                 if (!template) {
-                    console.log('[OTP] Nenhum template de WhatsApp ativo para auth.otp.requested');
                     return { channel: 'whatsapp', success: false, error: 'Sem template ativo' };
                 }
 
@@ -110,7 +108,6 @@ export const handleOtpRequested = inngest.createFunction(
         }
 
         const anySuccess = results.some(r => r.success);
-        console.log(`[OTP] Resultado do envio para ${email}:`, results);
 
         return {
             processed: true,
@@ -151,7 +148,6 @@ export const handleRequestUnfeasible = inngest.createFunction(
         });
 
         if (rules.length === 0) {
-            console.log('[Automation] Nenhuma regra ativa para community.request.unfeasible');
             return { skipped: true, reason: 'No active rules' };
         }
 
@@ -244,7 +240,6 @@ export const handleGenericEvent = inngest.createFunction(
     ],
     async ({ event, step }) => {
         const eventName = event.name as string;
-        console.log(`[Inngest] Processando evento: ${eventName}`);
 
         // Step 1: Buscar regras de automação ativas para este evento
         const rules = await step.run('fetch-rules', async () => {
@@ -255,7 +250,6 @@ export const handleGenericEvent = inngest.createFunction(
                 },
                 include: { actions: true },
             });
-            console.log(`[Inngest] Encontradas ${activeRules.length} regras ativas para ${eventName}`);
             return activeRules;
         });
 
@@ -269,7 +263,6 @@ export const handleGenericEvent = inngest.createFunction(
         for (const rule of rules) {
             for (const action of rule.actions) {
                 const result = await step.run(`exec-${rule.id}-${action.type}-${action.id}`, async () => {
-                    console.log(`[Inngest] Executando ação ${action.type} (ID: ${action.id}) para regra ${rule.name}`);
                     const actionResult = await executeAction(action.type, action.config as any, event.data, eventName);
 
                     // Registrar Log no Banco
@@ -321,7 +314,6 @@ async function executeAction(
                 // Montar contexto de variáveis
                 const context = buildTemplateContext(payload, eventName || 'automation');
 
-                console.log(`[Action] EMAIL_SEND para ${recipientEmail} usando template ${templateId}`);
 
                 // Enviar email
                 return await sendEmailFromTemplate(templateId, recipientEmail, context);
@@ -356,7 +348,6 @@ async function executeAction(
                 const context = buildTemplateContext(payload, eventName || 'automation');
                 const renderedBody = renderTemplate(template.body, context);
 
-                console.log(`[Action] WHATSAPP_SEND para ${recipientPhone} usando template ${template.name}`);
 
                 // Enviar via UAZAPI (ou provedor configurado)
                 const { sendTextMessage } = await import('@/services/whatsapp/uazapi/send-message');
@@ -402,7 +393,6 @@ async function executeAction(
                     }
                 }
 
-                console.log(`[Action] PUSH_NOTIFICATION: "${title}" para todas subscriptions`);
 
                 const result = await sendPushToAll({
                     title,
@@ -428,7 +418,6 @@ async function executeAction(
                     return { success: false, error: 'Webhook URL not configured' };
                 }
 
-                console.log(`[Action] WEBHOOK_CALL tentando enviar para: ${url}`);
 
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
@@ -456,7 +445,6 @@ async function executeAction(
                         return { success: false, error: `HTTP ${response.status}: ${errorText.substring(0, 100)}` };
                     }
 
-                    console.log(`[Action] Webhook enviado com sucesso para ${url}`);
                     return { success: true };
                 } catch (fetchError) {
                     clearTimeout(timeoutId);
@@ -496,7 +484,6 @@ export const handleCampaignScheduled = inngest.createFunction(
         if (scheduledAt) {
             const waitTime = new Date(scheduledAt);
             if (waitTime > new Date()) {
-                console.log(`[Campaign] Agendando espera até ${scheduledAt} para campanha ${campaignId}`);
                 await step.sleepUntil('wait-for-schedule', waitTime);
             }
         }
@@ -525,7 +512,6 @@ export const handleCampaignScheduled = inngest.createFunction(
         const subscriptions = await step.run('fetch-segmented-subscriptions', async () => {
             const audience = (campaign.audience as any) || {};
 
-            console.log(`[Campaign] Aplicando segmentação:`, JSON.stringify(audience));
 
             // Se não tem filtros, envia para todos
             if (Object.keys(audience).length === 0 ||
@@ -533,7 +519,6 @@ export const handleCampaignScheduled = inngest.createFunction(
                     !audience.hasSubscription &&
                     !audience.activeInDays &&
                     !audience.inactiveForDays)) {
-                console.log(`[Campaign] Sem filtros - enviando para todas as subscriptions ativas`);
                 return await prisma.pushSubscription.findMany({
                     where: { active: true },
                     select: {
@@ -555,7 +540,6 @@ export const handleCampaignScheduled = inngest.createFunction(
             };
 
             const segmented = await getSegmentedPushSubscriptions(audienceFilter);
-            console.log(`[Campaign] Filtro aplicado - ${segmented.length} subscriptions encontradas`);
 
             return segmented.map((s: any) => ({
                 id: s.id,
@@ -568,7 +552,6 @@ export const handleCampaignScheduled = inngest.createFunction(
 
         // 5. Executar o envio
         const result = await step.run('send-push-campaign', async () => {
-            console.log(`[Campaign] Enviando push para ${subscriptions.length} subscriptions`);
 
             const sendResult = await sendPushToSubscriptions(
                 subscriptions,

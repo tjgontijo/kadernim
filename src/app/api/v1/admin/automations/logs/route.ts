@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requirePermission } from '@/server/auth/middleware';
-import { prisma } from '@/lib/db';
+import { AutomationService } from '@/services/automations/automation.service';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,42 +18,16 @@ export async function GET(request: NextRequest) {
         const { searchParams } = new URL(request.url);
         const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 100);
         const page = parseInt(searchParams.get('page') || '1');
-        const ruleId = searchParams.get('ruleId');
-        const status = searchParams.get('status');
+        const ruleId = searchParams.get('ruleId') || undefined;
 
-        const skip = (page - 1) * limit;
-
-        const where = {
-            ...(ruleId && { ruleId }),
-            ...(status && { status }),
-        };
-
-        const [logs, total] = await Promise.all([
-            prisma.automationLog.findMany({
-                where,
-                include: {
-                    rule: { select: { name: true, eventType: true } },
-                    action: { select: { type: true } },
-                },
-                orderBy: { executedAt: 'desc' },
-                skip,
-                take: limit,
-            }),
-            prisma.automationLog.count({ where }),
-        ]);
+        const result = await AutomationService.getLogs({ page, limit, ruleId });
 
         return NextResponse.json({
             success: true,
-            data: logs,
-            pagination: {
-                page,
-                limit,
-                total,
-                totalPages: Math.ceil(total / limit),
-            },
+            data: result.logs,
+            pagination: result.pagination,
         });
     } catch (error) {
-        console.error('[GET /api/v1/admin/automations/logs] Error:', error);
         return NextResponse.json(
             { success: false, error: 'Erro ao listar logs de automação' },
             { status: 500 }

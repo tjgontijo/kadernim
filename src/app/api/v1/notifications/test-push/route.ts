@@ -100,7 +100,7 @@ export async function POST(req: Request) {
     }
 
     // Log detalhado para debug
-    console.log('[Push] Resultado do teste:', {
+    console.log({
       success: result.success,
       total: result.total,
       failed: result.failed,

@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/db'
 import { Prisma } from '@/lib/db'
-import { ListResourcesFilter } from '@/lib/schemas/admin/resources'
+import { ListResourcesFilter } from '@/schemas/resources/admin-resource-schemas'
 
 interface ListResourcesResponse {
   data: Array<{

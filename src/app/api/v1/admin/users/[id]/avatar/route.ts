@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requirePermission } from '@/server/auth/middleware'
-import { UserRole } from '@/types/user-role'
+import { UserRole } from '@/types/users/user-role'
 import { checkRateLimit } from '@/server/utils/rate-limit'
 import { uploadImage } from '@/server/clients/cloudinary/image-client'
 import { prisma } from '@/lib/db'

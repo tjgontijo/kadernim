@@ -4,7 +4,7 @@ import { requirePermission } from '@/server/auth/middleware';
 import {
   PushTemplateCreateSchema,
   PushTemplateListSchema,
-} from '@/lib/schemas/push-template';
+} from '@/schemas/templates/push-template-schemas';
 
 export const dynamic = 'force-dynamic';
 

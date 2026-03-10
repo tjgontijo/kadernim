@@ -24,7 +24,6 @@ export async function DELETE(
     const resolvedParams = await params
     const { id: resourceId, fileId } = resolvedParams
 
-    console.log(`[DELETE FILE] Resource: ${resourceId}, File: ${fileId}`)
 
     // Get file to retrieve Cloudinary public ID
     const file = await prisma.resourceFile.findUnique({
@@ -49,14 +48,12 @@ export async function DELETE(
 
     // Delete from Cloudinary
     try {
-      console.log(`[DELETE FILE] Deleting from Cloudinary: ${file.cloudinaryPublicId}`)
       await deleteFile(file.cloudinaryPublicId)
     } catch (cloudinaryError) {
       console.error('[DELETE FILE] Cloudinary deletion error:', cloudinaryError)
     }
 
     // Delete file record from database
-    console.log(`[DELETE FILE] Deleting from DB: ${fileId}`)
     const { deleteFileService } = await import('@/services/resources/admin/file-service')
     await deleteFileService(fileId, resourceId, userId)
 

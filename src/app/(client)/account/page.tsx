@@ -42,7 +42,7 @@ import {
     denormalizeWhatsApp
 } from '@/lib/utils/phone'
 import { AvatarCropper } from '@/components/shared/avatar-cropper'
-import { ProfileSkeleton } from '@/components/client/shared/skeletons/profile-skeleton'
+import { ProfileSkeleton } from '@/components/dashboard/shared/skeletons/profile-skeleton'
 import { usePwa } from '@/hooks/utils/use-pwa'
 import { signOut } from '@/lib/auth'
 import {
@@ -182,8 +182,8 @@ export default function AccountPage() {
     }
 
     const handleSubscribe = () => {
-        // Link para checkout da Yampi
-        window.open('https://seguro.profdidatica.com.br/r/TMNDJH4WEN', '_blank', 'noopener,noreferrer')
+        // Redireciona para página de billing para membros ou checkout direto
+        window.location.href = '/billing'
     }
 
     const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -562,10 +562,10 @@ export default function AccountPage() {
                             <Button
                                 variant="outline"
                                 className="w-full h-14 rounded-2xl font-black uppercase tracking-widest text-xs border-muted-foreground/10 hover:bg-muted transition-all active:scale-[0.98]"
-                                onClick={handleSubscribe}
+                                onClick={() => window.location.href = '/billing'}
                             >
-                                <ExternalLink className="h-4 w-4 mr-3" />
-                                Renovar / Estender Plano
+                                <Settings className="h-4 w-4 mr-3" />
+                                Gerenciar Plano e Faturas
                             </Button>
                         </div>
                     )}

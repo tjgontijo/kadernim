@@ -1,7 +1,7 @@
 'use client'
 
 import { Activity } from 'lucide-react';
-import { CrudPageShell } from '@/components/admin/crud';
+import { CrudPageShell } from '@/components/dashboard/crud';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 

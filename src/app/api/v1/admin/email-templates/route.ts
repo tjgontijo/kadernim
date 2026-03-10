@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
 import { requirePermission } from '@/server/auth/middleware';
+import { EmailTemplateService } from '@/services/templates/email-template.service';
 import {
     EmailTemplateCreateSchema,
     EmailTemplateListSchema,
-} from '@/lib/schemas/email-template';
+} from '@/schemas/templates/email-template-schemas';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,32 +31,10 @@ export async function GET(request: NextRequest) {
             search: searchParams.get('search') || undefined,
         });
 
-        const where: any = {};
-
-        if (filters.success) {
-            if (filters.data.eventType) {
-                where.eventType = filters.data.eventType;
-            }
-            if (typeof filters.data.isActive === 'boolean') {
-                where.isActive = filters.data.isActive;
-            }
-            if (filters.data.search) {
-                where.OR = [
-                    { name: { contains: filters.data.search, mode: 'insensitive' } },
-                    { subject: { contains: filters.data.search, mode: 'insensitive' } },
-                    { slug: { contains: filters.data.search, mode: 'insensitive' } },
-                ];
-            }
-        }
-
-        const templates = await prisma.emailTemplate.findMany({
-            where,
-            orderBy: [{ isActive: 'desc' }, { name: 'asc' }],
-        });
+        const templates = await EmailTemplateService.list(filters.success ? filters.data : {});
 
         return NextResponse.json({ success: true, data: templates });
     } catch (error) {
-        console.error('[API] Erro ao listar email templates:', error);
         return NextResponse.json(
             { success: false, error: 'Erro interno ao listar email templates' },
             { status: 500 }
@@ -89,13 +67,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const { slug, ...rest } = parsed.data;
-
-        // Verificar se slug já existe
-        const existing = await prisma.emailTemplate.findUnique({
-            where: { slug },
-        });
-
+        const existing = await EmailTemplateService.getBySlug(parsed.data.slug);
         if (existing) {
             return NextResponse.json(
                 { success: false, error: 'Já existe um template com este slug' },
@@ -103,16 +75,10 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const template = await prisma.emailTemplate.create({
-            data: {
-                slug,
-                ...rest,
-            },
-        });
+        const template = await EmailTemplateService.create(parsed.data);
 
         return NextResponse.json({ success: true, data: template }, { status: 201 });
     } catch (error) {
-        console.error('[API] Erro ao criar email template:', error);
         return NextResponse.json(
             { success: false, error: 'Erro interno ao criar email template' },
             { status: 500 }

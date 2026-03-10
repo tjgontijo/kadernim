@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requirePermission } from '@/server/auth/middleware'
-import { prisma } from '@/lib/db'
-import { SubjectSchema } from '@/lib/schemas/admin/subjects'
+import { TaxonomyService } from '@/services/taxonomy/taxonomy.service'
+import { SubjectSchema } from '@/schemas/subjects/subject-schemas'
 
+/**
+ * PUT /api/v1/admin/subjects/[id]
+ */
 export async function PUT(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
@@ -19,18 +22,17 @@ export async function PUT(
             return NextResponse.json({ error: 'Dados inválidos', issues: parsed.error.format() }, { status: 400 })
         }
 
-        const subject = await prisma.subject.update({
-            where: { id },
-            data: parsed.data
-        })
+        const subject = await TaxonomyService.updateSubject(id, parsed.data)
 
         return NextResponse.json(subject)
     } catch (error) {
-        console.error('[PUT /api/v1/admin/subjects/:id]', error)
         return NextResponse.json({ error: 'Erro ao atualizar matéria' }, { status: 500 })
     }
 }
 
+/**
+ * DELETE /api/v1/admin/subjects/[id]
+ */
 export async function DELETE(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
@@ -41,24 +43,15 @@ export async function DELETE(
 
         const { id } = await params
 
-        // Check if there are resources linked
-        const resourceCount = await prisma.resource.count({
-            where: { subjectId: id }
-        })
+        await TaxonomyService.deleteSubject(id)
 
-        if (resourceCount > 0) {
+        return new NextResponse(null, { status: 204 })
+    } catch (error: any) {
+        if (error.message === 'HAS_RESOURCES') {
             return NextResponse.json({
                 error: 'Não é possível excluir uma matéria que possui recursos vinculados.'
             }, { status: 400 })
         }
-
-        await prisma.subject.delete({
-            where: { id }
-        })
-
-        return new NextResponse(null, { status: 204 })
-    } catch (error) {
-        console.error('[DELETE /api/v1/admin/subjects/:id]', error)
         return NextResponse.json({ error: 'Erro ao excluir matéria' }, { status: 500 })
     }
 }

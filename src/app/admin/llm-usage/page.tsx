@@ -11,7 +11,7 @@ import {
     Search,
     RefreshCw
 } from 'lucide-react';
-import { DashPageShell } from '@/components/admin/dash/dash-page-shell';
+import { DashPageShell } from '@/components/dashboard/dash/dash-page-shell';
 import { Button } from '@/components/ui/button';
 import {
     Card,

@@ -4,7 +4,7 @@
  */
 
 import { prisma } from '@/lib/db'
-import { UserRoleType } from '@/types/user-role'
+import { UserRoleType } from '@/types/users/user-role'
 import { getHighestRole } from '@/lib/auth/roles'
 
 export interface UserWithSubscription {

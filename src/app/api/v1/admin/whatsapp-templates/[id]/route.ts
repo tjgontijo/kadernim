@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requirePermission } from '@/server/auth/middleware';
-import { WhatsAppTemplateUpdateSchema } from '@/lib/schemas/whatsapp-template';
+import { WhatsAppTemplateUpdateSchema } from '@/schemas/templates/whatsapp-template-schemas';
 
 export const dynamic = 'force-dynamic';
 

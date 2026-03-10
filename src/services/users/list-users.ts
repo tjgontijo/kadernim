@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/db'
 import { Prisma } from '@db/client'
-import { ListUsersFilter } from '@/lib/schemas/admin/users'
+import { ListUsersFilter } from '@/schemas/users/admin-user-schemas'
 
 interface ListUsersResponse {
     data: Array<{

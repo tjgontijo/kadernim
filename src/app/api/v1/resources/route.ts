@@ -4,7 +4,7 @@ import { unstable_cache } from 'next/cache'
 import { prisma, Prisma as PrismaNamespace } from '@/lib/db'
 import { auth } from '@/server/auth/auth'
 import { isStaff } from '@/lib/auth/roles'
-import { ResourceFilterSchema } from '@/lib/schemas/resource'
+import { ResourceFilterSchema } from '@/schemas/resources/resource-schemas'
 import {
   buildResourceCacheKey,
   buildResourceCacheTag,

@@ -4,7 +4,7 @@ import { checkRateLimit } from '@/server/utils/rate-limit'
 import {
   ListResourcesFilterSchema,
   ResourceListResponseSchema,
-} from '@/lib/schemas/admin/resources'
+} from '@/schemas/resources/admin-resource-schemas'
 import { listResourcesService } from '@/services/resources'
 import { emitEvent } from '@/lib/inngest'
 
@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
     // Parse and validate request body
     const body = await request.json()
     const { CreateResourceSchema } = await import(
-      '@/lib/schemas/admin/resources'
+      '@/schemas/resources/admin-resource-schemas'
     )
     const parsed = CreateResourceSchema.safeParse(body)
 

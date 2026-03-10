@@ -15,7 +15,6 @@ export async function isWhatsAppNumberValid(number: string): Promise<boolean> {
   }
 
   try {
-    console.log(`[WhatsApp Check] Verificando número: ${number}`);
     
     const response = await fetch(`${apiUrl}/chat/check`, {
       method: 'POST',
@@ -36,7 +35,6 @@ export async function isWhatsAppNumberValid(number: string): Promise<boolean> {
     }
 
     const data = await response.json();
-    console.log(`[WhatsApp Check] Resposta da API:`, data);
     
     // A API retorna um array de resultados
     if (Array.isArray(data) && data.length > 0) {
@@ -48,12 +46,10 @@ export async function isWhatsAppNumberValid(number: string): Promise<boolean> {
       
       if (numberInfo) {
         const isValid = numberInfo.isInWhatsapp === true;
-        console.log(`[WhatsApp Check] Número ${number} é ${isValid ? 'válido' : 'inválido'}`);
         return isValid;
       }
     }
     
-    console.log(`[WhatsApp Check] Número ${number} não encontrado na resposta`);
     return false;
   } catch (error) {
     console.error('[WhatsApp Check] Erro ao verificar número de WhatsApp:', error);

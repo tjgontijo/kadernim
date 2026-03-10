@@ -16,7 +16,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { DashPageShell } from '@/components/admin/dash/dash-page-shell';
+import { DashPageShell } from '@/components/dashboard/dash/dash-page-shell';
 import {
     Tabs,
     TabsList,

@@ -176,7 +176,6 @@ export async function emitEvent<K extends keyof KadernimEvents>(
             name: eventName,
             data,
         });
-        console.log(`[Inngest] Evento emitido: ${eventName}`);
     } catch (error) {
         // Nunca quebrar a operação principal por falha no evento
         console.error(`[Inngest] Erro ao emitir evento ${eventName}:`, error);

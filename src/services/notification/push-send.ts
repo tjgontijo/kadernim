@@ -1,6 +1,6 @@
 import webpush from 'web-push';
 import { prisma } from '@/lib/db';
-import type { PushPayload } from '@/lib/schemas/push-notification';
+import type { PushPayload } from '@/schemas/notifications/push-notification-schemas';
 
 // Configurar VAPID
 const vapidSubject = process.env.VAPID_SUBJECT || 'mailto:contato@kadernim.com.br';
@@ -13,7 +13,6 @@ if (vapidPublicKey && vapidPrivateKey) {
   try {
     webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
     vapidConfigured = true;
-    console.log('[Push] VAPID configurado com sucesso');
   } catch (error) {
     console.error('[Push] Erro ao configurar VAPID:', error);
   }
@@ -56,15 +55,12 @@ export async function sendPushToSubscription(
   };
 
   try {
-    console.log(`[Push] Enviando para endpoint: ${subscription.endpoint.substring(0, 50)}...`);
-    console.log(`[Push] Payload: ${JSON.stringify(payloadData)}`);
 
     const result = await webpush.sendNotification(
       pushSubscription,
       JSON.stringify(payloadData)
     );
 
-    console.log(`[Push] Resposta do push service: statusCode=${result.statusCode}`);
 
     // Atualizar timestamp de último uso
     await prisma.pushSubscription.update({
@@ -84,7 +80,6 @@ export async function sendPushToSubscription(
 
     // Endpoint expirado (410) ou não encontrado (404)
     if (err.statusCode === 410 || err.statusCode === 404) {
-      console.log(`[Push] Subscription expirada, desativando: ${subscription.id}`);
       await prisma.pushSubscription.update({
         where: { id: subscription.id },
         data: { active: false }

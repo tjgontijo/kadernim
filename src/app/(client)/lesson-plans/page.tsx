@@ -4,16 +4,16 @@ import { Plus, Filter, GraduationCap, Sparkles, Zap, FileText } from 'lucide-rea
 import { Button } from '@/components/ui/button';
 import { useMobile } from '@/hooks/layout/use-mobile';
 import { useSession } from '@/lib/auth/auth-client';
-import { UpsellBanner } from '@/components/client/shared/UpsellBanner';
-import { CreatePlanDrawer } from '@/components/client/lesson-plans/create-plan-drawer';
-import { PlanCard } from '@/components/client/lesson-plans/plan-card';
-import { EmptyState } from '@/components/client/lesson-plans/empty-state';
-import { useLessonPlans } from '@/hooks/entities/use-lesson-plans';
-import { useLessonPlanUsage } from '@/hooks/entities/use-lesson-plans';
-import { useEducationLevels, useGrades, useSubjects } from '@/hooks/entities/use-taxonomy';
+import { UpsellBanner } from '@/components/dashboard/shared/UpsellBanner';
+import { CreatePlanDrawer } from '@/components/dashboard/lesson-plans/create-plan-drawer';
+import { PlanCard } from '@/components/dashboard/lesson-plans/plan-card';
+import { EmptyState } from '@/components/dashboard/lesson-plans/empty-state';
+import { useLessonPlans } from '@/hooks/lesson-plans/use-lesson-plans';
+import { useLessonPlanUsage } from '@/hooks/lesson-plans/use-lesson-plans';
+import { useEducationLevels, useGrades, useSubjects } from '@/hooks/taxonomy/use-taxonomy';
 import { Progress } from '@/components/ui/progress';
-import { PageScaffold } from '@/components/client/shared/page-scaffold';
-import { SearchInput } from '@/components/client/shared/search-input';
+import { PageScaffold } from '@/components/dashboard/shared/page-scaffold';
+import { SearchInput } from '@/components/dashboard/shared/search-input';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
@@ -32,9 +32,9 @@ import {
   DrawerDescription,
 } from "@/components/ui/drawer";
 import { useEffect, useState, useMemo } from 'react';
-import { type LessonPlanResponse } from '@/lib/schemas/lesson-plan';
-import { PageScaffoldSkeleton } from '@/components/client/shared/skeletons/page-scaffold-skeleton';
-import { PlanCardSkeleton } from '@/components/client/shared/skeletons/plan-card-skeleton';
+import { type LessonPlanResponse } from '@/schemas/lesson-plans/lesson-plan-schemas';
+import { PageScaffoldSkeleton } from '@/components/dashboard/shared/skeletons/page-scaffold-skeleton';
+import { PlanCardSkeleton } from '@/components/dashboard/shared/skeletons/plan-card-skeleton';
 
 export default function LessonPlansPage() {
   const { isMobile } = useMobile();

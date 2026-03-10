@@ -28,7 +28,6 @@ export interface SwUpdateListenerOptions {
  */
 export function registerSwUpdateListener(options: SwUpdateListenerOptions) {
   if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
-    console.log('[SW Update] Service Worker não suportado');
     return null;
   }
 
@@ -39,7 +38,6 @@ export function registerSwUpdateListener(options: SwUpdateListenerOptions) {
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (refreshing) return;
     refreshing = true;
-    console.log('[SW Update] Controller mudou, recarregando página...');
     onUpdateInstalled?.();
     window.location.reload();
   });
@@ -48,19 +46,16 @@ export function registerSwUpdateListener(options: SwUpdateListenerOptions) {
   navigator.serviceWorker
     .register('/sw.js')
     .then((registration) => {
-      console.log('[SW Update] Service Worker registrado');
 
       // Listener para quando novo SW é encontrado
       registration.addEventListener('updatefound', () => {
         const newWorker = registration.installing;
         if (!newWorker) return;
 
-        console.log('[SW Update] Nova versão detectada, aguardando instalação...');
 
         newWorker.addEventListener('statechange', () => {
           if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
             // Novo SW instalado e há um SW ativo (update disponível)
-            console.log('[SW Update] Nova versão instalada e pronta, notificando usuário...');
             onUpdateAvailable(registration);
           }
         });
@@ -68,13 +63,11 @@ export function registerSwUpdateListener(options: SwUpdateListenerOptions) {
 
       // Verificar se já existe update esperando
       if (registration.waiting && navigator.serviceWorker.controller) {
-        console.log('[SW Update] Update já disponível (detectado na inicialização)');
         onUpdateAvailable(registration);
       }
 
       // Forçar check manual a cada 1 hora (em adição ao check automático do browser)
       setInterval(() => {
-        console.log('[SW Update] Verificando atualizações manualmente...');
         registration.update();
       }, 60 * 60 * 1000); // 1 hora
     })
@@ -94,7 +87,6 @@ export function activateUpdate(registration: ServiceWorkerRegistration) {
     return;
   }
 
-  console.log('[SW Update] Ativando nova versão...');
 
   // Envia mensagem pro SW fazer skipWaiting()
   waiting.postMessage({ type: 'SKIP_WAITING' });

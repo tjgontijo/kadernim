@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { PushSubscriptionCreateSchema } from '@/lib/schemas/push-notification';
+import { PushSubscriptionCreateSchema } from '@/schemas/notifications/push-notification-schemas';
 import { auth } from '@/server/auth';
 
 /**
@@ -61,7 +61,6 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    console.log(`[Push] Subscription registrada para usuário ${userId}: ${subscription.id}`);
 
     return NextResponse.json(
       { id: subscription.id, success: true },

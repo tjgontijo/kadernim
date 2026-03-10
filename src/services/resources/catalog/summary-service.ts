@@ -1,4 +1,4 @@
-import type { ResourceFilter } from '@/lib/schemas/resource'
+import type { ResourceFilter } from '@/schemas/resources/resource-schemas'
 
 import type { ResourceListResult } from './list-service'
 import { getResourceList } from './list-service'

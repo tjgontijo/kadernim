@@ -414,13 +414,63 @@ src/
 
 ## 5. Critérios de Aceite
 
-- [ ] `grep -r "prisma\." src/app/api/` retorna 0 resultados.
-- [ ] `grep -r "z\.object" src/app/api/` retorna 0 resultados.
-- [ ] `src/lib/schemas/` não existe mais; tudo está em `src/schemas/`.
-- [ ] `src/components/admin/` e `src/components/client/` não existem mais.
-- [ ] `src/hooks/entities/` e `src/hooks/admin/` não existem mais.
-- [ ] `src/contexts/` não existe mais.
-- [ ] Nenhuma `page.tsx` de admin ou client possui `'use client'` na raiz.
-- [ ] `grep -r "console\.log" src/` retorna 0 resultados fora de dev-only guards.
-- [ ] `react-query-provider.tsx` possui `staleTime: 5 * 60 * 1000` e demais defaults.
+- [ ] `grep -r "prisma\." src/app/api/` retorna 0 resultados. (Em andamento: ~80% concluído)
+- [ ] `grep -r "z\.object" src/app/api/` retorna 0 resultados. (Em andamento: ~85% concluído)
+- [x] `src/lib/schemas/` não existe mais; tudo está em `src/schemas/`.
+- [x] `src/components/admin/` e `src/components/client/` não existem mais (migrados para `dashboard/`).
+- [x] `src/hooks/entities/` e `src/hooks/admin/` não existem mais (migrados para domínios).
+- [x] `src/contexts/` não existe mais (migrado para hooks).
+- [ ] Nenhuma `page.tsx` de admin ou client possui `'use client'` na raiz. (Em andamento: Principais Admins concluídas)
+- [x] `grep -r "console\.log" src/` retorna 0 resultados.
+- [x] `react-query-provider.tsx` possui `staleTime: 5 * 60 * 1000` e demais defaults.
 - [ ] `npm run build` compila sem erros.
+
+## 📈 Progresso da Execução (Atualizado em 10/03/2026)
+
+### 1. Reestruturação de Diretórios ✅
+- [x] `src/schemas/*` (Organizado por domínio)
+- [x] `src/components/dashboard/*` (Unificado admin/client)
+- [x] `src/hooks/*` (Organizado por domínio)
+- [x] `src/types/*` (Organizado por domínio)
+- [x] `src/contexts/` (Removido, migrado para hooks)
+
+### 2. Camada de Serviços (Fase 2) 🏗️
+- [x] `CampaignService` (Implementado e integrado nas rotas)
+- [x] `AutomationService` (Implementado e integrado nas rotas)
+- [x] `EmailTemplateService` (Implementado e integrado parcialmente)
+- [x] `StatsService` (Implementado e integrado na rota admin)
+- [x] `TaxonomyService` (Implementado e integrado em EducationLevels, Grades e Subjects)
+- [x] `LessonPlanService` (Implementado e integrado em LessonPlans)
+- [ ] `ResourceService` (Pendente)
+- [ ] `BillingService` (Pendente)
+
+### 3. Refatoração de Rotas API (Extração de Prisma) 🏗️
+- [x] `api/v1/admin/campaigns/**`
+- [x] `api/v1/admin/automations/**/**`
+- [x] `api/v1/admin/email-templates/route.ts`
+- [x] `api/v1/admin/stats/route.ts`
+- [x] `api/v1/subjects/route.ts`
+- [x] `api/v1/education-levels/route.ts`
+- [x] `api/v1/grades/route.ts`
+- [x] `api/v1/lesson-plans/route.ts`
+- [ ] Restantes (Activities, Resources, Plans, etc)
+
+### 4. Boas Práticas e Limpeza ✅
+- [x] Remoção de `console.log` em todo o `src/`
+- [x] Atualização de `react-query-provider` defaults
+- [x] Auditoria de `setInterval` (Confirmado uso aceitável para SW e Progress Bar)
+
+### 5. Refatoração Server-First (Fase 3) ✅
+- [x] Dashboard Admin (`/admin`) -> Server Component + `StatsService`
+- [x] Campanhas (`/admin/campaigns`) -> Server Component + `CampaignsPageClient`
+- [x] Disciplinas (`/admin/subjects`) -> Server Component + `SubjectsPageClient`
+- [x] Automações (`/admin/automations`) -> Server Component + `AutomationsPageClient`
+- [x] Templates de Email (`/admin/templates/email`) -> Server Component + `EmailTemplatesPageClient`
+- [x] `DashPageShell` refatorado para permitir uso em Server Components.
+- [x] Criação de tipos de domínio em `src/types/` (Campaigns, Subjects, Automations, Stats, Templates).
+
+### Próximos Passos
+1. Finalizar extração de Prisma de rotas de `Activities` e `Resources`.
+2. Refatorar páginas de Clientes (não-Admin) para Server-First.
+3. Verificar conformidade em rotas de `Billing` para preparar integração com Asaas.
+4. Verificação de build (`npm run build`).

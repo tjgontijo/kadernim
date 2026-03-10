@@ -1,17 +1,17 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { ResourceGrid } from '@/components/client/resources/ResourceGrid'
-import { ResourceFilters } from '@/components/client/resources/ResourceFilters'
-import { ResourceTabs } from '@/components/client/resources/ResourceTabs'
-import { useResourcesSummaryQuery } from '@/hooks/entities/use-resources'
+import { ResourceGrid } from '@/components/dashboard/resources/ResourceGrid'
+import { ResourceFilters } from '@/components/dashboard/resources/ResourceFilters'
+import { ResourceTabs } from '@/components/dashboard/resources/ResourceTabs'
+import { useResourcesSummaryQuery } from '@/hooks/resources/use-resources'
 import { useSessionQuery } from '@/hooks/auth/use-session'
 import { Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { PageScaffold } from '@/components/client/shared/page-scaffold'
-import { PageScaffoldSkeleton } from '@/components/client/shared/skeletons/page-scaffold-skeleton'
-import { ResourceCardSkeleton } from '@/components/client/shared/skeletons/resource-card-skeleton'
+import { PageScaffold } from '@/components/dashboard/shared/page-scaffold'
+import { PageScaffoldSkeleton } from '@/components/dashboard/shared/skeletons/page-scaffold-skeleton'
+import { ResourceCardSkeleton } from '@/components/dashboard/shared/skeletons/resource-card-skeleton'
 
 interface Filters {
   q?: string

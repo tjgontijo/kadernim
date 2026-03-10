@@ -3,7 +3,7 @@ import { unstable_cache } from 'next/cache'
 
 import { auth } from '@/server/auth/auth'
 import { prisma } from '@/lib/db'
-import { ResourceFilterSchema } from '@/lib/schemas/resource'
+import { ResourceFilterSchema } from '@/schemas/resources/resource-schemas'
 import { buildResourceCacheTag } from '@/server/utils/cache'
 import { checkRateLimit } from '@/server/utils/rate-limit'
 import { getResourceCounts } from '@/services/resources/catalog/count-service'

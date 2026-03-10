@@ -1,9 +1,9 @@
-import { SystemHeader } from '@/components/client/layout/header/SystemHeader'
-import { FooterSingle } from '@/components/client/layout/footer/footer-single'
+import { SystemHeader } from '@/components/dashboard/layout/header/SystemHeader'
+import { FooterSingle } from '@/components/dashboard/layout/footer/footer-single'
 import { getServerSession } from '@/services/auth/session-service'
 import { redirect } from 'next/navigation'
-import { DashboardClientLayout } from '@/components/client/layout/DashboardClientLayout'
-import { MobileNav } from '@/components/client/layout/navigation/MobileNav'
+import { DashboardClientLayout } from '@/components/dashboard/layout/DashboardClientLayout'
+import { MobileNav } from '@/components/dashboard/layout/navigation/MobileNav'
 
 export const dynamic = 'force-dynamic'
 

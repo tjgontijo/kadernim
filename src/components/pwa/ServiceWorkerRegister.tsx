@@ -10,7 +10,6 @@ export default function ServiceWorkerRegister() {
     const isProduction = process.env.NODE_ENV === 'production'
 
     if (!isProduction) {
-      console.log('[PWA] Service Worker desabilitado em desenvolvimento')
       return
     }
 
@@ -27,11 +26,9 @@ export default function ServiceWorkerRegister() {
       try {
         const registration = await navigator.serviceWorker.register('/sw.js')
         registrationRef.current = registration
-        console.log('[PWA] Service Worker registrado')
 
         // Função para atualizar automaticamente
         const autoUpdate = (worker: ServiceWorker) => {
-          console.log('[PWA] Nova versão detectada, atualizando automaticamente...')
           worker.postMessage({ type: 'SKIP_WAITING' })
         }
 
@@ -58,7 +55,6 @@ export default function ServiceWorkerRegister() {
         navigator.serviceWorker.addEventListener('controllerchange', () => {
           if (refreshing) return
           refreshing = true
-          console.log('[PWA] Novo Service Worker ativo, recarregando...')
           window.location.reload()
         })
 

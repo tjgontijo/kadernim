@@ -1,21 +1,12 @@
 import { generateObject, generateText } from 'ai';
 import { openai } from '@ai-sdk/openai';
-import { z } from 'zod';
+import { RefinedDescriptionsSchema } from '@/schemas/community/community-schemas';
 import {
     systemPromptRefineDescription,
     buildRefineDescriptionPrompt,
     systemPromptGenerateTitle,
     buildGenerateTitlePrompt,
 } from '@/lib/ai/prompts/community-request';
-
-/**
- * Schema para as 3 versões refinadas
- */
-const RefinedDescriptionsSchema = z.object({
-    format: z.string().describe('Versão focada no formato e tipo de material'),
-    usability: z.string().describe('Versão focada na aplicação prática em sala'),
-    pedagogy: z.string().describe('Versão focada nos objetivos pedagógicos'),
-});
 
 export interface RefineDescriptionParams {
     rawDescription: string;

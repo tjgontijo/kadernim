@@ -16,7 +16,7 @@ import {
   Clock,
   Layout
 } from 'lucide-react'
-import { useResource } from '@/contexts/resource-context'
+import { useResource } from '@/hooks/resources/use-resource-context'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
@@ -29,13 +29,13 @@ import {
 } from '@/components/ui/dropdown-menu'
 import {
   TemplateMainShell,
-} from '@/components/client/resources'
-import { ResourceDetailsForm } from '@/components/admin/resources/edit/resource-details-form'
-import { ResourceFilesManager } from '@/components/admin/resources/edit/resource-files-manager'
-import { ResourceAccessManager } from '@/components/admin/resources/edit/resource-access-manager'
-import { ResourceImagesManager } from '@/components/admin/resources/edit/resource-images-manager'
-import { ResourceVideosManager } from '@/components/admin/resources/edit/resource-videos-manager'
-import { DeleteConfirmDialog } from '@/components/admin/crud/delete-confirm-dialog'
+} from '@/components/dashboard/resources'
+import { ResourceDetailsForm } from '@/components/dashboard/resources/edit/resource-details-form'
+import { ResourceFilesManager } from '@/components/dashboard/resources/edit/resource-files-manager'
+import { ResourceAccessManager } from '@/components/dashboard/resources/edit/resource-access-manager'
+import { ResourceImagesManager } from '@/components/dashboard/resources/edit/resource-images-manager'
+import { ResourceVideosManager } from '@/components/dashboard/resources/edit/resource-videos-manager'
+import { DeleteConfirmDialog } from '@/components/dashboard/crud/delete-confirm-dialog'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils/index'
 

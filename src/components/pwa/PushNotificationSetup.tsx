@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Bell, Sparkles } from 'lucide-react';
-import type { PushSubscriptionCreate } from '@/lib/schemas/push-notification';
+import type { PushSubscriptionCreate } from '@/schemas/notifications/push-notification-schemas';
 import { useSession } from '@/lib/auth';
 
 /**

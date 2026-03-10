@@ -84,7 +84,6 @@ export async function sendEmailFromTemplate(
             };
         }
 
-        console.log(`[Email] Enviado com sucesso para ${recipientEmail} (Template: ${template.name})`);
         return { success: true };
 
     } catch (error) {

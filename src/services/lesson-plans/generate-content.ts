@@ -1,7 +1,7 @@
 import { generateObject } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { getSystemPrompt, buildUserPrompt } from '@/lib/ai/prompts/lesson-plan';
-import { LessonPlanContentSchema, type BnccSkillDetail, type LessonPlanContent } from '@/lib/schemas/lesson-plan';
+import { LessonPlanContentSchema, type BnccSkillDetail, type LessonPlanContent } from '@/schemas/lesson-plans/lesson-plan-schemas';
 import { logLlmUsage } from '@/services/llm/llm-usage-service';
 
 /**

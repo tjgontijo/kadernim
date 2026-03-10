@@ -15,9 +15,9 @@ import {
     Package,
     X
 } from 'lucide-react'
-import { CrudPageShell } from '@/components/admin/crud/crud-page-shell'
-import { CrudDataView } from '@/components/admin/crud/crud-data-view'
-import { DeleteConfirmDialog } from '@/components/admin/crud/delete-confirm-dialog'
+import { CrudPageShell } from '@/components/dashboard/crud/crud-page-shell'
+import { CrudDataView } from '@/components/dashboard/crud/crud-data-view'
+import { DeleteConfirmDialog } from '@/components/dashboard/crud/delete-confirm-dialog'
 import { PermissionGuard } from '@/components/auth/permission-guard'
 import { useDataTable } from '@/hooks/utils/use-data-table'
 import { Button } from '@/components/ui/button'
@@ -31,7 +31,7 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { UserEditDrawer, UserCreateDrawer } from '@/components/admin/users'
+import { UserEditDrawer, UserCreateDrawer } from '@/components/dashboard/users'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils/index'
 import { getRoleBadge as getRoleBadgeClass } from '@/lib/utils/badge-variants'

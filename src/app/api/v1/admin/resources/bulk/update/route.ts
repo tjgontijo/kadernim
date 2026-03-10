@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requirePermission } from '@/server/auth/middleware'
 import { checkRateLimit } from '@/server/utils/rate-limit'
-import { BulkUpdateResourcesSchema } from '@/lib/schemas/admin/resources'
+import { BulkUpdateResourcesSchema } from '@/schemas/resources/admin-resource-schemas'
 
 /**
  * POST /api/v1/admin/resources/bulk/update

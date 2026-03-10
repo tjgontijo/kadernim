@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import type { ViewType } from '@/components/admin/crud'
+import type { ViewType } from '@/components/dashboard/crud'
 
 interface FetchParams {
     page: number

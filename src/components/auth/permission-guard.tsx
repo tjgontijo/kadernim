@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react'
 import { useSession } from '@/lib/auth/auth-client'
-import { UserRoleType } from '@/types/user-role'
+import { UserRoleType } from '@/types/users/user-role'
 import { defineAbilitiesFor, PermissionAction, PermissionSubject } from '@/lib/auth/permissions'
 
 interface PermissionGuardProps {

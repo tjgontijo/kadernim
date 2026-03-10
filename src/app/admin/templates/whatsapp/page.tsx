@@ -27,10 +27,10 @@ import {
     type ColumnDef,
     type CardConfig,
     type ViewType,
-} from '@/components/admin/crud';
+} from '@/components/dashboard/crud';
 import { toast } from 'sonner';
-import { WhatsAppTemplateForm } from '@/components/admin/templates/whatsapp-template-form';
-import { PreviewDialog } from '@/components/admin/shared';
+import { WhatsAppTemplateForm } from '@/components/dashboard/templates/whatsapp-template-form';
+import { PreviewDialog } from '@/components/dashboard/shared';
 import { getStatusBadge } from '@/lib/utils/badge-variants';
 import { PermissionGuard } from '@/components/auth/permission-guard';
 

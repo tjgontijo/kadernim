@@ -1,14 +1,8 @@
 import { generateObject } from 'ai';
 import { openai } from '@ai-sdk/openai';
-import { z } from 'zod';
+import { RefinedThemesSchema } from '@/schemas/lesson-plans/lesson-plan-schemas';
 import { getRefineSystemPrompt, buildRefineUserPrompt, type RefineThemeParams } from '@/lib/ai/prompts/theme';
 import { logLlmUsage } from '@/services/llm/llm-usage-service';
-
-const RefinedThemesSchema = z.object({
-    short: z.string().describe('Versão curta e objetiva do tema (máximo 6 palavras)'),
-    medium: z.string().describe('Versão média do tema com contexto pedagógico (máximo 15 palavras)'),
-    long: z.string().describe('Versão descritiva e completa do tema alinhada com BNCC (máximo 25 palavras)'),
-});
 
 export interface RefineThemeServiceParams extends RefineThemeParams {
     userId?: string;

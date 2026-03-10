@@ -1,12 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
-import { emitEvent } from '@/lib/inngest';
-
-interface RouteParams {
-    params: {
-        id: string;
-    };
-}
+import { CampaignService } from '@/services/campaigns/campaign.service';
 
 /**
  * GET /api/v1/admin/campaigns/[id]
@@ -15,15 +8,7 @@ interface RouteParams {
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id } = await params;
-        const campaign = await prisma.pushCampaign.findUnique({
-            where: { id },
-            include: {
-                clicks: {
-                    take: 10,
-                    orderBy: { clickedAt: 'desc' },
-                },
-            },
-        });
+        const campaign = await CampaignService.getById(id);
 
         if (!campaign) {
             return NextResponse.json(
@@ -37,7 +22,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
             data: campaign,
         });
     } catch (error) {
-        console.error('[Campaign API] Error:', error);
         return NextResponse.json(
             { success: false, error: 'Erro ao buscar campanha' },
             { status: 500 }
@@ -54,34 +38,13 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         const { id } = await params;
         const body = await request.json();
 
-        const campaign = await prisma.pushCampaign.update({
-            where: { id },
-            data: {
-                title: body.title,
-                body: body.body,
-                url: body.url,
-                icon: body.icon,
-                imageUrl: body.imageUrl,
-                audience: body.audience,
-                scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : null,
-                status: body.scheduledAt ? 'SCHEDULED' : body.status || 'DRAFT',
-            },
-        });
-
-        // Emitir evento para o Inngest processar (ou reprogramar) o agendamento
-        if (campaign.scheduledAt && campaign.status === 'SCHEDULED') {
-            await emitEvent('campaign.scheduled', {
-                campaignId: campaign.id,
-                scheduledAt: campaign.scheduledAt.toISOString(),
-            });
-        }
+        const campaign = await CampaignService.update(id, body);
 
         return NextResponse.json({
             success: true,
             data: campaign,
         });
     } catch (error) {
-        console.error('[Campaign API] Error updating:', error);
         return NextResponse.json(
             { success: false, error: 'Erro ao atualizar campanha' },
             { status: 500 }
@@ -96,15 +59,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id } = await params;
-        await prisma.pushCampaign.delete({
-            where: { id },
-        });
+        await CampaignService.delete(id);
 
         return NextResponse.json({
             success: true,
         });
     } catch (error) {
-        console.error('[Campaign API] Error deleting:', error);
         return NextResponse.json(
             { success: false, error: 'Erro ao excluir campanha' },
             { status: 500 }

@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requirePermission } from '@/server/auth/middleware'
-import { UserRole } from '@/types/user-role'
+import { UserRole } from '@/types/users/user-role'
 import { checkRateLimit } from '@/server/utils/rate-limit'
 import {
     ListUsersFilterSchema,
     UserListResponseSchema,
-} from '@/lib/schemas/admin/users'
+} from '@/schemas/users/admin-user-schemas'
 import { listUsersService } from '@/services/users/list-users'
 
 /**

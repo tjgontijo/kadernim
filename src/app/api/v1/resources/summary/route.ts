@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { auth } from '@/server/auth/auth'
 import { isStaff } from '@/lib/auth/roles'
-import { ResourceFilterSchema } from '@/lib/schemas/resource'
+import { ResourceFilterSchema } from '@/schemas/resources/resource-schemas'
 import { checkRateLimit } from '@/server/utils/rate-limit'
 import { buildResourceCacheKey } from '@/server/utils/cache'
 

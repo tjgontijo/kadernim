@@ -51,7 +51,6 @@ export const auth = betterAuth({
           expiresIn: 15, // minutos
         });
 
-        console.log(`[email-otp] Evento auth.otp.requested emitido para ${email}`);
       },
     })
   ],
@@ -77,7 +76,6 @@ export const auth = betterAuth({
                 emailVerified: false,
               },
             })
-            console.log(`[auth] Novo lead criado: ${body.email}`)
           }
         }
       }

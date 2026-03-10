@@ -31,7 +31,7 @@ import {
 import { cn } from '@/lib/utils/index';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CrudPageShell, type ViewType } from '@/components/admin/crud';
+import { CrudPageShell, type ViewType } from '@/components/dashboard/crud';
 import { toast } from 'sonner';
 
 const ACTION_TYPES = [

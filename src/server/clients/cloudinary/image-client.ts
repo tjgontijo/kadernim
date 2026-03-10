@@ -124,7 +124,6 @@ export async function uploadImageFromUrl(
     altText?: string
   }
 ): Promise<ImageUploadResult> {
-  console.log(`Uploading image from URL: ${imageUrl}`)
 
   const uploadOptions: any = {
     folder: options.folder,

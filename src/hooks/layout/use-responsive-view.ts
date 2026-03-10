@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { ViewType } from '@/components/admin/crud/types'
+import { ViewType } from '@/components/dashboard/crud/types'
 import { useMobile } from './use-mobile'
 
 /**

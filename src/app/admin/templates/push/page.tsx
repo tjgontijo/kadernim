@@ -49,16 +49,16 @@ import {
   type ViewType,
   type ColumnDef,
   type CardConfig,
-} from '@/components/admin/crud';
+} from '@/components/dashboard/crud';
 import { toast } from 'sonner';
 import {
   getAllEvents,
   getEventVariables,
   getCategories,
 } from '@/lib/events/catalog';
-import { PushTemplateForm } from '@/components/admin/templates/push-template-form';
-import { PushTemplatePreview } from '@/components/admin/templates/push-template-preview';
-import { PreviewDialog } from '@/components/admin/shared';
+import { PushTemplateForm } from '@/components/dashboard/templates/push-template-form';
+import { PushTemplatePreview } from '@/components/dashboard/templates/push-template-preview';
+import { PreviewDialog } from '@/components/dashboard/shared';
 import { getStatusBadge } from '@/lib/utils/badge-variants';
 import { PermissionGuard } from '@/components/auth/permission-guard';
 

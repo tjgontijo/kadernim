@@ -1,7 +1,7 @@
 import { Prisma as PrismaNamespace } from '@/lib/db'
 import type { Prisma } from '@/lib/db'
 import { prisma } from '@/lib/db'
-import { ResourceFilter, ResourceSchema, type Resource } from '@/lib/schemas/resource'
+import { ResourceFilter, ResourceSchema, type Resource } from '@/schemas/resources/resource-schemas'
 
 import {
   buildHasAccessConditionSql,

@@ -4,7 +4,7 @@ import { requirePermission } from '@/server/auth/middleware';
 import {
     WhatsAppTemplateCreateSchema,
     WhatsAppTemplateListSchema,
-} from '@/lib/schemas/whatsapp-template';
+} from '@/schemas/templates/whatsapp-template-schemas';
 
 export const dynamic = 'force-dynamic';
 

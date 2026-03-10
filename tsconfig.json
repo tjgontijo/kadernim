@@ -26,6 +26,9 @@
       "@/*": [
         "./src/*"
       ],
+      "@db": [
+        "./prisma/generated/prisma"
+      ],
       "@db/*": [
         "./prisma/generated/prisma/*"
       ]

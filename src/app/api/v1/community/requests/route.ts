@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/server/auth/auth'
 import { prisma } from '@/lib/db'
 import { getCommunityRequests, createCommunityRequest } from '@/services/community/request-service'
-import { CommunityFilterSchema, CommunityRequestSchema } from '@/lib/schemas/community'
+import { CommunityFilterSchema, CommunityRequestSchema } from '@/schemas/community/community-schemas'
 
 /**
  * GET /api/v1/community/requests

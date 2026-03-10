@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
-import { emitEvent } from '@/lib/inngest';
+import { CampaignService } from '@/services/campaigns/campaign.service';
+import { CampaignSchema } from '@/schemas/campaigns/campaign-schemas';
 
 /**
  * GET /api/v1/admin/campaigns
@@ -11,32 +11,16 @@ export async function GET(request: NextRequest) {
         const { searchParams } = new URL(request.url);
         const page = parseInt(searchParams.get('page') || '1');
         const limit = parseInt(searchParams.get('limit') || '15');
-        const status = searchParams.get('status');
+        const status = searchParams.get('status') || undefined;
 
-        const where = status ? { status: status as any } : {};
-
-        const [campaigns, total] = await Promise.all([
-            prisma.pushCampaign.findMany({
-                where,
-                orderBy: { createdAt: 'desc' },
-                skip: (page - 1) * limit,
-                take: limit,
-            }),
-            prisma.pushCampaign.count({ where }),
-        ]);
+        const result = await CampaignService.list({ page, limit, status });
 
         return NextResponse.json({
             success: true,
-            data: campaigns,
-            pagination: {
-                page,
-                limit,
-                total,
-                totalPages: Math.ceil(total / limit),
-            },
+            data: result.campaigns,
+            pagination: result.pagination,
         });
     } catch (error) {
-        console.error('[Campaigns API] Error:', error);
         return NextResponse.json(
             { success: false, error: 'Erro ao buscar campanhas' },
             { status: 500 }
@@ -51,34 +35,22 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
+        const validated = CampaignSchema.safeParse(body);
 
-        const campaign = await prisma.pushCampaign.create({
-            data: {
-                title: body.title,
-                body: body.body,
-                url: body.url,
-                icon: body.icon,
-                imageUrl: body.imageUrl,
-                audience: body.audience || {},
-                scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : null,
-                status: body.scheduledAt ? 'SCHEDULED' : 'DRAFT',
-            },
-        });
-
-        // Emitir evento para o Inngest processar o agendamento
-        if (campaign.scheduledAt) {
-            await emitEvent('campaign.scheduled', {
-                campaignId: campaign.id,
-                scheduledAt: campaign.scheduledAt.toISOString(),
-            });
+        if (!validated.success) {
+            return NextResponse.json(
+                { success: false, error: 'Dados inválidos', details: validated.error.format() },
+                { status: 400 }
+            );
         }
+
+        const campaign = await CampaignService.create(validated.data);
 
         return NextResponse.json({
             success: true,
             data: campaign,
         });
     } catch (error) {
-        console.error('[Campaigns API] Error creating:', error);
         return NextResponse.json(
             { success: false, error: 'Erro ao criar campanha' },
             { status: 500 }

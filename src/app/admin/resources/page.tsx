@@ -14,18 +14,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useAdminResources } from '@/hooks/admin/use-admin-resources'
+import { useAdminResources } from '@/hooks/resources/use-admin-resources'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils/index'
-import { CrudPageShell } from '@/components/admin/crud/crud-page-shell'
-import { CrudDataView } from '@/components/admin/crud/crud-data-view'
-import { ViewType } from '@/components/admin/crud/types'
+import { CrudPageShell } from '@/components/dashboard/crud/crud-page-shell'
+import { CrudDataView } from '@/components/dashboard/crud/crud-data-view'
+import { ViewType } from '@/components/dashboard/crud/types'
 import {
   ResourcesCardView,
   ResourcesTableView,
-} from '@/components/client/resources'
-import { ResourceEditDrawer } from '@/components/client/resources/resource-drawer'
-import { useResourceMeta } from '@/hooks/entities/use-resources'
+} from '@/components/dashboard/resources'
+import { ResourceEditDrawer } from '@/components/dashboard/resources/resource-drawer'
+import { useResourceMeta } from '@/hooks/resources/use-resources'
 import { useMobile } from '@/hooks/layout/use-mobile'
 
 export default function AdminResourcesPage() {

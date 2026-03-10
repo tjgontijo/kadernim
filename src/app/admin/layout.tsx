@@ -2,14 +2,14 @@ import type { ReactNode } from 'react'
 import { redirect } from 'next/navigation'
 
 import { getServerSession } from '@/services/auth/session-service'
-import { UserRole } from '@/types/user-role'
+import { UserRole } from '@/types/users/user-role'
 import { isStaff } from '@/lib/auth/roles'
 
-import { AdminSidebar } from '@/components/admin/sidebar'
-import { GlobalHeader } from '@/components/admin/global-header'
+import { AdminSidebar } from '@/components/dashboard/sidebar'
+import { GlobalHeader } from '@/components/dashboard/global-header'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
-import { AdminContent } from '@/components/admin/admin-content'
-import { ResourceProvider } from '@/contexts/resource-context'
+import { AdminContent } from '@/components/dashboard/admin-content'
+import { ResourceProvider } from '@/hooks/resources/use-resource-context'
 
 export const dynamic = 'force-dynamic'
 

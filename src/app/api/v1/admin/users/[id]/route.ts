@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requirePermission } from '@/server/auth/middleware'
 import { checkRateLimit } from '@/server/utils/rate-limit'
-import { UpdateUserSchema } from '@/lib/schemas/admin/users'
+import { UpdateUserSchema } from '@/schemas/users/admin-user-schemas'
 import { updateUserService, deleteUserService } from '@/services/users/update-user'
 
 /**

@@ -1,4 +1,4 @@
-import { UserRole, type UserRoleType } from '@/types/user-role';
+import { UserRole, type UserRoleType } from '@/types/users/user-role';
 
 export type Permission =
   | 'read:profile'

@@ -63,7 +63,6 @@ export async function DELETE(
     const resolvedParams = await params
     const { id: resourceId, imageId } = resolvedParams
 
-    console.log(`[DELETE IMAGE] Resource: ${resourceId}, Image: ${imageId}`)
 
     // Verify image exists and belongs to resource
     const image = await prisma.resourceImage.findUnique({
@@ -88,7 +87,6 @@ export async function DELETE(
 
     // Delete from Cloudinary
     try {
-      console.log(`[DELETE IMAGE] Deleting from Cloudinary: ${image.cloudinaryPublicId}`)
       await deleteImage(image.cloudinaryPublicId)
     } catch (cloudinaryError) {
       // We log but continue, because if it's already gone from Cloudinary, 
@@ -97,7 +95,6 @@ export async function DELETE(
     }
 
     // Delete from database
-    console.log(`[DELETE IMAGE] Deleting from DB: ${imageId}`)
     await deleteResourceImage(resourceId, imageId)
 
     return NextResponse.json(

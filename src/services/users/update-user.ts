@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/db'
-import { UpdateUserInput } from '@/lib/schemas/admin/users'
+import { UpdateUserInput } from '@/schemas/users/admin-user-schemas'
 
 /**
  * Update a user's basic info, role, or banned status

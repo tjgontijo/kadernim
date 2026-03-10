@@ -1,8 +1,8 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { PlanViewer } from '@/components/client/lesson-plans/plan-viewer';
-import { useLessonPlan } from '@/hooks/entities/use-lesson-plans';
+import { PlanViewer } from '@/components/dashboard/lesson-plans/plan-viewer';
+import { useLessonPlan } from '@/hooks/lesson-plans/use-lesson-plans';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { AlertCircle, ArrowLeft } from 'lucide-react';

@@ -1,9 +1,9 @@
 import { prisma } from '@/lib/db'
-import { CommunityFilters, CommunityRequestInput } from '@/lib/schemas/community'
+import { CommunityFilters, CommunityRequestInput } from '@/schemas/community/community-schemas'
 import { getCurrentYearMonth } from '@/lib/utils/date'
 import { emitEvent } from '@/lib/events/emit'
 import { getCommunityConfig } from '@/services/config/system-config'
-import { type UserRoleType } from '@/types/user-role'
+import { type UserRoleType } from '@/types/users/user-role'
 
 /**
  * Lists community requests with pagination and filters.

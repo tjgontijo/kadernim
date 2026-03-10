@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { UnsubscribePushSchema } from '@/lib/schemas/push-notification';
+import { UnsubscribePushSchema } from '@/schemas/notifications/push-notification-schemas';
 
 /**
  * POST /api/v1/notifications/unsubscribe
@@ -43,7 +43,6 @@ export async function POST(req: NextRequest) {
       data: { active: false },
     });
 
-    console.log(`[Push] Subscription desativada: ${subscription.id}`);
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
