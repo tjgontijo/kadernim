@@ -42,7 +42,7 @@ export function CheckoutForm({ user }: { user: { name: string; email: string } }
         resolver: zodResolver(CheckoutRequestSchema),
         defaultValues: {
             cpfCnpj: '',
-            paymentMethod: PaymentMethod.PIX_AUTOMATIC,
+            paymentMethod: (process.env.NEXT_PUBLIC_BILLING_PIX_METHOD as any) || PaymentMethod.PIX_AUTOMATIC,
         },
     })
 
@@ -161,8 +161,8 @@ export function CheckoutForm({ user }: { user: { name: string; email: string } }
                     <div className="flex rounded-lg bg-gray-100/80 p-1 border border-gray-200/60">
                         <button
                             type="button"
-                            onClick={() => form.setValue('paymentMethod', PaymentMethod.PIX_AUTOMATIC)}
-                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-md text-sm font-semibold transition-all ${selectedMethod === PaymentMethod.PIX_AUTOMATIC ? 'bg-white text-emerald-700 shadow-sm border border-gray-200/50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`}
+                            onClick={() => form.setValue('paymentMethod', (process.env.NEXT_PUBLIC_BILLING_PIX_METHOD as any) || PaymentMethod.PIX_AUTOMATIC)}
+                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-md text-sm font-semibold transition-all ${selectedMethod === PaymentMethod.PIX_AUTOMATIC || selectedMethod === PaymentMethod.PIX ? 'bg-white text-emerald-700 shadow-sm border border-gray-200/50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'}`}
                         >
                             <QrCode className="h-4 w-4" />
                             Pix
