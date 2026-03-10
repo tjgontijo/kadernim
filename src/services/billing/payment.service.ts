@@ -49,7 +49,7 @@ export class PaymentService {
             cycle: 'MONTHLY',
             value: PLAN_VALUE,
             nextDueDate: new Date().toISOString().split('T')[0], // Hoje
-            description: `Assinatura ${PLAN_NAME} (PIX)`,
+            description: `Assinatura ${PLAN_NAME}`,
             split
         })
 
@@ -168,7 +168,7 @@ export class PaymentService {
             cycle: 'MONTHLY',
             value: PLAN_VALUE,
             nextDueDate: new Date().toISOString().split('T')[0], // Hoje
-            description: `Assinatura ${PLAN_NAME} (Cartão de Crédito)`,
+            description: `Assinatura ${PLAN_NAME}`,
             split,
             creditCard: {
                 ...creditCard,

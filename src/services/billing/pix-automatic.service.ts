@@ -51,7 +51,7 @@ export class PixAutomaticService {
             contractId,
             startDate: nextMonth.toISOString().split('T')[0], // First recurrent charge is next month
             value: PLAN_VALUE,
-            description: `Assinatura ${PLAN_NAME} (Pix Automático)`,
+            description: `Assinatura ${PLAN_NAME}`,
             immediateQrCode: {
                 expirationSeconds: 3600, // 1 hour to pay the first invoice
                 originalValue: PLAN_VALUE,
