@@ -41,7 +41,7 @@ export class PixAutomaticService {
         nextMonth.setMonth(nextMonth.getMonth() + 1)
 
         // We will use our internal ID string as contractId
-        const contractId = `KADERNIM-SUB-${userId.substring(0, 10).toUpperCase()}`
+        const contractId = `KADERNIM-SUB-${userId.substring(0, 8).toUpperCase()}-${Date.now().toString().slice(-6)}`
 
         // 2. Create the Authorization
         // Asaas will create the first tracking payment within this structure using immediateQrCode
