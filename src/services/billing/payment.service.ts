@@ -6,7 +6,7 @@ import { billingLog } from './logger'
 import { BillingAuditService } from './audit.service'
 import { AuditActor, PaymentMethod, InvoiceStatus } from '@db'
 
-const PLAN_VALUE = 49.90 // Assumed default plan value
+const PLAN_VALUE = 19.00 // Assumed default plan value
 const PLAN_NAME = 'Kadernim Pro'
 
 export class PaymentService {
