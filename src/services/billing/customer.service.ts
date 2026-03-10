@@ -116,22 +116,44 @@ export class CustomerService {
     }
 
     /**
-     * Syncs local details with Asaas
+     * Syncs local details with Asaas.
+     * If the customer is not found in Asaas (404), it clears the local asaasCustomerId
+     * and recreates the customer to ensure the flow continues.
      */
     static async updateCustomer(userId: string, data: Partial<AsaasCustomer>) {
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            select: { asaasCustomerId: true },
+            select: { asaasCustomerId: true, name: true, email: true },
         })
 
         if (!user?.asaasCustomerId) {
             throw new Error(`User ${userId} does not have an Asaas Customer ID`)
         }
 
-        const updated = await AsaasClient.post<AsaasCustomer>(`/customers/${user.asaasCustomerId}`, data)
+        try {
+            const updated = await AsaasClient.post<AsaasCustomer>(`/customers/${user.asaasCustomerId}`, data)
+            billingLog('info', 'Asaas Customer Updated', { userId, asaasId: user.asaasCustomerId })
+            return updated
+        } catch (error: any) {
+            // If Asaas returns 404, it means the customer was deleted manually there
+            if (error.message.includes('[404]')) {
+                billingLog('warn', 'Asaas Customer not found (404), clearing local ID and recreating', { userId, oldAsaasId: user.asaasCustomerId })
 
-        billingLog('info', 'Asaas Customer Updated', { userId, asaasId: user.asaasCustomerId })
+                // Clear the invalid ID
+                await prisma.user.update({
+                    where: { id: userId },
+                    data: { asaasCustomerId: null }
+                })
 
-        return updated
+                // Use existing flow to recreate
+                return await this.createOrGetCustomer({
+                    email: user.email,
+                    name: user.name,
+                    cpfCnpj: data.cpfCnpj,
+                    phone: data.phone || data.mobilePhone
+                })
+            }
+            throw error
+        }
     }
 }
