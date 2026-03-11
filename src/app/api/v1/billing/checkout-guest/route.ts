@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { CheckoutRequestSchema } from '@/schemas/billing/payment-schemas'
-import { auth } from '@/server/auth/auth'
+import { GuestCheckoutRequestSchema } from '@/schemas/billing/payment-schemas'
+import { CheckoutCustomerService } from '@/services/billing/checkout-customer.service'
 import { CheckoutService } from '@/services/billing/checkout.service'
 import { billingLog } from '@/services/billing/logger'
 
@@ -12,26 +12,24 @@ function getRequestIp(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: request.headers })
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const parsed = CheckoutRequestSchema.safeParse(await request.json())
+    const parsed = GuestCheckoutRequestSchema.safeParse(await request.json())
     if (!parsed.success) {
       return NextResponse.json({ error: 'Dados inválidos', details: parsed.error.format() }, { status: 400 })
     }
 
-    const result = await CheckoutService.createCheckout(session.user.id, parsed.data, {
+    const user = await CheckoutCustomerService.resolveGuestCustomer(parsed.data)
+    const result = await CheckoutService.createCheckout(user.id, parsed.data, {
       remoteIp: getRequestIp(request),
     })
 
     return NextResponse.json(result)
   } catch (error: any) {
-    billingLog('error', 'Checkout error', { error: error.message, stack: error.stack })
+    const status = error.message === 'Nome obrigatório para novo cadastro' ? 400 : 500
+
+    billingLog('error', 'Guest checkout error', { error: error.message })
     return NextResponse.json({
-      error: 'Erro interno ao processar pagamento. Tente novamente mais tarde.',
+      error: status === 400 ? error.message : 'Erro ao processar pagamento. Tente novamente.',
       details: error.message,
-    }, { status: 500 })
+    }, { status })
   }
 }

@@ -14,13 +14,14 @@ export class AsaasClient {
     ): Promise<T> {
         const url = `${ASAAS_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`
         const start = Date.now()
+        const isFormDataBody = typeof FormData !== 'undefined' && options.body instanceof FormData
 
         const response = await fetch(url, {
             ...options,
             headers: {
                 'access_token': ASAAS_API_KEY || '',
-                'Content-Type': 'application/json',
-                ...options.headers,
+                ...(isFormDataBody ? {} : { 'Content-Type': 'application/json' }),
+                ...(options.headers || {}),
             },
         })
 
@@ -72,6 +73,14 @@ export class AsaasClient {
             ...options,
             method: 'POST',
             body: JSON.stringify(body),
+        })
+    }
+
+    static async postForm<T>(endpoint: string, body: FormData, options: RequestInit = {}): Promise<T> {
+        return this.request<T>(endpoint, {
+            ...options,
+            method: 'POST',
+            body,
         })
     }
 

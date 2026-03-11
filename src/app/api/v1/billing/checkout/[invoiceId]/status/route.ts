@@ -1,34 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth/auth'
 import { PaymentService } from '@/services/billing/payment.service'
+import { CheckoutStatusTokenService } from '@/services/billing/checkout-status-token.service'
+import { auth } from '@/server/auth/auth'
 
 export async function GET(
-    request: NextRequest,
-    { params }: { params: Promise<{ invoiceId: string }> }
+  request: NextRequest,
+  { params }: { params: Promise<{ invoiceId: string }> },
 ) {
-    try {
-        const session = await auth.api.getSession({ headers: request.headers })
-        if (!session || !session.user) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-        }
-
-        const { invoiceId } = await params
-
-        if (!invoiceId) {
-            return NextResponse.json({ error: 'Invoice ID is required' }, { status: 400 })
-        }
-
-        const invoice = await PaymentService.getInvoiceStatus(invoiceId, session.user.id)
-
-        return NextResponse.json({
-            id: invoice.asaasId,
-            status: invoice.status,
-        }, { status: 200 })
-
-    } catch (error: any) {
-        if (error.message === 'Invoice not found') {
-            return NextResponse.json({ error: 'Invoice not found' }, { status: 404 })
-        }
-        return NextResponse.json({ error: 'Internal Error' }, { status: 500 })
+  try {
+    const { invoiceId } = await params
+    if (!invoiceId) {
+      return NextResponse.json({ error: 'Invoice ID is required' }, { status: 400 })
     }
+
+    const session = await auth.api.getSession({ headers: request.headers })
+    const invoice = session?.user
+      ? await PaymentService.getInvoiceStatusForUser(invoiceId, session.user.id)
+      : await getGuestInvoiceStatus(request, invoiceId)
+
+    return NextResponse.json({ id: invoice.asaasId, status: invoice.status })
+  } catch (error: any) {
+    if (error.message === 'Invoice not found') {
+      return NextResponse.json({ error: 'Invoice not found' }, { status: 404 })
+    }
+
+    if (error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    return NextResponse.json({ error: 'Internal Error' }, { status: 500 })
+  }
+}
+
+async function getGuestInvoiceStatus(request: NextRequest, invoiceId: string) {
+  const token = request.nextUrl.searchParams.get('token')
+  if (!token || !CheckoutStatusTokenService.verifyInvoiceToken(token, invoiceId)) {
+    throw new Error('Unauthorized')
+  }
+
+  return PaymentService.getInvoiceStatusById(invoiceId)
 }

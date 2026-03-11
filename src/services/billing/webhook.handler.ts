@@ -1,10 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { type CheckoutPlanId } from '@/lib/billing/checkout-offer'
 import { BillingAuditService } from './audit.service'
 import { billingLog } from './logger'
-import { AuditActor } from '@db'
+import { AuditActor, InvoiceStatus } from '@db'
+import { PaymentService } from './payment.service'
 
 const ASAAS_WEBHOOK_TOKEN = process.env.ASAAS_WEBHOOK_TOKEN
+
+function mapInvoiceStatus(status: string): InvoiceStatus {
+    switch (status) {
+        case 'RECEIVED':
+        case 'CONFIRMED':
+            return InvoiceStatus.RECEIVED
+        case 'OVERDUE':
+            return InvoiceStatus.OVERDUE
+        case 'REFUNDED':
+            return InvoiceStatus.REFUNDED
+        default:
+            return InvoiceStatus.PENDING
+    }
+}
 
 /**
  * Main service to process incoming Asaas Webhooks.
@@ -97,23 +113,16 @@ export class WebhookHandler {
         const payment = payload.payment
         billingLog('info', 'Handling Payment Received', { paymentId: payment.id })
 
-        // 1. Atualizar Invoice
-        const invoice = await prisma.invoice.update({
-            where: { asaasId: payment.id },
-            data: {
-                status: 'RECEIVED',
-                paidAt: new Date(payment.paymentDate || payment.confirmedDate),
-                netValue: payment.netValue
-            }
-        })
+        const planId = PaymentService.inferPlanIdFromPayment(payment.description, payment.value)
+        const invoice = await this.upsertInvoiceFromWebhook(payment, planId)
 
-        // 2. Atualizar Assinatura (se for assinante de um plano principal)
         if (invoice.subscriptionId) {
-            await prisma.subscription.update({
-                where: { id: invoice.subscriptionId },
-                data: { isActive: true, status: 'ACTIVE' }
-            })
-            // Opcional futuro: emitEvent('subscription.activated', { userId: invoice.userId })
+            await PaymentService.activateSubscriptionForPayment(
+                invoice.subscriptionId,
+                payment.description,
+                payment.value,
+                invoice.paidAt ?? new Date()
+            )
         }
 
         await BillingAuditService.log({
@@ -124,6 +133,80 @@ export class WebhookHandler {
             asaasEventId: payload.id,
             asaasPaymentId: payment.id,
             newState: payment,
+        })
+    }
+
+    private static async upsertInvoiceFromWebhook(payment: any, planId: CheckoutPlanId) {
+        const paidAt = new Date(payment.paymentDate || payment.confirmedDate || Date.now())
+        const status = mapInvoiceStatus(payment.status)
+
+        const existingInvoice = await prisma.invoice.findUnique({
+            where: { asaasId: payment.id },
+            select: {
+                id: true,
+                userId: true,
+                subscriptionId: true,
+            }
+        })
+
+        if (existingInvoice) {
+            return prisma.invoice.update({
+                where: { asaasId: payment.id },
+                data: {
+                    status,
+                    paidAt,
+                    netValue: payment.netValue,
+                    invoiceUrl: payment.invoiceUrl ?? undefined,
+                }
+            })
+        }
+
+        const user = await prisma.user.findFirst({
+            where: {
+                OR: [
+                    payment.customer ? { asaasCustomerId: payment.customer } : undefined,
+                    payment.externalReference ? { id: payment.externalReference } : undefined,
+                ].filter(Boolean) as Array<{ asaasCustomerId?: string; id?: string }>
+            },
+            select: {
+                id: true,
+                subscription: {
+                    select: {
+                        id: true,
+                    }
+                }
+            }
+        })
+
+        if (!user) {
+            throw new Error(`Invoice not found for payment ${payment.id} and user could not be resolved`)
+        }
+
+        const subscription = user.subscription ?? await prisma.subscription.create({
+            data: {
+                userId: user.id,
+                paymentMethod: payment.billingType === 'CREDIT_CARD' ? 'CREDIT_CARD' : 'PIX',
+                status: 'INACTIVE',
+                isActive: false,
+            },
+            select: { id: true }
+        })
+
+        return prisma.invoice.create({
+            data: {
+                userId: user.id,
+                subscriptionId: subscription.id,
+                asaasId: payment.id,
+                status,
+                paymentMethod: payment.billingType === 'CREDIT_CARD' ? 'CREDIT_CARD' : 'PIX',
+                value: payment.value,
+                netValue: payment.netValue,
+                description: payment.description ?? `Assinatura Kadernim Pro [plan:${planId}]`,
+                billingType: payment.billingType,
+                dueDate: new Date(payment.dueDate),
+                paidAt,
+                invoiceUrl: payment.invoiceUrl,
+            }
         })
     }
 
@@ -147,7 +230,9 @@ export class WebhookHandler {
             },
             data: {
                 status: 'ACTIVE',
-                isActive: true
+                isActive: true,
+                purchaseDate: new Date(),
+                expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
             }
         })
 

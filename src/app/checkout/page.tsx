@@ -1,69 +1,48 @@
 import { Metadata } from 'next'
-import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { auth } from '@/server/auth/auth'
-import { CheckoutForm } from '@/components/dashboard/billing/checkout-form'
-import { Check, ShieldCheck, Lock, CheckCircle2, Star } from 'lucide-react'
-import Image from 'next/image'
+import { GuestCheckoutForm } from '@/components/dashboard/billing/checkout-form'
+import { BookOpen, Lock } from 'lucide-react'
 
 export const metadata: Metadata = {
-    title: 'Checkout | Kadernim Pro',
-    description: 'Adquira agora o Kadernim Pro.',
+  title: 'Checkout | Kadernim Pro',
+  description: 'Adquira agora o Kadernim Pro.',
 }
 
 export default async function CheckoutPage() {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    })
+  let prefilledUser: { id: string; name: string; email: string } | null = null
 
-    if (!session || !session.user) {
-        // Redireciona para login e depois volta para o checkout
-        return redirect('/login?callbackUrl=/checkout')
-    }
-
-    // Prepara os dados para o formulário
-    const user = {
-        name: session.user.name || 'Usuário',
+  try {
+    const session = await auth.api.getSession({ headers: await headers() })
+    if (session?.user) {
+      prefilledUser = {
+        id: session.user.id,
+        name: session.user.name || '',
         email: session.user.email,
+      }
     }
+  } catch {
+    // guest checkout
+  }
 
-    return (
-        <div className="min-h-screen bg-[#F7F7F9] flex flex-col items-center py-10 px-4 sm:py-20 font-sans">
-            <div className="w-full max-w-md">
-
-                {/* Header */}
-                <div className="mb-8 text-center">
-                    <h1 className="text-2xl font-semibold tracking-tight text-gray-900 mb-2">
-                        Kadernim Pro
-                    </h1>
-                    <p className="text-sm text-gray-500 mb-6">
-                        Acesso total à plataforma e recursos ilimitados.
-                    </p>
-
-                    <div className="flex flex-col items-center justify-center gap-1.5 text-xs text-gray-600">
-                        <div className="flex items-center gap-2">
-                            <Check className="h-3 w-3 text-emerald-500 flex-shrink-0" />
-                            <span>Gerador IA de planos de aula</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Check className="h-3 w-3 text-emerald-500 flex-shrink-0" />
-                            <span>Habilidades da BNCC e Automações</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Checkout Container */}
-                <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100">
-                    <CheckoutForm user={user} />
-                </div>
-
-                {/* Footer Security */}
-                <div className="mt-8 flex items-center justify-center gap-2 text-gray-400">
-                    <Lock className="w-3 h-3" />
-                    <span className="text-[11px] font-medium uppercase tracking-widest">Pagamento Seguro</span>
-                </div>
-
-            </div>
+  return (
+    <div className="min-h-screen bg-gray-50 font-sans">
+      <header className="bg-white border-b border-gray-200 h-14 flex items-center px-4 sm:px-8">
+        <div className="flex items-center gap-2">
+          <div className="h-7 w-7 bg-blue-600 rounded-lg flex items-center justify-center">
+            <BookOpen className="h-4 w-4 text-white" aria-hidden="true" />
+          </div>
+          <span className="font-bold text-gray-900 text-base">Kadernim</span>
         </div>
-    )
+        <div className="ml-auto flex items-center gap-1.5 text-gray-400">
+          <Lock className="h-3.5 w-3.5" aria-hidden="true" />
+          <span className="text-xs font-medium">Compra segura</span>
+        </div>
+      </header>
+
+      <main className="py-6 sm:py-8 px-4 sm:px-6 lg:px-8">
+        <GuestCheckoutForm prefilledUser={prefilledUser} />
+      </main>
+    </div>
+  )
 }
