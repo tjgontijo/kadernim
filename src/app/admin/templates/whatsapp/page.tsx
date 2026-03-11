@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
     MessageCircle,
     Pencil,
@@ -48,11 +49,9 @@ interface WhatsAppTemplate {
 
 
 export default function WhatsAppTemplatesPage() {
+    const queryClient = useQueryClient();
     const [view, setView] = useState<ViewType>('cards');
-    const [templates, setTemplates] = useState<WhatsAppTemplate[]>([]);
-    const [loading, setLoading] = useState(true);
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
     const [editingTemplate, setEditingTemplate] = useState<WhatsAppTemplate | null>(
         null
     );
@@ -79,22 +78,96 @@ export default function WhatsAppTemplatesPage() {
         description: '',
     });
 
-    useEffect(() => {
-        fetchTemplates();
-    }, []);
-
-    const fetchTemplates = async () => {
-        setLoading(true);
-        try {
+    const { data: templates = [], isLoading: loading } = useQuery<WhatsAppTemplate[]>({
+        queryKey: ['admin-whatsapp-templates'],
+        queryFn: async () => {
             const response = await fetch('/api/v1/admin/whatsapp-templates');
             const json = await response.json();
-            if (json.success) setTemplates(json.data);
-        } catch (error) {
-            toast.error('Erro ao buscar templates de WhatsApp');
-        } finally {
-            setLoading(false);
-        }
-    };
+            if (!response.ok || !json.success) {
+                throw new Error(json.error || 'Erro ao buscar templates de WhatsApp');
+            }
+            return json.data;
+        },
+    });
+
+    const saveMutation = useMutation({
+        mutationFn: async (payload: Record<string, unknown>) => {
+            const url = editingTemplate
+                ? `/api/v1/admin/whatsapp-templates/${editingTemplate.id}`
+                : '/api/v1/admin/whatsapp-templates';
+
+            const response = await fetch(url, {
+                method: editingTemplate ? 'PATCH' : 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+
+            const json = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(json.error || 'Erro ao salvar');
+            }
+
+            return json;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admin-whatsapp-templates'] });
+            setDrawerOpen(false);
+            resetForm();
+            toast.success(editingTemplate ? 'Template atualizado' : 'Template criado');
+        },
+        onError: (error: Error) => {
+            toast.error(error.message || 'Erro inesperado');
+        },
+    });
+
+    const toggleMutation = useMutation({
+        mutationFn: async (template: WhatsAppTemplate) => {
+            const response = await fetch(`/api/v1/admin/whatsapp-templates/${template.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isActive: !template.isActive }),
+            });
+
+            const json = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(json.error || 'Erro ao alterar status');
+            }
+        },
+        onSuccess: (_data, template) => {
+            queryClient.setQueryData<WhatsAppTemplate[]>(['admin-whatsapp-templates'], (current = []) =>
+                current.map((item) =>
+                    item.id === template.id ? { ...item, isActive: !template.isActive } : item
+                )
+            );
+            toast.success(`Template ${template.isActive ? 'desativado' : 'ativado'}`);
+        },
+        onError: () => {
+            toast.error('Erro ao alterar status');
+        },
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: async (id: string) => {
+            const response = await fetch(`/api/v1/admin/whatsapp-templates/${id}`, {
+                method: 'DELETE',
+            });
+
+            const json = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(json.error || 'Erro ao excluir');
+            }
+        },
+        onSuccess: (_data, id) => {
+            queryClient.setQueryData<WhatsAppTemplate[]>(['admin-whatsapp-templates'], (current = []) =>
+                current.filter((item) => item.id !== id)
+            );
+            toast.success('Template excluído');
+            setTemplateToDelete(null);
+        },
+        onError: () => {
+            toast.error('Erro ao excluir');
+        },
+    });
 
     const resetForm = () => {
         setFormData({
@@ -125,85 +198,22 @@ export default function WhatsAppTemplatesPage() {
             return;
         }
 
-        setIsSaving(true);
-        try {
-            const payload = {
-                name: formData.name,
-                slug: formData.slug,
-                body: formData.body,
-                eventType: formData.eventType,
-                description: formData.description || null,
-            };
-
-            const url = editingTemplate
-                ? `/api/v1/admin/whatsapp-templates/${editingTemplate.id}`
-                : '/api/v1/admin/whatsapp-templates';
-
-            const response = await fetch(url, {
-                method: editingTemplate ? 'PATCH' : 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
-
-            if (response.ok) {
-                setDrawerOpen(false);
-                resetForm();
-                fetchTemplates();
-                toast.success(
-                    editingTemplate ? 'Template atualizado' : 'Template criado'
-                );
-            } else {
-                const err = await response.json();
-                toast.error(err.error || 'Erro ao salvar');
-            }
-        } catch (error) {
-            toast.error('Erro inesperado');
-        } finally {
-            setIsSaving(false);
-        }
+        saveMutation.mutate({
+            name: formData.name,
+            slug: formData.slug,
+            body: formData.body,
+            eventType: formData.eventType,
+            description: formData.description || null,
+        });
     };
 
     const handleToggle = async (template: WhatsAppTemplate) => {
-        try {
-            const res = await fetch(`/api/v1/admin/whatsapp-templates/${template.id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ isActive: !template.isActive }),
-            });
-
-            if (res.ok) {
-                setTemplates(
-                    templates.map((t) =>
-                        t.id === template.id ? { ...t, isActive: !template.isActive } : t
-                    )
-                );
-                toast.success(`Template ${template.isActive ? 'desativado' : 'ativado'}`);
-            }
-        } catch (error) {
-            toast.error('Erro ao alterar status');
-        }
+        toggleMutation.mutate(template);
     };
 
     const handleDelete = async () => {
         if (!templateToDelete) return;
-        setIsDeleting(true);
-        try {
-            const res = await fetch(
-                `/api/v1/admin/whatsapp-templates/${templateToDelete}`,
-                {
-                    method: 'DELETE',
-                }
-            );
-            if (res.ok) {
-                setTemplates(templates.filter((t) => t.id !== templateToDelete));
-                toast.success('Template excluído');
-                setTemplateToDelete(null);
-            }
-        } catch (error) {
-            toast.error('Erro ao excluir');
-        } finally {
-            setIsDeleting(false);
-        }
+        deleteMutation.mutate(templateToDelete);
     };
 
     // Columns
@@ -303,11 +313,15 @@ export default function WhatsAppTemplatesPage() {
         ),
     };
 
-    const filteredTemplates = templates.filter(
-        (t) =>
-            t.name.toLowerCase().includes(searchInput.toLowerCase()) ||
-            t.body.toLowerCase().includes(searchInput.toLowerCase()) ||
-            t.slug.toLowerCase().includes(searchInput.toLowerCase())
+    const filteredTemplates = useMemo(
+        () =>
+            templates.filter(
+                (t) =>
+                    t.name.toLowerCase().includes(searchInput.toLowerCase()) ||
+                    t.body.toLowerCase().includes(searchInput.toLowerCase()) ||
+                    t.slug.toLowerCase().includes(searchInput.toLowerCase())
+            ),
+        [searchInput, templates]
     );
 
     return (
@@ -432,7 +446,7 @@ export default function WhatsAppTemplatesPage() {
                 title={editingTemplate ? 'Editar Template WhatsApp' : 'Novo Template WhatsApp'}
                 icon={MessageCircle}
                 onSave={handleSave}
-                isSaving={isSaving}
+                isSaving={saveMutation.isPending}
                 maxWidth="max-w-3xl"
             >
                 <WhatsAppTemplateForm
@@ -461,16 +475,16 @@ export default function WhatsAppTemplatesPage() {
                         <Button
                             variant="outline"
                             onClick={() => setTemplateToDelete(null)}
-                            disabled={isDeleting}
+                            disabled={deleteMutation.isPending}
                         >
                             Cancelar
                         </Button>
                         <Button
                             variant="destructive"
                             onClick={handleDelete}
-                            disabled={isDeleting}
+                            disabled={deleteMutation.isPending}
                         >
-                            {isDeleting ? 'Excluindo...' : 'Excluir'}
+                            {deleteMutation.isPending ? 'Excluindo...' : 'Excluir'}
                         </Button>
                     </div>
                 </DialogContent>

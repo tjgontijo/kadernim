@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useMutation } from '@tanstack/react-query'
 import { BookOpen, Hash, Edit3, Trash2 } from 'lucide-react'
 import { CrudPageShell } from '@/components/dashboard/crud/crud-page-shell'
 import { CrudDataView } from '@/components/dashboard/crud/crud-data-view'
@@ -17,17 +18,14 @@ import { Subject } from '@/types/taxonomy/subject'
 
 export function SubjectsPageClient() {
     const [isDeletingId, setIsDeletingId] = useState<string | null>(null)
-    const [isDeletingLoading, setIsDeletingLoading] = useState(false)
-    const [isSaving, setIsSaving] = useState(false)
 
     const crud = useDataTable<Subject>({
         queryKey: ['admin-subjects'],
         endpoint: '/api/v1/admin/subjects'
     })
 
-    const handleSave = async (data: SubjectInput) => {
-        setIsSaving(true)
-        try {
+    const saveMutation = useMutation({
+        mutationFn: async (data: SubjectInput) => {
             const method = crud.itemToEdit ? 'PUT' : 'POST'
             const url = crud.itemToEdit
                 ? `/api/v1/admin/subjects/${crud.itemToEdit.id}`
@@ -40,41 +38,48 @@ export function SubjectsPageClient() {
             })
 
             if (!response.ok) {
-                const err = await response.json()
+                const err = await response.json().catch(() => ({}))
                 throw new Error(err.error || 'Erro ao salvar')
             }
-
+        },
+        onSuccess: () => {
             toast.success(crud.itemToEdit ? 'Matéria atualizada' : 'Matéria criada')
             crud.setIsEditDrawerOpen(false)
             crud.refetch()
-        } catch (error: any) {
+        },
+        onError: (error: Error) => {
             toast.error(error.message)
-        } finally {
-            setIsSaving(false)
-        }
-    }
+        },
+    })
 
-    const confirmDelete = async () => {
-        if (!isDeletingId) return
-        setIsDeletingLoading(true)
-        try {
-            const response = await fetch(`/api/v1/admin/subjects/${isDeletingId}`, {
+    const deleteMutation = useMutation({
+        mutationFn: async (id: string) => {
+            const response = await fetch(`/api/v1/admin/subjects/${id}`, {
                 method: 'DELETE'
             })
 
             if (!response.ok) {
-                const err = await response.json()
+                const err = await response.json().catch(() => ({}))
                 throw new Error(err.error || 'Erro ao excluir')
             }
-
+        },
+        onSuccess: () => {
             toast.success('Matéria excluída com sucesso')
             crud.refetch()
-        } catch (error: any) {
-            toast.error(error.message)
-        } finally {
-            setIsDeletingLoading(false)
             setIsDeletingId(null)
-        }
+        },
+        onError: (error: Error) => {
+            toast.error(error.message)
+        },
+    })
+
+    const handleSave = async (data: SubjectInput) => {
+        saveMutation.mutate(data)
+    }
+
+    const confirmDelete = async () => {
+        if (!isDeletingId) return
+        deleteMutation.mutate(isDeletingId)
     }
 
     return (
@@ -255,13 +260,13 @@ export function SubjectsPageClient() {
                 title={crud.itemToEdit ? 'Editar Matéria' : 'Nova Matéria'}
                 subtitle="Defina o nome e slug da disciplina"
                 icon={BookOpen}
-                isSaving={isSaving}
+                isSaving={saveMutation.isPending}
                 onSave={() => document.getElementById('crud-form')?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }))}
             >
                 <SubjectForm
                     initialData={crud.itemToEdit}
                     onSubmit={handleSave}
-                    isLoading={isSaving}
+                    isLoading={saveMutation.isPending}
                 />
             </CrudEditDrawer>
 
@@ -269,7 +274,7 @@ export function SubjectsPageClient() {
                 open={!!isDeletingId}
                 onOpenChange={(open) => !open && setIsDeletingId(null)}
                 onConfirm={confirmDelete}
-                isLoading={isDeletingLoading}
+                isLoading={deleteMutation.isPending}
                 title="Excluir Matéria?"
                 description="Esta ação não pode ser desfeita. A matéria apenas poderá ser excluída se não houver nenhum recurso vinculado a ela."
                 trigger={null}

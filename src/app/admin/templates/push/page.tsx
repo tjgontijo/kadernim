@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Bell,
   Pencil,
@@ -81,11 +82,9 @@ interface PushTemplate {
 }
 
 export default function PushTemplatesPage() {
+  const queryClient = useQueryClient();
   const [view, setView] = useState<ViewType>('cards');
-  const [templates, setTemplates] = useState<PushTemplate[]>([]);
-  const [loading, setLoading] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<PushTemplate | null>(
     null
   );
@@ -118,22 +117,96 @@ export default function PushTemplatesPage() {
     description: '',
   });
 
-  useEffect(() => {
-    fetchTemplates();
-  }, []);
-
-  const fetchTemplates = async () => {
-    setLoading(true);
-    try {
+  const { data: templates = [], isLoading: loading } = useQuery<PushTemplate[]>({
+    queryKey: ['admin-push-templates'],
+    queryFn: async () => {
       const response = await fetch('/api/v1/admin/push-templates');
       const json = await response.json();
-      if (json.success) setTemplates(json.data);
-    } catch (error) {
-      toast.error('Erro ao buscar templates de push');
-    } finally {
-      setLoading(false);
-    }
-  };
+      if (!response.ok || !json.success) {
+        throw new Error(json.error || 'Erro ao buscar templates de push');
+      }
+      return json.data;
+    },
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: async (payload: Record<string, unknown>) => {
+      const url = editingTemplate
+        ? `/api/v1/admin/push-templates/${editingTemplate.id}`
+        : '/api/v1/admin/push-templates';
+
+      const response = await fetch(url, {
+        method: editingTemplate ? 'PATCH' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const json = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(json.error || 'Erro ao salvar');
+      }
+
+      return json;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-push-templates'] });
+      setDrawerOpen(false);
+      resetForm();
+      toast.success(editingTemplate ? 'Template atualizado' : 'Template criado');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Erro inesperado');
+    },
+  });
+
+  const toggleMutation = useMutation({
+    mutationFn: async (template: PushTemplate) => {
+      const response = await fetch(`/api/v1/admin/push-templates/${template.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: !template.isActive }),
+      });
+
+      const json = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(json.error || 'Erro ao alterar status');
+      }
+    },
+    onSuccess: (_data, template) => {
+      queryClient.setQueryData<PushTemplate[]>(['admin-push-templates'], (current = []) =>
+        current.map((item) =>
+          item.id === template.id ? { ...item, isActive: !template.isActive } : item
+        )
+      );
+      toast.success(`Template ${template.isActive ? 'desativado' : 'ativado'}`);
+    },
+    onError: () => {
+      toast.error('Erro ao alterar status');
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch(`/api/v1/admin/push-templates/${id}`, {
+        method: 'DELETE',
+      });
+
+      const json = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(json.error || 'Erro ao excluir');
+      }
+    },
+    onSuccess: (_data, id) => {
+      queryClient.setQueryData<PushTemplate[]>(['admin-push-templates'], (current = []) =>
+        current.filter((item) => item.id !== id)
+      );
+      toast.success('Template excluído');
+      setTemplateToDelete(null);
+    },
+    onError: () => {
+      toast.error('Erro ao excluir');
+    },
+  });
 
   const resetForm = () => {
     setFormData({
@@ -186,91 +259,28 @@ export default function PushTemplatesPage() {
       return;
     }
 
-    setIsSaving(true);
-    try {
-      const payload = {
-        name: formData.name,
-        slug: formData.slug,
-        title: formData.title,
-        body: formData.body,
-        icon: formData.icon || null,
-        badge: formData.badge || null,
-        image: formData.image || null,
-        url: formData.url || null,
-        tag: formData.tag || null,
-        eventType: formData.eventType,
-        description: formData.description || null,
-      };
-
-      const url = editingTemplate
-        ? `/api/v1/admin/push-templates/${editingTemplate.id}`
-        : '/api/v1/admin/push-templates';
-
-      const response = await fetch(url, {
-        method: editingTemplate ? 'PATCH' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (response.ok) {
-        setDrawerOpen(false);
-        resetForm();
-        fetchTemplates();
-        toast.success(
-          editingTemplate ? 'Template atualizado' : 'Template criado'
-        );
-      } else {
-        const err = await response.json();
-        toast.error(err.error || 'Erro ao salvar');
-      }
-    } catch (error) {
-      toast.error('Erro inesperado');
-    } finally {
-      setIsSaving(false);
-    }
+    saveMutation.mutate({
+      name: formData.name,
+      slug: formData.slug,
+      title: formData.title,
+      body: formData.body,
+      icon: formData.icon || null,
+      badge: formData.badge || null,
+      image: formData.image || null,
+      url: formData.url || null,
+      tag: formData.tag || null,
+      eventType: formData.eventType,
+      description: formData.description || null,
+    });
   };
 
   const handleToggle = async (template: PushTemplate) => {
-    try {
-      const res = await fetch(`/api/v1/admin/push-templates/${template.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isActive: !template.isActive }),
-      });
-
-      if (res.ok) {
-        setTemplates(
-          templates.map((t) =>
-            t.id === template.id ? { ...t, isActive: !template.isActive } : t
-          )
-        );
-        toast.success(`Template ${template.isActive ? 'desativado' : 'ativado'}`);
-      }
-    } catch (error) {
-      toast.error('Erro ao alterar status');
-    }
+    toggleMutation.mutate(template);
   };
 
   const handleDelete = async () => {
     if (!templateToDelete) return;
-    setIsDeleting(true);
-    try {
-      const res = await fetch(
-        `/api/v1/admin/push-templates/${templateToDelete}`,
-        {
-          method: 'DELETE',
-        }
-      );
-      if (res.ok) {
-        setTemplates(templates.filter((t) => t.id !== templateToDelete));
-        toast.success('Template excluído');
-        setTemplateToDelete(null);
-      }
-    } catch (error) {
-      toast.error('Erro ao excluir');
-    } finally {
-      setIsDeleting(false);
-    }
+    deleteMutation.mutate(templateToDelete);
   };
 
   // Columns
@@ -366,11 +376,15 @@ export default function PushTemplatesPage() {
     ),
   };
 
-  const filteredTemplates = templates.filter(
-    (t) =>
-      t.name.toLowerCase().includes(searchInput.toLowerCase()) ||
-      t.title.toLowerCase().includes(searchInput.toLowerCase()) ||
-      t.slug.toLowerCase().includes(searchInput.toLowerCase())
+  const filteredTemplates = useMemo(
+    () =>
+      templates.filter(
+        (t) =>
+          t.name.toLowerCase().includes(searchInput.toLowerCase()) ||
+          t.title.toLowerCase().includes(searchInput.toLowerCase()) ||
+          t.slug.toLowerCase().includes(searchInput.toLowerCase())
+      ),
+    [searchInput, templates]
   );
 
   return (
@@ -495,7 +509,7 @@ export default function PushTemplatesPage() {
         title={editingTemplate ? 'Editar Template Push' : 'Novo Template Push'}
         icon={Bell}
         onSave={handleSave}
-        isSaving={isSaving}
+        isSaving={saveMutation.isPending}
         maxWidth="max-w-2xl"
       >
         <div className="flex flex-col gap-8 py-4">
@@ -528,7 +542,7 @@ export default function PushTemplatesPage() {
         open={!!templateToDelete}
         onOpenChange={(open) => !open && setTemplateToDelete(null)}
         onConfirm={handleDelete}
-        isLoading={isDeleting}
+        isLoading={deleteMutation.isPending}
         title="Excluir Template?"
         description="Esta ação removerá permanentemente o template de push notification."
         confirmText="Excluir"

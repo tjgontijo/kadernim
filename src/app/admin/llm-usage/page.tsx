@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
     Activity,
     Database,
@@ -101,62 +102,50 @@ interface LlmData {
 }
 
 export default function LlmUsagePage() {
-    const [data, setData] = useState<LlmData | null>(null);
-    const [logs, setLogs] = useState<LogEntry[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
     const [period, setPeriod] = useState('30d');
     const [logPage, setLogPage] = useState(1);
-    const [logTotalPages, setLogTotalPages] = useState(1);
-
-    useEffect(() => {
-        fetchData();
-    }, [period]);
-
-    useEffect(() => {
-        fetchLogs();
-    }, [logPage]);
-
-    const handleRefresh = async () => {
-        setRefreshing(true);
-        await Promise.all([fetchData(), fetchLogs()]);
-        setRefreshing(false);
-    };
-
-    const fetchData = async () => {
-        try {
+    const {
+        data,
+        isLoading: isDataLoading,
+        isFetching: isDataFetching,
+        refetch: refetchData,
+    } = useQuery<LlmData>({
+        queryKey: ['admin-llm-usage', period],
+        queryFn: async () => {
             const response = await fetch(`/api/v1/admin/llm-usage?period=${period}`);
             const json = await response.json();
-            if (json.success) {
-                setData(json.data);
+            if (!response.ok || !json.success) {
+                throw new Error(json.error || 'Erro ao buscar dados');
             }
-        } catch (error) {
-            console.error('Erro ao buscar dados:', error);
-        }
-    };
+            return json.data;
+        },
+    });
 
-    const fetchLogs = async () => {
-        try {
+    const {
+        data: logsData,
+        isLoading: isLogsLoading,
+        isFetching: isLogsFetching,
+        refetch: refetchLogs,
+    } = useQuery<{ logs: LogEntry[]; pagination: { totalPages: number } }>({
+        queryKey: ['admin-llm-usage-logs', logPage],
+        queryFn: async () => {
             const response = await fetch(`/api/v1/admin/llm-usage/logs?limit=10&page=${logPage}`);
             const json = await response.json();
-            if (json.success) {
-                setLogs(json.data.logs);
-                setLogTotalPages(json.data.pagination.totalPages);
+            if (!response.ok || !json.success) {
+                throw new Error(json.error || 'Erro ao buscar logs');
             }
-        } catch (error) {
-            console.error('Erro ao buscar logs:', error);
-        }
+            return json.data;
+        },
+    });
+
+    const loading = isDataLoading || isLogsLoading;
+    const refreshing = isDataFetching || isLogsFetching;
+    const logs = logsData?.logs ?? [];
+    const logTotalPages = logsData?.pagination.totalPages ?? 1;
+
+    const handleRefresh = async () => {
+        await Promise.all([refetchData(), refetchLogs()]);
     };
-
-    useEffect(() => {
-        const loadInitial = async () => {
-            setLoading(true);
-            await Promise.all([fetchData(), fetchLogs()]);
-            setLoading(false);
-        }
-        loadInitial();
-    }, [period]); // Reload when period changes
-
 
     if (loading) {
         return (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import {
     BookOpen,
     Calculator,
@@ -12,6 +12,7 @@ import {
     Heart,
 } from 'lucide-react';
 import { QuizStep } from '@/components/dashboard/quiz/QuizStep';
+import { useSubjects } from '@/hooks/taxonomy/use-taxonomy';
 
 interface Subject {
     id: string;
@@ -50,40 +51,19 @@ export function QuestionSubject({
     value,
     onSelect,
 }: QuestionSubjectProps) {
-    const [subjects, setSubjects] = useState<Subject[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
     const isEI = educationLevelSlug === 'educacao-infantil';
+    const {
+        data: subjects = [],
+        isLoading: loading,
+        error,
+    } = useSubjects(educationLevelSlug, gradeSlug);
 
-    useEffect(() => {
-        async function fetchSubjects() {
-            try {
-                setLoading(true);
-                // Filtra por gradeSlug para obter disciplinas específicas do ano
-                const response = await fetch(
-                    `/api/v1/subjects?educationLevelSlug=${educationLevelSlug}&gradeSlug=${gradeSlug}`
-                );
-                if (!response.ok) throw new Error('Erro ao carregar componentes curiculares');
-                const data = await response.json();
-                if (data.success) {
-                    setSubjects(data.data);
-                }
-            } catch (err) {
-                setError(err instanceof Error ? err.message : 'Erro ao carregar');
-            } finally {
-                setLoading(false);
-            }
-        }
-        fetchSubjects();
-    }, [educationLevelSlug, gradeSlug]);
-
-    const quizOptions: QuizOption[] = subjects.map(subject => ({
+    const quizOptions: QuizOption[] = useMemo(() => subjects.map(subject => ({
         id: subject.id || subject.slug,
         slug: subject.slug,
         name: subject.name,
         icon: SUBJECT_ICONS[subject.slug] || BookOpen
-    }));
+    })), [subjects]);
 
     return (
         <QuizStep
@@ -92,7 +72,7 @@ export function QuestionSubject({
         >
             {error ? (
                 <div className="text-center py-12">
-                    <p className="text-destructive font-bold">{error}</p>
+                    <p className="text-destructive font-bold">{error instanceof Error ? error.message : 'Erro ao carregar'}</p>
                 </div>
             ) : (
                 <QuizChoice

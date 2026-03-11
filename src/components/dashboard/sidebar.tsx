@@ -44,7 +44,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
-import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { defineAbilitiesFor, PermissionAction, PermissionSubject } from '@/lib/auth/permissions'
 import { UserRoleType } from '@/types/users/user-role'
 
@@ -95,13 +95,15 @@ const ICON_MAP = {
 export function AdminSidebar({ user }: AdminSidebarProps) {
   const pathname = usePathname()
   const { isMobile, setOpenMobile } = useSidebar()
-  const [version, setVersion] = useState<string | null>(null)
-
-  useEffect(() => {
-    fetch('/version.json')
-      .then((res) => res.json())
-      .then((data) => setVersion(data.version))
-  }, [])
+  const { data: version } = useQuery<string | null>({
+    queryKey: ['app-version'],
+    queryFn: async () => {
+      const response = await fetch('/version.json')
+      const data = await response.json()
+      return data.version ?? null
+    },
+    staleTime: Infinity,
+  })
 
   const userRole = (user.role || 'user') as UserRoleType
   const ability = defineAbilitiesFor(userRole)

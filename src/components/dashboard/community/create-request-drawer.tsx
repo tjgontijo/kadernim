@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Loader2, Sparkles, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { triggerCannon } from '@/lib/utils/confetti';
 
 import { QuizLayout } from '@/components/dashboard/quiz/QuizLayout';
@@ -86,8 +86,8 @@ export function CreateRequestDrawer({ open, onOpenChange }: CreateRequestDrawerP
         }
     };
 
-    const handleSubmit = async () => {
-        try {
+    const submitMutation = useMutation({
+        mutationFn: async () => {
             setCurrentStep('submitting');
 
             const formData = new FormData();
@@ -114,17 +114,22 @@ export function CreateRequestDrawer({ open, onOpenChange }: CreateRequestDrawerP
             });
             const data = await response.json();
             if (!data.success) throw new Error(data.error || 'Erro ao enviar pedido');
-
+        },
+        onSuccess: () => {
             toast.success('Sugestão enviada com sucesso!');
             queryClient.invalidateQueries({ queryKey: ['community.requests'] });
             queryClient.invalidateQueries({ queryKey: ['community.usage'] });
             setCurrentStep('success');
             triggerCannon();
-        } catch (error) {
-            console.error('Error submitting request:', error);
+        },
+        onError: (error: Error) => {
             toast.error(error instanceof Error ? error.message : 'Erro ao enviar pedido');
             setCurrentStep('review');
-        }
+        },
+    });
+
+    const handleSubmit = async () => {
+        submitMutation.mutate();
     };
 
     const handleClose = () => {

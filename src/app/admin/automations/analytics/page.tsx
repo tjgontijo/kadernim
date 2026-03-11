@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
     Activity,
     CheckCircle2,
@@ -53,36 +54,36 @@ interface AutomationLog {
 
 export default function AutomationsAnalyticsPage() {
     const [view, setView] = useState<ViewType>('list');
-    const [loading, setLoading] = useState(true);
-    const [logs, setLogs] = useState<AutomationLog[]>([]);
     const [searchInput, setSearchInput] = useState('');
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(15);
 
-    useEffect(() => {
-        fetchLogs();
-    }, []);
-
-    const fetchLogs = async () => {
-        setLoading(true);
-        try {
+    const { data: logs = [], isLoading: loading } = useQuery<AutomationLog[]>({
+        queryKey: ['admin-automations-logs'],
+        queryFn: async () => {
             const res = await fetch('/api/v1/admin/automations/logs?limit=100');
             const json = await res.json();
-            if (json.success) setLogs(json.data);
-        } catch (error) {
-            toast.error('Erro ao buscar logs');
-        } finally {
-            setLoading(false);
-        }
-    };
+            if (!res.ok || !json.success) {
+                throw new Error(json.error || 'Erro ao buscar logs');
+            }
+            return json.data;
+        },
+    });
 
     const getActionInfo = (type: string) => {
         return ACTION_TYPES.find(a => a.value === type) || { icon: Zap, color: 'text-slate-500', label: type };
     };
 
-    const filteredLogs = logs.filter(log =>
-        log.rule?.name.toLowerCase().includes(searchInput.toLowerCase())
-    );
+    const filteredLogs = useMemo(() => {
+        try {
+            return logs.filter(log =>
+                log.rule?.name.toLowerCase().includes(searchInput.toLowerCase())
+            );
+        } catch {
+            toast.error('Erro ao buscar logs');
+            return [];
+        }
+    }, [logs, searchInput]);
 
     return (
         <CrudPageShell

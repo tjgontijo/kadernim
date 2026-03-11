@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { QuizStep } from '@/components/dashboard/quiz/QuizStep';
-import { QuizCard } from '@/components/dashboard/quiz/QuizCard';
 import { Type, FileText, Sparkles, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
 
 interface TitleOption {
     type: string;
@@ -30,36 +29,34 @@ export function QuestionSelectTitle({
     description,
     onSelect,
 }: QuestionSelectTitleProps) {
-    const [titles, setTitles] = useState<TitleOption[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const [customTitle, setCustomTitle] = useState('');
 
-    useEffect(() => {
-        async function fetchTitles() {
-            try {
-                setLoading(true);
-                const response = await fetch('/api/v1/community/generate-title', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ description }),
-                });
-                const data = await response.json();
-                if (data.success) {
-                    setTitles(data.data.titles);
-                } else {
-                    throw new Error(data.error);
-                }
-            } catch (err) {
-                console.error('Error generating titles:', err);
-                setError('Erro ao gerar títulos. Digite um manualmente.');
-                toast.error('Erro na conexão com IA');
-            } finally {
-                setLoading(false);
+    const {
+        data: titles = [],
+        isLoading: loading,
+        error,
+    } = useQuery<TitleOption[]>({
+        queryKey: ['community-generated-titles', description],
+        queryFn: async () => {
+            const response = await fetch('/api/v1/community/generate-title', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ description }),
+            });
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(data.error || 'Erro ao gerar títulos.');
             }
-        }
-        fetchTitles();
-    }, [description]);
+
+            return data.data.titles;
+        },
+        retry: false,
+    });
+
+    const errorMessage = error instanceof Error
+        ? 'Erro ao gerar títulos. Digite um manualmente.'
+        : null;
 
     if (loading) {
         return (
@@ -75,11 +72,11 @@ export function QuestionSelectTitle({
         );
     }
 
-    if (error) {
+    if (errorMessage) {
         return (
             <QuizStep
                 title="Qual será o título?"
-                description={error}
+                description={errorMessage}
             >
                 <QuizTextInput
                     value={customTitle}

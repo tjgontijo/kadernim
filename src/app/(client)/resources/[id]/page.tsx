@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
-import Image from 'next/image'
+import { use, useCallback, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft } from 'lucide-react'
 import { AspectRatio } from '@/components/ui/aspect-ratio'
 import { DownloadList } from '@/components/shared/download-list'
@@ -14,31 +14,31 @@ import { ResourceImageCarousel } from '@/components/dashboard/resources/Resource
 import { LazyImage } from '@/components/shared/lazy-image'
 
 export default function ResourceDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const [resource, setResource] = useState<ResourceDetail | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { id } = use(params)
   const [downloadingFileId, setDownloadingFileId] = useState<string | null>(null)
   const [downloadFeedback, setDownloadFeedback] = useState<
     { type: 'error' | 'info'; text: string } | null
   >(null)
 
-  useEffect(() => {
-    const fetchResource = async () => {
-      try {
-        const resolvedParams = await params
-        const response = await fetch(`/api/v1/resources/${resolvedParams.id}`)
-        if (!response.ok) throw new Error('Recurso não encontrado')
-        const data = await response.json()
-        setResource(data.data)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erro ao carregar recurso')
-      } finally {
-        setIsLoading(false)
-      }
-    }
+  const {
+    data: resource,
+    isLoading,
+    error,
+  } = useQuery<ResourceDetail>({
+    queryKey: ['resource-detail', id],
+    queryFn: async () => {
+      const response = await fetch(`/api/v1/resources/${id}`)
+      const json = await response.json().catch(() => ({}))
 
-    fetchResource()
-  }, [params])
+      if (!response.ok) {
+        throw new Error(
+          typeof json.error === 'string' ? json.error : 'Recurso não encontrado'
+        )
+      }
+
+      return json.data
+    },
+  })
 
   const handleDownload = useCallback(
     async (file: { id: string; name: string }) => {
@@ -135,7 +135,9 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
           <div className="mx-auto w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
             <span className="text-2xl">⚠️</span>
           </div>
-          <p className="text-destructive font-bold text-lg">{error || 'Recurso não encontrado'}</p>
+          <p className="text-destructive font-bold text-lg">
+            {error instanceof Error ? error.message : 'Recurso não encontrado'}
+          </p>
           <Button asChild variant="outline" className="rounded-xl border-destructive/20 text-destructive hover:bg-destructive/5">
             <Link href="/resources">Explorar outros materiais</Link>
           </Button>

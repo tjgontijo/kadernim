@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useMutation } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { CheckoutRequest, CheckoutRequestSchema } from '@/schemas/billing/payment-schemas'
@@ -29,7 +30,6 @@ const formatCpfCnpj = (value: string) => {
 }
 
 export function CheckoutForm({ user }: { user: { name: string; email: string } }) {
-    const [loading, setLoading] = useState(false)
     const [pixData, setPixData] = useState<{
         payload: string
         image: string
@@ -48,9 +48,8 @@ export function CheckoutForm({ user }: { user: { name: string; email: string } }
 
     const selectedMethod = form.watch('paymentMethod')
 
-    const onSubmit = async (values: CheckoutRequest) => {
-        setLoading(true)
-        try {
+    const checkoutMutation = useMutation({
+        mutationFn: async (values: CheckoutRequest) => {
             const response = await fetch('/api/v1/billing/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -72,7 +71,9 @@ export function CheckoutForm({ user }: { user: { name: string; email: string } }
             if (!response.ok) {
                 throw new Error(data.error || 'Falha ao processar pagamento')
             }
-
+            return { data, values }
+        },
+        onSuccess: ({ data, values }) => {
             if (values.paymentMethod === 'PIX' || values.paymentMethod === 'PIX_AUTOMATIC') {
                 setPixData({
                     payload: data.qrCodePayload,
@@ -90,11 +91,14 @@ export function CheckoutForm({ user }: { user: { name: string; email: string } }
                     window.location.href = '/dashboard?pending=true'
                 }
             }
-        } catch (error: any) {
+        },
+        onError: (error: Error) => {
             toast.error(error.message)
-        } finally {
-            setLoading(false)
-        }
+        },
+    })
+
+    const onSubmit = async (values: CheckoutRequest) => {
+        checkoutMutation.mutate(values)
     }
 
     if (pixData) {
@@ -279,9 +283,9 @@ export function CheckoutForm({ user }: { user: { name: string; email: string } }
                     <Button
                         size="lg"
                         className="w-full text-sm h-12 font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow-sm"
-                        disabled={loading}
+                        disabled={checkoutMutation.isPending}
                     >
-                        {loading ? (
+                        {checkoutMutation.isPending ? (
                             <div className="flex items-center gap-2">
                                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/80 border-t-transparent" />
                                 Processando...

@@ -1,10 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { QuizStep } from '@/components/dashboard/quiz/QuizStep';
-import { QuizCard } from '@/components/dashboard/quiz/QuizCard';
 import { Layout, Users, GraduationCap, ArrowRight, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
 
 interface Refinement {
     type: string;
@@ -35,40 +33,43 @@ export function QuestionRefineDescription({
     gradeNames,
     onSelect,
 }: QuestionRefineDescriptionProps) {
-    const [refinements, setRefinements] = useState<Refinement[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const {
+        data: refinements = [],
+        isLoading: loading,
+        error,
+    } = useQuery<Refinement[]>({
+        queryKey: [
+            'community-refined-description',
+            rawDescription,
+            educationLevelName,
+            subjectName,
+            gradeNames.join('|'),
+        ],
+        queryFn: async () => {
+            const response = await fetch('/api/v1/community/refine-request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    rawDescription,
+                    educationLevelName,
+                    subjectName,
+                    gradeNames,
+                }),
+            });
+            const data = await response.json();
 
-    useEffect(() => {
-        async function fetchRefinement() {
-            try {
-                setLoading(true);
-                const response = await fetch('/api/v1/community/refine-request', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        rawDescription,
-                        educationLevelName,
-                        subjectName,
-                        gradeNames,
-                    }),
-                });
-                const data = await response.json();
-                if (data.success) {
-                    setRefinements(data.data.refined);
-                } else {
-                    throw new Error(data.error);
-                }
-            } catch (err) {
-                console.error('Error refining description:', err);
-                setError('Erro ao gerar sugestões. Você pode prosseguir com a sua versão original.');
-                toast.error('Erro na conexão com IA');
-            } finally {
-                setLoading(false);
+            if (!response.ok || !data.success) {
+                throw new Error(data.error || 'Erro ao gerar sugestões.');
             }
-        }
-        fetchRefinement();
-    }, [rawDescription, educationLevelName, subjectName, gradeNames]);
+
+            return data.data.refined;
+        },
+        retry: false,
+    });
+
+    const errorMessage = error instanceof Error
+        ? 'Erro ao gerar sugestões. Você pode prosseguir com a sua versão original.'
+        : null;
 
     if (loading) {
         return (
@@ -104,7 +105,7 @@ export function QuestionRefineDescription({
     return (
         <QuizStep
             title="Como quer seu material?"
-            description={error || "Escolha a estrutura que melhor descreve seu pedido."}
+            description={errorMessage || "Escolha a estrutura que melhor descreve seu pedido."}
         >
             <QuizChoice
                 options={quizOptions}

@@ -16,13 +16,14 @@ export function useAdminResources(options?: UseAdminResourcesOptions) {
   const limit = filters.limit || 20
   const q = filters.q || ''
   const educationLevel = filters.educationLevel || ''
+  const grade = filters.grade || ''
   const subject = filters.subject || ''
   const isFree = filters.isFree !== undefined ? filters.isFree : ''
   const sortBy = filters.sortBy || 'updatedAt'
   const order = filters.order || 'desc'
 
   return useQuery<ResourceListResponse>({
-    queryKey: ['admin-resources', { page, limit, q, educationLevel, subject, isFree, sortBy, order }],
+    queryKey: ['admin-resources', { page, limit, q, educationLevel, grade, subject, isFree, sortBy, order }],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: String(page),
@@ -31,6 +32,7 @@ export function useAdminResources(options?: UseAdminResourcesOptions) {
 
       if (q) params.append('q', q)
       if (educationLevel) params.append('educationLevel', educationLevel)
+      if (grade) params.append('grade', grade)
       if (subject) params.append('subject', subject)
       if (isFree !== '') params.append('isFree', String(isFree))
       params.append('sortBy', sortBy)
@@ -102,11 +104,11 @@ export function useUpdateAdminResource(resourceId: string) {
 /**
  * Hook to delete an admin resource
  */
-export function useDeleteAdminResource(resourceId: string) {
+export function useDeleteAdminResource() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async (resourceId: string) => {
       const response = await fetch(`/api/v1/admin/resources/${resourceId}`, {
         method: 'DELETE',
       })

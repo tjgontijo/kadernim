@@ -31,7 +31,7 @@ import {
   DrawerTrigger,
   DrawerDescription,
 } from "@/components/ui/drawer";
-import { useEffect, useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { type LessonPlanResponse } from '@/schemas/lesson-plans/lesson-plan-schemas';
 import { PageScaffoldSkeleton } from '@/components/dashboard/shared/skeletons/page-scaffold-skeleton';
 import { PlanCardSkeleton } from '@/components/dashboard/shared/skeletons/plan-card-skeleton';
@@ -39,16 +39,11 @@ import { PlanCardSkeleton } from '@/components/dashboard/shared/skeletons/plan-c
 export default function LessonPlansPage() {
   const { isMobile } = useMobile();
   const { data: session, isPending: isSessionLoading } = useSession();
-  const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Check if user is subscriber
   const userRole = session?.user?.role ?? 'user';
   const isSubscriber = userRole === 'subscriber' || userRole === 'admin';
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
@@ -65,21 +60,6 @@ export default function LessonPlansPage() {
 
   const { data: plans, isLoading } = useLessonPlans();
   const { data: usage, isLoading: isLoadingUsage } = useLessonPlanUsage();
-
-  // Reseta filtros dependentes quando o pai muda
-  useEffect(() => {
-    if (level === 'all') {
-      setGrade('all');
-      setSubject('all');
-    } else {
-      setSubject('all');
-    }
-  }, [level]);
-
-  // Reseta disciplinas quando o ano muda para garantir validade
-  useEffect(() => {
-    setSubject('all');
-  }, [grade]);
 
   const filteredPlans = useMemo(() => {
     if (!plans) return [];
@@ -266,8 +246,7 @@ export default function LessonPlansPage() {
           onClear={() => setSearchQuery('')}
         />
 
-        {mounted && (
-          <Drawer open={filterDrawerOpen} onOpenChange={setFilterDrawerOpen}>
+        <Drawer open={filterDrawerOpen} onOpenChange={setFilterDrawerOpen}>
             <DrawerTrigger asChild>
               <Button
                 variant="outline"
@@ -291,7 +270,14 @@ export default function LessonPlansPage() {
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Etapa de Ensino</label>
-                    <Select value={level} onValueChange={setLevel}>
+                    <Select
+                      value={level}
+                      onValueChange={(value) => {
+                        setLevel(value);
+                        setGrade('all');
+                        setSubject('all');
+                      }}
+                    >
                       <SelectTrigger className="h-14 w-full bg-muted/30 border-border/50 rounded-2xl text-sm font-bold">
                         <SelectValue placeholder="Todas as Etapas" />
                       </SelectTrigger>
@@ -304,7 +290,14 @@ export default function LessonPlansPage() {
 
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Ano / Série</label>
-                    <Select value={grade} onValueChange={setGrade} disabled={level === 'all'}>
+                    <Select
+                      value={grade}
+                      onValueChange={(value) => {
+                        setGrade(value);
+                        setSubject('all');
+                      }}
+                      disabled={level === 'all'}
+                    >
                       <SelectTrigger className="h-14 w-full bg-muted/30 border-border/50 rounded-2xl text-sm font-bold">
                         <SelectValue placeholder={level === 'educacao-infantil' ? 'Faixa Etária' : 'Ano/Série'} />
                       </SelectTrigger>
@@ -347,7 +340,6 @@ export default function LessonPlansPage() {
               </div>
             </DrawerContent>
           </Drawer>
-        )}
       </PageScaffold.Controls>
 
       {/* Conteúdo: Grid de Planos */}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useDeferredValue, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import type { ViewType } from '@/components/dashboard/crud'
@@ -29,20 +29,11 @@ export function useDataTable<T>({
     const [page, setPage] = useState(1)
     const [limit, setLimit] = useState(initialLimit)
     const [searchInput, setSearchInput] = useState('')
-    const [searchQuery, setSearchQuery] = useState('')
+    const searchQuery = useDeferredValue(searchInput)
     const [view, setView] = useState<ViewType>('list')
     const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false)
     const [itemToEdit, setItemToEdit] = useState<T | null>(null)
     const [filters, setFilters] = useState<Record<string, any>>({})
-
-    // Debounce search
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setSearchQuery(searchInput)
-            setPage(1)
-        }, 400)
-        return () => clearTimeout(timer)
-    }, [searchInput])
 
     const { data, isLoading, error, refetch } = useQuery({
         queryKey: [...queryKey, { page, limit, q: searchQuery, ...filters }],
@@ -118,7 +109,11 @@ export function useDataTable<T>({
     const clearFilters = useCallback(() => {
         setFilters({})
         setSearchInput('')
-        setSearchQuery('')
+        setPage(1)
+    }, [])
+
+    const handleSearchChange = useCallback((value: string) => {
+        setSearchInput(value)
         setPage(1)
     }, [])
 
@@ -133,7 +128,7 @@ export function useDataTable<T>({
 
         // Search & Filter
         searchInput,
-        setSearchInput,
+        setSearchInput: handleSearchChange,
         filters,
         handleFilterChange,
         clearFilters,

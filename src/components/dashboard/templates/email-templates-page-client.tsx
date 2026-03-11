@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
     Mail,
     Pencil,
@@ -31,11 +32,9 @@ import { PermissionGuard } from '@/components/auth/permission-guard';
 import { EmailTemplate } from '@/types/templates/email-template';
 
 export function EmailTemplatesPageClient() {
+    const queryClient = useQueryClient();
     const [view, setView] = useState<ViewType>('cards');
-    const [templates, setTemplates] = useState<EmailTemplate[]>([]);
-    const [loading, setLoading] = useState(true);
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
     const [editingTemplate, setEditingTemplate] = useState<EmailTemplate | null>(
         null
     );
@@ -74,22 +73,96 @@ export function EmailTemplatesPageClient() {
         description: '',
     });
 
-    useEffect(() => {
-        fetchTemplates();
-    }, []);
-
-    const fetchTemplates = async () => {
-        setLoading(true);
-        try {
+    const { data: templates = [], isLoading: loading } = useQuery<EmailTemplate[]>({
+        queryKey: ['admin-email-templates'],
+        queryFn: async () => {
             const response = await fetch('/api/v1/admin/email-templates');
             const json = await response.json();
-            if (json.success) setTemplates(json.data);
-        } catch (error) {
-            toast.error('Erro ao buscar templates de email');
-        } finally {
-            setLoading(false);
-        }
-    };
+            if (!response.ok || !json.success) {
+                throw new Error(json.error || 'Erro ao buscar templates de email');
+            }
+            return json.data;
+        },
+    });
+
+    const saveMutation = useMutation({
+        mutationFn: async (payload: Record<string, unknown>) => {
+            const url = editingTemplate
+                ? `/api/v1/admin/email-templates/${editingTemplate.id}`
+                : '/api/v1/admin/email-templates';
+
+            const response = await fetch(url, {
+                method: editingTemplate ? 'PATCH' : 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+
+            const json = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(json.error || 'Erro ao salvar');
+            }
+
+            return json;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admin-email-templates'] });
+            setDrawerOpen(false);
+            resetForm();
+            toast.success(editingTemplate ? 'Template atualizado' : 'Template criado');
+        },
+        onError: (error: Error) => {
+            toast.error(error.message || 'Erro inesperado');
+        },
+    });
+
+    const toggleMutation = useMutation({
+        mutationFn: async (template: EmailTemplate) => {
+            const response = await fetch(`/api/v1/admin/email-templates/${template.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isActive: !template.isActive }),
+            });
+
+            const json = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(json.error || 'Erro ao alterar status');
+            }
+        },
+        onSuccess: (_data, template) => {
+            queryClient.setQueryData<EmailTemplate[]>(['admin-email-templates'], (current = []) =>
+                current.map((item) =>
+                    item.id === template.id ? { ...item, isActive: !template.isActive } : item
+                )
+            );
+            toast.success(`Template ${template.isActive ? 'desativado' : 'ativado'}`);
+        },
+        onError: () => {
+            toast.error('Erro ao alterar status');
+        },
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: async (id: string) => {
+            const response = await fetch(`/api/v1/admin/email-templates/${id}`, {
+                method: 'DELETE',
+            });
+
+            const json = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(json.error || 'Erro ao excluir');
+            }
+        },
+        onSuccess: (_data, id) => {
+            queryClient.setQueryData<EmailTemplate[]>(['admin-email-templates'], (current = []) =>
+                current.filter((item) => item.id !== id)
+            );
+            toast.success('Template excluído');
+            setTemplateToDelete(null);
+        },
+        onError: () => {
+            toast.error('Erro ao excluir');
+        },
+    });
 
     const resetForm = () => {
         setFormData({
@@ -126,88 +199,25 @@ export function EmailTemplatesPageClient() {
             return;
         }
 
-        setIsSaving(true);
-        try {
-            const payload = {
-                name: formData.name,
-                slug: formData.slug,
-                subject: formData.subject,
-                preheader: formData.preheader || null,
-                body: formData.body,
-                content: formData.content,
-                eventType: formData.eventType,
-                description: formData.description || null,
-            };
-
-            const url = editingTemplate
-                ? `/api/v1/admin/email-templates/${editingTemplate.id}`
-                : '/api/v1/admin/email-templates';
-
-            const response = await fetch(url, {
-                method: editingTemplate ? 'PATCH' : 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
-
-            if (response.ok) {
-                setDrawerOpen(false);
-                resetForm();
-                fetchTemplates();
-                toast.success(
-                    editingTemplate ? 'Template atualizado' : 'Template criado'
-                );
-            } else {
-                const err = await response.json();
-                toast.error(err.error || 'Erro ao salvar');
-            }
-        } catch (error) {
-            toast.error('Erro inesperado');
-        } finally {
-            setIsSaving(false);
-        }
+        saveMutation.mutate({
+            name: formData.name,
+            slug: formData.slug,
+            subject: formData.subject,
+            preheader: formData.preheader || null,
+            body: formData.body,
+            content: formData.content,
+            eventType: formData.eventType,
+            description: formData.description || null,
+        });
     };
 
     const handleToggle = async (template: EmailTemplate) => {
-        try {
-            const res = await fetch(`/api/v1/admin/email-templates/${template.id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ isActive: !template.isActive }),
-            });
-
-            if (res.ok) {
-                setTemplates(
-                    templates.map((t) =>
-                        t.id === template.id ? { ...t, isActive: !template.isActive } : t
-                    )
-                );
-                toast.success(`Template ${template.isActive ? 'desativado' : 'ativado'}`);
-            }
-        } catch (error) {
-            toast.error('Erro ao alterar status');
-        }
+        toggleMutation.mutate(template);
     };
 
     const handleDelete = async () => {
         if (!templateToDelete) return;
-        setIsDeleting(true);
-        try {
-            const res = await fetch(
-                `/api/v1/admin/email-templates/${templateToDelete}`,
-                {
-                    method: 'DELETE',
-                }
-            );
-            if (res.ok) {
-                setTemplates(templates.filter((t) => t.id !== templateToDelete));
-                toast.success('Template excluído');
-                setTemplateToDelete(null);
-            }
-        } catch (error) {
-            toast.error('Erro ao excluir');
-        } finally {
-            setIsDeleting(false);
-        }
+        deleteMutation.mutate(templateToDelete);
     };
 
     // Columns
@@ -307,11 +317,15 @@ export function EmailTemplatesPageClient() {
         ),
     };
 
-    const filteredTemplates = templates.filter(
-        (t) =>
-            t.name.toLowerCase().includes(searchInput.toLowerCase()) ||
-            t.subject.toLowerCase().includes(searchInput.toLowerCase()) ||
-            t.slug.toLowerCase().includes(searchInput.toLowerCase())
+    const filteredTemplates = useMemo(
+        () =>
+            templates.filter(
+                (t) =>
+                    t.name.toLowerCase().includes(searchInput.toLowerCase()) ||
+                    t.subject.toLowerCase().includes(searchInput.toLowerCase()) ||
+                    t.slug.toLowerCase().includes(searchInput.toLowerCase())
+            ),
+        [searchInput, templates]
     );
 
     return (
@@ -436,7 +450,7 @@ export function EmailTemplatesPageClient() {
                 title={editingTemplate ? 'Editar Template' : 'Novo Template Email'}
                 icon={Mail}
                 onSave={handleSave}
-                isSaving={isSaving}
+                isSaving={saveMutation.isPending}
                 maxWidth="max-w-3xl"
             >
                 <EmailTemplateForm
@@ -465,16 +479,16 @@ export function EmailTemplatesPageClient() {
                         <Button
                             variant="outline"
                             onClick={() => setTemplateToDelete(null)}
-                            disabled={isDeleting}
+                            disabled={deleteMutation.isPending}
                         >
                             Cancelar
                         </Button>
                         <Button
                             variant="destructive"
                             onClick={handleDelete}
-                            disabled={isDeleting}
+                            disabled={deleteMutation.isPending}
                         >
-                            {isDeleting ? 'Excluindo...' : 'Excluir'}
+                            {deleteMutation.isPending ? 'Excluindo...' : 'Excluir'}
                         </Button>
                     </div>
                 </DialogContent>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Menu } from 'lucide-react'
@@ -23,13 +23,15 @@ export function GlobalHeader({ user }: GlobalHeaderProps) {
   const { toggleSidebar } = useSidebar()
   const { isBelow } = useMobile()
   const isMobileOrTablet = isBelow('desktop')
-  const [version, setVersion] = useState<string | null>(null)
-
-  useEffect(() => {
-    fetch('/version.json')
-      .then((res) => res.json())
-      .then((data) => setVersion(data.version))
-  }, [])
+  const { data: version } = useQuery<string | null>({
+    queryKey: ['app-version'],
+    queryFn: async () => {
+      const response = await fetch('/version.json')
+      const data = await response.json()
+      return data.version ?? null
+    },
+    staleTime: Infinity,
+  })
 
   const userName = user.name || 'Usuário'
   const userEmail = user.email || ''

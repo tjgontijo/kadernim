@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
     Zap,
     Trash2,
@@ -54,10 +55,8 @@ const ACTION_TYPES = [
 ];
 
 export function AutomationsPageClient() {
+    const queryClient = useQueryClient();
     const [view, setView] = useState<ViewType>('list');
-    const [loading, setLoading] = useState(true);
-    const [rules, setRules] = useState<AutomationRule[]>([]);
-    const [templates, setTemplates] = useState<any[]>([]);
 
     // Pagination/Search
     const [searchInput, setSearchInput] = useState('');
@@ -67,7 +66,6 @@ export function AutomationsPageClient() {
     // Form states
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [editingRule, setEditingRule] = useState<AutomationRule | null>(null);
-    const [isSaving, setIsSaving] = useState(false);
     const [formName, setFormName] = useState('');
     const [formEventType, setFormEventType] = useState('');
     const [formDescription, setFormDescription] = useState('');
@@ -76,38 +74,106 @@ export function AutomationsPageClient() {
     const [formIsActive, setFormIsActive] = useState(true);
 
     // Delete states
-    const [isDeleting, setIsDeleting] = useState(false);
     const [ruleToDelete, setRuleToDelete] = useState<string | null>(null);
 
-    useEffect(() => {
-        fetchData();
-        fetchTemplates();
-    }, []);
-
-    const fetchData = async () => {
-        setLoading(true);
-        try {
+    const { data: rules = [], isLoading: loading } = useQuery<AutomationRule[]>({
+        queryKey: ['admin-automations'],
+        queryFn: async () => {
             const res = await fetch('/api/v1/admin/automations');
             const json = await res.json();
-            if (json.success) setRules(json.data);
-        } catch (error) {
-            toast.error('Erro ao buscar dados');
-        } finally {
-            setLoading(false);
-        }
-    };
+            if (!res.ok || !json.success) {
+                throw new Error(json.error || 'Erro ao buscar dados');
+            }
+            return json.data;
+        },
+    });
 
-    const fetchTemplates = async () => {
-        try {
+    const { data: templates = [] } = useQuery<any[]>({
+        queryKey: ['admin-email-templates-for-automations'],
+        queryFn: async () => {
             const res = await fetch('/api/v1/admin/email-templates');
             const json = await res.json();
-            if (json.success) {
-                setTemplates(json.data);
+            if (!res.ok || !json.success) {
+                throw new Error(json.error || 'Erro ao buscar templates');
             }
-        } catch (error) {
-            console.error('Erro ao buscar templates:', error);
-        }
-    };
+            return json.data;
+        },
+    });
+
+    const saveMutation = useMutation({
+        mutationFn: async (payload: Record<string, unknown>) => {
+            const url = editingRule ? `/api/v1/admin/automations/${editingRule.id}` : '/api/v1/admin/automations';
+            const method = editingRule ? 'PATCH' : 'POST';
+
+            const res = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+
+            const json = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                throw new Error(json.error || 'Erro ao salvar automação');
+            }
+
+            return json;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admin-automations'] });
+            setDrawerOpen(false);
+            resetForm();
+            toast.success(editingRule ? 'Automação atualizada' : 'Automação criada');
+        },
+        onError: () => {
+            toast.error('Erro ao salvar automação');
+        },
+    });
+
+    const toggleMutation = useMutation({
+        mutationFn: async (rule: AutomationRule) => {
+            const res = await fetch(`/api/v1/admin/automations/${rule.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isActive: !rule.isActive }),
+            });
+
+            const json = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                throw new Error(json.error || 'Erro ao atualizar');
+            }
+        },
+        onSuccess: (_data, rule) => {
+            queryClient.setQueryData<AutomationRule[]>(['admin-automations'], (current = []) =>
+                current.map((item) =>
+                    item.id === rule.id ? { ...item, isActive: !rule.isActive } : item
+                )
+            );
+            toast.success(`Automação ${rule.isActive ? 'desativada' : 'ativada'}`);
+        },
+        onError: () => {
+            toast.error('Erro ao atualizar');
+        },
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: async (id: string) => {
+            const res = await fetch(`/api/v1/admin/automations/${id}`, { method: 'DELETE' });
+            const json = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                throw new Error(json.error || 'Erro ao excluir');
+            }
+        },
+        onSuccess: (_data, id) => {
+            queryClient.setQueryData<AutomationRule[]>(['admin-automations'], (current = []) =>
+                current.filter((item) => item.id !== id)
+            );
+            toast.success('Automação excluída permanentemente');
+            setRuleToDelete(null);
+        },
+        onError: () => {
+            toast.error('Erro ao excluir');
+        },
+    });
 
     const resetForm = () => {
         setEditingRule(null);
@@ -157,72 +223,22 @@ export function AutomationsPageClient() {
             return;
         }
 
-        setIsSaving(true);
-        try {
-            const payload = {
-                name: formName,
-                eventType: formEventType,
-                description: formDescription,
-                isActive: formIsActive,
-                actions: [{ type: formActionType, config: formConfig }],
-            };
-
-            const url = editingRule ? `/api/v1/admin/automations/${editingRule.id}` : '/api/v1/admin/automations';
-            const method = editingRule ? 'PATCH' : 'POST';
-
-            const res = await fetch(url, {
-                method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
-
-            if (res.ok) {
-                setDrawerOpen(false);
-                resetForm();
-                fetchData();
-                toast.success(editingRule ? 'Automação atualizada' : 'Automação criada');
-            } else {
-                const err = await res.json();
-                toast.error(err.error || 'Erro ao salvar automação');
-            }
-        } catch (error) {
-            toast.error('Erro ao salvar automação');
-        } finally {
-            setIsSaving(false);
-        }
+        saveMutation.mutate({
+            name: formName,
+            eventType: formEventType,
+            description: formDescription,
+            isActive: formIsActive,
+            actions: [{ type: formActionType, config: formConfig }],
+        });
     };
 
     const handleToggle = async (rule: AutomationRule) => {
-        try {
-            const res = await fetch(`/api/v1/admin/automations/${rule.id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ isActive: !rule.isActive }),
-            });
-            if (res.ok) {
-                setRules(rules.map(r => r.id === rule.id ? { ...r, isActive: !rule.isActive } : r));
-                toast.success(`Automação ${rule.isActive ? 'desativada' : 'ativada'}`);
-            }
-        } catch (error) {
-            toast.error('Erro ao atualizar');
-        }
+        toggleMutation.mutate(rule);
     };
 
     const handleDelete = async () => {
         if (!ruleToDelete) return;
-        setIsDeleting(true);
-        try {
-            const res = await fetch(`/api/v1/admin/automations/${ruleToDelete}`, { method: 'DELETE' });
-            if (res.ok) {
-                setRules(rules.filter(r => r.id !== ruleToDelete));
-                toast.success('Automação excluída permanentemente');
-                setRuleToDelete(null);
-            }
-        } catch (error) {
-            toast.error('Erro ao excluir');
-        } finally {
-            setIsDeleting(false);
-        }
+        deleteMutation.mutate(ruleToDelete);
     };
 
     const getActionInfo = (type: string) => {
@@ -315,7 +331,10 @@ export function AutomationsPageClient() {
         )
     };
 
-    const filteredRules = rules.filter(r => r.name.toLowerCase().includes(searchInput.toLowerCase()));
+    const filteredRules = useMemo(
+        () => rules.filter(r => r.name.toLowerCase().includes(searchInput.toLowerCase())),
+        [rules, searchInput]
+    );
 
     // Filtrar templates pelo tipo selecionado
     const filteredTemplates = templates.filter(t => {
@@ -416,7 +435,7 @@ export function AutomationsPageClient() {
                 subtitle={editingRule ? `Fluxo ID: ${editingRule.id}` : "Configure uma nova regra de fluxo automático."}
                 icon={Zap}
                 onSave={handleSave}
-                isSaving={isSaving}
+                isSaving={saveMutation.isPending}
                 saveLabel={editingRule ? "Salvar" : "Ativar"}
                 maxWidth="max-w-2xl"
             >
@@ -644,7 +663,7 @@ export function AutomationsPageClient() {
                 open={!!ruleToDelete}
                 onOpenChange={(open) => !open && setRuleToDelete(null)}
                 onConfirm={handleDelete}
-                isLoading={isDeleting}
+                isLoading={deleteMutation.isPending}
                 title="Excluir Regra?"
                 description="Esta automação será removida permanentemente e deixará de processar novos eventos."
                 confirmText="Excluir"

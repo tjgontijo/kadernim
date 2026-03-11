@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { QuizStep } from '@/components/dashboard/quiz/QuizStep';
 import { Calendar, Baby, Users } from 'lucide-react';
+import { useGrades } from '@/hooks/taxonomy/use-taxonomy';
 
 interface Grade {
     id: string;
@@ -30,35 +31,15 @@ export function QuestionGrade({
     value,
     onSelect,
 }: QuestionGradeProps) {
-    const [grades, setGrades] = useState<Grade[]>([]);
-    const [loading, setLoading] = useState(true);
-
     const isEI = educationLevelSlug === 'educacao-infantil';
+    const { data: grades = [], isLoading: loading } = useGrades(educationLevelSlug);
 
-    useEffect(() => {
-        async function fetchGrades() {
-            try {
-                setLoading(true);
-                const response = await fetch(`/api/v1/grades?educationLevelSlug=${educationLevelSlug}`);
-                const data = await response.json();
-                if (data.success) {
-                    setGrades(data.data);
-                }
-            } catch (err) {
-                console.error('Error fetching grades:', err);
-            } finally {
-                setLoading(false);
-            }
-        }
-        fetchGrades();
-    }, [educationLevelSlug]);
-
-    const quizOptions: QuizOption[] = grades.map(grade => ({
+    const quizOptions: QuizOption[] = useMemo(() => grades.map(grade => ({
         id: grade.id || grade.slug,
         slug: grade.slug,
         name: grade.name,
         icon: GRADE_ICONS[grade.slug] || Calendar
-    }));
+    })), [grades]);
 
     return (
         <QuizStep

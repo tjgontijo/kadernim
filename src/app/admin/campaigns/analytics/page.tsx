@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
     Activity,
     Send,
@@ -76,33 +77,26 @@ interface AnalyticsData {
 }
 
 export default function CampaignsAnalyticsPage() {
-    const [data, setData] = useState<AnalyticsData | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
     const [period, setPeriod] = useState('30d');
-
-    useEffect(() => {
-        fetchData();
-    }, [period]);
-
-    const fetchData = async () => {
-        try {
+    const {
+        data,
+        isLoading: loading,
+        isFetching: refreshing,
+        refetch,
+    } = useQuery<AnalyticsData>({
+        queryKey: ['admin-campaign-analytics', period],
+        queryFn: async () => {
             const response = await fetch(`/api/v1/admin/campaigns/analytics?period=${period}`);
             const json = await response.json();
-            if (json.success) {
-                setData(json.data);
+            if (!response.ok || !json.success) {
+                throw new Error(json.error || 'Erro ao buscar analytics');
             }
-        } catch (error) {
-            console.error('Erro ao buscar analytics:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+            return json.data;
+        },
+    });
 
     const handleRefresh = async () => {
-        setRefreshing(true);
-        await fetchData();
-        setRefreshing(false);
+        await refetch();
     };
 
     if (loading) {

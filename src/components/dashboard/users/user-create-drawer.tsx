@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useMutation } from '@tanstack/react-query'
 import {
     X,
     UserPlus,
@@ -46,7 +47,6 @@ export function UserCreateDrawer({ open, onOpenChange, onSuccess }: UserCreateDr
     const [email, setEmail] = useState('')
     const [phone, setPhone] = useState('')
     const [role, setRole] = useState<string>('user')
-    const [isSaving, setIsSaving] = useState(false)
 
     const resetForm = () => {
         setName('')
@@ -60,14 +60,8 @@ export function UserCreateDrawer({ open, onOpenChange, onSuccess }: UserCreateDr
         setPhone(applyWhatsAppMask(val))
     }
 
-    const handleCreate = async () => {
-        if (!name || !email) {
-            toast.error('Preencha nome e email')
-            return
-        }
-
-        setIsSaving(true)
-        try {
+    const createMutation = useMutation({
+        mutationFn: async () => {
             const response = await fetch('/api/v1/admin/users', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -80,19 +74,27 @@ export function UserCreateDrawer({ open, onOpenChange, onSuccess }: UserCreateDr
             })
 
             if (!response.ok) {
-                const err = await response.json()
+                const err = await response.json().catch(() => ({}))
                 throw new Error(err.error || 'Erro ao criar usuário')
             }
-
+        },
+        onSuccess: () => {
             toast.success('Usuário criado com sucesso!')
             resetForm()
             onOpenChange(false)
             onSuccess?.()
-        } catch (error: any) {
+        },
+        onError: (error: Error) => {
             toast.error(error.message)
-        } finally {
-            setIsSaving(false)
+        },
+    })
+
+    const handleCreate = async () => {
+        if (!name || !email) {
+            toast.error('Preencha nome e email')
+            return
         }
+        createMutation.mutate()
     }
 
     return (
@@ -198,7 +200,7 @@ export function UserCreateDrawer({ open, onOpenChange, onSuccess }: UserCreateDr
                                 <Button
                                     variant="outline"
                                     className="flex-1 h-12 rounded-xl font-bold"
-                                    disabled={isSaving}
+                                    disabled={createMutation.isPending}
                                 >
                                     Cancelar
                                 </Button>
@@ -206,9 +208,9 @@ export function UserCreateDrawer({ open, onOpenChange, onSuccess }: UserCreateDr
                             <Button
                                 className="flex-[2] h-12 rounded-xl font-bold shadow-lg shadow-primary/20"
                                 onClick={handleCreate}
-                                disabled={isSaving || !name || !email}
+                                disabled={createMutation.isPending || !name || !email}
                             >
-                                {isSaving ? (
+                                {createMutation.isPending ? (
                                     <>
                                         <Loader2 className="h-4 w-4 animate-spin mr-2" />
                                         Criando...

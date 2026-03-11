@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useDeferredValue, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, BookOpen, GraduationCap, X, SlidersHorizontal } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -14,7 +14,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useAdminResources } from '@/hooks/resources/use-admin-resources'
+import {
+  useAdminResources,
+  useDeleteAdminResource,
+} from '@/hooks/resources/use-admin-resources'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils/index'
 import { CrudPageShell } from '@/components/dashboard/crud/crud-page-shell'
@@ -52,15 +55,9 @@ export default function AdminResourcesPage() {
 
   // Search with debounce
   const [searchInput, setSearchInput] = useState('')
-  const [searchQuery, setSearchQuery] = useState('')
-
-  useEffect(() => {
-    const handle = setTimeout(() => {
-      setSearchQuery(searchInput)
-      setPage(1)
-    }, 400)
-    return () => clearTimeout(handle)
-  }, [searchInput])
+  const deferredSearchInput = useDeferredValue(searchInput)
+  const searchQuery = deferredSearchInput.trim().length >= 3 ? deferredSearchInput : ''
+  const deleteResourceMutation = useDeleteAdminResource()
 
   const { data: resourcesData, isLoading, error, refetch } = useAdminResources({
     filters: {
@@ -85,15 +82,15 @@ export default function AdminResourcesPage() {
   const handleDeleteResource = (resourceId: string) => {
     if (!confirm('Tem certeza que deseja deletar este recurso?')) return
     toast.info('Deletando recurso...')
-    fetch(`/api/v1/admin/resources/${resourceId}`, { method: 'DELETE' })
-      .then(res => {
-        if (!res.ok) throw new Error('Erro ao deletar')
+    deleteResourceMutation.mutate(resourceId, {
+      onSuccess: () => {
         toast.success('Recurso deletado com sucesso')
         refetch()
-      })
-      .catch(() => {
+      },
+      onError: () => {
         toast.error('Erro ao deletar recurso')
-      })
+      },
+    })
   }
 
   const handleEditResource = (resourceId: string) => {

@@ -3,7 +3,7 @@
 ## 0. Status de Execucao
 
 - Iniciado em: 11/03/2026
-- Fase atual: Fase 1 (Rotas Criticas)
+- Fase atual: Fase 3 (Performance + Cleanup Final)
 - Entregas iniciais:
   - `scripts/guardrails/audit.mjs`
   - `docs/PRD/guardrails-baseline.json`
@@ -33,6 +33,21 @@
   - `routesWithInlineZod`: **8 -> 0**
   - `routesOver80Lines`: **40 -> 31**
   - `consoleLogOccurrences`: **5 -> 3**
+- Entregas Fase 2 (client fetch + react policy):
+  - Migração de telas admin/templates, automations, campaigns analytics e llm-usage para `useQuery/useMutation`
+  - Remoção de `useEffect + fetch` em `community/page`, `resources/[id]`, `lesson-plans/page` e steps críticos da comunidade
+  - Substituição de debounce baseado em timer por `useDeferredValue` em páginas e hooks compartilhados
+  - Refactor de CRUDs (`campaigns`, `subjects`, `users`) para mutações com TanStack
+  - Remoção do fetch manual em componentes estruturais (`global-header`, `sidebar`) para query cacheada
+- Indicadores apos Fase 2:
+  - `useEffectOccurrences`: **113 -> 61**
+  - `useEffectFiles`: **51 -> 30**
+  - `useEffectFetchFiles`: **27 -> 6**
+  - `clientFetchWithoutTanStackFiles`: **30 -> 6**
+  - `routesWithPrismaDirect`: **44 -> 0**
+  - `routesWithInlineZod`: **8 -> 0**
+  - `consoleLogOccurrences`: **5 -> 3**
+  - Residual da Fase 2 concentrado em casos browser-only/polling: `use-pwa`, `PushNotificationSetup`, `checkout-pix-qrcode`, `split-config-form`, `MomentReview` e pontos de polling em billing/PWA.
 
 ## 1. Resumo Executivo
 

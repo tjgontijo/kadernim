@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { GraduationCap, Baby, School } from 'lucide-react';
 import { QuizStep } from '@/components/dashboard/quiz/QuizStep';
+import { useEducationLevels } from '@/hooks/taxonomy/use-taxonomy';
 
 interface Option {
     id: string;
@@ -25,26 +26,14 @@ const EDUCATION_ICONS: Record<string, any> = {
 };
 
 export function QuestionEducationLevel({ value, onSelect }: QuestionEducationLevelProps) {
-    const [options, setOptions] = useState<Option[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { data: options = [], isLoading: loading } = useEducationLevels();
 
-    useEffect(() => {
-        fetch('/api/v1/education-levels')
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    setOptions(data.data);
-                }
-            })
-            .finally(() => setLoading(false));
-    }, []);
-
-    const quizOptions: QuizOption[] = options.map(opt => ({
+    const quizOptions: QuizOption[] = useMemo(() => options.map(opt => ({
         id: opt.id || opt.slug,
         slug: opt.slug,
         name: opt.name,
         icon: EDUCATION_ICONS[opt.slug] || GraduationCap
-    }));
+    })), [options]);
 
     return (
         <QuizStep

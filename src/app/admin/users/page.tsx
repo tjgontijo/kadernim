@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useMutation } from '@tanstack/react-query'
 import {
     Users,
     Shield,
@@ -71,7 +72,6 @@ const STATUS_OPTIONS = [
 
 export default function AdminUsersCrudPage() {
     const [isDeletingId, setIsDeletingId] = useState<string | null>(null)
-    const [isDeletingLoading, setIsDeletingLoading] = useState(false)
     const [editingUser, setEditingUser] = useState<User | null>(null)
     const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false)
     const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false)
@@ -86,24 +86,30 @@ export default function AdminUsersCrudPage() {
         endpoint: '/api/v1/admin/users'
     })
 
-    // Apply custom filters
-    React.useEffect(() => {
+    const buildFilters = (
+        nextRole: string,
+        nextStatus: string,
+        nextEmailVerifiedOnly: boolean
+    ) => {
         const filters: Record<string, any> = {}
-        if (role !== 'all') filters.role = role
-        if (status === 'banned') filters.banned = true
-        if (status === 'active') filters.subscriptionActive = true
-        if (status === 'inactive') filters.subscriptionActive = false
-        if (emailVerifiedOnly) filters.emailVerified = true
-        crud.handleFilterChange(filters)
-    }, [role, status, emailVerifiedOnly])
-
-    const handleEdit = (user: User) => {
-        setEditingUser(user)
-        setIsEditDrawerOpen(true)
+        if (nextRole !== 'all') filters.role = nextRole
+        if (nextStatus === 'banned') filters.banned = true
+        if (nextStatus === 'active') filters.subscriptionActive = true
+        if (nextStatus === 'inactive') filters.subscriptionActive = false
+        if (nextEmailVerifiedOnly) filters.emailVerified = true
+        return filters
     }
 
-    const handleToggleBan = async (user: User) => {
-        try {
+    const applyFilters = (
+        nextRole: string,
+        nextStatus: string,
+        nextEmailVerifiedOnly: boolean
+    ) => {
+        crud.handleFilterChange(buildFilters(nextRole, nextStatus, nextEmailVerifiedOnly))
+    }
+
+    const toggleBanMutation = useMutation({
+        mutationFn: async (user: User) => {
             const response = await fetch(`/api/v1/admin/users/${user.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -113,35 +119,49 @@ export default function AdminUsersCrudPage() {
             if (!response.ok) {
                 throw new Error('Erro ao atualizar usuário')
             }
-
+        },
+        onSuccess: (_data, user) => {
             toast.success(user.banned ? 'Usuário desbanido' : 'Usuário banido')
             crud.refetch()
-        } catch (error: any) {
+        },
+        onError: (error: Error) => {
             toast.error(error.message)
-        }
-    }
+        },
+    })
 
-    const confirmDelete = async () => {
-        if (!isDeletingId) return
-        setIsDeletingLoading(true)
-        try {
-            const response = await fetch(`/api/v1/admin/users/${isDeletingId}`, {
+    const deleteMutation = useMutation({
+        mutationFn: async (id: string) => {
+            const response = await fetch(`/api/v1/admin/users/${id}`, {
                 method: 'DELETE'
             })
 
             if (!response.ok) {
-                const err = await response.json()
+                const err = await response.json().catch(() => ({}))
                 throw new Error(err.error || 'Erro ao excluir usuário')
             }
-
+        },
+        onSuccess: () => {
             toast.success('Usuário excluído com sucesso')
             crud.refetch()
-        } catch (error: any) {
-            toast.error(error.message)
-        } finally {
-            setIsDeletingLoading(false)
             setIsDeletingId(null)
-        }
+        },
+        onError: (error: Error) => {
+            toast.error(error.message)
+        },
+    })
+
+    const handleEdit = (user: User) => {
+        setEditingUser(user)
+        setIsEditDrawerOpen(true)
+    }
+
+    const handleToggleBan = async (user: User) => {
+        toggleBanMutation.mutate(user)
+    }
+
+    const confirmDelete = async () => {
+        if (!isDeletingId) return
+        deleteMutation.mutate(isDeletingId)
     }
 
     const getRoleBadge = (role: string) => {
@@ -201,6 +221,7 @@ export default function AdminUsersCrudPage() {
                             checked={role === opt.value}
                             onCheckedChange={() => {
                                 setRole(opt.value)
+                                applyFilters(opt.value, status, emailVerifiedOnly)
                                 crud.handlePageChange(1)
                             }}
                         >
@@ -228,6 +249,7 @@ export default function AdminUsersCrudPage() {
                             checked={status === opt.value}
                             onCheckedChange={() => {
                                 setStatus(opt.value)
+                                applyFilters(role, opt.value, emailVerifiedOnly)
                                 crud.handlePageChange(1)
                             }}
                         >
@@ -245,6 +267,7 @@ export default function AdminUsersCrudPage() {
                     checked={emailVerifiedOnly}
                     onCheckedChange={(checked) => {
                         setEmailVerifiedOnly(checked)
+                        applyFilters(role, status, checked)
                         crud.handlePageChange(1)
                     }}
                 />
@@ -529,7 +552,7 @@ export default function AdminUsersCrudPage() {
                 open={!!isDeletingId}
                 onOpenChange={(open) => !open && setIsDeletingId(null)}
                 onConfirm={confirmDelete}
-                isLoading={isDeletingLoading}
+                isLoading={deleteMutation.isPending}
                 title="Excluir Usuário?"
                 description="Esta ação não pode ser desfeita. Todos os dados do usuário, incluindo acessos a recursos e histórico, serão permanentemente removidos."
                 trigger={null}

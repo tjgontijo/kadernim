@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useMutation } from '@tanstack/react-query'
 import { Send, Edit3, Trash2 } from 'lucide-react'
 import { CrudPageShell } from '@/components/dashboard/crud/crud-page-shell'
 import { CrudDataView } from '@/components/dashboard/crud/crud-data-view'
@@ -18,17 +19,14 @@ import { PushCampaign } from '@/types/campaigns/campaign'
 
 export function CampaignsPageClient() {
     const [isDeletingId, setIsDeletingId] = useState<string | null>(null)
-    const [isDeletingLoading, setIsDeletingLoading] = useState(false)
-    const [isSaving, setIsSaving] = useState(false)
 
     const crud = useDataTable<PushCampaign>({
         queryKey: ['admin-campaigns'],
         endpoint: '/api/v1/admin/campaigns',
     })
 
-    const handleSave = async (data: CampaignInput) => {
-        setIsSaving(true)
-        try {
+    const saveMutation = useMutation({
+        mutationFn: async (data: CampaignInput) => {
             const method = crud.itemToEdit ? 'PATCH' : 'POST'
             const url = crud.itemToEdit
                 ? `/api/v1/admin/campaigns/${crud.itemToEdit.id}`
@@ -41,41 +39,48 @@ export function CampaignsPageClient() {
             })
 
             if (!response.ok) {
-                const err = await response.json()
+                const err = await response.json().catch(() => ({}))
                 throw new Error(err.error || 'Erro ao salvar')
             }
-
+        },
+        onSuccess: () => {
             toast.success(crud.itemToEdit ? 'Campanha atualizada' : 'Campanha criada')
             crud.setIsEditDrawerOpen(false)
             crud.refetch()
-        } catch (error: any) {
+        },
+        onError: (error: Error) => {
             toast.error(error.message)
-        } finally {
-            setIsSaving(false)
-        }
-    }
+        },
+    })
 
-    const confirmDelete = async () => {
-        if (!isDeletingId) return
-        setIsDeletingLoading(true)
-        try {
-            const response = await fetch(`/api/v1/admin/campaigns/${isDeletingId}`, {
+    const deleteMutation = useMutation({
+        mutationFn: async (id: string) => {
+            const response = await fetch(`/api/v1/admin/campaigns/${id}`, {
                 method: 'DELETE',
             })
 
             if (!response.ok) {
-                const err = await response.json()
+                const err = await response.json().catch(() => ({}))
                 throw new Error(err.error || 'Erro ao excluir')
             }
-
+        },
+        onSuccess: () => {
             toast.success('Campanha excluída com sucesso')
             crud.refetch()
-        } catch (error: any) {
-            toast.error(error.message)
-        } finally {
-            setIsDeletingLoading(false)
             setIsDeletingId(null)
-        }
+        },
+        onError: (error: Error) => {
+            toast.error(error.message)
+        },
+    })
+
+    const handleSave = async (data: CampaignInput) => {
+        saveMutation.mutate(data)
+    }
+
+    const confirmDelete = async () => {
+        if (!isDeletingId) return
+        deleteMutation.mutate(isDeletingId)
     }
 
     const getStatusBadge = (status: string) => {
@@ -307,7 +312,7 @@ export function CampaignsPageClient() {
                 title={crud.itemToEdit ? 'Editar Campanha' : 'Nova Campanha'}
                 subtitle="Configure título, mensagem e agendamento"
                 icon={Send}
-                isSaving={isSaving}
+                isSaving={saveMutation.isPending}
                 maxWidth="max-w-3xl"
                 onSave={() =>
                     document
@@ -318,7 +323,7 @@ export function CampaignsPageClient() {
                 <CampaignForm
                     initialData={crud.itemToEdit}
                     onSubmit={handleSave}
-                    isLoading={isSaving}
+                    isLoading={saveMutation.isPending}
                 />
             </CrudEditDrawer>
 
@@ -326,7 +331,7 @@ export function CampaignsPageClient() {
                 open={!!isDeletingId}
                 onOpenChange={(open) => !open && setIsDeletingId(null)}
                 onConfirm={confirmDelete}
-                isLoading={isDeletingLoading}
+                isLoading={deleteMutation.isPending}
                 title="Excluir Campanha?"
                 description="Esta ação não pode ser desfeita. Todos os dados de tracking desta campanha serão perdidos."
                 trigger={null}

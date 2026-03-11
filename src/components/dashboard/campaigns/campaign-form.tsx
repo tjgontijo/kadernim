@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useMutation } from '@tanstack/react-query'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -110,7 +111,6 @@ export function CampaignForm({ initialData, onSubmit, isLoading }: CampaignFormP
     })
 
     const { data: session } = useSession()
-    const [isTesting, setIsTesting] = useState(false)
     const [testAudiencType, setTestAudienceType] = useState<'me' | 'role'>('me')
     const [testRole, setTestRole] = useState('admin')
 
@@ -119,9 +119,8 @@ export function CampaignForm({ initialData, onSubmit, isLoading }: CampaignFormP
     const url = watch('url')
     const icon = watch('icon')
 
-    const handleTestPush = async () => {
-        setIsTesting(true)
-        try {
+    const testPushMutation = useMutation({
+        mutationFn: async () => {
             const payload = {
                 title: title || 'Título de Teste',
                 body: body || 'Mensagem de teste do Kadernim',
@@ -142,13 +141,18 @@ export function CampaignForm({ initialData, onSubmit, isLoading }: CampaignFormP
             if (!response.ok) {
                 throw new Error(result.error || 'Erro ao enviar teste')
             }
-
+            return result
+        },
+        onSuccess: (result) => {
             toast.success(result.message || 'Teste enviado com sucesso!')
-        } catch (error: any) {
+        },
+        onError: (error: Error) => {
             toast.error(error.message)
-        } finally {
-            setIsTesting(false)
-        }
+        },
+    })
+
+    const handleTestPush = async () => {
+        testPushMutation.mutate()
     }
 
     return (
@@ -569,11 +573,11 @@ export function CampaignForm({ initialData, onSubmit, isLoading }: CampaignFormP
                         <Button
                             type="button"
                             variant="default"
-                            disabled={isTesting || !title || !body}
+                            disabled={testPushMutation.isPending || !title || !body}
                             onClick={handleTestPush}
                             className="shrink-0"
                         >
-                            {isTesting ? 'Enviando...' : 'Enviar Teste'}
+                            {testPushMutation.isPending ? 'Enviando...' : 'Enviar Teste'}
                         </Button>
                     </div>
                     {(!title || !body) && (

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useDeferredValue, useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -20,6 +20,11 @@ import {
 import { Filter } from 'lucide-react'
 import type { ResourceTab } from './ResourceTabs'
 import { SearchInput } from '../shared/search-input'
+import {
+  useEducationLevels,
+  useGrades,
+  useSubjects,
+} from '@/hooks/taxonomy/use-taxonomy'
 
 interface FilterOption {
   slug: string
@@ -38,51 +43,10 @@ export function ResourceFilters({ onFiltersChange, tab = 'all' }: ResourceFilter
   const [subject, setSubject] = useState<string>('all')
   const [query, setQuery] = useState<string>('')
 
-  // Opções para os dropdowns
-  const [levels, setLevels] = useState<FilterOption[]>([])
-  const [grades, setGrades] = useState<FilterOption[]>([])
-  const [subjects, setSubjects] = useState<FilterOption[]>([])
-
-  // Carregar Etapas ao montar
-  useEffect(() => {
-    fetch('/api/v1/education-levels')
-      .then(res => res.json())
-      .then(data => { if (data.success) setLevels(data.data); });
-  }, [])
-
-  // Carregar Anos quando Etapa mudar
-  useEffect(() => {
-    if (level === 'all') {
-      setGrades([]);
-      setGrade('all');
-      return;
-    }
-    fetch(`/api/v1/grades?educationLevelSlug=${level}`)
-      .then(res => res.json())
-      .then(data => { if (data.success) setGrades(data.data); });
-
-    setGrade('all');
-    setSubject('all');
-  }, [level])
-
-  // Carregar Disciplinas quando Etapa ou Ano mudar
-  useEffect(() => {
-    if (level === 'all') {
-      setSubjects([]);
-      setSubject('all');
-      return;
-    }
-
-    const params = new URLSearchParams();
-    if (level !== 'all') params.append('educationLevelSlug', level);
-    if (grade !== 'all') params.append('gradeSlug', grade);
-
-    fetch(`/api/v1/subjects?${params.toString()}`)
-      .then(res => res.json())
-      .then(data => { if (data.success) setSubjects(data.data); });
-
-    setSubject('all');
-  }, [grade, level])
+  const deferredQuery = useDeferredValue(query)
+  const { data: levels = [] } = useEducationLevels()
+  const { data: grades = [] } = useGrades(level)
+  const { data: subjects = [] } = useSubjects(level, grade)
 
   const activeFiltersCount = useMemo(() => {
     let count = 0;
@@ -122,18 +86,14 @@ export function ResourceFilters({ onFiltersChange, tab = 'all' }: ResourceFilter
     setIsOpen(false)
   }
 
-  // Debounce apenas da busca
   useEffect(() => {
-    const id = setTimeout(() => {
-      onFiltersChange({
-        q: query || undefined,
-        educationLevel: level === 'all' ? undefined : level,
-        grade: grade === 'all' ? undefined : grade,
-        subject: subject === 'all' ? undefined : subject,
-      })
-    }, 450)
-    return () => clearTimeout(id)
-  }, [query])
+    onFiltersChange({
+      q: deferredQuery || undefined,
+      educationLevel: level === 'all' ? undefined : level,
+      grade: grade === 'all' ? undefined : grade,
+      subject: subject === 'all' ? undefined : subject,
+    })
+  }, [deferredQuery, grade, level, onFiltersChange, subject])
 
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen}>
@@ -178,7 +138,11 @@ export function ResourceFilters({ onFiltersChange, tab = 'all' }: ResourceFilter
               <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                 {level === 'educacao-infantil' ? 'Etapa' : 'Etapa de Ensino'}
               </label>
-              <Select value={level} onValueChange={setLevel}>
+              <Select value={level} onValueChange={(value) => {
+                setLevel(value)
+                setGrade('all')
+                setSubject('all')
+              }}>
                 <SelectTrigger className="h-14 w-full bg-muted/30 border-border/50 rounded-2xl text-sm font-bold">
                   <SelectValue placeholder="Todas as Etapas" />
                 </SelectTrigger>
@@ -193,7 +157,10 @@ export function ResourceFilters({ onFiltersChange, tab = 'all' }: ResourceFilter
               <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                 {level === 'educacao-infantil' ? 'Faixa Etária' : 'Ano / Série'}
               </label>
-              <Select value={grade} onValueChange={setGrade} disabled={level === 'all'}>
+              <Select value={grade} onValueChange={(value) => {
+                setGrade(value)
+                setSubject('all')
+              }} disabled={level === 'all'}>
                 <SelectTrigger className="h-14 w-full bg-muted/30 border-border/50 rounded-2xl text-sm font-bold">
                   <SelectValue placeholder={level === 'educacao-infantil' ? 'Faixa Etária' : 'Ano/Série'} />
                 </SelectTrigger>
