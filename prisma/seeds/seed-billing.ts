@@ -3,8 +3,12 @@ import { PrismaClient } from '@db/client';
 export async function seedBilling(prisma: PrismaClient) {
   console.log('💳 Configurando regras de faturamento (Split)...');
 
-  const walletId = process.env.WALLET_ASAAS_ID || 'bd4bedeb-6e30-4d93-af64-5b7e955d35fc';
-  
+  const walletId = process.env.WALLET_ASAAS_ID?.trim();
+
+  if (!walletId) {
+    throw new Error('WALLET_ASAAS_ID is required to seed billing split configuration.');
+  }
+
   await prisma.splitConfig.upsert({
     where: { walletId },
     update: {
