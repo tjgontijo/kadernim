@@ -2,17 +2,16 @@ import { prisma } from '@/lib/db'
 import { AuditActor, InvoiceStatus, PaymentMethod } from '@db'
 import {
   buildCheckoutDescription,
-  CHECKOUT_PLANS,
   extractCheckoutBillingMode,
   extractCheckoutPlanId,
   formatCheckoutCurrency,
   getAnnualCardInstallment,
-  getCheckoutPlan,
   type CheckoutBillingMode,
   type CheckoutPlanId,
 } from '@/lib/billing/checkout-offer'
 import { AsaasClient } from './asaas-client'
 import { BillingAuditService } from './audit.service'
+import { BillingCatalogService } from './catalog.service'
 import { CustomerService } from './customer.service'
 import { billingLog } from './logger'
 import { SplitService } from './split.service'
@@ -83,23 +82,19 @@ function isPaidStatus(status: InvoiceStatus) {
   return status === InvoiceStatus.RECEIVED || status === InvoiceStatus.CONFIRMED
 }
 
-function buildCheckoutExpirationDate(planId: CheckoutPlanId, referenceDate = new Date()) {
+function buildCheckoutExpirationDate(accessDays: number, referenceDate = new Date()) {
   const expiresAt = new Date(referenceDate)
-  expiresAt.setDate(expiresAt.getDate() + CHECKOUT_PLANS[planId].accessDays)
+  expiresAt.setDate(expiresAt.getDate() + accessDays)
   return expiresAt
 }
 
-function inferPlanId(description?: string | null, value?: number): CheckoutPlanId {
+async function inferPlanId(description?: string | null, value?: number): Promise<CheckoutPlanId> {
   const fromDescription = extractCheckoutPlanId(description)
   if (fromDescription) {
     return fromDescription
   }
 
-  if (typeof value === 'number' && Math.abs(value - CHECKOUT_PLANS.monthly.pixAmount) < 0.01) {
-    return 'monthly'
-  }
-
-  return 'annual'
+  return BillingCatalogService.inferPlanIdFromAmount(value)
 }
 
 async function ensureBillingUser(userId: string, cpfCnpj: string, phone?: string) {
@@ -157,6 +152,7 @@ async function ensureBillingUser(userId: string, cpfCnpj: string, phone?: string
 
 async function upsertCheckoutSubscription(params: {
   userId: string
+  offerId: string
   paymentMethod: PaymentMethod
   asaasId: string
 }) {
@@ -164,6 +160,7 @@ async function upsertCheckoutSubscription(params: {
     where: { userId: params.userId },
     create: {
       userId: params.userId,
+      offerId: params.offerId,
       asaasId: params.asaasId,
       paymentMethod: params.paymentMethod,
       status: 'INACTIVE',
@@ -174,6 +171,7 @@ async function upsertCheckoutSubscription(params: {
       pixAutomaticAuthId: null,
     },
     update: {
+      offerId: params.offerId,
       asaasId: params.asaasId,
       paymentMethod: params.paymentMethod,
       status: 'INACTIVE',
@@ -189,6 +187,7 @@ async function upsertCheckoutSubscription(params: {
 async function upsertInvoice(params: {
   userId: string
   subscriptionId: string
+  offerId: string
   paymentMethod: PaymentMethod
   payment: AsaasPayment
   pixQrCode?: PixQrCodeResponse
@@ -203,6 +202,7 @@ async function upsertInvoice(params: {
     create: {
       userId: params.userId,
       subscriptionId: params.subscriptionId,
+      offerId: params.offerId,
       asaasId: params.payment.id,
       status,
       paymentMethod: params.paymentMethod,
@@ -217,6 +217,7 @@ async function upsertInvoice(params: {
     },
     update: {
       subscriptionId: params.subscriptionId,
+      offerId: params.offerId,
       status,
       paymentMethod: params.paymentMethod,
       value: params.payment.value,
@@ -237,6 +238,7 @@ async function activateSubscription(
   referenceDate = new Date(),
   options: { billingMode?: CheckoutBillingMode | null } = {},
 ) {
+  const plan = await BillingCatalogService.getCheckoutPlan(planId)
   const current = await prisma.subscription.findUnique({
     where: { id: subscriptionId },
     select: { isActive: true, expiresAt: true },
@@ -262,7 +264,7 @@ async function activateSubscription(
       isActive: true,
       status: 'ACTIVE',
       purchaseDate: referenceDate,
-      expiresAt: buildCheckoutExpirationDate(planId, referenceDate),
+      expiresAt: buildCheckoutExpirationDate(plan.accessDays, referenceDate),
       canceledAt: null,
     },
   })
@@ -311,7 +313,7 @@ export class PaymentService {
     cpfCnpj: string
     planId: CheckoutPlanId
   }) {
-    const plan = getCheckoutPlan(params.planId)
+    const plan = await BillingCatalogService.getCheckoutPlan(params.planId)
     if (plan.id !== 'annual') {
       throw new Error('Pagamento PIX avulso disponível apenas no plano anual')
     }
@@ -338,12 +340,14 @@ export class PaymentService {
     const qrCode = await AsaasClient.get<PixQrCodeResponse>(`/payments/${payment.id}/pixQrCode`)
     const subscription = await upsertCheckoutSubscription({
       userId: params.userId,
+      offerId: plan.pixOfferId,
       paymentMethod: PaymentMethod.PIX,
       asaasId: payment.id,
     })
     const invoice = await upsertInvoice({
       userId: params.userId,
       subscriptionId: subscription.id,
+      offerId: plan.pixOfferId,
       paymentMethod: PaymentMethod.PIX,
       payment,
       pixQrCode: qrCode,
@@ -391,7 +395,7 @@ export class PaymentService {
       ccv: string
     }
   }) {
-    const plan = getCheckoutPlan(params.planId)
+    const plan = await BillingCatalogService.getCheckoutPlan(params.planId)
 
     if (plan.id === 'annual') {
       if (params.installments > 1) {
@@ -417,7 +421,7 @@ export class PaymentService {
       ccv: string
     }
   }) {
-    const plan = getCheckoutPlan(params.planId)
+    const plan = await BillingCatalogService.getCheckoutPlan(params.planId)
     billingLog('info', 'Starting monthly credit card subscription', {
       userId: params.userId,
       planId: plan.id,
@@ -448,12 +452,14 @@ export class PaymentService {
 
     const subscription = await upsertCheckoutSubscription({
       userId: params.userId,
+      offerId: plan.creditCardOfferId,
       paymentMethod: PaymentMethod.CREDIT_CARD,
       asaasId: asaasSubscription.id,
     })
     const invoice = await upsertInvoice({
       userId: params.userId,
       subscriptionId: subscription.id,
+      offerId: plan.creditCardOfferId,
       paymentMethod: PaymentMethod.CREDIT_CARD,
       payment: firstPayment,
     })
@@ -498,7 +504,7 @@ export class PaymentService {
       ccv: string
     }
   }) {
-    const plan = getCheckoutPlan(params.planId)
+    const plan = await BillingCatalogService.getCheckoutPlan(params.planId)
     billingLog('info', 'Starting annual credit card payment', {
       userId: params.userId,
       planId: plan.id,
@@ -524,12 +530,14 @@ export class PaymentService {
 
     const subscription = await upsertCheckoutSubscription({
       userId: params.userId,
+      offerId: plan.creditCardOfferId,
       paymentMethod: PaymentMethod.CREDIT_CARD,
       asaasId: payment.id,
     })
     const invoice = await upsertInvoice({
       userId: params.userId,
       subscriptionId: subscription.id,
+      offerId: plan.creditCardOfferId,
       paymentMethod: PaymentMethod.CREDIT_CARD,
       payment,
     })
@@ -574,8 +582,9 @@ export class PaymentService {
       ccv: string
     }
   }) {
-    const plan = getCheckoutPlan(params.planId)
-    const annualInstallment = getAnnualCardInstallment(plan.id, params.installments)
+    const catalog = await BillingCatalogService.getCheckoutCatalog()
+    const plan = catalog[params.planId]
+    const annualInstallment = getAnnualCardInstallment(plan.id, params.installments, catalog)
 
     if (!annualInstallment || annualInstallment.count <= 1) {
       throw new Error('Parcelamento anual inválido')
@@ -613,12 +622,14 @@ export class PaymentService {
 
     const subscription = await upsertCheckoutSubscription({
       userId: params.userId,
+      offerId: plan.creditCardOfferId,
       paymentMethod: PaymentMethod.CREDIT_CARD,
       asaasId: installment.id,
     })
     const invoice = await upsertInvoice({
       userId: params.userId,
       subscriptionId: subscription.id,
+      offerId: plan.creditCardOfferId,
       paymentMethod: PaymentMethod.CREDIT_CARD,
       payment: firstPayment,
     })
@@ -683,7 +694,7 @@ export class PaymentService {
     return invoice
   }
 
-  static inferPlanIdFromPayment(description?: string | null, value?: number) {
+  static async inferPlanIdFromPayment(description?: string | null, value?: number) {
     return inferPlanId(description, value)
   }
 
@@ -693,7 +704,7 @@ export class PaymentService {
     value?: number,
     paidAt = new Date(),
   ) {
-    const planId = inferPlanId(description, value)
+    const planId = await inferPlanId(description, value)
     const billingMode = extractCheckoutBillingMode(description)
     await activateSubscription(subscriptionId, planId, paidAt, { billingMode })
   }

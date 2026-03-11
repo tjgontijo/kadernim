@@ -1,8 +1,9 @@
 import { prisma } from '@/lib/db'
 import { AuditActor, PaymentMethod } from '@db'
-import { buildCheckoutDescription, formatCheckoutCurrency, getCheckoutPlan, type CheckoutPlanId } from '@/lib/billing/checkout-offer'
+import { buildCheckoutDescription, formatCheckoutCurrency, type CheckoutPlanId } from '@/lib/billing/checkout-offer'
 import { AsaasClient } from './asaas-client'
 import { BillingAuditService } from './audit.service'
+import { BillingCatalogService } from './catalog.service'
 import { CustomerService } from './customer.service'
 import { billingLog } from './logger'
 
@@ -16,7 +17,7 @@ export class PixAutomaticService {
     cpfCnpj: string
     planId: CheckoutPlanId
   }) {
-    const plan = getCheckoutPlan(params.planId)
+    const plan = await BillingCatalogService.getCheckoutPlan(params.planId)
     if (plan.id !== 'monthly') {
       throw new Error('PIX automático disponível apenas no plano mensal')
     }
@@ -68,12 +69,14 @@ export class PixAutomaticService {
       where: { userId: params.userId },
       create: {
         userId: params.userId,
+        offerId: plan.pixOfferId,
         asaasId: authResponse.id,
         paymentMethod: PaymentMethod.PIX_AUTOMATIC,
         status: 'INACTIVE',
         isActive: false,
       },
       update: {
+        offerId: plan.pixOfferId,
         asaasId: authResponse.id,
         paymentMethod: PaymentMethod.PIX_AUTOMATIC,
         status: 'INACTIVE',

@@ -17,12 +17,12 @@ import {
   Zap,
 } from 'lucide-react'
 import {
-  CHECKOUT_PLANS,
   DEFAULT_CHECKOUT_PLAN_ID,
   getAnnualCardInstallmentOptions,
   getAnnualCardInstallmentPreview,
   getCheckoutPricing,
   resolveCheckoutPaymentMethod,
+  type CheckoutPlanCatalog,
   type CheckoutPlanId,
 } from '@/lib/billing/checkout-offer'
 import { PixQrCode } from './checkout-pix-qrcode'
@@ -41,6 +41,13 @@ function fmtPhone(value: string) {
 
 function fmtCard(value: string) {
   return value.replace(/\D/g, '').replace(/(\d{4})(?=\d)/g, '$1 ').slice(0, 19)
+}
+
+function fmtWholeAmount(value: number) {
+  return value.toLocaleString('pt-BR', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  })
 }
 
 type Method = 'PIX' | 'CREDIT_CARD'
@@ -98,15 +105,17 @@ function TextInput({
 }
 
 function PlanSelector({
+  catalog,
   plan,
   setPlan,
 }: {
+  catalog: CheckoutPlanCatalog
   plan: CheckoutPlanId
   setPlan: (value: CheckoutPlanId) => void
 }) {
-  const monthlyPlan = CHECKOUT_PLANS.monthly
-  const annualPlan = CHECKOUT_PLANS.annual
-  const annualPreview = getAnnualCardInstallmentPreview('annual')
+  const monthlyPlan = catalog.monthly
+  const annualPlan = catalog.annual
+  const annualPreview = getAnnualCardInstallmentPreview('annual', catalog)
 
   return (
     <div className="space-y-2.5">
@@ -132,7 +141,7 @@ function PlanSelector({
           </div>
         </div>
         <p className={`text-lg font-black shrink-0 ${plan === 'monthly' ? 'text-blue-700' : 'text-gray-800'}`}>
-          R$&nbsp;29<span className="text-xs font-medium text-gray-400">/mes</span>
+          R$&nbsp;{fmtWholeAmount(monthlyPlan.creditCardAmount)}<span className="text-xs font-medium text-gray-400">/mes</span>
         </p>
       </button>
 
@@ -164,7 +173,7 @@ function PlanSelector({
         </div>
         <div className="text-right shrink-0">
           <p className={`text-lg font-black leading-none ${plan === 'annual' ? 'text-green-700' : 'text-gray-800'}`}>
-            R$&nbsp;199
+            R$&nbsp;{fmtWholeAmount(annualPlan.creditCardAmount)}
           </p>
           {annualPreview ? <p className="text-[11px] font-semibold text-gray-500 mt-1">ou ate {annualPreview.priceLabel}</p> : null}
           {annualPlan.strikeLabel ? <p className="text-xs text-gray-400 line-through">{annualPlan.strikeLabel}</p> : null}
@@ -175,9 +184,11 @@ function PlanSelector({
 }
 
 function OrderSummary({
+  catalog,
   plan,
   setPlan,
 }: {
+  catalog: CheckoutPlanCatalog
   plan: CheckoutPlanId
   setPlan: (value: CheckoutPlanId) => void
 }) {
@@ -213,13 +224,19 @@ function OrderSummary({
 
         <div className="h-px bg-gray-100" />
 
-        <PlanSelector plan={plan} setPlan={setPlan} />
+        <PlanSelector catalog={catalog} plan={plan} setPlan={setPlan} />
       </div>
     </div>
   )
 }
 
-export function GuestCheckoutForm({ prefilledUser }: { prefilledUser?: PrefilledUser | null }) {
+export function GuestCheckoutForm({
+  prefilledUser,
+  catalog,
+}: {
+  prefilledUser?: PrefilledUser | null
+  catalog: CheckoutPlanCatalog
+}) {
   const [plan, setPlan] = useState<CheckoutPlanId>(DEFAULT_CHECKOUT_PLAN_ID)
   const [method, setMethod] = useState<Method>('PIX')
   const [annualInstallments, setAnnualInstallments] = useState(1)
@@ -236,10 +253,10 @@ export function GuestCheckoutForm({ prefilledUser }: { prefilledUser?: Prefilled
   const [pixData, setPixData] = useState<PixData | null>(null)
 
   const isLoggedIn = Boolean(prefilledUser)
-  const selectedPlan = CHECKOUT_PLANS[plan]
-  const selectedPricing = getCheckoutPricing(plan, method, annualInstallments)
-  const annualInstallmentOptions = getAnnualCardInstallmentOptions(plan)
-  const selectedPaymentMethod = resolveCheckoutPaymentMethod(plan, method)
+  const selectedPlan = catalog[plan]
+  const selectedPricing = getCheckoutPricing(plan, method, catalog, annualInstallments)
+  const annualInstallmentOptions = getAnnualCardInstallmentOptions(plan, catalog)
+  const selectedPaymentMethod = resolveCheckoutPaymentMethod(plan, method, catalog)
   const checkoutSuccessUrl = '/dashboard?checkout=success'
 
   function getPostCheckoutUrl() {
@@ -581,16 +598,23 @@ export function GuestCheckoutForm({ prefilledUser }: { prefilledUser?: Prefilled
         </div>
 
         <div className="order-1 md:order-2 md:sticky md:top-8">
-          <OrderSummary plan={plan} setPlan={setPlan} />
+          <OrderSummary catalog={catalog} plan={plan} setPlan={setPlan} />
         </div>
       </div>
     </div>
   )
 }
 
-export function CheckoutForm({ user }: { user: { name: string; email: string } }) {
+export function CheckoutForm({
+  user,
+  catalog,
+}: {
+  user: { name: string; email: string }
+  catalog: CheckoutPlanCatalog
+}) {
   return (
     <GuestCheckoutForm
+      catalog={catalog}
       prefilledUser={{
         id: 'authenticated-user',
         name: user.name,

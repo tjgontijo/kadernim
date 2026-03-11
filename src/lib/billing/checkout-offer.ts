@@ -9,6 +9,7 @@ export type CheckoutBillingMode = 'pix-automatic' | 'subscription' | 'single' | 
 export const ANNUAL_CARD_INSTALLMENT_RATE = 0.0349
 export const MAX_ANNUAL_CARD_INSTALLMENTS = 12
 export const MIN_ANNUAL_CARD_INSTALLMENTS = 1
+export const DEFAULT_CHECKOUT_PLAN_ID: CheckoutPlanId = 'annual'
 
 export type AnnualCardInstallmentOption = {
   count: number
@@ -20,19 +21,22 @@ export type AnnualCardInstallmentOption = {
   requiresAnticipation: boolean
 }
 
-type CheckoutPlan = {
+export type CheckoutPlan = {
   id: CheckoutPlanId
+  name: string
   label: string
   description: string
   cycle: 'MONTHLY' | 'YEARLY'
   badge?: string
   strikeLabel?: string
   accessDays: number
+  pixOfferId: string
   pixPaymentMethod: 'PIX' | 'PIX_AUTOMATIC'
   pixAmount: number
   pixPriceLabel: string
   pixSubmitLabel: string
   pixDescription: string
+  creditCardOfferId: string
   creditCardAmount: number
   creditCardPriceLabel: string
   creditCardSubmitLabel: string
@@ -41,61 +45,26 @@ type CheckoutPlan = {
   creditCardMaxInstallments?: number
 }
 
-export const CHECKOUT_PLANS: Record<CheckoutPlanId, CheckoutPlan> = {
-  monthly: {
-    id: 'monthly',
-    label: 'Mensal',
-    description: 'Cancele quando quiser',
-    cycle: 'MONTHLY',
-    accessDays: 30,
-    pixPaymentMethod: PaymentMethod.PIX_AUTOMATIC,
-    pixAmount: 29,
-    pixPriceLabel: 'R$ 29,00/mês',
-    pixSubmitLabel: 'R$ 29,00/mês',
-    pixDescription: 'PIX Automático com renovação mensal.',
-    creditCardAmount: 29,
-    creditCardPriceLabel: 'R$ 29,00/mês',
-    creditCardSubmitLabel: 'R$ 29,00/mês',
-    creditCardDescription: 'Cobrança mensal no cartão de crédito.',
-  },
-  annual: {
-    id: 'annual',
-    label: 'Anual',
-    description: 'R$ 199 à vista ou parcelado no cartão',
-    cycle: 'YEARLY',
-    badge: '2 MESES GRÁTIS',
-    strikeLabel: 'R$ 348',
-    accessDays: 365,
-    pixPaymentMethod: PaymentMethod.PIX,
-    pixAmount: 199,
-    pixPriceLabel: 'R$ 199,00 à vista',
-    pixSubmitLabel: 'R$ 199,00 à vista',
-    pixDescription: 'Pagamento anual único no PIX.',
-    creditCardAmount: 199,
-    creditCardPriceLabel: '1x de R$ 199,00',
-    creditCardSubmitLabel: '1x de R$ 199,00',
-    creditCardDescription: 'Parcelamento com taxa de 3,49% a.m. no estilo Hotmart/Kiwify.',
-    creditCardInstallmentRate: ANNUAL_CARD_INSTALLMENT_RATE,
-    creditCardMaxInstallments: MAX_ANNUAL_CARD_INSTALLMENTS,
-  },
-}
+export type CheckoutPlanCatalog = Record<CheckoutPlanId, CheckoutPlan>
 
-export const DEFAULT_CHECKOUT_PLAN_ID: CheckoutPlanId = 'annual'
-
-export function getCheckoutPlan(planId: string): CheckoutPlan {
-  if (!(planId in CHECKOUT_PLANS)) {
+export function getCheckoutPlan(plans: CheckoutPlanCatalog, planId: string): CheckoutPlan {
+  if (!(planId in plans)) {
     throw new Error('Plano inválido')
   }
 
-  return CHECKOUT_PLANS[planId as CheckoutPlanId]
+  return plans[planId as CheckoutPlanId]
 }
 
-export function resolveCheckoutPaymentMethod(planId: CheckoutPlanId, method: CheckoutUiMethod) {
+export function resolveCheckoutPaymentMethod(
+  planId: CheckoutPlanId,
+  method: CheckoutUiMethod,
+  plans: CheckoutPlanCatalog,
+) {
   if (method === 'CREDIT_CARD') {
     return PaymentMethod.CREDIT_CARD
   }
 
-  return CHECKOUT_PLANS[planId].pixPaymentMethod
+  return plans[planId].pixPaymentMethod
 }
 
 function roundCurrency(value: number) {
@@ -111,12 +80,12 @@ function calculateInstallmentValue(principal: number, monthlyRate: number, insta
   return roundCurrency(payment)
 }
 
-export function getAnnualCardInstallmentOptions(planId: CheckoutPlanId) {
+export function getAnnualCardInstallmentOptions(planId: CheckoutPlanId, plans: CheckoutPlanCatalog) {
   if (planId !== 'annual') {
     return []
   }
 
-  const plan = CHECKOUT_PLANS.annual
+  const plan = plans.annual
   const maxInstallments = plan.creditCardMaxInstallments ?? MAX_ANNUAL_CARD_INSTALLMENTS
   const monthlyRate = plan.creditCardInstallmentRate ?? ANNUAL_CARD_INSTALLMENT_RATE
 
@@ -140,8 +109,13 @@ export function getAnnualCardInstallmentOptions(planId: CheckoutPlanId) {
   })
 }
 
-export function getCheckoutPricing(planId: CheckoutPlanId, method: CheckoutUiMethod, installments: number = 1) {
-  const plan = CHECKOUT_PLANS[planId]
+export function getCheckoutPricing(
+  planId: CheckoutPlanId,
+  method: CheckoutUiMethod,
+  plans: CheckoutPlanCatalog,
+  installments: number = 1,
+) {
+  const plan = plans[planId]
 
   if (method === 'PIX') {
     return {
@@ -152,7 +126,7 @@ export function getCheckoutPricing(planId: CheckoutPlanId, method: CheckoutUiMet
   }
 
   if (planId === 'annual') {
-    const annualInstallment = getAnnualCardInstallment(planId, installments)
+    const annualInstallment = getAnnualCardInstallment(planId, installments, plans)
     if (annualInstallment) {
       return {
         amount: annualInstallment.totalValue,
@@ -169,16 +143,20 @@ export function getCheckoutPricing(planId: CheckoutPlanId, method: CheckoutUiMet
   }
 }
 
-export function getAnnualCardInstallment(planId: CheckoutPlanId, installments: number) {
+export function getAnnualCardInstallment(
+  planId: CheckoutPlanId,
+  installments: number,
+  plans: CheckoutPlanCatalog,
+) {
   if (planId !== 'annual') {
     return null
   }
 
-  return getAnnualCardInstallmentOptions(planId).find((option) => option.count === installments) ?? null
+  return getAnnualCardInstallmentOptions(planId, plans).find((option) => option.count === installments) ?? null
 }
 
-export function getAnnualCardInstallmentPreview(planId: CheckoutPlanId) {
-  return getAnnualCardInstallment(planId, MAX_ANNUAL_CARD_INSTALLMENTS)
+export function getAnnualCardInstallmentPreview(planId: CheckoutPlanId, plans: CheckoutPlanCatalog) {
+  return getAnnualCardInstallment(planId, MAX_ANNUAL_CARD_INSTALLMENTS, plans)
 }
 
 export function buildCheckoutDescription(planId: CheckoutPlanId, billingMode?: CheckoutBillingMode) {

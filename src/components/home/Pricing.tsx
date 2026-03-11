@@ -40,7 +40,7 @@ export const Pricing: React.FC = () => {
               <div className="flex flex-col motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-300">
                 <div className="flex items-baseline gap-1">
                   <span className="text-xl font-bold text-foreground">12x de</span>
-                  <span className="text-5xl font-extrabold text-foreground dark:text-primary tracking-tighter">R$ 14,70</span>
+                  <span className="text-5xl font-extrabold text-foreground dark:text-primary tracking-tighter">R$ 20,37</span>
                 </div>
                 <div className="flex items-center gap-1 text-sm text-muted-foreground font-medium mt-1">
                   <CreditCard className="w-3 h-3" aria-hidden="true" />
@@ -48,7 +48,7 @@ export const Pricing: React.FC = () => {
                 </div>
                 <div className="mt-4 pt-4 border-t border-border/50 dark:border-border">
                   <p className="text-sm text-muted-foreground dark:text-slate-300">
-                    ou <span className="font-bold text-foreground dark:text-primary">R$ 147,00</span> à vista no PIX
+                    ou <span className="font-bold text-foreground dark:text-primary">R$ 197,00</span> à vista no PIX
                   </p>
                 </div>
               </div>

@@ -159,6 +159,7 @@ model Organization {
 model Subscription {
   id                 String             @id @default(cuid())
   userId             String             @unique
+  offerId            String?
   asaasId            String?            @unique
   status             SubscriptionStatus @default(INACTIVE)
   paymentMethod      PaymentMethod?
@@ -170,9 +171,11 @@ model Subscription {
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
   invoices           Invoice[]
+  offer              BillingOffer?      @relation(fields: [offerId], references: [id])
   user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([offerId])
   @@index([asaasId])
   @@index([status])
   @@index([isActive])
@@ -180,10 +183,50 @@ model Subscription {
   @@map("subscription")
 }
 
+model BillingPlan {
+  id         String          @id @default(cuid())
+  code       BillingPlanCode @unique
+  name       String
+  cycle      BillingCycle
+  accessDays Int
+  isActive   Boolean         @default(true)
+  sortOrder  Int             @default(0)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  offers     BillingOffer[]
+
+  @@index([isActive])
+  @@map("billing_plan")
+}
+
+model BillingOffer {
+  id              String         @id @default(cuid())
+  code            String         @unique
+  planId          String
+  paymentMethod   PaymentMethod
+  amount          Decimal        @db.Decimal(10, 2)
+  currency        String         @default("BRL")
+  maxInstallments Int            @default(1)
+  installmentRate Decimal?       @db.Decimal(6, 4)
+  isActive        Boolean        @default(true)
+  validFrom       DateTime       @default(now())
+  validUntil      DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  invoices        Invoice[]
+  plan            BillingPlan    @relation(fields: [planId], references: [id], onDelete: Cascade)
+  subscriptions   Subscription[]
+
+  @@index([planId])
+  @@index([planId, paymentMethod, isActive])
+  @@map("billing_offer")
+}
+
 model Invoice {
   id             String        @id @default(cuid())
   userId         String
   subscriptionId String?
+  offerId        String?
   asaasId        String        @unique
   status         InvoiceStatus @default(PENDING)
   paymentMethod  PaymentMethod
@@ -199,11 +242,13 @@ model Invoice {
   pixQrCode      String?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+  offer          BillingOffer? @relation(fields: [offerId], references: [id])
   subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
   user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([subscriptionId])
+  @@index([offerId])
   @@index([asaasId])
   @@index([status])
   @@map("invoice")
@@ -805,6 +850,16 @@ enum PaymentMethod {
   PIX
   PIX_AUTOMATIC
   BOLETO
+}
+
+enum BillingPlanCode {
+  monthly
+  annual
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
 }
 
 enum SplitType {

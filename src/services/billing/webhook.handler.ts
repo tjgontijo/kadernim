@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { type CheckoutPlanId } from '@/lib/billing/checkout-offer'
 import { BillingAuditService } from './audit.service'
+import { BillingCatalogService } from './catalog.service'
 import { billingLog } from './logger'
 import { AuditActor, InvoiceStatus } from '@db'
 import { PaymentService } from './payment.service'
@@ -113,7 +114,7 @@ export class WebhookHandler {
         const payment = payload.payment
         billingLog('info', 'Handling Payment Received', { paymentId: payment.id })
 
-        const planId = PaymentService.inferPlanIdFromPayment(payment.description, payment.value)
+        const planId = await PaymentService.inferPlanIdFromPayment(payment.description, payment.value)
         const invoice = await this.upsertInvoiceFromWebhook(payment, planId)
 
         if (invoice.subscriptionId) {
@@ -139,6 +140,9 @@ export class WebhookHandler {
     private static async upsertInvoiceFromWebhook(payment: any, planId: CheckoutPlanId) {
         const paidAt = new Date(payment.paymentDate || payment.confirmedDate || Date.now())
         const status = mapInvoiceStatus(payment.status)
+        const plan = await BillingCatalogService.getCheckoutPlan(planId)
+        const paymentMethod = payment.billingType === 'CREDIT_CARD' ? 'CREDIT_CARD' : 'PIX'
+        const offerId = paymentMethod === 'CREDIT_CARD' ? plan.creditCardOfferId : plan.pixOfferId
 
         const existingInvoice = await prisma.invoice.findUnique({
             where: { asaasId: payment.id },
@@ -155,6 +159,7 @@ export class WebhookHandler {
                 data: {
                     status,
                     paidAt,
+                    offerId,
                     netValue: payment.netValue,
                     invoiceUrl: payment.invoiceUrl ?? undefined,
                 }
@@ -185,6 +190,7 @@ export class WebhookHandler {
         const subscription = user.subscription ?? await prisma.subscription.create({
             data: {
                 userId: user.id,
+                offerId,
                 paymentMethod: payment.billingType === 'CREDIT_CARD' ? 'CREDIT_CARD' : 'PIX',
                 status: 'INACTIVE',
                 isActive: false,
@@ -196,9 +202,10 @@ export class WebhookHandler {
             data: {
                 userId: user.id,
                 subscriptionId: subscription.id,
+                offerId,
                 asaasId: payment.id,
                 status,
-                paymentMethod: payment.billingType === 'CREDIT_CARD' ? 'CREDIT_CARD' : 'PIX',
+                paymentMethod,
                 value: payment.value,
                 netValue: payment.netValue,
                 description: payment.description ?? `Assinatura Kadernim Pro [plan:${planId}]`,

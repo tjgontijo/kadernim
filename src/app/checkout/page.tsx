@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { auth } from '@/server/auth/auth'
 import { GuestCheckoutForm } from '@/components/dashboard/billing/checkout-form'
+import { BillingCatalogService } from '@/services/billing/catalog.service'
 import { BookOpen, Lock } from 'lucide-react'
 
 export const metadata: Metadata = {
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
 
 export default async function CheckoutPage() {
   let prefilledUser: { id: string; name: string; email: string } | null = null
+  const catalog = await BillingCatalogService.getCheckoutCatalog()
 
   try {
     const session = await auth.api.getSession({ headers: await headers() })
@@ -41,7 +43,7 @@ export default async function CheckoutPage() {
       </header>
 
       <main className="py-6 sm:py-8 px-4 sm:px-6 lg:px-8">
-        <GuestCheckoutForm prefilledUser={prefilledUser} />
+        <GuestCheckoutForm prefilledUser={prefilledUser} catalog={catalog} />
       </main>
     </div>
   )

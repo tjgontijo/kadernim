@@ -11,6 +11,12 @@ CREATE TYPE "InvoiceStatus" AS ENUM ('PENDING', 'CONFIRMED', 'RECEIVED', 'OVERDU
 CREATE TYPE "PaymentMethod" AS ENUM ('CREDIT_CARD', 'PIX', 'PIX_AUTOMATIC', 'BOLETO');
 
 -- CreateEnum
+CREATE TYPE "BillingPlanCode" AS ENUM ('monthly', 'annual');
+
+-- CreateEnum
+CREATE TYPE "BillingCycle" AS ENUM ('MONTHLY', 'YEARLY');
+
+-- CreateEnum
 CREATE TYPE "SplitType" AS ENUM ('PERCENTAGE', 'FIXED');
 
 -- CreateEnum
@@ -147,6 +153,7 @@ CREATE TABLE "organization" (
 CREATE TABLE "subscription" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
+    "offerId" TEXT,
     "asaasId" TEXT,
     "status" "SubscriptionStatus" NOT NULL DEFAULT 'INACTIVE',
     "paymentMethod" "PaymentMethod",
@@ -162,10 +169,45 @@ CREATE TABLE "subscription" (
 );
 
 -- CreateTable
+CREATE TABLE "billing_plan" (
+    "id" TEXT NOT NULL,
+    "code" "BillingPlanCode" NOT NULL,
+    "name" TEXT NOT NULL,
+    "cycle" "BillingCycle" NOT NULL,
+    "accessDays" INTEGER NOT NULL,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "sortOrder" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "billing_plan_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "billing_offer" (
+    "id" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
+    "planId" TEXT NOT NULL,
+    "paymentMethod" "PaymentMethod" NOT NULL,
+    "amount" DECIMAL(10,2) NOT NULL,
+    "currency" TEXT NOT NULL DEFAULT 'BRL',
+    "maxInstallments" INTEGER NOT NULL DEFAULT 1,
+    "installmentRate" DECIMAL(6,4),
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "validFrom" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "validUntil" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "billing_offer_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "invoice" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "subscriptionId" TEXT,
+    "offerId" TEXT,
     "asaasId" TEXT NOT NULL,
     "status" "InvoiceStatus" NOT NULL DEFAULT 'PENDING',
     "paymentMethod" "PaymentMethod" NOT NULL,
@@ -718,6 +760,9 @@ CREATE UNIQUE INDEX "subscription_pixAutomaticAuthId_key" ON "subscription"("pix
 CREATE INDEX "subscription_userId_idx" ON "subscription"("userId");
 
 -- CreateIndex
+CREATE INDEX "subscription_offerId_idx" ON "subscription"("offerId");
+
+-- CreateIndex
 CREATE INDEX "subscription_asaasId_idx" ON "subscription"("asaasId");
 
 -- CreateIndex
@@ -730,6 +775,21 @@ CREATE INDEX "subscription_isActive_idx" ON "subscription"("isActive");
 CREATE INDEX "subscription_expiresAt_idx" ON "subscription"("expiresAt");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "billing_plan_code_key" ON "billing_plan"("code");
+
+-- CreateIndex
+CREATE INDEX "billing_plan_isActive_idx" ON "billing_plan"("isActive");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "billing_offer_code_key" ON "billing_offer"("code");
+
+-- CreateIndex
+CREATE INDEX "billing_offer_planId_idx" ON "billing_offer"("planId");
+
+-- CreateIndex
+CREATE INDEX "billing_offer_planId_paymentMethod_isActive_idx" ON "billing_offer"("planId", "paymentMethod", "isActive");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "invoice_asaasId_key" ON "invoice"("asaasId");
 
 -- CreateIndex
@@ -737,6 +797,9 @@ CREATE INDEX "invoice_userId_idx" ON "invoice"("userId");
 
 -- CreateIndex
 CREATE INDEX "invoice_subscriptionId_idx" ON "invoice"("subscriptionId");
+
+-- CreateIndex
+CREATE INDEX "invoice_offerId_idx" ON "invoice"("offerId");
 
 -- CreateIndex
 CREATE INDEX "invoice_asaasId_idx" ON "invoice"("asaasId");
@@ -1003,7 +1066,16 @@ ALTER TABLE "account" ADD CONSTRAINT "account_userId_fkey" FOREIGN KEY ("userId"
 ALTER TABLE "session" ADD CONSTRAINT "session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "subscription" ADD CONSTRAINT "subscription_offerId_fkey" FOREIGN KEY ("offerId") REFERENCES "billing_offer"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "subscription" ADD CONSTRAINT "subscription_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "billing_offer" ADD CONSTRAINT "billing_offer_planId_fkey" FOREIGN KEY ("planId") REFERENCES "billing_plan"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "invoice" ADD CONSTRAINT "invoice_offerId_fkey" FOREIGN KEY ("offerId") REFERENCES "billing_offer"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "invoice" ADD CONSTRAINT "invoice_subscriptionId_fkey" FOREIGN KEY ("subscriptionId") REFERENCES "subscription"("id") ON DELETE SET NULL ON UPDATE CASCADE;
