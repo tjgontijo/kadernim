@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from '@/services/auth/session-service'
-import { prisma } from '@/lib/db'
-import fs from 'fs'
-import path from 'path'
+import { UpdateAccountSchema } from '@/schemas/account/account-schemas'
+import {
+    getAccountProfile,
+    updateAccountProfile,
+} from '@/services/account/account-service'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,45 +20,13 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        const user = await prisma.user.findUnique({
-            where: { id: session.user.id },
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                phone: true,
-                image: true,
-                role: true,
-                emailVerified: true,
-                createdAt: true,
-                subscription: {
-                    select: {
-                        id: true,
-                        isActive: true,
-                        purchaseDate: true,
-                        expiresAt: true,
-                    },
-                },
-            },
-        })
-
-        if (!user) {
-            return NextResponse.json({ error: 'User not found' }, { status: 404 })
-        }
-
-        // Buscar versão atual do app para cross-check do PWA
-        const versionPath = path.join(process.cwd(), 'public/version.json')
-        let latestVersion = null
-        try {
-            if (fs.existsSync(versionPath)) {
-                latestVersion = JSON.parse(fs.readFileSync(versionPath, 'utf-8'))
-            }
-        } catch (e) {
-            console.error('[Account API] Error reading version.json', e)
-        }
-
-        return NextResponse.json({ ...user, latestVersion })
+        const user = await getAccountProfile(session.user.id)
+        return NextResponse.json(user)
     } catch (error) {
+        if (error instanceof Error && error.message === 'User not found') {
+            return NextResponse.json({ error: error.message }, { status: 404 })
+        }
+
         console.error('[GET /api/v1/account]', error)
         return NextResponse.json(
             { error: 'Erro ao buscar dados da conta' },
@@ -78,23 +48,16 @@ export async function PUT(request: NextRequest) {
         }
 
         const body = await request.json()
-        const { name, phone } = body
+        const parsed = UpdateAccountSchema.safeParse(body)
 
-        const user = await prisma.user.update({
-            where: { id: session.user.id },
-            data: {
-                ...(name && { name }),
-                ...(phone !== undefined && { phone: phone || null }),
-            },
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                phone: true,
-                image: true,
-                role: true,
-            },
-        })
+        if (!parsed.success) {
+            return NextResponse.json(
+                { error: 'Dados inválidos', details: parsed.error.flatten() },
+                { status: 400 }
+            )
+        }
+
+        const user = await updateAccountProfile(session.user.id, parsed.data)
 
         return NextResponse.json(user)
     } catch (error) {

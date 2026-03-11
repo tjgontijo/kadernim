@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { deleteVideo } from '@/server/clients/cloudinary/video-client'
-import { updateResourceVideo, deleteResourceVideo } from '@/services/resources/admin/video-service'
-import { prisma } from '@/lib/db'
+import {
+  deleteResourceVideo,
+  getResourceVideoById,
+  updateResourceVideo,
+} from '@/services/resources/admin'
 
 // PUT /api/v1/admin/resources/[id]/videos/[videoId]
 export async function PUT(
@@ -13,9 +16,7 @@ export async function PUT(
     const { title, order } = await req.json()
 
     // Verify video exists and belongs to resource
-    const video = await prisma.resourceVideo.findUnique({
-      where: { id: videoId },
-    })
+    const video = await getResourceVideoById(videoId)
 
     if (!video) {
       return NextResponse.json(
@@ -67,9 +68,7 @@ export async function DELETE(
 
 
     // Verify video exists and belongs to resource
-    const video = await prisma.resourceVideo.findUnique({
-      where: { id: videoId },
-    })
+    const video = await getResourceVideoById(videoId)
 
     if (!video) {
       console.warn(`[DELETE VIDEO] Video not found in DB: ${videoId}`)

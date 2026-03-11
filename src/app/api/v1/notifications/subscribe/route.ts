@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
 import { PushSubscriptionCreateSchema } from '@/schemas/notifications/push-notification-schemas';
+import { upsertPushSubscription } from '@/services/notification/push-subscription.service';
 import { auth } from '@/server/auth';
 
 /**
@@ -39,27 +39,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { endpoint, keys } = validation.data;
-
-    // 3. Criar ou atualizar a subscription (vinculada ao userId)
-    const subscription = await prisma.pushSubscription.upsert({
-      where: {
-        endpoint,
-      },
-      update: {
-        active: true,
-        p256dh: keys.p256dh,
-        auth: keys.auth,
-        userId, // Atualiza o userId caso o endpoint já exista
-      },
-      create: {
-        endpoint,
-        p256dh: keys.p256dh,
-        auth: keys.auth,
-        userId,
-        active: true,
-      },
-    });
+    const subscription = await upsertPushSubscription(userId, validation.data);
 
 
     return NextResponse.json(

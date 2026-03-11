@@ -1,16 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
 import { auth } from '@/server/auth/auth'
 import { z } from 'zod'
-
-const ReorderImagesSchema = z.object({
-    updates: z.array(
-        z.object({
-            id: z.string(),
-            order: z.number().int().nonnegative(),
-        })
-    ),
-})
+import { ReorderResourceImagesSchema } from '@/schemas/resources/admin-resource-schemas'
+import { reorderResourceImagesByUpdates } from '@/services/resources/admin'
 
 export async function PUT(
     req: NextRequest,
@@ -27,29 +19,9 @@ export async function PUT(
 
         const { id: resourceId } = await ctx.params
         const body = await req.json()
-        const { updates } = ReorderImagesSchema.parse(body)
+        const { updates } = ReorderResourceImagesSchema.parse(body)
 
-        // Verify resource exists
-        const resource = await prisma.resource.findUnique({
-            where: { id: resourceId },
-        })
-
-        if (!resource) {
-            return NextResponse.json(
-                { error: 'Recurso não encontrado' },
-                { status: 404 }
-            )
-        }
-
-        // Perform updates in a transaction
-        await prisma.$transaction(
-            updates.map((update) =>
-                prisma.resourceImage.update({
-                    where: { id: update.id, resourceId }, // Ensure image belongs to resource
-                    data: { order: update.order },
-                })
-            )
-        )
+        await reorderResourceImagesByUpdates(resourceId, updates)
 
         return NextResponse.json({ success: true })
     } catch (error) {
@@ -57,6 +29,16 @@ export async function PUT(
             return NextResponse.json(
                 { error: 'Dados inválidos', details: error.issues },
                 { status: 400 }
+            )
+        }
+
+        if (
+            error instanceof Error &&
+            error.message === 'One or more images do not belong to this resource'
+        ) {
+            return NextResponse.json(
+                { error: 'Recurso ou imagens inválidas' },
+                { status: 404 }
             )
         }
 

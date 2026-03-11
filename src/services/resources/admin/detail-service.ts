@@ -1,0 +1,133 @@
+import { prisma } from '@/lib/db'
+import {
+  ResourceDetailResponseSchema,
+  type ResourceDetailResponse,
+} from '@/schemas/resources/admin-resource-schemas'
+
+export async function assertAdminResourceExists(resourceId: string) {
+  const resource = await prisma.resource.findUnique({
+    where: { id: resourceId },
+    select: { id: true },
+  })
+
+  if (!resource) {
+    throw new Error('RESOURCE_NOT_FOUND')
+  }
+}
+
+export async function getAdminResourceDetail(resourceId: string): Promise<ResourceDetailResponse> {
+  const resource = await prisma.resource.findUnique({
+    where: { id: resourceId },
+    include: {
+      educationLevel: true,
+      subject: true,
+      files: {
+        select: {
+          id: true,
+          name: true,
+          cloudinaryPublicId: true,
+          url: true,
+          fileType: true,
+          sizeBytes: true,
+          createdAt: true,
+        },
+      },
+      images: {
+        select: {
+          id: true,
+          cloudinaryPublicId: true,
+          url: true,
+          alt: true,
+          order: true,
+          createdAt: true,
+        },
+        orderBy: { order: 'asc' },
+      },
+      videos: {
+        select: {
+          id: true,
+          title: true,
+          cloudinaryPublicId: true,
+          url: true,
+          thumbnail: true,
+          duration: true,
+          order: true,
+          createdAt: true,
+        },
+      },
+      grades: {
+        include: {
+          grade: {
+            select: { slug: true },
+          },
+        },
+      },
+    },
+  })
+
+  if (!resource) {
+    throw new Error('RESOURCE_NOT_FOUND')
+  }
+
+  const [bnccLinks, totalUsers, accessGrants, subscriberAccess] = await Promise.all([
+    prisma.resourceBnccSkill.findMany({
+      where: { resourceId },
+      include: {
+        bnccSkill: {
+          select: { id: true, code: true, description: true },
+        },
+      },
+    }),
+    prisma.resourceUserAccess.count({
+      where: { resourceId },
+    }),
+    prisma.resourceUserAccess.count({
+      where: {
+        resourceId,
+        expiresAt: { not: null },
+      },
+    }),
+    prisma.resourceUserAccess.count({
+      where: {
+        resourceId,
+        expiresAt: null,
+      },
+    }),
+  ])
+
+  return ResourceDetailResponseSchema.parse({
+    id: resource.id,
+    title: resource.title,
+    description: resource.description,
+    educationLevel: resource.educationLevel?.slug,
+    subject: resource.subject?.slug,
+    externalId: resource.externalId,
+    isFree: resource.isFree,
+    thumbUrl: resource.images?.[0]?.url || null,
+    grades: resource.grades.map((grade) => grade.grade?.slug).filter(Boolean),
+    createdAt: resource.createdAt.toISOString(),
+    updatedAt: resource.updatedAt.toISOString(),
+    files: resource.files.map((file) => ({
+      ...file,
+      createdAt: file.createdAt.toISOString(),
+    })),
+    images: resource.images.map((image) => ({
+      ...image,
+      createdAt: image.createdAt.toISOString(),
+    })),
+    videos: resource.videos.map((video) => ({
+      ...video,
+      createdAt: video.createdAt.toISOString(),
+    })),
+    stats: {
+      totalUsers,
+      accessGrants,
+      subscriberAccess,
+    },
+    bnccSkills: bnccLinks.map((link) => ({
+      id: link.bnccSkill.id,
+      code: link.bnccSkill.code,
+      description: link.bnccSkill.description,
+    })),
+  })
+}

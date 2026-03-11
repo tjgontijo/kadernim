@@ -1,12 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
-import { requirePermission } from '@/server/auth/middleware';
+import { NextRequest, NextResponse } from 'next/server'
+import { requirePermission } from '@/server/auth/middleware'
 import {
   PushTemplateCreateSchema,
   PushTemplateListSchema,
-} from '@/schemas/templates/push-template-schemas';
+} from '@/schemas/templates/push-template-schemas'
+import { PushTemplateService } from '@/services/templates/push-template.service'
 
-export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic'
 
 /**
  * GET /api/v1/admin/push-templates
@@ -14,12 +14,12 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(request: NextRequest) {
   try {
-    const authResult = await requirePermission(request, 'manage:resources');
+    const authResult = await requirePermission(request, 'manage:resources')
     if (authResult instanceof NextResponse) {
-      return authResult;
+      return authResult
     }
 
-    const { searchParams } = new URL(request.url);
+    const { searchParams } = new URL(request.url)
     const filters = PushTemplateListSchema.safeParse({
       eventType: searchParams.get('eventType') || undefined,
       isActive:
@@ -29,40 +29,19 @@ export async function GET(request: NextRequest) {
             ? false
             : undefined,
       search: searchParams.get('search') || undefined,
-    });
+    })
 
-    const where: Record<string, unknown> = {};
+    const templates = await PushTemplateService.list(
+      filters.success ? filters.data : {}
+    )
 
-    if (filters.success) {
-      if (filters.data.eventType) {
-        where.eventType = filters.data.eventType;
-      }
-      if (typeof filters.data.isActive === 'boolean') {
-        where.isActive = filters.data.isActive;
-      }
-      if (filters.data.search) {
-        where.OR = [
-          { title: { contains: filters.data.search, mode: 'insensitive' } },
-          { slug: { contains: filters.data.search, mode: 'insensitive' } },
-          {
-            description: { contains: filters.data.search, mode: 'insensitive' },
-          },
-        ];
-      }
-    }
-
-    const templates = await prisma.pushTemplate.findMany({
-      where,
-      orderBy: [{ isActive: 'desc' }, { title: 'asc' }],
-    });
-
-    return NextResponse.json({ success: true, data: templates });
+    return NextResponse.json({ success: true, data: templates })
   } catch (error) {
-    console.error('[API] Erro ao listar push templates:', error);
+    console.error('[API] Erro ao listar push templates:', error)
     return NextResponse.json(
       { success: false, error: 'Erro interno ao listar push templates' },
       { status: 500 }
-    );
+    )
   }
 }
 
@@ -72,13 +51,13 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const authResult = await requirePermission(request, 'manage:resources');
+    const authResult = await requirePermission(request, 'manage:resources')
     if (authResult instanceof NextResponse) {
-      return authResult;
+      return authResult
     }
 
-    const body = await request.json();
-    const parsed = PushTemplateCreateSchema.safeParse(body);
+    const body = await request.json()
+    const parsed = PushTemplateCreateSchema.safeParse(body)
 
     if (!parsed.success) {
       return NextResponse.json(
@@ -88,47 +67,29 @@ export async function POST(request: NextRequest) {
           details: parsed.error.flatten(),
         },
         { status: 400 }
-      );
+      )
     }
 
-    let { slug, name, ...rest } = parsed.data;
-
-    // Gerar slug automaticamente se não fornecido
-    if (!slug) {
-      slug = name
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '');
-    }
-
-    // Verificar se slug já existe
-    const existing = await prisma.pushTemplate.findUnique({
-      where: { slug },
-    });
-
+    const slug = PushTemplateService.resolveSlug(parsed.data.name, parsed.data.slug)
+    const existing = await PushTemplateService.getBySlug(slug)
     if (existing) {
       return NextResponse.json(
         { success: false, error: 'Já existe um template com este slug' },
         { status: 409 }
-      );
+      )
     }
 
-    const template = await prisma.pushTemplate.create({
-      data: {
-        slug,
-        name,
-        ...rest,
-      },
-    });
+    const template = await PushTemplateService.create({
+      ...parsed.data,
+      slug,
+    })
 
-    return NextResponse.json({ success: true, data: template }, { status: 201 });
+    return NextResponse.json({ success: true, data: template }, { status: 201 })
   } catch (error) {
-    console.error('[API] Erro ao criar push template:', error);
+    console.error('[API] Erro ao criar push template:', error)
     return NextResponse.json(
       { success: false, error: 'Erro interno ao criar push template' },
       { status: 500 }
-    );
+    )
   }
 }

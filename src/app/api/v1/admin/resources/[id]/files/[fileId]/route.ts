@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requirePermission } from '@/server/auth/middleware'
 import { checkRateLimit } from '@/server/utils/rate-limit'
-import { prisma } from '@/lib/db'
 import { deleteFile } from '@/server/clients/cloudinary/file-client'
+import { deleteFileService, getResourceFileById } from '@/services/resources/admin'
 
 /**
  * DELETE /api/v1/admin/resources/:id/files/:fileId
@@ -26,9 +26,7 @@ export async function DELETE(
 
 
     // Get file to retrieve Cloudinary public ID
-    const file = await prisma.resourceFile.findUnique({
-      where: { id: fileId },
-    })
+    const file = await getResourceFileById(fileId)
 
     if (!file) {
       console.warn(`[DELETE FILE] File not found in DB: ${fileId}`)
@@ -54,7 +52,6 @@ export async function DELETE(
     }
 
     // Delete file record from database
-    const { deleteFileService } = await import('@/services/resources/admin/file-service')
     await deleteFileService(fileId, resourceId, userId)
 
     return new NextResponse(null, { status: 204 })

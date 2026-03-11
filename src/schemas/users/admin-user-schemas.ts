@@ -31,6 +31,15 @@ export const UpdateUserSchema = z.object({
 
 export type UpdateUserInput = z.infer<typeof UpdateUserSchema>
 
+export const CreateAdminUserSchema = z.object({
+    name: z.string().min(2).max(100),
+    email: z.string().email().max(100),
+    phone: z.string().max(30).optional().nullable(),
+    role: z.enum(['user', 'subscriber', 'admin']).optional().default('user'),
+})
+
+export type CreateAdminUserInput = z.infer<typeof CreateAdminUserSchema>
+
 // ============================================
 // USER LIST RESPONSE SCHEMA
 // ============================================
@@ -62,3 +71,10 @@ export const UserListResponseSchema = z.object({
 })
 
 export type UserListResponse = z.infer<typeof UserListResponseSchema>
+
+export const ToggleUserAccessSchema = z.object({
+    resourceId: z.string().cuid(),
+    hasAccess: z.boolean(),
+})
+
+export type ToggleUserAccessInput = z.infer<typeof ToggleUserAccessSchema>

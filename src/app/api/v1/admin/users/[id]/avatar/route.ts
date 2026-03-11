@@ -3,7 +3,7 @@ import { requirePermission } from '@/server/auth/middleware'
 import { UserRole } from '@/types/users/user-role'
 import { checkRateLimit } from '@/server/utils/rate-limit'
 import { uploadImage } from '@/server/clients/cloudinary/image-client'
-import { prisma } from '@/lib/db'
+import { updateUserAvatarService } from '@/services/users/update-user'
 
 /**
  * POST /api/v1/admin/users/[id]/avatar
@@ -65,35 +65,24 @@ export async function POST(
             return NextResponse.json({ error: 'A imagem deve ter no máximo 2MB' }, { status: 400 })
         }
 
-        // Verify user exists
-        const user = await prisma.user.findUnique({
-            where: { id: targetUserId },
-        })
-
-        if (!user) {
-            return NextResponse.json(
-                { error: 'Usuário não encontrado.' },
-                { status: 404 }
-            )
-        }
-
         // Upload to Cloudinary
         // Note: for users, we might want a different folder or tags
         const uploadResult = await uploadImage(file, 'avatar', `user-avatar-${targetUserId}`, 'User Avatar')
 
-        // Update user image field
-        await prisma.user.update({
-            where: { id: targetUserId },
-            data: {
-                image: uploadResult.url,
-            },
-        })
+        await updateUserAvatarService(targetUserId, uploadResult.url)
 
         return NextResponse.json({
             url: uploadResult.url,
             publicId: uploadResult.publicId,
         })
     } catch (error) {
+        if (error instanceof Error && error.message === 'USER_NOT_FOUND') {
+            return NextResponse.json(
+                { error: 'Usuário não encontrado.' },
+                { status: 404 }
+            )
+        }
+
         console.error('[POST /api/v1/admin/users/[id]/avatar]', error)
         return NextResponse.json(
             { error: 'Failed to upload avatar' },

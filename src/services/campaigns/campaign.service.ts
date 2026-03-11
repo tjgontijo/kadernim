@@ -61,6 +61,63 @@ export class CampaignService {
         })
     }
 
+    static async trackClick(params: {
+        campaignId: string
+        userId?: string | null
+        userAgent?: string
+    }) {
+        await prisma.$transaction([
+            prisma.pushCampaignClick.create({
+                data: {
+                    campaignId: params.campaignId,
+                    userId: params.userId ?? null,
+                    userAgent: params.userAgent,
+                },
+            }),
+            prisma.pushCampaign.update({
+                where: { id: params.campaignId },
+                data: {
+                    totalClicked: {
+                        increment: 1,
+                    },
+                },
+            }),
+        ])
+    }
+
+    static async getTrackingRedirectUrl(params: {
+        campaignId: string
+        destinationUrl?: string | null
+    }) {
+        const campaign = await prisma.pushCampaign.findUnique({
+            where: { id: params.campaignId },
+            select: {
+                id: true,
+                title: true,
+                url: true,
+            },
+        })
+
+        if (!campaign) {
+            return null
+        }
+
+        const finalUrl = params.destinationUrl || campaign.url || '/'
+        const url = new URL(finalUrl, process.env.NEXT_PUBLIC_APP_URL)
+
+        if (!url.searchParams.has('utm_source')) {
+            url.searchParams.set('utm_source', 'push')
+            url.searchParams.set('utm_medium', 'notification')
+            url.searchParams.set(
+                'utm_campaign',
+                campaign.title.toLowerCase().replace(/\s+/g, '-')
+            )
+            url.searchParams.set('utm_content', campaign.id)
+        }
+
+        return url.toString()
+    }
+
     static async update(id: string, data: Partial<CampaignInput> & { status?: string }) {
         const campaign = await prisma.pushCampaign.update({
             where: { id },

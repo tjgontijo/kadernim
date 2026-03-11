@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
-import { prisma } from '@/lib/db';
+import { getPushDebugStatus } from '@/services/notification/push-debug.service';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,32 +34,11 @@ export async function GET() {
     const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || '';
     const vapidSubject = process.env.VAPID_SUBJECT || '';
 
-    // Buscar subscriptions do usuário atual
-    const userSubscriptions = await prisma.pushSubscription.findMany({
-      where: { userId: session.user.id },
-      select: {
-        id: true,
-        endpoint: true,
-        active: true,
-        createdAt: true,
-        updatedAt: true,
-      }
-    });
-
-    // Buscar todas as subscriptions ativas (count)
-    const totalActiveSubscriptions = await prisma.pushSubscription.count({
-      where: { active: true }
-    });
-
-    // Buscar subscriptions com erros recentes (não atualizadas há mais de 7 dias mas ainda ativas)
-    const staleSubscriptions = await prisma.pushSubscription.count({
-      where: {
-        active: true,
-        updatedAt: {
-          lt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-        }
-      }
-    });
+    const {
+      userSubscriptions,
+      totalActiveSubscriptions,
+      staleSubscriptions,
+    } = await getPushDebugStatus(session.user.id);
 
     return NextResponse.json({
       vapid: {

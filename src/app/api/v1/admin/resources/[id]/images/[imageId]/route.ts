@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { deleteImage } from '@/server/clients/cloudinary/image-client'
-import { updateResourceImage, deleteResourceImage } from '@/services/resources/admin/image-service'
-import { prisma } from '@/lib/db'
+import {
+  deleteResourceImage,
+  getResourceImageById,
+  updateResourceImage,
+} from '@/services/resources/admin'
 
 // PUT /api/v1/admin/resources/[id]/images/[imageId]
 export async function PUT(
@@ -13,9 +16,7 @@ export async function PUT(
     const { alt, order } = await req.json()
 
     // Verify image exists and belongs to resource
-    const image = await prisma.resourceImage.findUnique({
-      where: { id: imageId },
-    })
+    const image = await getResourceImageById(imageId)
 
     if (!image) {
       return NextResponse.json(
@@ -65,9 +66,7 @@ export async function DELETE(
 
 
     // Verify image exists and belongs to resource
-    const image = await prisma.resourceImage.findUnique({
-      where: { id: imageId },
-    })
+    const image = await getResourceImageById(imageId)
 
     if (!image) {
       console.warn(`[DELETE IMAGE] Image not found in DB: ${imageId}`)

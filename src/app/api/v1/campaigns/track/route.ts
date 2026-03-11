@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
 import { auth } from '@/server/auth';
+import { CampaignTrackSchema } from '@/schemas/campaigns/campaign-schemas';
+import { CampaignService } from '@/services/campaigns/campaign.service';
 
 /**
  * POST /api/v1/campaigns/track
@@ -11,11 +12,11 @@ import { auth } from '@/server/auth';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { campaignId } = body;
+    const parsed = CampaignTrackSchema.safeParse(body);
 
-    if (!campaignId) {
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: 'campaignId é obrigatório' },
+        { error: 'campaignId é obrigatório', details: parsed.error.flatten() },
         { status: 400 }
       );
     }
@@ -34,28 +35,11 @@ export async function POST(req: NextRequest) {
     // Extrair user agent
     const userAgent = req.headers.get('user-agent') || undefined;
 
-    // Registrar clique
-    await prisma.pushCampaignClick.create({
-      data: {
-        campaignId,
-        userId,
-        userAgent,
-      },
+    await CampaignService.trackClick({
+      campaignId: parsed.data.campaignId,
+      userId,
+      userAgent,
     });
-
-    // Incrementar contador desnormalizado na campanha (para performance)
-    await prisma.pushCampaign.update({
-      where: { id: campaignId },
-      data: {
-        totalClicked: {
-          increment: 1,
-        },
-      },
-    });
-
-    console.log(
-      `[Campaign] Clique registrado: campanha=${campaignId}, userId=${userId || 'anônimo'}`
-    );
 
     return NextResponse.json({ success: true });
   } catch (error) {

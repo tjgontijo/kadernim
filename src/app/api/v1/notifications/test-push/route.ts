@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
 import { sendPushToAll, sendPushToSubscriptions, countActiveSubscriptions } from '@/services/notification/push-send';
-import { prisma } from '@/lib/db';
+import { listTargetPushSubscriptions } from '@/services/notification/push-debug.service';
 
 export const dynamic = 'force-dynamic';
 
@@ -63,15 +63,7 @@ export async function POST(req: Request) {
 
     if (role || userId) {
       // Buscar subscriptions específicas de forma mais direta
-      const subscriptions = await prisma.pushSubscription.findMany({
-        where: {
-          active: true,
-          OR: [
-            userId ? { userId } : {},
-            role ? { user: { role } } : {}
-          ].filter(f => Object.keys(f).length > 0)
-        }
-      });
+      const subscriptions = await listTargetPushSubscriptions({ role, userId });
 
       if (subscriptions.length === 0) {
         return NextResponse.json(
@@ -98,15 +90,6 @@ export async function POST(req: Request) {
       // Enviar para todos
       result = await sendPushToAll(payload);
     }
-
-    // Log detalhado para debug
-    console.log({
-      success: result.success,
-      total: result.total,
-      failed: result.failed,
-      errorsCount: result.errors.length,
-      errors: result.errors.slice(0, 5) // Primeiros 5 erros apenas
-    });
 
     return NextResponse.json({
       success: result.success > 0,

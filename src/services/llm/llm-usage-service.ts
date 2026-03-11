@@ -198,6 +198,52 @@ export async function getLlmUsageByPeriod(params: {
 }
 
 /**
+ * Busca logs detalhados de uso de LLM com paginação
+ */
+export async function getLlmUsageLogs(params: {
+    page: number;
+    limit: number;
+    feature?: string;
+    status?: string;
+}) {
+    const { page, limit, feature, status } = params;
+    const skip = (page - 1) * limit;
+
+    const where = {
+        ...(feature && { feature }),
+        ...(status && { status }),
+    };
+
+    const [logs, total] = await Promise.all([
+        prisma.llmUsageLog.findMany({
+            where,
+            orderBy: { createdAt: 'desc' },
+            skip,
+            take: limit,
+            include: {
+                user: {
+                    select: {
+                        name: true,
+                        email: true,
+                    },
+                },
+            },
+        }),
+        prisma.llmUsageLog.count({ where }),
+    ]);
+
+    return {
+        logs,
+        pagination: {
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit),
+        },
+    };
+}
+
+/**
  * Busca uso diário (últimos N dias)
  */
 export async function getDailyUsage(days: number = 30) {

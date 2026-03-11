@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/server/auth/auth'
-import { getResourceMeta } from '@/services/resources/catalog/meta-service'
-import { isStaff } from '@/lib/auth/roles'
-import { prisma } from '@/lib/db'
+import { getResourceMeta, getResourceMetaForUser } from '@/services/resources/catalog'
 
 export async function GET(request: NextRequest) {
     try {
@@ -10,25 +8,11 @@ export async function GET(request: NextRequest) {
         const userId = session?.user?.id ?? null
         const role = session?.user?.role ?? null
 
-        const subscription = userId ? await prisma.subscription.findFirst({
-            where: {
-                userId,
-                isActive: true,
-                OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-            },
-            select: { id: true },
-        }) : null
-
-        const isAdmin = isStaff(role as any)
-        const isSubscriber = Boolean(subscription)
+        const userMeta = await getResourceMetaForUser(userId, role)
 
         const meta = await getResourceMeta({
             filters: {}, // Not used for fetching all options
-            user: {
-                role,
-                isAdmin,
-                isSubscriber,
-            }
+            user: userMeta,
         })
 
         return NextResponse.json(meta)

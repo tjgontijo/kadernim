@@ -22,6 +22,40 @@ export class LessonPlanService {
         })
     }
 
+    static async getByIdWithBnccDescriptions(
+        id: string,
+        params: { userId: string; isAdmin: boolean }
+    ) {
+        const plan = await prisma.lessonPlan.findUnique({
+            where: { id },
+        })
+
+        if (!plan) {
+            throw new Error('LESSON_PLAN_NOT_FOUND')
+        }
+
+        if (plan.userId !== params.userId && !params.isAdmin) {
+            throw new Error('LESSON_PLAN_FORBIDDEN')
+        }
+
+        const bnccSkillDescriptions = await prisma.bnccSkill.findMany({
+            where: {
+                code: {
+                    in: plan.bnccSkillCodes || [],
+                },
+            },
+            select: {
+                code: true,
+                description: true,
+            },
+        })
+
+        return {
+            ...plan,
+            bnccSkillDescriptions,
+        }
+    }
+
     static async create(userId: string, data: any) {
         // 1. Verificar limite
         const canCreate = await canCreateLessonPlan(userId)

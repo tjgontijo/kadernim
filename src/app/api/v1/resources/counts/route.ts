@@ -2,19 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { unstable_cache } from 'next/cache'
 
 import { auth } from '@/server/auth/auth'
-import { prisma } from '@/lib/db'
 import { ResourceFilterSchema } from '@/schemas/resources/resource-schemas'
 import { buildResourceCacheTag } from '@/server/utils/cache'
 import { checkRateLimit } from '@/server/utils/rate-limit'
-import { getResourceCounts } from '@/services/resources/catalog/count-service'
-import type { SubscriptionContext, UserAccessContext } from '@/services/auth/access-service'
+import { getResourceAccessContext, getResourceCounts } from '@/services/resources/catalog'
 
 export async function GET(request: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: request.headers })
     const userId = session?.user?.id
     const role = session?.user?.role ?? null
-    const isAdmin = role === 'admin'
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -49,24 +46,7 @@ export async function GET(request: NextRequest) {
 
     const { tab, q, educationLevel, subject } = parsed.data
     const filters = { q, educationLevel, subject }
-
-    const activeSubscription = await prisma.subscription.findFirst({
-      where: {
-        userId,
-        isActive: true,
-        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-      },
-      select: { id: true },
-    })
-
-    const userContext: UserAccessContext = {
-      userId,
-      isAdmin,
-    }
-
-    const subscriptionContext: SubscriptionContext = {
-      hasActiveSubscription: Boolean(activeSubscription),
-    }
+    const access = await getResourceAccessContext(userId, role)
 
     const cacheKey = [
       'resources-count',
@@ -75,15 +55,15 @@ export async function GET(request: NextRequest) {
       q ?? '',
       educationLevel ?? '',
       subject ?? '',
-      `admin:${isAdmin ? 1 : 0}`,
-      `sub:${subscriptionContext.hasActiveSubscription ? 1 : 0}`,
+      `admin:${access.user.isAdmin ? 1 : 0}`,
+      `sub:${access.subscription.hasActiveSubscription ? 1 : 0}`,
     ]
 
     const fetchCount = unstable_cache(
       async () => {
         const counts = await getResourceCounts({
-          user: userContext,
-          subscription: subscriptionContext,
+          user: access.user,
+          subscription: access.subscription,
           filters,
         })
 

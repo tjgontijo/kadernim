@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requirePermission } from '@/server/auth/middleware'
 import { checkRateLimit } from '@/server/utils/rate-limit'
+import { ToggleUserAccessSchema } from '@/schemas/users/admin-user-schemas'
 import { getUserResourceAccessService, toggleUserResourceAccessService } from '@/services/users/user-access'
-import { z } from 'zod'
 
 /**
  * GET /api/v1/admin/users/[id]/access
@@ -26,11 +26,6 @@ export async function GET(
         return NextResponse.json({ error: 'Failed to fetch access' }, { status: 500 })
     }
 }
-
-const ToggleAccessSchema = z.object({
-    resourceId: z.string().cuid(),
-    hasAccess: z.boolean()
-})
 
 /**
  * POST /api/v1/admin/users/[id]/access
@@ -60,7 +55,7 @@ export async function POST(
         }
 
         const body = await request.json()
-        const parsed = ToggleAccessSchema.safeParse(body)
+        const parsed = ToggleUserAccessSchema.safeParse(body)
 
         if (!parsed.success) {
             return NextResponse.json({ error: 'Invalid body' }, { status: 400 })

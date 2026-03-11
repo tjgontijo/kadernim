@@ -3,10 +3,12 @@ import { requirePermission } from '@/server/auth/middleware'
 import { UserRole } from '@/types/users/user-role'
 import { checkRateLimit } from '@/server/utils/rate-limit'
 import {
+    CreateAdminUserSchema,
     ListUsersFilterSchema,
     UserListResponseSchema,
 } from '@/schemas/users/admin-user-schemas'
 import { listUsersService } from '@/services/users/list-users'
+import { createAdminUserService } from '@/services/users/update-user'
 
 /**
  * GET /api/v1/admin/users
@@ -121,55 +123,25 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json()
-        const { name, email, phone, role = 'user' } = body
+        const parsed = CreateAdminUserSchema.safeParse(body)
 
-        if (!name || !email) {
+        if (!parsed.success) {
             return NextResponse.json(
-                { error: 'Nome e email são obrigatórios' },
+                { error: 'Dados inválidos', details: parsed.error.flatten() },
                 { status: 400 }
             )
         }
 
-        const { prisma } = await import('@/lib/db')
-        const { auth } = await import('@/server/auth/auth')
+        const user = await createAdminUserService(parsed.data)
 
-        // Check if email already exists
-        let user = await prisma.user.findUnique({ where: { email } })
-
-        if (user) {
+        return NextResponse.json(user, { status: 201 })
+    } catch (error) {
+        if (error instanceof Error && error.message === 'USER_EMAIL_EXISTS') {
             return NextResponse.json(
                 { error: 'Este e-mail já está cadastrado' },
                 { status: 409 }
             )
         }
-
-        const { randomPassword } = await import('@/lib/utils/password')
-
-        // Create user using better-auth (same pattern as enroll)
-        await (auth.api.signUpEmail as unknown as (params: { body: Record<string, unknown> }) => Promise<unknown>)({
-            body: {
-                name,
-                email,
-                password: randomPassword(), // Use project's password utility
-            },
-        })
-
-        // Fetch created user
-        user = await prisma.user.findUniqueOrThrow({ where: { email } })
-
-        // Update with additional data
-        user = await prisma.user.update({
-            where: { email },
-            data: {
-                name,
-                phone: phone || null,
-                role,
-                emailVerified: false,
-            },
-        })
-
-        return NextResponse.json(user, { status: 201 })
-    } catch (error) {
         console.error('[POST /api/v1/admin/users]', error)
         return NextResponse.json(
             { error: 'Erro ao criar usuário' },
@@ -177,4 +149,3 @@ export async function POST(request: NextRequest) {
         )
     }
 }
-

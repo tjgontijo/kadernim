@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/server/auth';
-import { prisma } from '@/lib/db';
+import { LessonPlanService } from '@/services/lesson-plans/lesson-plan-service';
 
 /**
  * GET /api/v1/lesson-plans/[id]
@@ -32,42 +32,24 @@ export async function GET(
             return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
         }
 
-        // 2. Buscar plano no banco
-        const plan = await prisma.lessonPlan.findUnique({
-            where: { id },
-        });
-
-        if (!plan) {
-            return NextResponse.json({ error: 'Plano não encontrado' }, { status: 404 });
-        }
-
-        // 3. Verificar permissão (apenas dono ou admin)
-        const isAdmin = session.user.role === 'admin';
-        if (plan.userId !== session.user.id && !isAdmin) {
-            return NextResponse.json({ error: 'Sem permissão' }, { status: 403 });
-        }
-
-        // 4. Buscar descrições das habilidades BNCC para enriquecer a visualização
-        const bnccSkillDescriptions = await prisma.bnccSkill.findMany({
-            where: {
-                code: {
-                    in: plan.bnccSkillCodes || [],
-                },
-            },
-            select: {
-                code: true,
-                description: true,
-            },
+        const plan = await LessonPlanService.getByIdWithBnccDescriptions(id, {
+            userId: session.user.id,
+            isAdmin: session.user.role === 'admin',
         });
 
         return NextResponse.json({
             success: true,
-            data: {
-                ...plan,
-                bnccSkillDescriptions,
-            },
+            data: plan,
         });
     } catch (error) {
+        if (error instanceof Error && error.message === 'LESSON_PLAN_NOT_FOUND') {
+            return NextResponse.json({ error: 'Plano não encontrado' }, { status: 404 });
+        }
+
+        if (error instanceof Error && error.message === 'LESSON_PLAN_FORBIDDEN') {
+            return NextResponse.json({ error: 'Sem permissão' }, { status: 403 });
+        }
+
         console.error('[GET /api/v1/lesson-plans/[id]] Error:', error);
         return NextResponse.json(
             { error: 'Erro ao buscar plano de aula' },

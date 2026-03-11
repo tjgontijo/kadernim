@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import { RefineThemeRequestSchema } from '@/schemas/lesson-plans/lesson-plan-schemas';
 import { auth } from '@/server/auth';
 import { refineTheme } from '@/services/lesson-plans/refine-theme';
 
@@ -9,14 +10,6 @@ import { refineTheme } from '@/services/lesson-plans/refine-theme';
  * Refina um tema bruto em 3 versões (curta, média, longa)
  */
 
-const RequestSchema = z.object({
-  rawTheme: z.string().min(3, 'Tema muito curto'),
-  educationLevelSlug: z.string(),
-  gradeSlug: z.string(),
-  subjectSlug: z.string(),
-  seed: z.number().optional().default(0),
-});
-
 export async function POST(request: Request) {
   try {
     // 1. Autenticação
@@ -24,7 +17,7 @@ export async function POST(request: Request) {
 
     // 2. Validar body
     const body = await request.json();
-    const validated = RequestSchema.parse(body);
+    const validated = RefineThemeRequestSchema.parse(body);
 
     // 3. Refinar tema via service
     const result = await refineTheme({

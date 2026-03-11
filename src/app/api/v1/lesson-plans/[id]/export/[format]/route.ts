@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/server/auth';
-import { prisma } from '@/lib/db';
 import { generateWordDocument } from '@/lib/export/word-template';
 import { generatePDFBuffer } from '@/lib/export/pdf-template';
 import { type LessonPlanResponse } from '@/schemas/lesson-plans/lesson-plan-schemas';
+import { LessonPlanService } from '@/services/lesson-plans/lesson-plan-service';
 
 /**
  * GET /api/v1/lesson-plans/[id]/export/[format]
@@ -35,32 +35,9 @@ export async function GET(
             return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
         }
 
-        // 2. Buscar plano no banco
-        const plan = await prisma.lessonPlan.findUnique({
-            where: { id },
-        });
-
-        if (!plan) {
-            return NextResponse.json({ error: 'Plano não encontrado' }, { status: 404 });
-        }
-
-        // 3. Verificar permissão (apenas dono ou admin)
-        const isAdmin = session.user.role === 'admin';
-        if (plan.userId !== session.user.id && !isAdmin) {
-            return NextResponse.json({ error: 'Sem permissão' }, { status: 403 });
-        }
-
-        // 4. Buscar descrições das habilidades BNCC para enriquecer o documento
-        const bnccSkillDescriptions = await prisma.bnccSkill.findMany({
-            where: {
-                code: {
-                    in: plan.bnccSkillCodes || [],
-                },
-            },
-            select: {
-                code: true,
-                description: true,
-            },
+        const plan = await LessonPlanService.getByIdWithBnccDescriptions(id, {
+            userId: session.user.id,
+            isAdmin: session.user.role === 'admin',
         });
 
         // 5. Gerar arquivo conforme formato
@@ -73,14 +50,14 @@ export async function GET(
         if (format === 'docx') {
             buffer = await generateWordDocument(
                 plan as unknown as LessonPlanResponse,
-                bnccSkillDescriptions
+                plan.bnccSkillDescriptions
             );
             contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
             filename = `plano-de-aula-${safeTitle}.docx`;
         } else if (format === 'pdf') {
             buffer = await generatePDFBuffer(
                 plan as unknown as LessonPlanResponse,
-                bnccSkillDescriptions
+                plan.bnccSkillDescriptions
             );
             contentType = 'application/pdf';
             filename = `plano-de-aula-${safeTitle}.pdf`;
@@ -100,6 +77,14 @@ export async function GET(
             },
         });
     } catch (error) {
+        if (error instanceof Error && error.message === 'LESSON_PLAN_NOT_FOUND') {
+            return NextResponse.json({ error: 'Plano não encontrado' }, { status: 404 });
+        }
+
+        if (error instanceof Error && error.message === 'LESSON_PLAN_FORBIDDEN') {
+            return NextResponse.json({ error: 'Sem permissão' }, { status: 403 });
+        }
+
         console.error('[GET /api/v1/lesson-plans/export] Error:', error);
         return NextResponse.json(
             {

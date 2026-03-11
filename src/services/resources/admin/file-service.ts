@@ -85,6 +85,12 @@ export async function deleteFileService(
   })
 }
 
+export async function getResourceFileById(fileId: string) {
+  return prisma.resourceFile.findUnique({
+    where: { id: fileId },
+  })
+}
+
 /**
  * Validate file before upload
  */

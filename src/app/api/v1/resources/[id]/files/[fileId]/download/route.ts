@@ -1,17 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 import { auth } from '@/server/auth/auth'
-import { prisma } from '@/lib/db'
 import { checkRateLimit } from '@/server/utils/rate-limit'
 import {
   createDownloadToken,
   DOWNLOAD_TOKEN_DEFAULT_TTL_MS,
 } from '@/services/auth/token-service'
-import {
-  computeHasAccessForResource,
-  type SubscriptionContext,
-  type UserAccessContext,
-} from '@/services/auth/access-service'
+import { getResourceDownloadGrant } from '@/services/resources/catalog'
 
 export const dynamic = 'force-dynamic'
 
@@ -48,54 +43,12 @@ export async function GET(
       )
     }
 
-    const file = await prisma.resourceFile.findFirst({
-      where: {
-        id: fileId,
-        resourceId,
-      },
-      select: {
-        id: true,
-        name: true,
-        cloudinaryPublicId: true,
-        resource: {
-          select: {
-            id: true,
-            isFree: true,
-          },
-        },
-      },
-    })
-
-    if (!file) {
-      return NextResponse.json({ error: 'Arquivo não encontrado' }, { status: 404 })
-    }
-
-    const activeSubscription = await prisma.subscription.findFirst({
-      where: {
-        userId,
-        isActive: true,
-        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-      },
-      select: { id: true },
-    })
-
-    const userContext: UserAccessContext = {
+    const file = await getResourceDownloadGrant({
       userId,
-      isAdmin: role === 'admin',
-    }
-
-    const subscriptionContext: SubscriptionContext = {
-      hasActiveSubscription: Boolean(activeSubscription),
-    }
-
-    const hasAccess = await computeHasAccessForResource(userContext, subscriptionContext, {
+      role,
       resourceId,
-      isFree: file.resource.isFree,
+      fileId,
     })
-
-    if (!hasAccess) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
 
     const { token, expiresAt } = createDownloadToken({
       userId,
@@ -124,6 +77,14 @@ export async function GET(
       },
     })
   } catch (error) {
+    if (error instanceof Error && error.message === 'RESOURCE_FILE_NOT_FOUND') {
+      return NextResponse.json({ error: 'Arquivo não encontrado' }, { status: 404 })
+    }
+
+    if (error instanceof Error && error.message === 'RESOURCE_FORBIDDEN') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
     console.error('Erro ao gerar link de download:', error)
     return NextResponse.json({ error: 'Erro ao gerar link de download' }, { status: 500 })
   }

@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from '@/services/auth/session-service'
-import { prisma } from '@/lib/db'
+import { RevokeSessionsSchema } from '@/schemas/account/account-schemas'
+import {
+  listAccountSessions,
+  revokeAccountSessions,
+} from '@/services/account/account-service'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,24 +20,10 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const sessions = await prisma.session.findMany({
-      where: { userId: session.user.id },
-      select: {
-        id: true,
-        userAgent: true,
-        ipAddress: true,
-        createdAt: true,
-        expiresAt: true,
-      },
-      orderBy: { createdAt: 'desc' },
-    })
-
-    // Mark current session
-    const currentSessionToken = session.session?.token
-    const sessionsWithCurrent = sessions.map(s => ({
-      ...s,
-      isCurrent: s.id === currentSessionToken,
-    }))
+    const sessionsWithCurrent = await listAccountSessions(
+      session.user.id,
+      session.session?.id ?? null
+    )
 
     return NextResponse.json({ sessions: sessionsWithCurrent })
   } catch (error) {
@@ -58,32 +48,27 @@ export async function DELETE(request: NextRequest) {
     }
 
     const body = await request.json().catch(() => ({}))
-    const { revokeAll } = body as { revokeAll?: boolean }
+    const parsed = RevokeSessionsSchema.safeParse(body)
 
-    if (revokeAll) {
-      // Revoke ALL sessions including current (for "logout everywhere")
-      const result = await prisma.session.deleteMany({
-        where: { userId: session.user.id },
-      })
-
-      return NextResponse.json({
-        message: 'Todas as sessões foram encerradas',
-        count: result.count,
-      })
-    } else {
-      // Revoke all except current session
-      const result = await prisma.session.deleteMany({
-        where: {
-          userId: session.user.id,
-          id: { not: session.session.id },
-        },
-      })
-
-      return NextResponse.json({
-        message: 'Outras sessões encerradas',
-        count: result.count,
-      })
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Dados inválidos', details: parsed.error.flatten() },
+        { status: 400 }
+      )
     }
+
+    const result = await revokeAccountSessions(
+      session.user.id,
+      session.session.id,
+      parsed.data.revokeAll
+    )
+
+    return NextResponse.json({
+      message: parsed.data.revokeAll
+        ? 'Todas as sessões foram encerradas'
+        : 'Outras sessões encerradas',
+      count: result.count,
+    })
   } catch (error) {
     console.error('[DELETE /api/v1/account/sessions]', error)
     return NextResponse.json(

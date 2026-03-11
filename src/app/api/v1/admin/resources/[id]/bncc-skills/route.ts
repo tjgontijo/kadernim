@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requirePermission } from '@/server/auth/middleware'
 import { checkRateLimit } from '@/server/utils/rate-limit'
-import { prisma } from '@/lib/db'
-import { z } from 'zod'
-
-const LinkBnccSkillSchema = z.object({
-    bnccSkillId: z.string().min(1),
-})
+import { LinkBnccSkillSchema } from '@/schemas/resources/admin-resource-schemas'
+import {
+    linkResourceBnccSkill,
+    listResourceBnccSkills,
+} from '@/services/resources/admin'
 
 /**
  * POST /api/v1/admin/resources/:id/bncc-skills
@@ -49,45 +48,7 @@ export async function POST(
 
         const { bnccSkillId } = parsed.data
 
-        // Verify resource exists
-        const resource = await prisma.resource.findUnique({
-            where: { id: resourceId },
-            select: { id: true }
-        })
-
-        if (!resource) {
-            return NextResponse.json({ error: 'Resource not found' }, { status: 404 })
-        }
-
-        // Verify skill exists
-        const skill = await prisma.bnccSkill.findUnique({
-            where: { id: bnccSkillId },
-            select: { id: true }
-        })
-
-        if (!skill) {
-            return NextResponse.json({ error: 'BNCC skill not found' }, { status: 404 })
-        }
-
-        // Create link (upsert to avoid duplicates)
-        const link = await prisma.resourceBnccSkill.upsert({
-            where: {
-                resourceId_bnccSkillId: {
-                    resourceId,
-                    bnccSkillId,
-                }
-            },
-            create: {
-                resourceId,
-                bnccSkillId,
-            },
-            update: {},
-            include: {
-                bnccSkill: {
-                    select: { id: true, code: true, description: true }
-                }
-            }
-        })
+        const link = await linkResourceBnccSkill(resourceId, bnccSkillId)
 
         return NextResponse.json({
             id: link.id,
@@ -95,6 +56,14 @@ export async function POST(
         }, { status: 201 })
 
     } catch (error) {
+        if (error instanceof Error && error.message === 'Resource not found') {
+            return NextResponse.json({ error: error.message }, { status: 404 })
+        }
+
+        if (error instanceof Error && error.message === 'BNCC skill not found') {
+            return NextResponse.json({ error: error.message }, { status: 404 })
+        }
+
         console.error('[POST /api/v1/admin/resources/:id/bncc-skills]', error)
         return NextResponse.json(
             { error: 'Failed to link BNCC skill' },
@@ -119,17 +88,10 @@ export async function GET(
 
         const { id: resourceId } = await params
 
-        const links = await prisma.resourceBnccSkill.findMany({
-            where: { resourceId },
-            include: {
-                bnccSkill: {
-                    select: { id: true, code: true, description: true }
-                }
-            }
-        })
+        const skills = await listResourceBnccSkills(resourceId)
 
         return NextResponse.json({
-            skills: links.map(l => l.bnccSkill)
+            skills,
         })
 
     } catch (error) {

@@ -126,3 +126,35 @@ export async function reorderResourceImages(
 
   return updatedImages
 }
+
+export async function getResourceImageById(imageId: string) {
+  return prisma.resourceImage.findUnique({
+    where: { id: imageId },
+  })
+}
+
+export async function reorderResourceImagesByUpdates(
+  resourceId: string,
+  updates: Array<{ id: string; order: number }>
+) {
+  const images = await prisma.resourceImage.findMany({
+    where: {
+      resourceId,
+      id: { in: updates.map((update) => update.id) },
+    },
+    select: { id: true },
+  })
+
+  if (images.length !== updates.length) {
+    throw new Error('One or more images do not belong to this resource')
+  }
+
+  await prisma.$transaction(
+    updates.map((update) =>
+      prisma.resourceImage.update({
+        where: { id: update.id },
+        data: { order: update.order },
+      })
+    )
+  )
+}

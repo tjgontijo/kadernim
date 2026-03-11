@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/server/auth/auth'
-import { prisma } from '@/lib/db'
 import { getCommunityRequests, createCommunityRequest } from '@/services/community/request-service'
 import { CommunityFilterSchema, CommunityRequestSchema } from '@/schemas/community/community-schemas'
+import { getUserRole } from '@/services/users/get-user-role'
 
 /**
  * GET /api/v1/community/requests
@@ -56,15 +56,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        // 1. Get user with role
-        const user = await prisma.user.findUnique({
-            where: { id: session.user.id },
-            select: { role: true },
-        })
-
-        if (!user) {
-            return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 })
-        }
+        const userRole = await getUserRole(session.user.id)
 
         // 2. Parse FormData
         const formData = await request.formData()
@@ -107,13 +99,17 @@ export async function POST(request: NextRequest) {
 
         const result = await createCommunityRequest(
             session.user.id,
-            user.role as any,
+            userRole as any,
             parsed.data,
             uploadResults
         )
 
         return NextResponse.json({ success: true, data: result })
     } catch (error: any) {
+        if (error instanceof Error && error.message === 'User not found') {
+            return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 })
+        }
+
         console.error('[Community POST] Error:', error)
         return NextResponse.json({
             success: false,

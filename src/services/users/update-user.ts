@@ -1,5 +1,7 @@
 import { prisma } from '@/lib/db'
-import { UpdateUserInput } from '@/schemas/users/admin-user-schemas'
+import { auth } from '@/server/auth/auth'
+import { randomPassword } from '@/lib/utils/password'
+import { CreateAdminUserInput, UpdateUserInput } from '@/schemas/users/admin-user-schemas'
 
 /**
  * Update a user's basic info, role, or banned status
@@ -43,6 +45,52 @@ export async function updateUserService(userId: string, data: UpdateUserInput) {
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
     }
+}
+
+export async function createAdminUserService(data: CreateAdminUserInput) {
+    let user = await prisma.user.findUnique({ where: { email: data.email } })
+
+    if (user) {
+        throw new Error('USER_EMAIL_EXISTS')
+    }
+
+    await (auth.api.signUpEmail as unknown as (params: { body: Record<string, unknown> }) => Promise<unknown>)({
+        body: {
+            name: data.name,
+            email: data.email,
+            password: randomPassword(),
+        },
+    })
+
+    user = await prisma.user.findUniqueOrThrow({ where: { email: data.email } })
+
+    return prisma.user.update({
+        where: { email: data.email },
+        data: {
+            name: data.name,
+            phone: data.phone || null,
+            role: data.role,
+            emailVerified: false,
+        },
+    })
+}
+
+export async function updateUserAvatarService(userId: string, imageUrl: string) {
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true },
+    })
+
+    if (!user) {
+        throw new Error('USER_NOT_FOUND')
+    }
+
+    await prisma.user.update({
+        where: { id: userId },
+        data: {
+            image: imageUrl,
+        },
+    })
 }
 
 /**

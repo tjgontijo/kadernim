@@ -1,17 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import { prisma } from '@/lib/db'
 import { auth } from '@/server/auth/auth'
-import { isStaff } from '@/lib/auth/roles'
 import { ResourceFilterSchema } from '@/schemas/resources/resource-schemas'
 import { checkRateLimit } from '@/server/utils/rate-limit'
 import { buildResourceCacheKey } from '@/server/utils/cache'
-
-import { getResourceSummary } from '@/services/resources/catalog/summary-service'
-import type {
-  SubscriptionContext,
-  UserAccessContext,
-} from '@/services/auth/access-service'
+import {
+  getResourceAccessContext,
+  getResourceMetaForUser,
+  getResourceSummary,
+} from '@/services/resources/catalog'
 
 export async function GET(request: NextRequest) {
   try {
@@ -58,43 +55,18 @@ export async function GET(request: NextRequest) {
     }
 
     const filters = parsed.data
-
-    const subscription = await prisma.subscription.findFirst({
-      where: {
-        userId,
-        isActive: true,
-        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-      },
-      select: { id: true },
-    })
-
-    const isAdmin = isStaff(role as any)
-    const isSubscriber = Boolean(subscription)
-
-    const userContext: UserAccessContext = {
-      userId,
-      isAdmin,
-    }
-
-    const subscriptionContext: SubscriptionContext = {
-      hasActiveSubscription: isSubscriber,
-    }
-
-    const userMeta = {
-      role,
-      isAdmin,
-      isSubscriber,
-    }
+    const access = await getResourceAccessContext(userId, role)
+    const userMeta = await getResourceMetaForUser(userId, role)
 
     const cacheKey = buildResourceCacheKey({
       userId,
-      isSubscriber,
+      isSubscriber: access.subscription.hasActiveSubscription,
       filters,
     })
 
     const summary = await getResourceSummary({
-      user: userContext,
-      subscription: subscriptionContext,
+      user: access.user,
+      subscription: access.subscription,
       filters,
       userMeta,
     })

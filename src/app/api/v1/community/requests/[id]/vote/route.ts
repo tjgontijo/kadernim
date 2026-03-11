@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/server/auth/auth'
-import { prisma } from '@/lib/db'
 import { voteForRequest } from '@/services/community/request-service'
+import { getUserRole } from '@/services/users/get-user-role'
 
 /**
  * POST /api/v1/community/requests/[id]/vote
@@ -19,20 +19,16 @@ export async function POST(
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        // Get user with role
-        const user = await prisma.user.findUnique({
-            where: { id: session.user.id },
-            select: { role: true },
-        })
+        const userRole = await getUserRole(session.user.id)
 
-        if (!user) {
-            return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 })
-        }
-
-        const result = await voteForRequest(session.user.id, user.role, id)
+        const result = await voteForRequest(session.user.id, userRole, id)
 
         return NextResponse.json({ success: true, data: result })
     } catch (error: any) {
+        if (error instanceof Error && error.message === 'User not found') {
+            return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 })
+        }
+
         console.error('[Community Vote POST] Error:', error)
         return NextResponse.json({
             success: false,

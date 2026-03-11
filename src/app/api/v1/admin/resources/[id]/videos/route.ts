@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { uploadVideo, getVideoThumbnail } from '@/server/clients/cloudinary/video-client'
-import { createResourceVideo, getResourceVideos } from '@/services/resources/admin/video-service'
-import { prisma } from '@/lib/db'
+import {
+  assertAdminResourceExists,
+  createResourceVideo,
+  getResourceVideos,
+} from '@/services/resources/admin'
 
 // GET /api/v1/admin/resources/[id]/videos
 export async function GET(
@@ -11,17 +14,7 @@ export async function GET(
   try {
     const { id: resourceId } = await params
 
-    // Verify resource exists
-    const resource = await prisma.resource.findUnique({
-      where: { id: resourceId },
-    })
-
-    if (!resource) {
-      return NextResponse.json(
-        { error: 'Resource not found' },
-        { status: 404 }
-      )
-    }
+    await assertAdminResourceExists(resourceId)
 
     // Get all videos
     const videos = await getResourceVideos(resourceId)
@@ -54,17 +47,7 @@ export async function POST(
       )
     }
 
-    // Verify resource exists
-    const resource = await prisma.resource.findUnique({
-      where: { id: resourceId },
-    })
-
-    if (!resource) {
-      return NextResponse.json(
-        { error: 'Resource not found' },
-        { status: 404 }
-      )
-    }
+    await assertAdminResourceExists(resourceId)
 
     // Upload to Cloudinary
     const uploadResult = await uploadVideo(file, 'resources/videos', resourceId, title)
@@ -97,6 +80,13 @@ export async function POST(
       { status: 201 }
     )
   } catch (error) {
+    if (error instanceof Error && error.message === 'RESOURCE_NOT_FOUND') {
+      return NextResponse.json(
+        { error: 'Resource not found' },
+        { status: 404 }
+      )
+    }
+
     const message = error instanceof Error ? error.message : 'Failed to upload video'
     return NextResponse.json(
       { error: message },

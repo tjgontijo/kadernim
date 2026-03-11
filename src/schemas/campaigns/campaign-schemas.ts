@@ -16,4 +16,9 @@ export const CampaignSchema = z.object({
     }).optional(),
 })
 
+export const CampaignTrackSchema = z.object({
+    campaignId: z.string().min(1, 'campaignId é obrigatório'),
+})
+
 export type CampaignInput = z.infer<typeof CampaignSchema>
+export type CampaignTrackInput = z.infer<typeof CampaignTrackSchema>

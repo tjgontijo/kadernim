@@ -2,11 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requirePermission } from '@/server/auth/middleware'
 import { UserRole } from '@/types/users/user-role'
 import { checkRateLimit } from '@/server/utils/rate-limit'
-import { prisma } from '@/lib/db'
 import {
   UpdateResourceSchema,
-  ResourceDetailResponseSchema,
 } from '@/schemas/resources/admin-resource-schemas'
+import {
+  deleteResourceService,
+  getAdminResourceDetail,
+  updateResourceService,
+} from '@/services/resources'
 
 
 /**
@@ -46,160 +49,18 @@ export async function GET(
       )
     }
 
-    // Fetch resource with relations
-    const resource = await prisma.resource.findUnique({
-      where: { id },
-      include: {
-        educationLevel: true,
-        subject: true,
-        files: {
-          select: {
-            id: true,
-            name: true,
-            cloudinaryPublicId: true,
-            url: true,
-            fileType: true,
-            sizeBytes: true,
-            createdAt: true,
-          },
-        },
-        images: {
-          select: {
-            id: true,
-            cloudinaryPublicId: true,
-            url: true,
-            alt: true,
-            order: true,
-            createdAt: true,
-          },
-          orderBy: { order: 'asc' },
-        },
-        videos: {
-          select: {
-            id: true,
-            title: true,
-            cloudinaryPublicId: true,
-            url: true,
-            thumbnail: true,
-            duration: true,
-            order: true,
-            createdAt: true,
-          },
-        },
-        accessEntries: {
-          select: { id: true },
-        },
-        grades: {
-          include: {
-            grade: {
-              select: { slug: true }
-            }
-          }
-        },
-      },
-    })
+    const validated = await getAdminResourceDetail(id)
 
-    if (!resource) {
-      return NextResponse.json({ error: 'Not found' }, { status: 404 })
-    }
-
-    // Fetch BNCC skills linked to the resource separately (to avoid Prisma include issues)
-    const bnccLinks = await prisma.resourceBnccSkill.findMany({
-      where: { resourceId: id },
-      include: {
-        bnccSkill: {
-          select: { id: true, code: true, description: true }
-        }
-      }
-    })
-
-    // Compute stats
-    const totalUsers = await prisma.resourceUserAccess.count({
-      where: { resourceId: id },
-    })
-
-    const accessGrants = await prisma.resourceUserAccess.count({
-      where: {
-        resourceId: id,
-        expiresAt: { not: null },
-      },
-    })
-
-    const subscriberAccess = await prisma.resourceUserAccess.count({
-      where: {
-        resourceId: id,
-        expiresAt: null,
-      },
-    })
-
-    // Build response
-    const response = {
-      id: resource.id,
-      title: resource.title,
-      description: resource.description,
-      educationLevel: resource.educationLevel?.slug,
-      subject: resource.subject?.slug,
-      externalId: resource.externalId,
-      isFree: resource.isFree,
-      thumbUrl: resource.images?.[0]?.url || null,
-      grades: resource.grades.map(g => g.grade?.slug).filter(Boolean),
-      createdAt: resource.createdAt.toISOString(),
-      updatedAt: resource.updatedAt.toISOString(),
-      files: resource.files.map(f => ({
-        id: f.id,
-        name: f.name,
-        cloudinaryPublicId: f.cloudinaryPublicId,
-        url: f.url,
-        fileType: f.fileType,
-        sizeBytes: f.sizeBytes,
-        createdAt: f.createdAt.toISOString(),
-      })),
-      images: resource.images.map(img => ({
-        id: img.id,
-        cloudinaryPublicId: img.cloudinaryPublicId,
-        url: img.url,
-        alt: img.alt,
-        order: img.order,
-        createdAt: img.createdAt.toISOString(),
-      })),
-      videos: resource.videos.map(vid => ({
-        id: vid.id,
-        title: vid.title,
-        cloudinaryPublicId: vid.cloudinaryPublicId,
-        url: vid.url,
-        thumbnail: vid.thumbnail,
-        duration: vid.duration,
-        order: vid.order,
-        createdAt: vid.createdAt.toISOString(),
-      })),
-      stats: {
-        totalUsers,
-        accessGrants,
-        subscriberAccess,
-      },
-      bnccSkills: bnccLinks.map(l => ({
-        id: l.bnccSkill.id,
-        code: l.bnccSkill.code,
-        description: l.bnccSkill.description,
-      })),
-    }
-
-    // Validate response
-    const validated = ResourceDetailResponseSchema.safeParse(response)
-    if (!validated.success) {
-      console.error('Response validation failed:', validated.error)
-      return NextResponse.json(
-        { error: 'Internal server error' },
-        { status: 500 }
-      )
-    }
-
-    return NextResponse.json(validated.data, {
+    return NextResponse.json(validated, {
       headers: {
         'Cache-Control': 'private, max-age=30',
       },
     })
   } catch (error) {
+    if (error instanceof Error && error.message === 'RESOURCE_NOT_FOUND') {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
+
     console.error('[GET /api/v1/admin/resources/:id]', error)
     return NextResponse.json(
       { error: 'Failed to fetch resource' },
@@ -259,106 +120,20 @@ export async function PUT(
       )
     }
 
-    // Update resource
-    const { updateResourceService } = await import('@/services/resources')
     await updateResourceService({
       id,
       ...parsed.data,
       adminId: userId,
     })
+    const updated = await getAdminResourceDetail(id)
 
-    // Fetch updated resource with relations
-    const updated = await prisma.resource.findUnique({
-      where: { id },
-      include: {
-        educationLevel: true,
-        subject: true,
-        files: {
-          select: {
-            id: true,
-            name: true,
-            cloudinaryPublicId: true,
-            url: true,
-            fileType: true,
-            sizeBytes: true,
-            createdAt: true,
-          },
-        },
-        images: {
-          take: 1,
-          orderBy: { order: 'asc' },
-          select: { url: true },
-        },
-        accessEntries: {
-          select: { id: true },
-        },
-        grades: {
-          include: {
-            grade: {
-              select: { slug: true }
-            }
-          }
-        },
-      },
-    })
-
-    if (!updated) {
-      return NextResponse.json({ error: 'Not found' }, { status: 404 })
-    }
-
-    const totalUsers = await prisma.resourceUserAccess.count({
-      where: { resourceId: id },
-    })
-
-    const accessGrants = await prisma.resourceUserAccess.count({
-      where: {
-        resourceId: id,
-        expiresAt: { not: null },
-      },
-    })
-
-    const subscriberAccess = await prisma.resourceUserAccess.count({
-      where: {
-        resourceId: id,
-        expiresAt: null,
-      },
-    })
-
-    const response = {
-      id: updated.id,
-      title: updated.title,
-      description: updated.description,
-      educationLevel: updated.educationLevel.slug,
-      subject: updated.subject.slug,
-      externalId: updated.externalId,
-      isFree: updated.isFree,
-      grades: updated.grades.map(rg => rg.grade.slug),
-      thumbUrl: updated.images?.[0]?.url || null,
-      createdAt: updated.createdAt.toISOString(),
-      updatedAt: updated.updatedAt.toISOString(),
-      files: updated.files.map((f) => ({
-        id: f.id,
-        name: f.name,
-        cloudinaryPublicId: f.cloudinaryPublicId,
-        url: f.url,
-        fileType: f.fileType,
-        sizeBytes: f.sizeBytes,
-        createdAt: f.createdAt.toISOString(),
-      })),
-      stats: {
-        totalUsers,
-        accessGrants,
-        subscriberAccess,
-      },
-    }
-
-    return NextResponse.json(response)
+    return NextResponse.json(updated)
   } catch (error) {
     console.error('[PUT /api/v1/admin/resources/:id]', error)
 
     if (error instanceof Error) {
-      if (error.message.includes('not found')) {
-        return NextResponse.json({ error: error.message }, { status: 404 })
+      if (error.message === 'RESOURCE_NOT_FOUND' || error.message.includes('not found')) {
+        return NextResponse.json({ error: 'Not found' }, { status: 404 })
       }
     }
 
@@ -406,8 +181,6 @@ export async function DELETE(
       )
     }
 
-    // Delete resource
-    const { deleteResourceService } = await import('@/services/resources')
     await deleteResourceService(id, userId)
 
     return new NextResponse(null, { status: 204 })

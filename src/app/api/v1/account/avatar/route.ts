@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from '@/services/auth/session-service'
-import { prisma } from '@/lib/db'
 import { uploadImage } from '@/server/clients/cloudinary/image-client'
+import { updateAccountAvatar } from '@/services/account/account-service'
 
 export const dynamic = 'force-dynamic'
 
@@ -44,20 +44,11 @@ export async function POST(request: NextRequest) {
         )
 
         // Update user with new avatar URL
-        const user = await prisma.user.update({
-            where: { id: session.user.id },
-            data: {
-                image: uploadResult.url,
-            },
-            select: {
-                id: true,
-                image: true,
-            },
-        })
+        const image = await updateAccountAvatar(session.user.id, uploadResult.url)
 
         return NextResponse.json({
             message: 'Avatar atualizado com sucesso',
-            image: user.image,
+            image,
         })
     } catch (error) {
         console.error('[POST /api/v1/account/avatar]', error)

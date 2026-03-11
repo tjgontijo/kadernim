@@ -1,8 +1,17 @@
 import { prisma } from '@/lib/db'
+import type {
+    EmailTemplateCreate,
+    EmailTemplateList,
+    EmailTemplateUpdate,
+} from '@/schemas/templates/email-template-schemas'
 
 export class EmailTemplateService {
-    static async list(filters: { eventType?: string; isActive?: boolean; search?: string }) {
-        const where: any = {}
+    static async list(filters: EmailTemplateList) {
+        const where: {
+            eventType?: string
+            isActive?: boolean
+            OR?: Array<Record<string, unknown>>
+        } = {}
 
         if (filters.eventType) {
             where.eventType = filters.eventType
@@ -24,7 +33,7 @@ export class EmailTemplateService {
         })
     }
 
-    static async create(data: any) {
+    static async create(data: EmailTemplateCreate) {
         return prisma.emailTemplate.create({
             data
         })
@@ -42,7 +51,7 @@ export class EmailTemplateService {
         })
     }
 
-    static async update(id: string, data: any) {
+    static async update(id: string, data: EmailTemplateUpdate) {
         return prisma.emailTemplate.update({
             where: { id },
             data

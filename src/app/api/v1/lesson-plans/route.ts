@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/server/auth';
-import { prisma } from '@/lib/db';
 import { LessonPlanService } from '@/services/lesson-plans/lesson-plan-service';
 import { CreateLessonPlanSchema } from '@/schemas/lesson-plans/lesson-plan-schemas';
+import { getUserRole } from '@/services/users/get-user-role';
 
 /**
  * GET /api/v1/lesson-plans
@@ -54,13 +54,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Não autenticado' }, { status: 401 });
     }
 
-    // Validar role (assinante ou admin)
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true },
-    });
+    const userRole = await getUserRole(session.user.id);
 
-    if (!user || (user.role !== 'subscriber' && user.role !== 'admin')) {
+    if (userRole !== 'subscriber' && userRole !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'Apenas assinantes podem gerar planos de aula' },
         { status: 403 }
@@ -90,6 +86,13 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error: any) {
+    if (error instanceof Error && error.message === 'User not found') {
+      return NextResponse.json(
+        { success: false, error: 'Usuário não encontrado' },
+        { status: 404 }
+      );
+    }
+
     if (error.message === 'LIMIT_EXCEEDED') {
       return NextResponse.json(
         { success: false, error: 'Limite mensal de planos atingido (30 planos/mês)' },

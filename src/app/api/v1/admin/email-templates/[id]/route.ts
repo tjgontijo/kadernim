@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
 import { requirePermission } from '@/server/auth/middleware';
 import { EmailTemplateUpdateSchema } from '@/schemas/templates/email-template-schemas';
+import { EmailTemplateService } from '@/services/templates/email-template.service';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,9 +22,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
         const { id } = await params;
 
-        const template = await prisma.emailTemplate.findUnique({
-            where: { id },
-        });
+        const template = await EmailTemplateService.getById(id);
 
         if (!template) {
             return NextResponse.json(
@@ -70,9 +68,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         }
 
         // Verificar se template existe
-        const existing = await prisma.emailTemplate.findUnique({
-            where: { id },
-        });
+        const existing = await EmailTemplateService.getById(id);
 
         if (!existing) {
             return NextResponse.json(
@@ -83,9 +79,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
         // Se está atualizando o slug, verificar duplicidade
         if (parsed.data.slug && parsed.data.slug !== existing.slug) {
-            const slugExists = await prisma.emailTemplate.findUnique({
-                where: { slug: parsed.data.slug },
-            });
+            const slugExists = await EmailTemplateService.getBySlug(parsed.data.slug);
 
             if (slugExists) {
                 return NextResponse.json(
@@ -95,10 +89,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
             }
         }
 
-        const template = await prisma.emailTemplate.update({
-            where: { id },
-            data: parsed.data,
-        });
+        const template = await EmailTemplateService.update(id, parsed.data);
 
         return NextResponse.json({ success: true, data: template });
     } catch (error) {
@@ -124,9 +115,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         const { id } = await params;
 
         // Verificar se template existe
-        const existing = await prisma.emailTemplate.findUnique({
-            where: { id },
-        });
+        const existing = await EmailTemplateService.getById(id);
 
         if (!existing) {
             return NextResponse.json(
@@ -135,9 +124,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
             );
         }
 
-        await prisma.emailTemplate.delete({
-            where: { id },
-        });
+        await EmailTemplateService.delete(id);
 
         return NextResponse.json({
             success: true,

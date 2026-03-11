@@ -1,71 +1,31 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
-import { requirePermission } from '@/server/auth/middleware';
-import { z } from 'zod';
+import { NextRequest, NextResponse } from 'next/server'
+import { requirePermission } from '@/server/auth/middleware'
+import { NotificationTemplateCreateSchema } from '@/schemas/templates/notification-template-schemas'
+import { NotificationTemplateService } from '@/services/templates/notification-template.service'
 
-export const dynamic = 'force-dynamic';
-
-const createTemplateSchema = z.object({
-    slug: z.string().min(1).regex(/^[a-z0-9-]+$/, 'Slug deve conter apenas letras minúsculas, números e hífens'),
-    name: z.string().min(1),
-    type: z.enum(['email', 'whatsapp']),
-    eventType: z.string().min(1), // Ex: 'user.login', 'resource.purchased'
-    subject: z.string().nullable().optional(),
-    body: z.string().min(1),
-    description: z.string().nullable().optional(),
-    variables: z.array(z.string()).nullable().optional(),
-});
+export const dynamic = 'force-dynamic'
 
 /**
  * GET /api/v1/admin/templates
  * Lista todos os templates de notificação (Email, Push, WhatsApp)
  */
 export async function GET(request: NextRequest) {
-    try {
-        const authResult = await requirePermission(request, 'manage:resources');
-        if (authResult instanceof NextResponse) {
-            return authResult;
-        }
-
-        // Buscar templates de NotificationTemplate (email)
-        const notificationTemplates = await prisma.notificationTemplate.findMany({
-            orderBy: [
-                { type: 'asc' },
-                { name: 'asc' },
-            ],
-        });
-
-        // Buscar templates de EmailTemplate
-        const emailTemplates = await prisma.emailTemplate.findMany({
-            orderBy: { name: 'asc' },
-        });
-
-        // Buscar templates de WhatsAppTemplate
-        const whatsappTemplates = await prisma.whatsAppTemplate.findMany({
-            orderBy: { name: 'asc' },
-        });
-
-        // Buscar templates de PushTemplate
-        const pushTemplates = await prisma.pushTemplate.findMany({
-            orderBy: { name: 'asc' },
-        });
-
-        // Unificar todos os templates com type normalizado
-        const allTemplates = [
-            ...notificationTemplates.map(t => ({ ...t, source: 'notification' })),
-            ...emailTemplates.map(t => ({ ...t, type: 'email', source: 'email' })),
-            ...whatsappTemplates.map(t => ({ ...t, type: 'whatsapp', source: 'whatsapp' })),
-            ...pushTemplates.map(t => ({ ...t, type: 'push', source: 'push' })),
-        ];
-
-        return NextResponse.json({ success: true, data: allTemplates });
-    } catch (error) {
-        console.error('[API] Erro ao listar templates:', error);
-        return NextResponse.json(
-            { success: false, error: 'Erro interno ao listar templates' },
-            { status: 500 }
-        );
+  try {
+    const authResult = await requirePermission(request, 'manage:resources')
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
+
+    const templates = await NotificationTemplateService.listAllUnified()
+
+    return NextResponse.json({ success: true, data: templates })
+  } catch (error) {
+    console.error('[API] Erro ao listar templates:', error)
+    return NextResponse.json(
+      { success: false, error: 'Erro interno ao listar templates' },
+      { status: 500 }
+    )
+  }
 }
 
 /**
@@ -73,55 +33,38 @@ export async function GET(request: NextRequest) {
  * Cria um novo template de notificação
  */
 export async function POST(request: NextRequest) {
-    try {
-        const authResult = await requirePermission(request, 'manage:resources');
-        if (authResult instanceof NextResponse) {
-            return authResult;
-        }
-
-        const body = await request.json();
-        const parsed = createTemplateSchema.safeParse(body);
-
-        if (!parsed.success) {
-            return NextResponse.json(
-                { success: false, error: 'Dados inválidos', details: parsed.error.flatten() },
-                { status: 400 }
-            );
-        }
-
-        const { slug, name, type, eventType, subject, body: bodyContent, description, variables } = parsed.data;
-
-        // Verificar se slug já existe
-        const existing = await prisma.notificationTemplate.findUnique({
-            where: { slug },
-        });
-
-        if (existing) {
-            return NextResponse.json(
-                { success: false, error: 'Já existe um template com este slug' },
-                { status: 409 }
-            );
-        }
-
-        const template = await prisma.notificationTemplate.create({
-            data: {
-                slug,
-                name,
-                type,
-                eventType,
-                subject,
-                body: bodyContent,
-                description,
-                variables: variables ?? undefined,
-            },
-        });
-
-        return NextResponse.json({ success: true, data: template }, { status: 201 });
-    } catch (error) {
-        console.error('[API] Erro ao criar template:', error);
-        return NextResponse.json(
-            { success: false, error: 'Erro interno ao criar template' },
-            { status: 500 }
-        );
+  try {
+    const authResult = await requirePermission(request, 'manage:resources')
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
+
+    const body = await request.json()
+    const parsed = NotificationTemplateCreateSchema.safeParse(body)
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { success: false, error: 'Dados inválidos', details: parsed.error.flatten() },
+        { status: 400 }
+      )
+    }
+
+    const existing = await NotificationTemplateService.getBySlug(parsed.data.slug)
+    if (existing) {
+      return NextResponse.json(
+        { success: false, error: 'Já existe um template com este slug' },
+        { status: 409 }
+      )
+    }
+
+    const template = await NotificationTemplateService.create(parsed.data)
+
+    return NextResponse.json({ success: true, data: template }, { status: 201 })
+  } catch (error) {
+    console.error('[API] Erro ao criar template:', error)
+    return NextResponse.json(
+      { success: false, error: 'Erro interno ao criar template' },
+      { status: 500 }
+    )
+  }
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import { RefineCommunityRequestSchema } from '@/schemas/community/community-schemas';
 import { refineRequestDescription } from '@/services/community/refine-description';
 
 /**
@@ -27,18 +28,10 @@ import { refineRequestDescription } from '@/services/community/refine-descriptio
  *   }
  * }
  */
-
-const RequestSchema = z.object({
-    rawDescription: z.string().min(20, 'Descrição muito curta'),
-    educationLevelName: z.string(),
-    subjectName: z.string(),
-    gradeNames: z.array(z.string()),
-});
-
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const validated = RequestSchema.parse(body);
+        const validated = RefineCommunityRequestSchema.parse(body);
 
         const refined = await refineRequestDescription(validated);
 

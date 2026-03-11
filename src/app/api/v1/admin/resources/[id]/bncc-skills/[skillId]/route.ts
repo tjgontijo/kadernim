@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requirePermission } from '@/server/auth/middleware'
 import { checkRateLimit } from '@/server/utils/rate-limit'
-import { prisma } from '@/lib/db'
+import { unlinkResourceBnccSkill } from '@/services/resources/admin'
 
 /**
  * DELETE /api/v1/admin/resources/:id/bncc-skills/:skillId
@@ -32,13 +32,7 @@ export async function DELETE(
             )
         }
 
-        // Delete the link
-        await prisma.resourceBnccSkill.deleteMany({
-            where: {
-                resourceId,
-                bnccSkillId,
-            }
-        })
+        await unlinkResourceBnccSkill(resourceId, bnccSkillId)
 
         return new NextResponse(null, { status: 204 })
 

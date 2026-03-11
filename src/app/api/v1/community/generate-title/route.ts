@@ -3,6 +3,10 @@ import { generateObject } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { z } from 'zod';
 import {
+    CommunityGeneratedTitlesSchema,
+    GenerateCommunityTitleRequestSchema,
+} from '@/schemas/community/community-schemas';
+import {
     systemPromptGenerateTitle,
     buildGenerateTitlePrompt,
 } from '@/lib/ai/prompts/community-request';
@@ -29,27 +33,16 @@ import {
  *   }
  * }
  */
-
-const RequestSchema = z.object({
-    description: z.string().min(20, 'Descrição muito curta'),
-});
-
-const TitlesSchema = z.object({
-    short: z.string().describe('Título curto e direto (máximo 4 palavras)'),
-    descriptive: z.string().describe('Título descritivo que explica o material (máximo 6 palavras)'),
-    creative: z.string().describe('Título criativo e atrativo (máximo 6 palavras)'),
-});
-
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { description } = RequestSchema.parse(body);
+        const { description } = GenerateCommunityTitleRequestSchema.parse(body);
 
         const { object } = await generateObject({
             model: openai('gpt-4o-mini'),
             system: systemPromptGenerateTitle,
             prompt: buildGenerateTitlePrompt(description),
-            schema: TitlesSchema,
+            schema: CommunityGeneratedTitlesSchema,
             temperature: 0.8,
         });
 

@@ -134,4 +134,13 @@ export const RefinedThemesSchema = z.object({
   long: z.string().describe('Versão descritiva e completa do tema alinhada com BNCC (máximo 25 palavras)'),
 });
 
+export const RefineThemeRequestSchema = z.object({
+  rawTheme: z.string().min(3, 'Tema muito curto'),
+  educationLevelSlug: z.string(),
+  gradeSlug: z.string(),
+  subjectSlug: z.string(),
+  seed: z.number().optional().default(0),
+});
+
 export type RefinedThemes = z.infer<typeof RefinedThemesSchema>;
+export type RefineThemeRequest = z.infer<typeof RefineThemeRequestSchema>;

@@ -197,3 +197,20 @@ export const BulkOperationResultSchema = z.object({
 })
 
 export type BulkOperationResult = z.infer<typeof BulkOperationResultSchema>
+
+export const LinkBnccSkillSchema = z.object({
+  bnccSkillId: z.string().min(1),
+})
+
+export type LinkBnccSkillInput = z.infer<typeof LinkBnccSkillSchema>
+
+export const ReorderResourceImagesSchema = z.object({
+  updates: z.array(
+    z.object({
+      id: z.string(),
+      order: z.number().int().nonnegative(),
+    })
+  ),
+})
+
+export type ReorderResourceImagesInput = z.infer<typeof ReorderResourceImagesSchema>

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requirePermission } from '@/server/auth/middleware';
-import { prisma } from '@/lib/db';
+import { getLlmUsageLogs } from '@/services/llm/llm-usage-service';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,42 +21,13 @@ export async function GET(request: NextRequest) {
         const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 100);
         const feature = searchParams.get('feature');
         const status = searchParams.get('status');
-        const skip = (page - 1) * limit;
-
-        // 2. Buscar logs com filtro
-        const where = {
-            ...(feature && { feature }),
-            ...(status && { status }),
-        };
-
-        const [logs, total] = await Promise.all([
-            prisma.llmUsageLog.findMany({
-                where,
-                orderBy: { createdAt: 'desc' },
-                skip,
-                take: limit,
-                include: {
-                    user: {
-                        select: {
-                            name: true,
-                            email: true,
-                        },
-                    },
-                },
-            }),
-            prisma.llmUsageLog.count({ where }),
-        ]);
+        const result = await getLlmUsageLogs({ page, limit, feature: feature || undefined, status: status || undefined });
 
         return NextResponse.json({
             success: true,
             data: {
-                logs,
-                pagination: {
-                    page,
-                    limit,
-                    total,
-                    totalPages: Math.ceil(total / limit),
-                },
+                logs: result.logs,
+                pagination: result.pagination,
             },
         });
 

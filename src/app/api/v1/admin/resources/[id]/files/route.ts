@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requirePermission } from '@/server/auth/middleware'
 import { checkRateLimit } from '@/server/utils/rate-limit'
-import { prisma } from '@/lib/db'
 import { uploadFile } from '@/server/clients/cloudinary/file-client'
+import {
+  assertAdminResourceExists,
+  createFileService,
+} from '@/services/resources/admin'
 
 /**
  * POST /api/v1/admin/resources/:id/files
@@ -42,14 +45,7 @@ export async function POST(
       )
     }
 
-    // Check if resource exists
-    const resource = await prisma.resource.findUnique({
-      where: { id: resourceId },
-    })
-
-    if (!resource) {
-      return NextResponse.json({ error: 'Resource not found' }, { status: 404 })
-    }
+    await assertAdminResourceExists(resourceId)
 
     // Parse form data
     const formData = await request.formData()
@@ -66,7 +62,6 @@ export async function POST(
     const uploadResult = await uploadFile(file, 'resources/files', resourceId)
 
     // Create file record in database
-    const { createFileService } = await import('@/services/resources/admin/file-service')
     const fileRecord = await createFileService({
       resourceId,
       name: uploadResult.fileName,
@@ -93,8 +88,8 @@ export async function POST(
     console.error('[POST /api/v1/admin/resources/:id/files]', error)
 
     if (error instanceof Error) {
-      if (error.message.includes('not found')) {
-        return NextResponse.json({ error: error.message }, { status: 404 })
+      if (error.message === 'RESOURCE_NOT_FOUND' || error.message.includes('not found')) {
+        return NextResponse.json({ error: 'Resource not found' }, { status: 404 })
       }
       if (error.message.includes('not allowed') || error.message.includes('too large')) {
         return NextResponse.json({ error: error.message }, { status: 400 })

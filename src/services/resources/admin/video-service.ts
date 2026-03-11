@@ -134,3 +134,9 @@ export async function reorderResourceVideos(
 
   return updatedVideos
 }
+
+export async function getResourceVideoById(videoId: string) {
+  return prisma.resourceVideo.findUnique({
+    where: { id: videoId },
+  })
+}

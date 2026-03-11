@@ -1,15 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import { prisma } from '@/lib/db'
 import { verifyDownloadToken } from '@/services/auth/token-service'
 import { checkRateLimit } from '@/server/utils/rate-limit'
-
-import { isStaff } from '@/lib/auth/roles'
-import {
-  computeHasAccessForResource,
-  type SubscriptionContext,
-  type UserAccessContext,
-} from '@/services/auth/access-service'
+import { resolveResourceDownloadByToken } from '@/services/resources/catalog'
 
 export const dynamic = 'force-dynamic'
 
@@ -42,68 +35,29 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const file = await prisma.resourceFile.findFirst({
-      where: {
-        id: payload.fileId,
-        resourceId: payload.resourceId,
-      },
-      select: {
-        id: true,
-        url: true,
-        resource: {
-          select: {
-            id: true,
-            isFree: true,
-          },
-        },
-      },
-    })
-
-    if (!file) {
-      return NextResponse.json({ error: 'Arquivo não encontrado' }, { status: 404 })
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { id: payload.userId },
-      select: { role: true },
-    })
-
-    const subscription = await prisma.subscription.findFirst({
-      where: {
-        userId: payload.userId,
-        isActive: true,
-        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-      },
-      select: { id: true },
-    })
-
-    const userContext: UserAccessContext = {
+    const downloadUrl = await resolveResourceDownloadByToken({
       userId: payload.userId,
-      isAdmin: isStaff(user?.role as any),
-    }
-
-    const subscriptionContext: SubscriptionContext = {
-      hasActiveSubscription: Boolean(subscription),
-    }
-
-    const hasAccess = await computeHasAccessForResource(userContext, subscriptionContext, {
-      resourceId: file.resource.id,
-      isFree: file.resource.isFree,
+      resourceId: payload.resourceId,
+      fileId: payload.fileId,
     })
 
-    if (!hasAccess) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
-    if (!file.url) {
-      return NextResponse.json({ error: 'URL do arquivo não encontrada' }, { status: 500 })
-    }
-
-    const response = NextResponse.redirect(file.url, 302)
+    const response = NextResponse.redirect(downloadUrl, 302)
     response.headers.set('Cache-Control', 'private, no-store')
 
     return response
   } catch (error) {
+    if (error instanceof Error && error.message === 'RESOURCE_FILE_NOT_FOUND') {
+      return NextResponse.json({ error: 'Arquivo não encontrado' }, { status: 404 })
+    }
+
+    if (error instanceof Error && error.message === 'RESOURCE_FORBIDDEN') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    if (error instanceof Error && error.message === 'RESOURCE_FILE_URL_MISSING') {
+      return NextResponse.json({ error: 'URL do arquivo não encontrada' }, { status: 500 })
+    }
+
     console.error('Erro ao entregar download:', error)
     return NextResponse.json({ error: 'Erro ao entregar download' }, { status: 500 })
   }

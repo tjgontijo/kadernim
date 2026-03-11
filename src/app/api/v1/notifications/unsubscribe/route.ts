@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
 import { UnsubscribePushSchema } from '@/schemas/notifications/push-notification-schemas';
+import { deactivatePushSubscription } from '@/services/notification/push-subscription.service';
 
 /**
  * POST /api/v1/notifications/unsubscribe
@@ -23,29 +23,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { endpoint } = validation.data;
+    await deactivatePushSubscription(validation.data);
 
-    // Buscar a subscription pelo endpoint
-    const subscription = await prisma.pushSubscription.findUnique({
-      where: { endpoint },
-    });
 
-    if (!subscription) {
+    return NextResponse.json({ success: true }, { status: 200 });
+  } catch (error) {
+    if (error instanceof Error && error.message === 'Subscription not found') {
       return NextResponse.json(
         { error: 'Subscription não encontrada' },
         { status: 404 }
       );
     }
 
-    // Marcar como inativa
-    await prisma.pushSubscription.update({
-      where: { id: subscription.id },
-      data: { active: false },
-    });
-
-
-    return NextResponse.json({ success: true }, { status: 200 });
-  } catch (error) {
     console.error('[Push] Erro ao cancelar subscription:', error);
     return NextResponse.json(
       { error: 'Falha ao cancelar subscription' },

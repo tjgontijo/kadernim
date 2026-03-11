@@ -46,4 +46,23 @@ export const RefinedDescriptionsSchema = z.object({
     pedagogy: z.string().describe('Versão focada nos objetivos pedagógicos'),
 })
 
+export const RefineCommunityRequestSchema = z.object({
+    rawDescription: z.string().min(20, 'Descrição muito curta'),
+    educationLevelName: z.string(),
+    subjectName: z.string(),
+    gradeNames: z.array(z.string()),
+})
+
+export const GenerateCommunityTitleRequestSchema = z.object({
+    description: z.string().min(20, 'Descrição muito curta'),
+})
+
+export const CommunityGeneratedTitlesSchema = z.object({
+    short: z.string().describe('Título curto e direto (máximo 4 palavras)'),
+    descriptive: z.string().describe('Título descritivo que explica o material (máximo 6 palavras)'),
+    creative: z.string().describe('Título criativo e atrativo (máximo 6 palavras)'),
+})
+
 export type RefinedDescriptions = z.infer<typeof RefinedDescriptionsSchema>
+export type RefineCommunityRequestInput = z.infer<typeof RefineCommunityRequestSchema>
+export type GenerateCommunityTitleRequestInput = z.infer<typeof GenerateCommunityTitleRequestSchema>

@@ -1,38 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { unstable_cache } from 'next/cache'
 
-import { prisma, Prisma as PrismaNamespace } from '@/lib/db'
 import { auth } from '@/server/auth/auth'
-import { isStaff } from '@/lib/auth/roles'
 import { ResourceFilterSchema } from '@/schemas/resources/resource-schemas'
 import {
   buildResourceCacheKey,
   buildResourceCacheTag,
 } from '@/server/utils/cache'
 import { checkRateLimit } from '@/server/utils/rate-limit'
-import {
-  buildHasAccessConditionSql,
-  type SubscriptionContext,
-  type UserAccessContext,
-} from '@/services/auth/access-service'
-
-type ResourceRow = {
-  id: string
-  title: string
-  thumbUrl: string | null
-  educationLevel: string
-  subject: string
-  description: string | null
-  isFree: boolean
-  hasAccess: boolean
-}
+import { getResourceAccessContext, getResourceList } from '@/services/resources/catalog'
 
 export async function GET(request: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: request.headers })
     const userId = session?.user?.id
     const role = session?.user?.role
-    const isAdmin = isStaff(role as any)
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -69,27 +51,8 @@ export async function GET(request: NextRequest) {
     }
 
     const { page, limit, q, educationLevel, subject, tab } = parsed.data
-    const limitPlusOne = limit + 1
-    const offset = (page - 1) * limit
-
-    const activeSubscription = await prisma.subscription.findFirst({
-      where: {
-        userId,
-        isActive: true,
-        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-      },
-      select: { id: true },
-    })
-
-    const hasFullAccess = isAdmin || Boolean(activeSubscription)
-    const userContext: UserAccessContext = {
-      userId,
-      isAdmin,
-    }
-    const subscriptionContext: SubscriptionContext = {
-      hasActiveSubscription: Boolean(activeSubscription),
-    }
-    const hasAccessCondition = buildHasAccessConditionSql(userContext, subscriptionContext)
+    const access = await getResourceAccessContext(userId, role ?? null)
+    const hasFullAccess = access.user.isAdmin || access.subscription.hasActiveSubscription
 
     const cacheKey = buildResourceCacheKey({
       userId,
@@ -99,66 +62,23 @@ export async function GET(request: NextRequest) {
 
     const fetchResources = unstable_cache(
       async () => {
-        const whereConditions: PrismaNamespace.Sql[] = []
-
-        if (q) {
-          whereConditions.push(PrismaNamespace.sql`r."title" ILIKE ${`%${q}%`}`)
-        }
-
-        if (educationLevel) {
-          whereConditions.push(
-            PrismaNamespace.sql`el.slug = ${educationLevel}`
-          )
-        }
-
-        if (subject) {
-          whereConditions.push(PrismaNamespace.sql`s.slug = ${subject}`)
-        }
-
-        if (tab === 'mine') {
-          whereConditions.push(hasAccessCondition)
-          whereConditions.push(PrismaNamespace.sql`r."isFree" = false`)
-        } else if (tab === 'free') {
-          whereConditions.push(PrismaNamespace.sql`r."isFree" = true`)
-        }
-
-        const whereClause = PrismaNamespace.join(
-          whereConditions.length ? whereConditions : [PrismaNamespace.sql`TRUE`],
-          ' AND '
-        )
-
-        const rows = await prisma.$queryRaw<ResourceRow[]>(PrismaNamespace.sql`
-          SELECT
-            r.id,
-            r.title,
-            r."thumbUrl" AS "thumbUrl",
-            el.slug AS "educationLevel",
-            s.slug AS "subject",
-            r.description AS description,
-            r."isFree" AS "isFree",
-            ${hasAccessCondition} AS "hasAccess"
-          FROM "resource" r
-          JOIN "education_level" el ON r."educationLevelId" = el.id
-          JOIN "subject" s ON r."subjectId" = s.id
-          WHERE ${whereClause}
-          ORDER BY
-            CASE WHEN ${hasAccessCondition} THEN 1 ELSE 0 END DESC,
-            r.title ASC,
-            r.id ASC
-          LIMIT ${limitPlusOne}
-          OFFSET ${offset}
-        `)
-
-        const hasMore = rows.length > limit
-        const data = hasMore ? rows.slice(0, limit) : rows
-
-        return {
-          data,
-          pagination: {
+        const list = await getResourceList({
+          user: access.user,
+          subscription: access.subscription,
+          filters: {
             page,
             limit,
-            hasMore,
+            q,
+            educationLevel,
+            grade: undefined,
+            subject,
+            tab,
           },
+        })
+
+        return {
+          data: list.items,
+          pagination: list.pagination,
         }
       },
       cacheKey,
