@@ -83,7 +83,7 @@ export const CheckoutRequestSchema = z.object({
   }
 })
 
-export const GuestCheckoutRequestSchema = CheckoutRequestSchema.extend({
+export const GuestCheckoutRequestSchema = CheckoutRequestSchema.safeExtend({
   email: z.string().email('Email inválido'),
   name: z.string().min(2, 'Nome obrigatório').optional(),
   phone: z.string().optional(),
