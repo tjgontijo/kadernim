@@ -84,7 +84,7 @@ export default async function ClientBillingPage() {
                                         <p className="text-muted-foreground font-medium">Método de Pagamento</p>
                                         <p className="font-semibold text-base flex items-center gap-2 mt-1">
                                             {subscription.paymentMethod === 'CREDIT_CARD' && <><CreditCard className="w-4 h-4 text-primary" /> Cartão de Crédito</>}
-                                            {subscription.paymentMethod === 'PIX' && <><RefreshCcw className="w-4 h-4 text-emerald-500" /> PIX</>}
+                                            {subscription.paymentMethod === 'PIX' && <><RefreshCcw className="w-4 h-4 text-emerald-500" /> PIX Mensal</>}
                                             {subscription.paymentMethod === 'PIX_AUTOMATIC' && <><RefreshCcw className="w-4 h-4 text-emerald-500" /> PIX Automático</>}
                                         </p>
                                     </div>

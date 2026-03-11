@@ -11,39 +11,39 @@ export const Hero: React.FC = () => {
       <div className="container mx-auto px-4 relative z-10">
         <div className="mx-auto max-w-4xl text-center">
 
-          <div className="inline-flex items-center gap-2 bg-card border border-secondary/30 rounded-full px-4 py-1.5 text-sm font-bold text-secondary-foreground mb-8 shadow-sm">
-            <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+          <div className="inline-flex items-center gap-2 bg-card border border-secondary/30 rounded-full px-4 py-1.5 text-sm font-bold text-secondary-foreground dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 mb-8 shadow-sm">
+            <Star className="h-4 w-4 text-yellow-400 fill-yellow-400 flex-shrink-0" aria-hidden="true" />
             <span>Todo mês tem novidade na plataforma</span>
           </div>
 
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground mb-8 leading-tight">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground dark:text-slate-50 mb-8 leading-tight">
             Pare de perder horas procurando materiais <br className="hidden md:block" />
-            <span className="text-primary relative inline-block">
+            <span className="text-primary dark:text-blue-400 relative inline-block">
               para suas aulas.
               {/* Underline decoration */}
-              <svg className="absolute w-full h-3 -bottom-1 left-0 text-secondary opacity-60" viewBox="0 0 100 10" preserveAspectRatio="none">
+              <svg className="absolute w-full h-3 -bottom-1 left-0 text-secondary dark:text-blue-300 opacity-60" viewBox="0 0 100 10" preserveAspectRatio="none">
                 <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="3" fill="none" />
               </svg>
             </span>
           </h1>
 
-          <p className="mt-6 text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto font-medium">
+          <p className="mt-6 text-xl text-muted-foreground dark:text-slate-300 leading-relaxed max-w-2xl mx-auto font-medium">
             Uma biblioteca viva com atividades prontas, plano de aula alinhado à BNCC e uma comunidade de professores que decide o que entra na plataforma.
           </p>
 
-          <div className="mt-6 font-handwriting text-primary/80 rotate-1">
+          <div className="mt-6 font-handwriting text-primary/80 dark:text-blue-300/80 motion-safe:rotate-1">
             ~ Todo mês, novos recursos pedagógicos prontos chegam até você.
           </div>
 
-          <div className="mt-12 flex flex-wrap justify-center gap-6 text-sm font-semibold text-muted-foreground">
-            <span className="flex items-center gap-2 bg-card/50 px-3 py-1 rounded-full border border-border">
-              <Heart className="h-4 w-4 text-destructive fill-destructive" />
+          <div className="mt-12 flex flex-wrap justify-center gap-6 text-sm font-semibold text-muted-foreground dark:text-slate-400">
+            <span className="flex items-center gap-2 bg-card/50 dark:bg-slate-800/50 px-3 py-1 rounded-full border border-border dark:border-slate-700">
+              <Heart className="h-4 w-4 text-destructive dark:text-red-400 fill-destructive dark:fill-red-400 flex-shrink-0" aria-hidden="true" />
               Feito por quem entende de sala de aula
             </span>
           </div>
 
           {/* Scroll Indicator */}
-          <div className="mt-16 flex justify-center animate-bounce">
+          <div className="mt-16 flex justify-center motion-safe:animate-bounce" aria-label="Role para baixo">
             <ChevronDown className="h-8 w-8 text-muted-foreground/50" />
           </div>
 

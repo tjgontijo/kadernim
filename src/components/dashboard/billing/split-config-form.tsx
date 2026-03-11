@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useMutation } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { SplitUpdate, SplitUpdateSchema } from '@/schemas/billing/split-schemas'
@@ -33,8 +34,6 @@ interface SplitConfigFormProps {
 }
 
 export function SplitConfigForm({ initialData, userId }: SplitConfigFormProps) {
-    const [loading, setLoading] = useState(false)
-
     const form = useForm<SplitUpdate>({
         resolver: zodResolver(SplitUpdateSchema),
         defaultValues: initialData || {
@@ -58,9 +57,8 @@ export function SplitConfigForm({ initialData, userId }: SplitConfigFormProps) {
 
     const kadernimValue = amount - partnerValue
 
-    const onSubmit = async (values: SplitUpdate) => {
-        setLoading(true)
-        try {
+    const saveMutation = useMutation({
+        mutationFn: async (values: SplitUpdate) => {
             const response = await fetch('/api/v1/billing/split', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -70,13 +68,17 @@ export function SplitConfigForm({ initialData, userId }: SplitConfigFormProps) {
             if (!response.ok) {
                 throw new Error('Falha ao atualizar configuração')
             }
-
+        },
+        onSuccess: () => {
             toast.success('Configuração de Split atualizada com sucesso!')
-        } catch (error: any) {
+        },
+        onError: (error: Error) => {
             toast.error('Erro ao salvar: ' + error.message)
-        } finally {
-            setLoading(false)
-        }
+        },
+    })
+
+    const onSubmit = async (values: SplitUpdate) => {
+        saveMutation.mutate(values)
     }
 
     return (
@@ -249,8 +251,8 @@ export function SplitConfigForm({ initialData, userId }: SplitConfigFormProps) {
                             </div>
                         </div>
 
-                        <Button type="submit" className="w-full h-12 text-lg shadow-lg hover:shadow-primary/20 transition-all active:scale-[0.98]" disabled={loading}>
-                            {loading ? (
+                        <Button type="submit" className="w-full h-12 text-lg shadow-lg hover:shadow-primary/20 transition-all active:scale-[0.98]" disabled={saveMutation.isPending}>
+                            {saveMutation.isPending ? (
                                 <div className="flex items-center gap-2">
                                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
                                     Salvando...

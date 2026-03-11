@@ -36,25 +36,33 @@ export const FAQ: React.FC = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section className="py-20 bg-muted/30">
+    <section className="py-20 bg-muted/30 dark:bg-slate-900/30">
       <div className="container mx-auto px-4 max-w-3xl">
-        <h2 className="text-3xl font-bold text-center mb-12 text-foreground">Dúvidas Frequentes</h2>
+        <h2 className="text-3xl font-bold text-center mb-12 text-foreground dark:text-slate-50">Dúvidas Frequentes</h2>
         <div className="space-y-4">
           {faqs.map((faq, idx) => (
-            <div key={idx} className="bg-background border border-border rounded-lg overflow-hidden">
+            <div key={idx} className="bg-background border border-border rounded-lg overflow-hidden dark:border-slate-700">
               <button
-                className="w-full flex items-center justify-between p-5 text-left focus:outline-none"
+                id={`faq-${idx}`}
+                className="w-full flex items-center justify-between p-5 text-left focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:outline-none transition-colors hover:bg-muted/50 dark:hover:bg-slate-800"
                 onClick={() => setOpenIndex(openIndex === idx ? null : idx)}
+                aria-expanded={openIndex === idx}
+                aria-controls={`faq-content-${idx}`}
               >
                 <span className="font-medium text-foreground">{faq.question}</span>
                 {openIndex === idx ? (
-                  <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                  <ChevronUp className="h-5 w-5 text-muted-foreground flex-shrink-0" aria-hidden="true" />
                 ) : (
-                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                  <ChevronDown className="h-5 w-5 text-muted-foreground flex-shrink-0" aria-hidden="true" />
                 )}
               </button>
               {openIndex === idx && (
-                <div className="px-5 pb-5 text-muted-foreground leading-relaxed animate-in fade-in slide-in-from-top-2 duration-200">
+                <div
+                  id={`faq-content-${idx}`}
+                  className="px-5 pb-5 text-muted-foreground dark:text-slate-300 leading-relaxed motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-top-2 motion-safe:duration-200"
+                  role="region"
+                  aria-labelledby={`faq-${idx}`}
+                >
                   {faq.answer}
                 </div>
               )}
