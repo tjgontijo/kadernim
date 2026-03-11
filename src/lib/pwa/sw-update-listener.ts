@@ -66,10 +66,30 @@ export function registerSwUpdateListener(options: SwUpdateListenerOptions) {
         onUpdateAvailable(registration);
       }
 
-      // Forçar check manual a cada 1 hora (em adição ao check automático do browser)
-      setInterval(() => {
-        registration.update();
-      }, 60 * 60 * 1000); // 1 hora
+      let timeoutId: ReturnType<typeof setTimeout> | null = null;
+      const scheduleUpdateCheck = () => {
+        timeoutId = setTimeout(() => {
+          registration.update().finally(() => {
+            scheduleUpdateCheck();
+          });
+        }, 60 * 60 * 1000);
+      };
+      scheduleUpdateCheck();
+
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'visible') {
+          registration.update();
+        }
+      };
+
+      window.addEventListener('visibilitychange', handleVisibilityChange);
+
+      return () => {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+        window.removeEventListener('visibilitychange', handleVisibilityChange);
+      };
     })
     .catch((error) => {
       console.error('[SW Update] Erro ao registrar Service Worker:', error);

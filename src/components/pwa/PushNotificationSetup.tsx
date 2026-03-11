@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Bell, Sparkles } from 'lucide-react';
@@ -24,6 +25,67 @@ export function PushNotificationSetup() {
   const [isProcessing, setIsProcessing] = useState(false);
   const { data: session } = useSession();
 
+  const registerSubscriptionMutation = useMutation({
+    mutationFn: async () => {
+      if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        throw new Error('Push notifications não são suportadas neste navegador');
+      }
+
+      const registration = await navigator.serviceWorker.ready;
+      let subscription = await registration.pushManager.getSubscription();
+
+      if (!subscription) {
+        const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+
+        if (!vapidPublicKey) {
+          throw new Error('VAPID_PUBLIC_KEY não configurada no ambiente');
+        }
+
+        const urlBase64ToUint8Array = (base64String: string) => {
+          const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+          const base64 = (base64String + padding)
+            .replace(/-/g, '+')
+            .replace(/_/g, '/');
+          const rawData = window.atob(base64);
+          const outputArray = new Uint8Array(rawData.length);
+          for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+          }
+          return outputArray;
+        };
+
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+        });
+      }
+
+      const subscriptionJSON = subscription.toJSON();
+
+      if (!subscriptionJSON.endpoint || !subscriptionJSON.keys) {
+        throw new Error('Subscription inválida - sem endpoint ou keys');
+      }
+
+      const payload: PushSubscriptionCreate = {
+        endpoint: subscriptionJSON.endpoint,
+        keys: {
+          p256dh: subscriptionJSON.keys.p256dh,
+          auth: subscriptionJSON.keys.auth,
+        },
+      };
+
+      const response = await fetch('/api/v1/notifications/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error('Falha ao registrar push notifications');
+      }
+    },
+  });
+
   useEffect(() => {
     // Se as notificações não forem suportadas, não faz nada
     if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
@@ -45,10 +107,9 @@ export function PushNotificationSetup() {
 
     // CASO 2: Permissão já concedida -> Garantir que o registro está atualizado no servidor
     if (Notification.permission === 'granted') {
-      registerPushSubscription()
-        .catch(err => console.error('❌ Erro no sync de push:', err));
+      registerSubscriptionMutation.mutate();
     }
-  }, [session]);
+  }, [registerSubscriptionMutation, session]);
 
   const handleRequestPermission = async () => {
     setIsProcessing(true);
@@ -66,13 +127,7 @@ export function PushNotificationSetup() {
       }
 
       // 2. Registrar push subscription em background
-      registerPushSubscription()
-        .then(() => {
-          // Registro concluído com sucesso
-        })
-        .catch((error) => {
-          console.error('❌ Erro ao registrar subscription:', error);
-        });
+      registerSubscriptionMutation.mutate();
 
       // Fechar o dialog IMEDIATAMENTE após a permissão ser concedida
       setShowDialog(false);
@@ -81,73 +136,6 @@ export function PushNotificationSetup() {
       setShowDialog(false);
     } finally {
       setIsProcessing(false);
-    }
-  };
-
-  const registerPushSubscription = async () => {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-      throw new Error('Push notifications não são suportadas neste navegador');
-    }
-
-    try {
-      // 1. Aguardar Service Worker estar pronto
-      const registration = await navigator.serviceWorker.ready;
-
-      // 2. Verificar se já existe subscription
-      let subscription = await registration.pushManager.getSubscription();
-
-      if (!subscription) {
-
-        // 3. Se não existe, criar uma nova
-        const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-
-        if (!vapidPublicKey) {
-          throw new Error('VAPID_PUBLIC_KEY não configurada no ambiente');
-        }
-
-        // Converter VAPID key para Uint8Array
-        const urlBase64ToUint8Array = (base64String: string) => {
-          const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-          const base64 = (base64String + padding)
-            .replace(/-/g, '+')
-            .replace(/_/g, '/');
-          const rawData = window.atob(base64);
-          const outputArray = new Uint8Array(rawData.length);
-          for (let i = 0; i < rawData.length; ++i) {
-            outputArray[i] = rawData.charCodeAt(i);
-          }
-          return outputArray;
-        };
-
-        subscription = await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
-        });
-      }
-
-      // 4. Enviar para o servidor
-      const subscriptionJSON = subscription.toJSON();
-
-      if (!subscriptionJSON.endpoint || !subscriptionJSON.keys) {
-        throw new Error('Subscription inválida - sem endpoint ou keys');
-      }
-
-      const payload: PushSubscriptionCreate = {
-        endpoint: subscriptionJSON.endpoint,
-        keys: {
-          p256dh: subscriptionJSON.keys.p256dh,
-          auth: subscriptionJSON.keys.auth,
-        },
-      };
-
-      await fetch('/api/v1/notifications/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-    } catch (error) {
-      console.error('❌ Erro ao registrar subscription:', error);
-      throw error;
     }
   };
 

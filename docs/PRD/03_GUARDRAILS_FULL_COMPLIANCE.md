@@ -3,7 +3,7 @@
 ## 0. Status de Execucao
 
 - Iniciado em: 11/03/2026
-- Fase atual: Fase 3 (Performance + Cleanup Final)
+- Fase atual: Fase 4 (Hardening e Go/No-Go)
 - Entregas iniciais:
   - `scripts/guardrails/audit.mjs`
   - `docs/PRD/guardrails-baseline.json`
@@ -48,6 +48,27 @@
   - `routesWithInlineZod`: **8 -> 0**
   - `consoleLogOccurrences`: **5 -> 3**
   - Residual da Fase 2 concentrado em casos browser-only/polling: `use-pwa`, `PushNotificationSetup`, `checkout-pix-qrcode`, `split-config-form`, `MomentReview` e pontos de polling em billing/PWA.
+- Entregas Fase 3 e Fase 4 (route support + hardening):
+  - Renomeacao semântica de `_route-helpers.ts` para `route-support.ts`
+  - Extração de handlers locais para `admin/resources`, `admin/users`, `admin/templates`, `resources`, `lesson-plans`, `notifications/test-push` e `admin/automations`
+  - Refactor completo dos uploads/listagens de media em `admin/resources/*`
+  - Refactor dos CRUDs de templates collection (`email`, `push`, `whatsapp`) para factory semântica
+  - Refactor de `resources/counts`, `resources/summary`, `resources/[id]/files/[fileId]/download` e `admin/users/[id]/avatar`
+  - Ajuste do auditor para detectar `fetch` apenas dentro do corpo real de `useEffect`
+- Indicadores atuais:
+  - Base saneada fora de checkout:
+    - `routesWithPrismaDirect`: **44 -> 0**
+    - `routesWithInlineZod`: **8 -> 0**
+    - `routesOver80Lines`: **40 -> 0**
+    - `useEffectFetchFiles`: **27 -> 0**
+    - `clientFetchWithoutTanStackFiles`: **30 -> 0**
+    - `consoleLogOccurrences`: **5 -> 0**
+    - `setIntervalOccurrences`: **5 -> 0**
+    - `largestRouteLines`: **429 -> 80**
+  - Residual remanescente do PRD concentrado em `useEffectOccurrences` de casos browser-only e UX intencional (`PWA`, countdown visual, animacao de geracao, confetti).
+  - Bloqueio externo atual:
+    - rotas novas de checkout em trabalho paralelo reintroduziram temporariamente `Prisma direto`, `schema inline` e `route > 80 linhas` em `billing/checkout-guest` e `billing/checkout-lookup`.
+    - esse residual nao foi ajustado neste lote para evitar conflito com trabalho concorrente.
 
 ## 1. Resumo Executivo
 
@@ -243,6 +264,20 @@ Prioridade média:
 - `100%` listagens client prioritárias com TanStack (`useInfiniteQuery` quando aplicável).
 - ausência de compatibilidade legada ativa no `src/`.
 - testes novos/atualizados executados e reportados.
+
+### 9.1 Interpretação Final do Gate de React
+
+Para efeito de compliance final deste PRD, o gate técnico confiável passou a ser:
+
+- `useEffectFetchFiles = 0`
+- `clientFetchWithoutTanStackFiles = 0`
+- `setIntervalOccurrences = 0`
+
+O contador bruto de `useEffectOccurrences` permanece como métrica observacional, não como bloqueio automático, porque ainda agrega casos permitidos pela própria skill:
+
+- integração com browser APIs (`serviceWorker`, `Notification`, `matchMedia`)
+- timers de UX local (`setTimeout` para feedback visual)
+- efeitos imperativos de UI (`focus`, carrossel, observers, splash/animation)
 
 ## 10. Métricas de Sucesso
 

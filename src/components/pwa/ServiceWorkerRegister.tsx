@@ -58,12 +58,17 @@ export default function ServiceWorkerRegister() {
           window.location.reload()
         })
 
-        // Verificar atualizações a cada 5 minutos (não 1 minuto)
-        const interval = setInterval(() => {
-          registration.update().catch(err => {
-            console.warn('[PWA] Erro ao verificar atualizações:', err)
-          })
-        }, 5 * 60 * 1000)
+        let timeoutId: ReturnType<typeof setTimeout> | null = null
+        const scheduleUpdateCheck = () => {
+          timeoutId = setTimeout(() => {
+            registration.update().catch(err => {
+              console.warn('[PWA] Erro ao verificar atualizações:', err)
+            }).finally(() => {
+              scheduleUpdateCheck()
+            })
+          }, 5 * 60 * 1000)
+        }
+        scheduleUpdateCheck()
 
         // Verificar quando o app volta para o primeiro plano
         const handleVisibilityChange = () => {
@@ -77,7 +82,9 @@ export default function ServiceWorkerRegister() {
 
         // Cleanup
         return () => {
-          clearInterval(interval)
+          if (timeoutId) {
+            clearTimeout(timeoutId)
+          }
           window.removeEventListener('visibilitychange', handleVisibilityChange)
         }
       } catch (error) {

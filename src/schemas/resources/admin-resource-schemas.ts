@@ -204,6 +204,16 @@ export const LinkBnccSkillSchema = z.object({
 
 export type LinkBnccSkillInput = z.infer<typeof LinkBnccSkillSchema>
 
+export const GrantResourceAccessSchema = z.object({
+  userId: z.string().min(1),
+  expiresAt: z
+    .string()
+    .datetime()
+    .optional(),
+})
+
+export type GrantResourceAccessInput = z.infer<typeof GrantResourceAccessSchema>
+
 export const ReorderResourceImagesSchema = z.object({
   updates: z.array(
     z.object({
@@ -214,3 +224,17 @@ export const ReorderResourceImagesSchema = z.object({
 })
 
 export type ReorderResourceImagesInput = z.infer<typeof ReorderResourceImagesSchema>
+
+export const UpdateResourceImageSchema = z.object({
+  alt: z.string().trim().max(255).optional().nullable(),
+  order: z.number().int().nonnegative().optional(),
+})
+
+export type UpdateResourceImageInput = z.infer<typeof UpdateResourceImageSchema>
+
+export const UpdateResourceVideoSchema = z.object({
+  title: z.string().trim().min(1).max(255).optional(),
+  order: z.number().int().nonnegative().optional(),
+})
+
+export type UpdateResourceVideoInput = z.infer<typeof UpdateResourceVideoSchema>

@@ -22,13 +22,20 @@ export const triggerCannon = () => {
     const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 }
 
     const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min
+    let lastFrameAt = 0
 
-    const interval: any = setInterval(function () {
+    const fire = (now: number) => {
         const timeLeft = animationEnd - Date.now()
 
         if (timeLeft <= 0) {
-            return clearInterval(interval)
+            return
         }
+
+        if (now - lastFrameAt < 250) {
+            requestAnimationFrame(fire)
+            return
+        }
+        lastFrameAt = now
 
         const particleCount = 50 * (timeLeft / duration)
         // since particles fall down, start a bit higher than random
@@ -42,7 +49,10 @@ export const triggerCannon = () => {
             particleCount,
             origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
         })
-    }, 250)
+        requestAnimationFrame(fire)
+    }
+
+    requestAnimationFrame(fire)
 }
 
 /**

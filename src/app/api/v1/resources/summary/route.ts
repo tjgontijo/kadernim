@@ -1,89 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-import { auth } from '@/server/auth/auth'
-import { ResourceFilterSchema } from '@/schemas/resources/resource-schemas'
-import { checkRateLimit } from '@/server/utils/rate-limit'
-import { buildResourceCacheKey } from '@/server/utils/cache'
 import {
-  getResourceAccessContext,
-  getResourceMetaForUser,
-  getResourceSummary,
-} from '@/services/resources/catalog'
+  authorizeResourceListRequest,
+  fetchResourceSummary,
+  parseResourceListFilters,
+  resourceSummaryHeaders,
+  resourceSummaryServerError,
+} from '../route-support'
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: request.headers })
-    const userId = session?.user?.id ?? null
-    const role = session?.user?.role ?? null
-
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const authResult = await authorizeResourceListRequest(request)
+    if (authResult instanceof NextResponse) {
+      return authResult
     }
 
-    const rl = checkRateLimit(`resources-summary:${userId}`, {
-      windowMs: 60_000,
-      limit: 60,
-    })
-
-    if (!rl.allowed) {
-      return new NextResponse(JSON.stringify({ error: 'rate_limited' }), {
-        status: 429,
-        headers: {
-          'Content-Type': 'application/json',
-          'Retry-After': String(rl.retryAfter),
-        },
-      })
+    const filters = parseResourceListFilters(request)
+    if (filters instanceof NextResponse) {
+      return filters
     }
 
-    const searchParams = request.nextUrl.searchParams
-
-    const parsed = ResourceFilterSchema.safeParse({
-      page: searchParams.get('page') ?? undefined,
-      limit: searchParams.get('limit') ?? undefined,
-      q: searchParams.get('q') ?? undefined,
-      educationLevel: searchParams.get('educationLevel') ?? undefined,
-      grade: searchParams.get('grade') ?? undefined,
-      subject: searchParams.get('subject') ?? undefined,
-      tab: searchParams.get('tab') ?? undefined,
-    })
-
-    if (!parsed.success) {
-      return NextResponse.json(
-        { error: 'Parâmetros inválidos', issues: parsed.error.format() },
-        { status: 400 }
-      )
-    }
-
-    const filters = parsed.data
-    const access = await getResourceAccessContext(userId, role)
-    const userMeta = await getResourceMetaForUser(userId, role)
-
-    const cacheKey = buildResourceCacheKey({
-      userId,
-      isSubscriber: access.subscription.hasActiveSubscription,
+    const { summary, cacheKey } = await fetchResourceSummary({
+      userId: authResult.userId,
+      role: authResult.role,
       filters,
-    })
-
-    const summary = await getResourceSummary({
-      user: access.user,
-      subscription: access.subscription,
-      filters,
-      userMeta,
     })
 
     return NextResponse.json(summary, {
-      headers: {
-        'Cache-Control': 'private, max-age=30, stale-while-revalidate=120',
-        'CDN-Cache-Control': 'private, max-age=30, stale-while-revalidate=120',
-        'Vary': 'Authorization, Cookie',
-        'X-Resource-Cache-Key': cacheKey.join(':'),
-      },
+      headers: resourceSummaryHeaders(cacheKey),
     })
   } catch (error) {
-    console.error('Erro ao buscar resumo de recursos:', error)
-    return NextResponse.json(
-      { error: 'Erro ao buscar recursos' },
-      { status: 500 }
-    )
+    return resourceSummaryServerError(error)
   }
 }

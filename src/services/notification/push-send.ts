@@ -143,10 +143,6 @@ export async function sendPushToAll(payload: PushPayload): Promise<{
     }
   });
 
-  console.log(
-    `[Push] Enviado para ${successCount}/${subscriptions.length} subscriptions`
-  );
-
   return {
     total: subscriptions.length,
     success: successCount,
@@ -233,10 +229,6 @@ export async function sendPushToSubscriptions(
   });
 
   const uniqueUsersCount = Object.keys(userResults).length;
-
-  console.log(
-    `[Push] Enviado para ${successCount}/${subscriptions.length} subscriptions (${uniqueUsersCount} usuários únicos)`
-  );
 
   return {
     total: subscriptions.length,

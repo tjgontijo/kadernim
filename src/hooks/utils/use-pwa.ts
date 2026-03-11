@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useQuery } from '@tanstack/react-query'
 
 interface AppVersion {
   version: string
@@ -20,29 +21,24 @@ interface UsePwaReturn {
 }
 
 export function usePwa(): UsePwaReturn {
-  const [version, setVersion] = useState<AppVersion | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const [isPwa, setIsPwa] = useState(false)
   const [hasUpdate, setHasUpdate] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
   const [isClearing, setIsClearing] = useState(false)
   const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null)
 
+  const { data: version = null, isLoading } = useQuery<AppVersion | null>({
+    queryKey: ['pwa-version'],
+    queryFn: async () => {
+      const res = await fetch('/version.json?v=' + Date.now())
+      return res.json()
+    },
+    retry: false,
+    staleTime: 60_000,
+  })
+
   // Load version and check PWA status
   useEffect(() => {
-    const loadVersion = async () => {
-      try {
-        // Cache-busting para garantir que pegamos a versão real
-        const res = await fetch('/version.json?v=' + Date.now())
-        const data = await res.json()
-        setVersion(data)
-      } catch {
-        console.error('[PWA] Error loading version')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
     // Check if running as PWA
     const checkPwaStatus = () => {
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches
@@ -50,7 +46,6 @@ export function usePwa(): UsePwaReturn {
       setIsPwa(isStandalone || isIosStandalone)
     }
 
-    loadVersion()
     checkPwaStatus()
 
     // Get SW registration and setup listeners

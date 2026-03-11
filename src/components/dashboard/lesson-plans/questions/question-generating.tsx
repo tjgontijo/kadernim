@@ -29,23 +29,33 @@ export function QuestionGenerating({ onComplete }: QuestionGeneratingProps) {
 
   useEffect(() => {
     const totalDuration = GENERATION_STEPS.reduce((acc, step) => acc + step.duration, 0);
-    const interval = 100;
-    const increment = (100 / totalDuration) * interval;
+    const startAt = performance.now();
+    let frameId = 0;
+    let completeTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
-    const timer = setInterval(() => {
-      setProgress((prev) => {
-        const next = Math.min(prev + increment, 100);
-        if (next >= 100) {
-          clearInterval(timer);
-          setTimeout(() => {
-            onComplete?.();
-          }, 500);
-        }
-        return next;
-      });
-    }, interval);
+    const tick = (now: number) => {
+      const elapsed = now - startAt;
+      const next = Math.min((elapsed / totalDuration) * 100, 100);
+      setProgress(next);
 
-    return () => clearInterval(timer);
+      if (next >= 100) {
+        completeTimeoutId = setTimeout(() => {
+          onComplete?.();
+        }, 500);
+        return;
+      }
+
+      frameId = requestAnimationFrame(tick);
+    };
+
+    frameId = requestAnimationFrame(tick);
+
+    return () => {
+      cancelAnimationFrame(frameId);
+      if (completeTimeoutId) {
+        clearTimeout(completeTimeoutId);
+      }
+    };
   }, [onComplete]);
 
   useEffect(() => {

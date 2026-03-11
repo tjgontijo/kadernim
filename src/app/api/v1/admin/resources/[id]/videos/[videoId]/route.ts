@@ -1,111 +1,78 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { deleteVideo } from '@/server/clients/cloudinary/video-client'
 import {
+  UpdateResourceVideoSchema,
+} from '@/schemas/resources/admin-resource-schemas'
+import {
   deleteResourceVideo,
   getResourceVideoById,
   updateResourceVideo,
 } from '@/services/resources/admin'
+import { parseWithSchema } from '../../../route-support'
+import {
+  deleteCloudinaryAsset,
+  ensureResourceMediaOwnership,
+  resolveResourceMediaParams,
+  resourceMediaErrorResponse,
+  serializeResourceVideo,
+} from '../../media-route-support'
 
-// PUT /api/v1/admin/resources/[id]/videos/[videoId]
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string; videoId: string }> }
 ) {
   try {
-    const { id: resourceId, videoId } = await params
-    const { title, order } = await req.json()
-
-    // Verify video exists and belongs to resource
-    const video = await getResourceVideoById(videoId)
-
-    if (!video) {
-      return NextResponse.json(
-        { error: 'Video not found' },
-        { status: 404 }
-      )
+    const parsed = parseWithSchema(
+      UpdateResourceVideoSchema,
+      await req.json(),
+      'Validation failed'
+    )
+    if (parsed instanceof NextResponse) {
+      return parsed
     }
 
-    if (video.resourceId !== resourceId) {
-      return NextResponse.json(
-        { error: 'Video does not belong to this resource' },
-        { status: 400 }
-      )
+    const { id, mediaId } = await resolveResourceMediaParams(params, 'videoId')
+    const video = ensureResourceMediaOwnership('video', id, await getResourceVideoById(mediaId))
+    if (video instanceof NextResponse) {
+      return video
     }
 
-    // Update video metadata
-    const updatedVideo = await updateResourceVideo(resourceId, videoId, {
-      title,
-      order,
-    })
-
-    return NextResponse.json({
-      id: updatedVideo.id,
-      resourceId: updatedVideo.resourceId,
-      title: updatedVideo.title,
-      cloudinaryPublicId: updatedVideo.cloudinaryPublicId,
-      thumbnail: updatedVideo.thumbnail,
-      duration: updatedVideo.duration,
-      order: updatedVideo.order,
-      createdAt: updatedVideo.createdAt.toISOString(),
-    })
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to update video'
     return NextResponse.json(
-      { error: message },
-      { status: 500 }
+      serializeResourceVideo(await updateResourceVideo(id, mediaId, parsed))
+    )
+  } catch (error) {
+    return resourceMediaErrorResponse(
+      '[PUT /api/v1/admin/resources/[id]/videos/[videoId]]',
+      error,
+      'Failed to update video'
     )
   }
 }
 
-// DELETE /api/v1/admin/resources/[id]/videos/[videoId]
 export async function DELETE(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string; videoId: string }> }
 ) {
   try {
-    const resolvedParams = await params
-    const { id: resourceId, videoId } = resolvedParams
-
-
-    // Verify video exists and belongs to resource
-    const video = await getResourceVideoById(videoId)
-
-    if (!video) {
-      console.warn(`[DELETE VIDEO] Video not found in DB: ${videoId}`)
-      return NextResponse.json(
-        { error: 'Video not found' },
-        { status: 404 }
-      )
+    const { id, mediaId } = await resolveResourceMediaParams(params, 'videoId')
+    const video = ensureResourceMediaOwnership('video', id, await getResourceVideoById(mediaId))
+    if (video instanceof NextResponse) {
+      return video
     }
 
-    if (video.resourceId !== resourceId) {
-      console.error(`[DELETE VIDEO] ID mismatch. Video resource: ${video.resourceId}, URL resource: ${resourceId}`)
-      return NextResponse.json(
-        { error: 'Video does not belong to this resource' },
-        { status: 400 }
-      )
-    }
-
-    // Delete from Cloudinary
-    try {
-      await deleteVideo(video.cloudinaryPublicId)
-    } catch (cloudinaryError) {
-      console.error('[DELETE VIDEO] Cloudinary deletion error:', cloudinaryError)
-    }
-
-    // Delete from database
-    await deleteResourceVideo(resourceId, videoId)
-
-    return NextResponse.json(
-      { success: true },
-      { status: 200 }
+    await deleteCloudinaryAsset(
+      deleteVideo,
+      video.cloudinaryPublicId,
+      '[DELETE VIDEO] Cloudinary deletion error:'
     )
+    await deleteResourceVideo(id, mediaId)
+
+    return NextResponse.json({ success: true }, { status: 200 })
   } catch (error) {
-    console.error('[DELETE VIDEO] unexpected error:', error)
-    const message = error instanceof Error ? error.message : 'Failed to delete video'
-    return NextResponse.json(
-      { error: message },
-      { status: 500 }
+    return resourceMediaErrorResponse(
+      '[DELETE /api/v1/admin/resources/[id]/videos/[videoId]]',
+      error,
+      'Failed to delete video'
     )
   }
 }

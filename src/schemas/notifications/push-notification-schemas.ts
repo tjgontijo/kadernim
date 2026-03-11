@@ -39,8 +39,18 @@ export const PushPayloadSchema = z.object({
   image: z.string().optional(),
 });
 
+export const TestPushRequestSchema = z.object({
+  title: z.string().max(100).optional(),
+  body: z.string().max(500).optional(),
+  url: z.string().optional(),
+  icon: z.string().optional(),
+  role: z.string().optional(),
+  userId: z.string().optional(),
+});
+
 // Types exportados
 export type PushSubscriptionKeys = z.infer<typeof PushSubscriptionKeysSchema>;
 export type PushSubscriptionCreate = z.infer<typeof PushSubscriptionCreateSchema>;
 export type UnsubscribePush = z.infer<typeof UnsubscribePushSchema>;
 export type PushPayload = z.infer<typeof PushPayloadSchema>;
+export type TestPushRequest = z.infer<typeof TestPushRequestSchema>;

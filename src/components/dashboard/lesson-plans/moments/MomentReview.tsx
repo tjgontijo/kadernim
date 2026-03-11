@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import { Pencil, Check, Star, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils/index';
@@ -94,14 +95,12 @@ export function MomentReview({
         onChange({ selectedSkills: updatedSkills });
     };
 
-    const handleGenerateTheme = async () => {
-        if (themeAttempts >= MAX_THEME_ATTEMPTS || !mainSkill) return;
+    const generateThemeMutation = useMutation({
+        mutationFn: async () => {
+            if (!mainSkill) {
+                throw new Error('Habilidade principal não informada');
+            }
 
-        setGeneratingTheme(true);
-        setThemeAttempts(prev => prev + 1);
-
-        try {
-            // Chamar API para gerar tema
             const response = await fetch('/api/v1/lesson-plans/generate-theme', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -118,16 +117,25 @@ export function MomentReview({
             const result = await response.json();
 
             if (result.success && result.data?.theme) {
-                onChange({ title: result.data.theme });
+                return result.data.theme as string;
             } else {
                 throw new Error(result.error || 'Erro ao gerar tema');
             }
-        } catch (error) {
-            console.error('Erro ao gerar tema:', error);
-            // Silenciosamente falha, usuário pode tentar novamente
-        } finally {
+        },
+        onSuccess: (theme) => {
+            onChange({ title: theme });
+        },
+        onSettled: () => {
             setGeneratingTheme(false);
-        }
+        },
+    });
+
+    const handleGenerateTheme = async () => {
+        if (themeAttempts >= MAX_THEME_ATTEMPTS || !mainSkill) return;
+
+        setGeneratingTheme(true);
+        setThemeAttempts(prev => prev + 1);
+        generateThemeMutation.mutate();
     };
 
     const isValid = data.selectedSkills.length >= 1;

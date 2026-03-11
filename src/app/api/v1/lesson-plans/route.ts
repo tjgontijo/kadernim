@@ -1,110 +1,50 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/server/auth';
-import { LessonPlanService } from '@/services/lesson-plans/lesson-plan-service';
-import { CreateLessonPlanSchema } from '@/schemas/lesson-plans/lesson-plan-schemas';
-import { getUserRole } from '@/services/users/get-user-role';
+import { NextRequest, NextResponse } from 'next/server'
+import { LessonPlanService } from '@/services/lesson-plans/lesson-plan-service'
+import {
+  buildLessonPlanDownloadUrls,
+  lessonPlanRouteErrorResponse,
+  parseCreateLessonPlanRequest,
+  requireLessonPlanCreator,
+  requireLessonPlanUser,
+} from './route-support'
 
-/**
- * GET /api/v1/lesson-plans
- */
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: await (async () => {
-        const h = new Headers();
-        const { headers } = await import('next/headers');
-        const headersList = await headers();
-        headersList.forEach((value, key) => {
-          h.append(key, value);
-        });
-        return h;
-      })(),
-    });
-
-    if (!session?.user) {
-      return NextResponse.json({ success: false, error: 'Não autenticado' }, { status: 401 });
+    const user = await requireLessonPlanUser(request)
+    if (user instanceof NextResponse) {
+      return user
     }
 
-    const plans = await LessonPlanService.listByUser(session.user.id);
+    const plans = await LessonPlanService.listByUser(user.id)
 
-    return NextResponse.json({ success: true, data: plans });
+    return NextResponse.json({ success: true, data: plans })
   } catch (error) {
-    return NextResponse.json({ success: false, error: 'Erro ao listar planos de aula' }, { status: 500 });
+    return lessonPlanRouteErrorResponse('list', error)
   }
 }
 
-/**
- * POST /api/v1/lesson-plans
- */
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: await (async () => {
-        const h = new Headers();
-        const { headers } = await import('next/headers');
-        const headersList = await headers();
-        headersList.forEach((value, key) => {
-          h.append(key, value);
-        });
-        return h;
-      })(),
-    });
-
-    if (!session?.user) {
-      return NextResponse.json({ success: false, error: 'Não autenticado' }, { status: 401 });
+    const user = await requireLessonPlanCreator(request)
+    if (user instanceof NextResponse) {
+      return user
     }
 
-    const userRole = await getUserRole(session.user.id);
-
-    if (userRole !== 'subscriber' && userRole !== 'admin') {
-      return NextResponse.json(
-        { success: false, error: 'Apenas assinantes podem gerar planos de aula' },
-        { status: 403 }
-      );
+    const parsed = await parseCreateLessonPlanRequest(request)
+    if (parsed instanceof NextResponse) {
+      return parsed
     }
 
-    const body = await request.json();
-    const validation = CreateLessonPlanSchema.safeParse(body);
-
-    if (!validation.success) {
-      return NextResponse.json(
-        { success: false, error: 'Dados inválidos', details: validation.error.issues },
-        { status: 400 }
-      );
-    }
-
-    const lessonPlan = await LessonPlanService.create(session.user.id, validation.data);
-
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const downloadUrls = {
-      docx: `${baseUrl}/api/v1/lesson-plans/${lessonPlan.id}/export/docx`,
-      pdf: `${baseUrl}/api/v1/lesson-plans/${lessonPlan.id}/export/pdf`,
-    };
+    const lessonPlan = await LessonPlanService.create(user.id, parsed)
 
     return NextResponse.json(
-      { success: true, data: { ...lessonPlan, downloadUrls } },
+      {
+        success: true,
+        data: { ...lessonPlan, downloadUrls: buildLessonPlanDownloadUrls(lessonPlan.id) },
+      },
       { status: 201 }
-    );
-  } catch (error: any) {
-    if (error instanceof Error && error.message === 'User not found') {
-      return NextResponse.json(
-        { success: false, error: 'Usuário não encontrado' },
-        { status: 404 }
-      );
-    }
-
-    if (error.message === 'LIMIT_EXCEEDED') {
-      return NextResponse.json(
-        { success: false, error: 'Limite mensal de planos atingido (30 planos/mês)' },
-        { status: 429 }
-      );
-    }
-    if (error.message === 'BNCC_SKILLS_NOT_FOUND') {
-      return NextResponse.json(
-        { success: false, error: 'Algumas habilidades BNCC não foram encontradas' },
-        { status: 400 }
-      );
-    }
-    return NextResponse.json({ success: false, error: 'Erro ao criar plano de aula' }, { status: 500 });
+    )
+  } catch (error) {
+    return lessonPlanRouteErrorResponse('create', error)
   }
 }

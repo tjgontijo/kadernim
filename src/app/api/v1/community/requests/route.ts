@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth/auth'
 import { getCommunityRequests, createCommunityRequest } from '@/services/community/request-service'
-import { CommunityFilterSchema, CommunityRequestSchema } from '@/schemas/community/community-schemas'
 import { getUserRole } from '@/services/users/get-user-role'
+import {
+    communityServerError,
+    getCommunitySession,
+    parseCommunityFilters,
+    parseCommunityRequestBody,
+    uploadCommunityAttachments,
+} from './route-support'
 
 /**
  * GET /api/v1/community/requests
@@ -10,40 +15,24 @@ import { getUserRole } from '@/services/users/get-user-role'
  */
 export async function GET(request: NextRequest) {
     try {
-        const session = await auth.api.getSession({ headers: request.headers })
+        const session = await getCommunitySession(request)
         const userId = session?.user?.id
 
-        const searchParams = request.nextUrl.searchParams
-        const parsed = CommunityFilterSchema.safeParse({
-            page: searchParams.get('page') ?? undefined,
-            limit: searchParams.get('limit') ?? undefined,
-            status: searchParams.get('status') ?? undefined,
-            votingMonth: searchParams.get('votingMonth') ?? undefined,
-            educationLevelId: searchParams.get('educationLevelId') ?? undefined,
-            subjectId: searchParams.get('subjectId') ?? undefined,
-            q: searchParams.get('q') ?? undefined,
-            educationLevelSlug: searchParams.get('educationLevelSlug') ?? undefined,
-            gradeSlug: searchParams.get('gradeSlug') ?? undefined,
-            subjectSlug: searchParams.get('subjectSlug') ?? undefined,
-        })
-
-        if (!parsed.success) {
-            return NextResponse.json({ error: 'Parâmetros inválidos', details: parsed.error.format() }, { status: 400 })
+        const parsed = parseCommunityFilters(request)
+        if (parsed instanceof NextResponse) {
+            return parsed
         }
 
         const result = await getCommunityRequests({
-            ...parsed.data,
+            ...parsed,
             currentUserId: userId
         })
 
         return NextResponse.json({ success: true, data: result })
     } catch (error) {
-        console.error('[Community GET] Error:', error)
-        return NextResponse.json({ success: false, error: 'Erro ao buscar pedidos' }, { status: 500 })
+        return communityServerError('[Community GET] Error:', error)
     }
 }
-
-import { uploadCommunityReference } from '@/server/clients/cloudinary/community-client'
 
 /**
  * POST /api/v1/community/requests
@@ -51,51 +40,19 @@ import { uploadCommunityReference } from '@/server/clients/cloudinary/community-
  */
 export async function POST(request: NextRequest) {
     try {
-        const session = await auth.api.getSession({ headers: request.headers })
+        const session = await getCommunitySession(request)
         if (!session?.user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
         const userRole = await getUserRole(session.user.id)
-
-        // 2. Parse FormData
-        const formData = await request.formData()
-
-        const body = {
-            title: formData.get('title') as string,
-            description: formData.get('description') as string,
-            hasBnccAlignment: formData.get('hasBnccAlignment') === 'true',
-            educationLevelId: formData.get('educationLevelId') as string || undefined,
-            gradeId: formData.get('gradeId') as string || undefined,
-            subjectId: formData.get('subjectId') as string || undefined,
-            bnccSkillCodes: formData.getAll('bnccSkillCodes') as string[],
+        const parsed = await parseCommunityRequestBody(request)
+        if ('error' in parsed) {
+            return parsed.error
         }
 
-        const parsed = CommunityRequestSchema.safeParse(body)
-        if (!parsed.success) {
-            return NextResponse.json({ error: 'Dados inválidos', details: parsed.error.format() }, { status: 400 })
-        }
-
-        // 3. Process Attachments
-        const attachments = formData.getAll('attachments') as File[]
-        const uploadResults = []
-
-        if (attachments.length > 0) {
-            // Usamos um ID temporário ou o timestamp para a pasta, já que o RequestId ainda não existe
-            // O ideal é salvar o request e depois fazer o upload, ou usar um UUID pré-gerado
-            const tempFolderId = `temp_${Date.now()}`
-
-            for (const file of attachments) {
-                const result = await uploadCommunityReference(file, 'community/uploads', tempFolderId)
-                uploadResults.push({
-                    cloudinaryPublicId: result.publicId,
-                    url: result.url,
-                    fileName: file.name,
-                    fileType: file.type,
-                    fileSize: file.size,
-                })
-            }
-        }
+        const attachments = parsed.formData.getAll('attachments') as File[]
+        const uploadResults = await uploadCommunityAttachments(attachments)
 
         const result = await createCommunityRequest(
             session.user.id,
@@ -110,10 +67,6 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 })
         }
 
-        console.error('[Community POST] Error:', error)
-        return NextResponse.json({
-            success: false,
-            error: error.message || 'Erro ao criar pedido'
-        }, { status: 400 })
+        return communityServerError('[Community POST] Error:', error, 400)
     }
 }

@@ -131,9 +131,9 @@ export default function RootLayout({
         className={`${inter.variable} ${poppins.variable} ${openSans.variable} ${nunitoSans.variable} antialiased`} suppressHydrationWarning>
         <AppSplashScreen />
         <ServiceWorkerRegister />
-        <PushNotificationSetup />
         <ThemeProvider>
           <ReactQueryProvider>
+            <PushNotificationSetup />
             {children}
             <Toaster />
           </ReactQueryProvider>

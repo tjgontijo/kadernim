@@ -54,6 +54,43 @@ function hasTanStackDataHook(content) {
   return /use(Query|InfiniteQuery|Mutation)\s*(?:<[^()]*>)?\s*\(/.test(content);
 }
 
+function hasUseEffectWithFetch(content) {
+  const effectMatcher = /\buse(?:Layout)?Effect\s*\(/g;
+
+  for (const match of content.matchAll(effectMatcher)) {
+    const start = match.index;
+    if (typeof start !== "number") continue;
+
+    const end = findMatchingParen(content, start + match[0].length - 1);
+    if (end === -1) continue;
+
+    const effectCall = content.slice(start, end + 1);
+    if (/\bfetch\s*\(/.test(effectCall)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function findMatchingParen(text, openIndex) {
+  let depth = 0;
+
+  for (let i = openIndex; i < text.length; i += 1) {
+    const char = text[i];
+
+    if (char === "(") depth += 1;
+    if (char === ")") {
+      depth -= 1;
+      if (depth === 0) {
+        return i;
+      }
+    }
+  }
+
+  return -1;
+}
+
 function buildMetrics() {
   const routeFiles = toLines(run("rg --files src/app/api -g 'route.ts'"));
   const tsFiles = toLines(run("rg --files src -g '*.{ts,tsx}'"));
@@ -86,7 +123,7 @@ function buildMetrics() {
       /\buseEffect\b|\buseLayoutEffect\b/g
     );
 
-    if (/useEffect\s*\([\s\S]{0,1200}?fetch\s*\(/.test(content)) {
+    if (hasUseEffectWithFetch(content)) {
       useEffectFetchFiles += 1;
     }
 
@@ -97,7 +134,7 @@ function buildMetrics() {
       /\buseInfiniteQuery\s*(?:<[^()]*>)?\s*\(/g
     );
 
-    if (isClientFile(content) && /fetch\s*\(/.test(content) && !hasTanStackDataHook(content)) {
+    if (isClientFile(content) && /\bfetch\s*\(/.test(content) && !hasTanStackDataHook(content)) {
       clientFetchWithoutTanStackFiles += 1;
     }
   }

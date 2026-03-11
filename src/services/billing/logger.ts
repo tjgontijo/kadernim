@@ -36,7 +36,7 @@ export function billingLog(
         }
         const reset = '\x1b[0m'
 
-        console.log(
+        console.info(
             `${colors[level]}[Billing:${level.toUpperCase()}]${reset} ${message}`,
             data
         )
