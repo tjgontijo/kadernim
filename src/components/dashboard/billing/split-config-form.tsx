@@ -25,6 +25,7 @@ import {
     SelectValue
 } from '@/components/ui/select'
 import { SplitType } from '@db'
+import { applyCnpjMask } from '@/lib/utils/cpf-cnpj'
 import { CreditCard, Percent, Banknote, ShieldCheck, Building2 } from 'lucide-react'
 
 interface SplitConfigFormProps {
@@ -34,7 +35,10 @@ interface SplitConfigFormProps {
 export function SplitConfigForm({ initialData }: SplitConfigFormProps) {
     const form = useForm<SplitUpdate>({
         resolver: zodResolver(SplitUpdateSchema),
-        defaultValues: initialData || {
+        defaultValues: initialData ? {
+            ...initialData,
+            cnpj: applyCnpjMask(initialData.cnpj),
+        } : {
             companyName: '',
             cnpj: '',
             walletId: '',
@@ -116,7 +120,13 @@ export function SplitConfigForm({ initialData }: SplitConfigFormProps) {
                                     <FormItem>
                                         <FormLabel>CNPJ</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="00.000.000/0001-00" {...field} />
+                                            <Input
+                                                placeholder="00.000.000/0001-00"
+                                                {...field}
+                                                inputMode="numeric"
+                                                maxLength={18}
+                                                onChange={(event) => field.onChange(applyCnpjMask(event.target.value))}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>

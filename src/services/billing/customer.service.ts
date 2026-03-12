@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db'
+import { normalizeCpfCnpj } from '@/lib/utils/cpf-cnpj'
 import { auth } from '@/server/auth/auth'
 import { AsaasClient } from './asaas-client'
 import { billingLog } from './logger'
@@ -27,6 +28,8 @@ export class CustomerService {
         cpfCnpj?: string
         phone?: string
     }) {
+        const normalizedCpfCnpj = params.cpfCnpj ? normalizeCpfCnpj(params.cpfCnpj) : undefined
+
         // 1. Check if user exists locally
         let user = await prisma.user.findUnique({
             where: { email: params.email },
@@ -84,7 +87,7 @@ export class CustomerService {
                 const asaasCustomer = await AsaasClient.post<AsaasCustomer>('/customers', {
                     name: params.name || user.name,
                     email: params.email || user.email,
-                    cpfCnpj: params.cpfCnpj,
+                    cpfCnpj: normalizedCpfCnpj,
                     phone: params.phone,
                     externalReference: user.id,
                 })
@@ -130,8 +133,13 @@ export class CustomerService {
             throw new Error(`User ${userId} does not have an Asaas Customer ID`)
         }
 
+        const normalizedData = {
+            ...data,
+            cpfCnpj: data.cpfCnpj ? normalizeCpfCnpj(data.cpfCnpj) : data.cpfCnpj,
+        }
+
         try {
-            const updated = await AsaasClient.post<AsaasCustomer>(`/customers/${user.asaasCustomerId}`, data)
+            const updated = await AsaasClient.post<AsaasCustomer>(`/customers/${user.asaasCustomerId}`, normalizedData)
             billingLog('info', 'Asaas Customer Updated', { userId, asaasId: user.asaasCustomerId })
             return updated
         } catch (error: any) {
@@ -149,8 +157,8 @@ export class CustomerService {
                 return await this.createOrGetCustomer({
                     email: user.email,
                     name: user.name,
-                    cpfCnpj: data.cpfCnpj,
-                    phone: data.phone || data.mobilePhone
+                    cpfCnpj: normalizedData.cpfCnpj,
+                    phone: normalizedData.phone || normalizedData.mobilePhone
                 })
             }
             throw error

@@ -25,13 +25,8 @@ import {
   type CheckoutPlanCatalog,
   type CheckoutPlanId,
 } from '@/lib/billing/checkout-offer'
+import { applyCpfCnpjMask, isValidCpfCnpj, normalizeCpfCnpj } from '@/lib/utils/cpf-cnpj'
 import { PixQrCode } from './checkout-pix-qrcode'
-
-function fmtCpfCnpj(value: string) {
-  const digits = value.replace(/\D/g, '')
-  if (digits.length <= 11) return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
-  return digits.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5')
-}
 
 function fmtPhone(value: string) {
   const digits = value.replace(/\D/g, '')
@@ -282,8 +277,7 @@ export function GuestCheckoutForm({
       if (phone.replace(/\D/g, '').length < 10) nextErrors.phone = 'WhatsApp obrigatorio'
     }
 
-    const cpfClean = cpfCnpj.replace(/\D/g, '')
-    if (cpfClean.length !== 11 && cpfClean.length !== 14) nextErrors.cpfCnpj = 'CPF ou CNPJ invalido'
+    if (!isValidCpfCnpj(cpfCnpj)) nextErrors.cpfCnpj = 'CPF ou CNPJ invalido'
 
     if (method === 'CREDIT_CARD') {
       if (!ccNumber || ccNumber.replace(/\D/g, '').length < 14) nextErrors.ccNumber = 'Numero invalido'
@@ -305,7 +299,7 @@ export function GuestCheckoutForm({
 
       const body: Record<string, unknown> = {
         email: (prefilledUser?.email ?? email).trim().toLowerCase(),
-        cpfCnpj: cpfCnpj.replace(/\D/g, ''),
+        cpfCnpj: normalizeCpfCnpj(cpfCnpj),
         paymentMethod: selectedPaymentMethod,
         planId: plan,
         installments: plan === 'annual' && method === 'CREDIT_CARD' ? annualInstallments : 1,
@@ -415,7 +409,7 @@ export function GuestCheckoutForm({
                       id="cpfcnpj"
                       placeholder="000.000.000-00"
                       value={cpfCnpj}
-                      onChange={(event) => setCpfCnpj(fmtCpfCnpj(event.target.value))}
+                      onChange={(event) => setCpfCnpj(applyCpfCnpjMask(event.target.value))}
                       inputMode="numeric"
                       maxLength={18}
                     />
@@ -460,7 +454,7 @@ export function GuestCheckoutForm({
                         id="cpfcnpj"
                         placeholder="000.000.000-00"
                         value={cpfCnpj}
-                        onChange={(event) => setCpfCnpj(fmtCpfCnpj(event.target.value))}
+                        onChange={(event) => setCpfCnpj(applyCpfCnpjMask(event.target.value))}
                         inputMode="numeric"
                         maxLength={18}
                       />

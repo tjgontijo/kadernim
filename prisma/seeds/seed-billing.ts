@@ -10,7 +10,7 @@ const billingPlans = [
     offers: [
       {
         code: 'offer_monthly_pix_automatic_default',
-        paymentMethod: 'PIX_AUTOMATIC' as const,
+        paymentMethod: 'PIX' as const,
         amount: '27.00',
         maxInstallments: 1,
         installmentRate: null,

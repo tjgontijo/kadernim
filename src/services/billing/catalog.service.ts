@@ -20,6 +20,18 @@ function formatStrikeLabel(value: number) {
   return `R$ ${Math.round(value)}`
 }
 
+function resolvePixCheckoutDescription(paymentMethod: PaymentMethod, cycle: 'MONTHLY' | 'YEARLY') {
+  if (paymentMethod === PaymentMethod.PIX_AUTOMATIC) {
+    return cycle === 'MONTHLY'
+      ? 'PIX Automático com renovação mensal.'
+      : 'PIX Automático.'
+  }
+
+  return cycle === 'MONTHLY'
+    ? 'Pagamento mensal no PIX com renovação manual.'
+    : 'Pagamento único no PIX.'
+}
+
 function buildPlan(input: {
   id: CheckoutPlanId
   name: string
@@ -50,6 +62,10 @@ function buildPlan(input: {
     : Number(creditCardOffer.installmentRate)
 
   if (input.id === 'monthly') {
+    const monthlyPixPaymentMethod = pixOffer.paymentMethod === PaymentMethod.PIX_AUTOMATIC
+      ? PaymentMethod.PIX_AUTOMATIC
+      : PaymentMethod.PIX
+
     return {
       id: input.id,
       name: input.name,
@@ -58,11 +74,11 @@ function buildPlan(input: {
       cycle: input.cycle,
       accessDays: input.accessDays,
       pixOfferId: pixOffer.id,
-      pixPaymentMethod: PaymentMethod.PIX_AUTOMATIC,
+      pixPaymentMethod: monthlyPixPaymentMethod,
       pixAmount,
       pixPriceLabel: `${formatCheckoutCurrency(pixAmount)}/mês`,
       pixSubmitLabel: `${formatCheckoutCurrency(pixAmount)}/mês`,
-      pixDescription: 'PIX Automático com renovação mensal.',
+      pixDescription: resolvePixCheckoutDescription(monthlyPixPaymentMethod, input.cycle),
       creditCardOfferId: creditCardOffer.id,
       creditCardAmount,
       creditCardPriceLabel: `${formatCheckoutCurrency(creditCardAmount)}/mês`,
@@ -85,7 +101,7 @@ function buildPlan(input: {
     pixAmount,
     pixPriceLabel: `${formatCheckoutCurrency(pixAmount)} à vista`,
     pixSubmitLabel: `${formatCheckoutCurrency(pixAmount)} à vista`,
-    pixDescription: 'Pagamento anual único no PIX.',
+    pixDescription: resolvePixCheckoutDescription(PaymentMethod.PIX, input.cycle),
     creditCardOfferId: creditCardOffer.id,
     creditCardAmount,
     creditCardPriceLabel: `1x de ${formatCheckoutCurrency(creditCardAmount)}`,

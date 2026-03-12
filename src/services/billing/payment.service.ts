@@ -9,6 +9,7 @@ import {
   type CheckoutBillingMode,
   type CheckoutPlanId,
 } from '@/lib/billing/checkout-offer'
+import { normalizeCpfCnpj } from '@/lib/utils/cpf-cnpj'
 import { AsaasClient } from './asaas-client'
 import { BillingAuditService } from './audit.service'
 import { BillingCatalogService } from './catalog.service'
@@ -98,6 +99,7 @@ async function inferPlanId(description?: string | null, value?: number): Promise
 }
 
 async function ensureBillingUser(userId: string, cpfCnpj: string, phone?: string) {
+  const normalizedCpfCnpj = normalizeCpfCnpj(cpfCnpj)
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
@@ -120,13 +122,13 @@ async function ensureBillingUser(userId: string, cpfCnpj: string, phone?: string
     const customer = await CustomerService.createOrGetCustomer({
       email: user.email,
       name: user.name,
-      cpfCnpj,
+      cpfCnpj: normalizedCpfCnpj,
       phone: normalizedPhone,
     })
     customerId = customer.asaasCustomerId ?? null
   } else {
     await CustomerService.updateCustomer(user.id, {
-      cpfCnpj,
+      cpfCnpj: normalizedCpfCnpj,
       phone: normalizedPhone,
       mobilePhone: normalizedPhone,
     })
@@ -276,7 +278,7 @@ function buildCreditCardHolderInfo(user: BillingUser, cpfCnpj: string) {
   return {
     name: user.name,
     email: user.email,
-    cpfCnpj,
+    cpfCnpj: normalizeCpfCnpj(cpfCnpj),
     phone,
     mobilePhone: phone,
   }
@@ -314,11 +316,8 @@ export class PaymentService {
     planId: CheckoutPlanId
   }) {
     const plan = await BillingCatalogService.getCheckoutPlan(params.planId)
-    if (plan.id !== 'annual') {
-      throw new Error('Pagamento PIX avulso disponível apenas no plano anual')
-    }
 
-    billingLog('info', 'Starting annual PIX checkout', {
+    billingLog('info', 'Starting PIX checkout', {
       userId: params.userId,
       planId: params.planId,
     })
