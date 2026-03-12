@@ -80,8 +80,17 @@ FOR EACH ROW EXECUTE FUNCTION bncc_skill_search_vector_update();
 -- Índice GIN para busca textual
 CREATE INDEX IF NOT EXISTS bncc_skill_search_gin ON "bncc_skill" USING GIN ("searchVector");
 
+-- Garantir dimensão fixa para pgvector antes do índice ANN
+ALTER TABLE "bncc_skill"
+ALTER COLUMN "embedding" TYPE vector(1536)
+USING CASE
+  WHEN "embedding" IS NULL THEN NULL
+  ELSE "embedding"::vector(1536)
+END;
+
 -- Índice Vetorial (IA)
-CREATE INDEX IF NOT EXISTS bncc_skill_embedding_idx ON "bncc_skill" USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
+DROP INDEX IF EXISTS bncc_skill_embedding_idx;
+CREATE INDEX bncc_skill_embedding_idx ON "bncc_skill" USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
 EOF
 
 # 6. População de Dados (Seed)
