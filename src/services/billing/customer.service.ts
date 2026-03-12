@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db'
+import { shouldRecreateDeletedAsaasCustomer } from '@/lib/billing/asaas-customer-error'
 import { normalizeCpfCnpj } from '@/lib/utils/cpf-cnpj'
 import { auth } from '@/server/auth/auth'
 import { AsaasClient } from './asaas-client'
@@ -143,9 +144,12 @@ export class CustomerService {
             billingLog('info', 'Asaas Customer Updated', { userId, asaasId: user.asaasCustomerId })
             return updated
         } catch (error: any) {
-            // If Asaas returns 404, it means the customer was deleted manually there
-            if (error.message.includes('[404]')) {
-                billingLog('warn', 'Asaas Customer not found (404), clearing local ID and recreating', { userId, oldAsaasId: user.asaasCustomerId })
+            if (shouldRecreateDeletedAsaasCustomer(error.message)) {
+                billingLog('warn', 'Asaas Customer unavailable, clearing local ID and recreating', {
+                    userId,
+                    oldAsaasId: user.asaasCustomerId,
+                    error: error.message,
+                })
 
                 // Clear the invalid ID
                 await prisma.user.update({
