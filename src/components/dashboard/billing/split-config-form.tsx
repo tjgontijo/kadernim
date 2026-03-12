@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -30,10 +29,9 @@ import { CreditCard, Percent, Banknote, ShieldCheck, Building2 } from 'lucide-re
 
 interface SplitConfigFormProps {
     initialData?: SplitUpdate
-    userId: string
 }
 
-export function SplitConfigForm({ initialData, userId }: SplitConfigFormProps) {
+export function SplitConfigForm({ initialData }: SplitConfigFormProps) {
     const form = useForm<SplitUpdate>({
         resolver: zodResolver(SplitUpdateSchema),
         defaultValues: initialData || {
@@ -65,8 +63,10 @@ export function SplitConfigForm({ initialData, userId }: SplitConfigFormProps) {
                 body: JSON.stringify(values),
             })
 
+            const payload = await response.json().catch(() => null)
+
             if (!response.ok) {
-                throw new Error('Falha ao atualizar configuração')
+                throw new Error(payload?.error || 'Falha ao atualizar configuração')
             }
         },
         onSuccess: () => {
@@ -137,7 +137,7 @@ export function SplitConfigForm({ initialData, userId }: SplitConfigFormProps) {
                                         </div>
                                     </FormControl>
                                     <FormDescription>
-                                        ID da carteira de destino no Asaas (Subconta ou Parceiro).
+                                        Informe somente a carteira de destino do parceiro. A carteira principal da Kadernim deve ser cadastrada separadamente.
                                     </FormDescription>
                                     <FormMessage />
                                 </FormItem>
@@ -248,6 +248,10 @@ export function SplitConfigForm({ initialData, userId }: SplitConfigFormProps) {
                                     <span className="text-primary">Kadernim: R$ {kadernimValue.toFixed(2)}</span>
                                     <span className="text-indigo-400">Parceiro: R$ {partnerValue.toFixed(2)}</span>
                                 </div>
+                            </div>
+
+                            <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-300">
+                                A carteira de split nao pode ser igual a carteira principal cadastrada acima.
                             </div>
                         </div>
 

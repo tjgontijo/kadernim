@@ -2,13 +2,13 @@ import { z } from 'zod'
 import { SplitType } from '@db'
 
 export const SplitUpdateSchema = z.object({
-    companyName: z.string().min(3, 'Nome da empresa é obrigatório'),
-    cnpj: z.string().min(14, 'CNPJ inválido'),
-    walletId: z.string().min(10, 'Wallet ID inválido'),
+    companyName: z.string().trim().min(3, 'Nome da empresa é obrigatório'),
+    cnpj: z.string().trim().min(14, 'CNPJ inválido'),
+    walletId: z.string().trim().uuid('Wallet ID inválido'),
     splitType: z.nativeEnum(SplitType),
     percentualValue: z.number().min(0.01).max(99.99).optional(),
     fixedValue: z.number().min(0.01).optional(),
-    description: z.string().optional(),
+    description: z.string().trim().optional(),
 }).refine((data) => {
     if (data.splitType === 'PERCENTAGE' && !data.percentualValue) {
         return false

@@ -1,7 +1,9 @@
 import { prisma } from '@/lib/db'
+import { buildAsaasSplitPayload, isSameWalletId, normalizeWalletId } from '@/lib/billing/split-payload'
 import { billingLog } from './logger'
 import { BillingAuditService } from './audit.service'
 import { AuditActor, SplitType } from '@db'
+import { BillingWalletService } from './wallet.service'
 
 export interface SplitConfigUpdate {
     companyName: string
@@ -29,22 +31,25 @@ export class SplitService {
      */
     static async buildSplitPayload() {
         const config = await this.getConfig()
+        const mainWalletId = await BillingWalletService.getMainWalletId()
 
         if (!config || !config.isActive) return undefined
+
+        if (isSameWalletId(config.walletId, mainWalletId)) {
+            billingLog('warn', 'Skipping split because target wallet matches billing main wallet', {
+                walletId: config.walletId,
+                mainWalletId,
+            })
+
+            return undefined
+        }
 
         billingLog('info', 'Building split payload', {
             walletId: config.walletId,
             type: config.splitType
         })
 
-        return [{
-            walletId: config.walletId,
-            ...(config.splitType === 'PERCENTAGE'
-                ? { percentualValue: config.percentualValue }
-                : { fixedValue: config.fixedValue }
-            ),
-            description: config.description || `Split para ${config.companyName}`
-        }]
+        return buildAsaasSplitPayload(config, mainWalletId)
     }
 
     /**
@@ -53,6 +58,16 @@ export class SplitService {
      */
     static async updateConfig(data: SplitConfigUpdate, adminUserId: string) {
         const previous = await this.getConfig()
+        const mainWalletId = await BillingWalletService.getMainWalletId()
+        const walletId = normalizeWalletId(data.walletId)
+
+        if (!walletId) {
+            throw new Error('Wallet ID do split inválido.')
+        }
+
+        if (isSameWalletId(walletId, mainWalletId)) {
+            throw new Error('A carteira de split nao pode ser a mesma carteira principal.')
+        }
 
         return await prisma.$transaction(async (tx) => {
             // Deactivate all existing configs
@@ -61,10 +76,27 @@ export class SplitService {
                 data: { isActive: false },
             })
 
-            // Create new active config
-            const updated = await tx.splitConfig.create({
-                data: { ...data, isActive: true },
+            const existing = await tx.splitConfig.findUnique({
+                where: { walletId },
             })
+
+            const nextConfigData = {
+                ...data,
+                walletId,
+                companyName: data.companyName.trim(),
+                cnpj: data.cnpj.trim(),
+                description: data.description?.trim() || null,
+                isActive: true,
+            }
+
+            const updated = existing
+                ? await tx.splitConfig.update({
+                    where: { walletId },
+                    data: nextConfigData,
+                })
+                : await tx.splitConfig.create({
+                    data: nextConfigData,
+                })
 
             // Audit log the update
             await BillingAuditService.log({

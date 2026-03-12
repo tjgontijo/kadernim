@@ -105,14 +105,44 @@ export async function seedBilling(prisma: PrismaClient) {
 
   console.log('✅ Catálogo de billing configurado com sucesso.');
 
-  const walletId = process.env.WALLET_ASAAS_ID?.trim();
+  const mainWalletId = process.env.ASAAS_MAIN_WALLET_ID?.trim();
+  const splitWalletId = process.env.ASAAS_SPLIT_WALLET_ID?.trim();
 
-  if (!walletId) {
-    throw new Error('WALLET_ASAAS_ID is required to seed billing split configuration.');
+  if (mainWalletId) {
+    await prisma.systemConfig.upsert({
+      where: { key: 'billing.asaas.mainWalletId' },
+      update: {
+        value: mainWalletId,
+        type: 'string',
+        label: 'Carteira principal Asaas',
+        description: 'Wallet ID principal da conta emissora da Kadernim no Asaas.',
+        category: 'billing',
+      },
+      create: {
+        key: 'billing.asaas.mainWalletId',
+        value: mainWalletId,
+        type: 'string',
+        label: 'Carteira principal Asaas',
+        description: 'Wallet ID principal da conta emissora da Kadernim no Asaas.',
+        category: 'billing',
+      },
+    });
+
+    console.log('✅ Carteira principal do Asaas configurada com sucesso.');
+  }
+
+  if (!splitWalletId) {
+    console.log('ℹ️ ASAAS_SPLIT_WALLET_ID não informado. Seed de split ignorado.');
+    return;
+  }
+
+  if (mainWalletId && mainWalletId.toLowerCase() === splitWalletId.toLowerCase()) {
+    console.log('⚠️ ASAAS_SPLIT_WALLET_ID igual à carteira principal. Seed de split ignorado.');
+    return;
   }
 
   await prisma.splitConfig.upsert({
-    where: { walletId },
+    where: { walletId: splitWalletId },
     update: {
       companyName: 'Elev8 Negocios Digitais LTDA',
       cnpj: '63.823.086/0001-72',
@@ -122,7 +152,7 @@ export async function seedBilling(prisma: PrismaClient) {
       description: 'Split 100% para Elev8 Negócios Digitais',
     },
     create: {
-      walletId,
+      walletId: splitWalletId,
       companyName: 'Elev8 Negocios Digitais LTDA',
       cnpj: '63.823.086/0001-72',
       isActive: true,

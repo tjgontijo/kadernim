@@ -52,6 +52,13 @@ export async function PUT(request: NextRequest) {
         return NextResponse.json(updated, { status: 200 })
     } catch (error: any) {
         billingLog('error', 'Split configuration PUT failed', { error: error.message })
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+        const status = error.message === 'A carteira de split nao pode ser a mesma carteira principal.'
+            || error.message === 'Wallet ID do split inválido.'
+            ? 400
+            : 500
+
+        return NextResponse.json({
+            error: status === 400 ? error.message : 'Internal Server Error'
+        }, { status })
     }
 }
