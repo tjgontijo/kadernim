@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { PrismaClient } from '@db/client';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { Pool } from 'pg';
+import { createPrismaPgPoolConfig } from '@/lib/database/prisma-pg-config';
 import { seedUsers } from './seed-users';
 import { seedTaxonomy } from './seed-taxonomy';
 import { seedResources } from './seed-resources';
@@ -12,10 +12,8 @@ import { seedTemplates } from './seed-templates';
 import { seedSystemConfig } from './seed-system-config';
 import { seedBilling } from './seed-billing';
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-
 const prisma = new PrismaClient({
-  adapter: new PrismaPg(pool),
+  adapter: new PrismaPg(createPrismaPgPoolConfig(process.env.DATABASE_URL)),
 });
 
 async function cleanDatabase() {
