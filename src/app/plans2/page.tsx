@@ -52,7 +52,7 @@ function Hero() {
 
             <p className="text-slate-400 text-lg 2xl:text-xl leading-relaxed mb-10 max-w-lg">
               R$ 15 aqui, R$ 12 ali, R$ 25 em outro perfil. No fim do mês o dinheiro foi — e às vezes o material nem serviu para a sua turma. Por{' '}
-              <span className="text-white font-semibold">R$&nbsp;29/mês</span> você acessa tudo, ilimitado.
+              <span className="text-white font-semibold">R$&nbsp;27/mês</span> você acessa tudo, ilimitado.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 mb-10">
@@ -128,7 +128,7 @@ function Hero() {
                 </div>
                 <div className="flex items-center justify-between text-[10px] text-slate-600">
                   <span>Kadernim Pro custa:</span>
-                  <span className="text-green-400 font-bold">R$ 29/mês</span>
+                  <span className="text-green-400 font-bold">R$ 27/mês</span>
                 </div>
               </div>
             </div>
@@ -140,7 +140,7 @@ function Hero() {
               </div>
               <div>
                 <p className="text-[10px] text-slate-500">Você economizaria</p>
-                <p className="text-sm font-bold text-green-400">R$ 1.529/ano</p>
+                <p className="text-sm font-bold text-green-400">R$ 1.572/ano</p>
               </div>
             </div>
 
@@ -271,7 +271,7 @@ function HowItWorks() {
                 A virada
               </span>
               <h2 className="text-3xl 2xl:text-4xl font-black text-white leading-tight mb-5">
-                Trocar R$ 144/mês por R$ 29. Acesso a tudo. Sem surpresa.
+                Trocar R$ 144/mês por R$ 27. Acesso a tudo. Sem surpresa.
               </h2>
               <p className="text-slate-400 text-base 2xl:text-lg leading-relaxed">
                 Uma biblioteca com tudo organizado, um gerador de plano de aula que usa IA para seguir a BNCC, e uma comunidade de professoras que vota todo mês no que a plataforma vai criar. Você entra, escolhe, imprime ou edita — e volta a ter fim de semana.
@@ -376,7 +376,7 @@ function Pricing() {
             Menos de um material avulso por mês.
           </h2>
           <p className="text-slate-400 2xl:text-lg">
-            Por R$ 29/mês você acessa o que antes custava R$ 144. Todo mês.
+            Por R$ 27/mês você acessa o que antes custava R$ 144. Todo mês.
           </p>
         </div>
 
@@ -404,19 +404,19 @@ function Pricing() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-slate-300 font-semibold">Kadernim Pro</span>
-                    <span className="text-sm font-black text-green-400">R$ 29/mês</span>
+                    <span className="text-sm font-black text-green-400">R$ 27/mês</span>
                   </div>
                 </div>
 
                 <div className="flex items-baseline gap-2 mb-2">
-                  <span className="text-5xl 2xl:text-6xl font-black text-white tracking-tight">R$&nbsp;29</span>
+                  <span className="text-5xl 2xl:text-6xl font-black text-white tracking-tight">R$&nbsp;27</span>
                   <span className="text-slate-500 text-sm">/mês</span>
                 </div>
                 <p className="text-sm text-slate-500">
                   Mensal · Cancele quando quiser
                 </p>
                 <p className="text-xs text-slate-600 mt-1">
-                  À vista anual: <span className="text-white font-semibold">R$ 199/ano</span>{' '}
+                  À vista anual: <span className="text-white font-semibold">R$ 197/ano</span>{' '}
                   <span className="text-green-400">(2 meses grátis)</span>
                 </p>
               </div>
@@ -545,7 +545,7 @@ function FinalCTA() {
           <p className="text-slate-500 text-sm 2xl:text-base mb-4">Faça a conta</p>
           <h2 className="text-4xl 2xl:text-5xl font-black text-white mb-5 leading-tight">
             R$ 144/mês em compras avulsas<br />
-            <span className="text-blue-400">ou R$ 29 com acesso a tudo?</span>
+            <span className="text-blue-400">ou R$ 27 com acesso a tudo?</span>
           </h2>
           <p className="text-slate-400 text-lg 2xl:text-xl mb-10">
             A escolha parece óbvia. Mas a maioria das professoras ainda não fez essa troca.

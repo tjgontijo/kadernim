@@ -55,7 +55,7 @@ function Hero() {
 
             <p className="text-slate-400 text-lg 2xl:text-xl leading-relaxed mb-10 max-w-lg">
               São horas toda semana buscando no Instagram, formatando atividades, montando plano de aula do zero. Horas que deveriam estar na sala de aula, com a família, ou descansando. Por{' '}
-              <span className="text-white font-semibold">R$&nbsp;29/mês</span> isso acaba.
+              <span className="text-white font-semibold">R$&nbsp;27/mês</span> isso acaba.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 mb-10">
@@ -376,7 +376,7 @@ function Pricing() {
       <W>
         <div className="text-center max-w-xl mx-auto mb-12 2xl:mb-16">
           <h2 className="text-3xl 2xl:text-4xl font-black text-white mb-3">
-            170 horas por semestre. Por R$ 29/mês.
+            170 horas por semestre. Por R$ 27/mês.
           </h2>
           <p className="text-slate-400 2xl:text-lg">
             O que você recupera vale muito mais do que o que paga.
@@ -411,14 +411,14 @@ function Pricing() {
                 </div>
 
                 <div className="flex items-baseline gap-2 mb-2">
-                  <span className="text-5xl 2xl:text-6xl font-black text-white tracking-tight">R$&nbsp;29</span>
+                  <span className="text-5xl 2xl:text-6xl font-black text-white tracking-tight">R$&nbsp;27</span>
                   <span className="text-slate-500 text-sm">/mês</span>
                 </div>
                 <p className="text-sm text-slate-500">
                   Mensal · Cancele quando quiser
                 </p>
                 <p className="text-xs text-slate-600 mt-1">
-                  À vista anual: <span className="text-white font-semibold">R$ 199/ano</span>{' '}
+                  À vista anual: <span className="text-white font-semibold">R$ 197/ano</span>{' '}
                   <span className="text-green-400">(2 meses grátis)</span>
                 </p>
               </div>
