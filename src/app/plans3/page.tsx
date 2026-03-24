@@ -426,7 +426,7 @@ function Pricing() {
               <div className="px-8 2xl:px-10 py-6 border-b border-white/6">
                 <ul className="space-y-3 2xl:space-y-4" aria-label="Incluído no Plano Pro">
                   {[
-                    'Biblioteca ilimitada — +248 materiais em PDF',
+                    'Biblioteca ilimitada com +248 materiais em PDF',
                     'Gerador de Planos de Aula (IA + BNCC)',
                     'Download ilimitado em PDF',
                     'Votação mensal nos próximos materiais',
