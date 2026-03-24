@@ -1,25 +1,26 @@
 import { billingLog } from './logger'
-
-const ASAAS_API_KEY = process.env.ASAAS_API_KEY
-const ASAAS_BASE_URL = process.env.ASAAS_BASE_URL || 'https://sandbox.asaas.com/api/v3'
-
-if (!ASAAS_API_KEY) {
-    console.warn('[Billing:AsaasClient] ASAAS_API_KEY is not defined in environment variables.')
-}
+import { BillingAsaasConfigService } from './asaas-config.service'
 
 export class AsaasClient {
     private static async request<T>(
         endpoint: string,
         options: RequestInit = {}
     ): Promise<T> {
-        const url = `${ASAAS_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`
+        const { apiKey, baseUrl } = await BillingAsaasConfigService.getRuntimeConfig()
+
+        if (!apiKey) {
+            billingLog('error', 'Asaas API key is not configured in billing settings')
+            throw new Error('Asaas API key is not configured.')
+        }
+
+        const url = `${baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`
         const start = Date.now()
         const isFormDataBody = typeof FormData !== 'undefined' && options.body instanceof FormData
 
         const response = await fetch(url, {
             ...options,
             headers: {
-                'access_token': ASAAS_API_KEY || '',
+                'access_token': apiKey,
                 ...(isFormDataBody ? {} : { 'Content-Type': 'application/json' }),
                 ...(options.headers || {}),
             },
