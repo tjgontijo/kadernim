@@ -5,9 +5,8 @@ import { BillingAuditService } from './audit.service'
 import { BillingCatalogService } from './catalog.service'
 import { billingLog } from './logger'
 import { AuditActor, InvoiceStatus } from '@db'
+import { BillingAsaasConfigService } from './asaas-config.service'
 import { PaymentService } from './payment.service'
-
-const ASAAS_WEBHOOK_TOKEN = process.env.ASAAS_WEBHOOK_TOKEN
 
 function mapInvoiceStatus(status: string): InvoiceStatus {
     switch (status) {
@@ -34,9 +33,13 @@ export class WebhookHandler {
      */
     static async process(request: NextRequest) {
         // 1. Validate Token
+        const { webhookToken } = await BillingAsaasConfigService.getRuntimeConfig()
         const authToken = request.headers.get('asaas-access-token')
-        if (authToken !== ASAAS_WEBHOOK_TOKEN) {
-            billingLog('warn', 'Unauthorized Webhook Attempt', { tokenProvided: !!authToken })
+        if (!webhookToken || authToken !== webhookToken) {
+            billingLog('warn', 'Unauthorized Webhook Attempt', {
+                tokenProvided: !!authToken,
+                webhookConfigured: !!webhookToken,
+            })
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
