@@ -20,9 +20,11 @@ import {
   Send,
   Activity,
   CreditCard,
+  KeyRound,
   Split,
   History,
   TrendingUp,
+  Wallet,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -162,7 +164,9 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
       permission: { action: 'manage', subject: 'all' },
       subItems: [
         { title: 'Visão Geral', href: '/admin/billing', icon: TrendingUp },
-        { title: 'Split de Pagamento', href: '/admin/billing/split', icon: Split },
+        { title: 'Integração Asaas', href: '/admin/billing/integration', icon: KeyRound },
+        { title: 'Carteira Principal', href: '/admin/billing/wallet', icon: Wallet },
+        { title: 'Split', href: '/admin/billing/split', icon: Split },
         { title: 'Auditoria', href: '/admin/billing/audit', icon: History },
       ]
     },
