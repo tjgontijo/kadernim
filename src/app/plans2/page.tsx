@@ -51,7 +51,7 @@ function Hero() {
             </h1>
 
             <p className="text-slate-400 text-lg 2xl:text-xl leading-relaxed mb-10 max-w-lg">
-              R$ 15 aqui, R$ 12 ali, R$ 25 em outro perfil. No fim do mês o dinheiro foi — e às vezes o material nem serviu para a sua turma. Por{' '}
+              R$ 15 aqui, R$ 12 ali, R$ 25 em outro perfil. No fim do mês o dinheiro foi, e às vezes o material nem serviu para a sua turma. Por{' '}
               <span className="text-white font-semibold">R$&nbsp;27/mês</span> você acessa tudo, ilimitado.
             </p>
 
@@ -203,10 +203,10 @@ function HowItWorks() {
                 O que realmente acontece
               </span>
               <h2 className="text-3xl 2xl:text-4xl font-black text-white leading-tight mb-5">
-                O script que se repete toda semana — e você nem percebe.
+                O script que se repete toda semana, e você nem percebe.
               </h2>
               <p className="text-slate-400 text-base 2xl:text-lg leading-relaxed">
-                Você viu uma atividade linda no Instagram da prof. Fulana — <span className="text-white">R$ 15</span>. Um jogo de folclore no Hotmart — <span className="text-white">R$ 12</span>. Um pacote de alfabetização no Shopee — <span className="text-white">R$ 25</span>. Às vezes o material nem serve direito para a sua turma, mas você já comprou. <span className="text-slate-200 font-medium">No fim do mês você nem lembra de tudo, mas o dinheiro foi.</span>
+                Você viu uma atividade linda no Instagram da prof. Fulana: <span className="text-white">R$ 15</span>. Um jogo de folclore no Hotmart: <span className="text-white">R$ 12</span>. Um pacote de alfabetização no Shopee: <span className="text-white">R$ 25</span>. Às vezes o material nem serve direito para a sua turma, mas você já comprou. <span className="text-slate-200 font-medium">No fim do mês você nem lembra de tudo, mas o dinheiro foi.</span>
               </p>
             </div>
             <div className="p-6 2xl:p-8 rounded-2xl border border-amber-500/15 bg-amber-500/5">
@@ -249,9 +249,9 @@ function HowItWorks() {
             <div className="p-6 2xl:p-8 rounded-2xl border border-white/8 bg-white/[0.02] space-y-3">
               {[
                 { icon: '💸', title: 'Material comprado que não serve', sub: 'Sem preview, sem garantia, dinheiro fora' },
-                { icon: '📁', title: 'Arquivos espalhados por todo lugar', sub: 'Email, WhatsApp, pendrive, Drive — nada organizado' },
+                { icon: '📁', title: 'Arquivos espalhados por todo lugar', sub: 'Email, WhatsApp, pendrive, Drive, nada organizado' },
                 { icon: '😩', title: 'Noite e FDS perdidos planejando', sub: 'Além de corrigir prova e preencher diário' },
-                { icon: '🔄', title: 'Reinventando a roda toda semana', sub: 'Outras professoras têm o mesmo problema — isolamento' },
+                { icon: '🔄', title: 'Reinventando a roda toda semana', sub: 'Outras professoras têm o mesmo problema, isolamento' },
               ].map(({ icon, title, sub }, i) => (
                 <div key={i} className="flex items-start gap-4 p-4 rounded-xl bg-white/[0.03] border border-white/6">
                   <span className="text-2xl shrink-0" role="img" aria-label={title}>{icon}</span>
@@ -274,7 +274,7 @@ function HowItWorks() {
                 Trocar R$ 144/mês por R$ 27. Acesso a tudo. Sem surpresa.
               </h2>
               <p className="text-slate-400 text-base 2xl:text-lg leading-relaxed">
-                Uma biblioteca com tudo organizado, um gerador de plano de aula que usa IA para seguir a BNCC, e uma comunidade de professoras que vota todo mês no que a plataforma vai criar. Você entra, escolhe, imprime ou edita — e volta a ter fim de semana.
+                Uma biblioteca com tudo organizado, um gerador de plano de aula que usa IA para seguir a BNCC, e uma comunidade de professoras que vota todo mês no que a plataforma vai criar. Você entra, escolhe, imprime ou edita, e volta a ter fim de semana.
               </p>
               <button
                 onClick={go}
@@ -289,7 +289,7 @@ function HowItWorks() {
               {[
                 { label: 'Biblioteca com +248 materiais prontos', color: 'blue' },
                 { label: 'Plano de aula com IA em 23 segundos', color: 'violet' },
-                { label: 'PDF pronto para imprimir — sem editor', color: 'green' },
+                { label: 'PDF pronto para imprimir, sem editor', color: 'green' },
                 { label: 'Você decide o que entra todo mês', color: 'amber' },
                 { label: 'Comunidade de professoras reais', color: 'pink' },
                 { label: 'Sempre atualizado, toda semana', color: 'teal' },
@@ -316,11 +316,11 @@ function HowItWorks() {
 function Features() {
   const feats = [
     { Icon: BookOpen, color: 'blue', title: 'Biblioteca viva', body: 'Centenas de atividades para Ed. Infantil e Fundamental I. Novos materiais toda semana. Nunca fica parado.', badge: '+20/mês' },
-    { Icon: Sparkles, color: 'violet', title: 'Plano de aula em 23s', body: 'Informa o tema e a série — a IA cria o plano completo, alinhado à BNCC, pronto para baixar.', badge: 'IA + BNCC' },
+    { Icon: Sparkles, color: 'violet', title: 'Plano de aula em 23s', body: 'Informa o tema e a série, a IA cria o plano completo, alinhado à BNCC, pronto para baixar.', badge: 'IA + BNCC' },
     { Icon: Download, color: 'green', title: 'PDF pronto para imprimir', body: 'Baixe e imprima sem depender de editor online. Cada material já sai formatado e pronto.', badge: 'Pronto já' },
-    { Icon: Vote, color: 'amber', title: 'Você manda', body: 'Todo mês votação aberta. Você pede — a gente cria. Não existe "aqui não tem o que você precisa".', badge: 'Todo mês' },
+    { Icon: Vote, color: 'amber', title: 'Você manda', body: 'Todo mês votação aberta. Você pede, a gente cria. Não existe "aqui não tem o que você precisa".', badge: 'Todo mês' },
     { Icon: Users, color: 'pink', title: 'Comunidade real', body: 'Professoras de verdade, mesmos desafios. Troque experiências, compartilhe estratégias.', badge: '500+ membros' },
-    { Icon: RefreshCw, color: 'teal', title: 'Sempre atualizado', body: 'Calendário escolar, datas comemorativas, novas habilidades da BNCC — a plataforma acompanha.', badge: 'Toda semana' },
+    { Icon: RefreshCw, color: 'teal', title: 'Sempre atualizado', body: 'Calendário escolar, datas comemorativas, novas habilidades da BNCC, a plataforma acompanha.', badge: 'Toda semana' },
   ]
 
   const colorMap: Record<string, string> = {
@@ -337,7 +337,7 @@ function Features() {
       <W>
         <div className="text-center max-w-2xl 2xl:max-w-3xl mx-auto mb-16 2xl:mb-20">
           <h2 className="text-3xl 2xl:text-4xl font-black text-white mb-4">
-            Tudo o que você compra avulso — por um preço fixo.
+            Tudo o que você compra avulso por um preço fixo.
           </h2>
           <p className="text-slate-400 text-base 2xl:text-lg">
             Sem surpresa no fim do mês. Sem material que não serve. Sem caçar no Instagram.
@@ -424,7 +424,7 @@ function Pricing() {
               <div className="px-8 2xl:px-10 py-6 border-b border-white/6">
                 <ul className="space-y-3 2xl:space-y-4" aria-label="Incluído no Plano Pro">
                   {[
-                    'Biblioteca ilimitada — +248 materiais',
+                    'Biblioteca ilimitada com +248 materiais',
                     'Gerador de Planos de Aula (IA + BNCC)',
                     'Download ilimitado em PDF',
                     'Votação mensal nos próximos materiais',
@@ -476,9 +476,9 @@ function Pricing() {
    FAQ
 ───────────────────────────────────────────── */
 const faqs = [
-  { q: 'Como saber se é para mim?', a: 'Se você leciona na Educação Infantil ou Fundamental I e já comprou algum material avulso — pacote no Hotmart, atividade no Instagram, PDF no Shopee — então é para você. A Kadernim substitui todas essas compras por um acesso único e ilimitado.' },
-  { q: 'E se o material não for o que eu preciso?', a: 'Você vota todo mês no que a plataforma vai criar. Se não existe ainda, você pede — e a comunidade vota. Os temas mais votados entram em produção na semana seguinte. Nunca vai ficar sem o que precisa.' },
-  { q: 'Como funciona a garantia de 7 dias?', a: 'Você experimenta tudo livremente. Se em até 7 dias não gostar, devolvemos 100% do valor — sem perguntas, sem burocracia. Sem risco nenhum.' },
+  { q: 'Como saber se é para mim?', a: 'Se você leciona na Educação Infantil ou Fundamental I e já comprou algum material avulso, pacote no Hotmart, atividade no Instagram, PDF no Shopee, então é para você. A Kadernim substitui todas essas compras por um acesso único e ilimitado.' },
+  { q: 'E se o material não for o que eu preciso?', a: 'Você vota todo mês no que a plataforma vai criar. Se não existe ainda, você pede, e a comunidade vota. Os temas mais votados entram em produção na semana seguinte. Nunca vai ficar sem o que precisa.' },
+  { q: 'Como funciona a garantia de 7 dias?', a: 'Você experimenta tudo livremente. Se em até 7 dias não gostar, devolvemos 100% do valor, sem perguntas, sem burocracia. Sem risco nenhum.' },
   { q: 'Para quais séries são os materiais?', a: 'Focamos na Educação Infantil e Fundamental I (1º ao 5º ano): alfabetização, matemática, ciências, história, geografia e datas comemorativas.' },
   { q: 'Como funciona o Gerador de Planos de Aula?', a: 'Você informa o tema, a série e as habilidades. A IA cria o plano de aula completo, alinhado à BNCC, em menos de 30 segundos, pronto para baixar em PDF.' },
   { q: 'Posso cancelar quando quiser?', a: 'Sim. Sem fidelidade, sem multa. Mas ao cancelar você perde o acesso à biblioteca e ao gerador. A maioria das professoras que entra não quer mais voltar a comprar avulso.' },
