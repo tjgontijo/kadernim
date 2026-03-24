@@ -2,11 +2,10 @@
 
 import { useMutation } from '@tanstack/react-query'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Wallet } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import {
   Form,
   FormControl,
@@ -14,7 +13,6 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import {
@@ -55,19 +53,10 @@ export function MainWalletForm({ initialData }: MainWalletFormProps) {
   })
 
   return (
-    <Card className="border-border/40 bg-card/60 shadow-xl backdrop-blur-xl">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Wallet className="h-5 w-5 text-primary" />
-          Carteira principal da Kadernim
-        </CardTitle>
-        <CardDescription>
-          Esta carteira identifica a conta emissora no Asaas. Ela nunca pode ser usada como destino de split.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+    <Card>
+      <CardContent className="pt-6">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit((values) => saveMutation.mutate(values))} className="space-y-6">
+          <form onSubmit={form.handleSubmit((values) => saveMutation.mutate(values))} className="space-y-5">
             <FormField
               control={form.control}
               name="mainWalletId"
@@ -81,17 +70,16 @@ export function MainWalletForm({ initialData }: MainWalletFormProps) {
                       className="font-mono text-sm"
                     />
                   </FormControl>
-                  <FormDescription>
-                    Cadastre aqui a carteira da propria conta da Kadernim no Asaas.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <Button type="submit" className="w-full" disabled={saveMutation.isPending}>
-              {saveMutation.isPending ? 'Salvando...' : 'Salvar carteira principal'}
-            </Button>
+            <div className="flex justify-end">
+              <Button type="submit" disabled={saveMutation.isPending}>
+                {saveMutation.isPending ? 'Salvando...' : 'Salvar'}
+              </Button>
+            </div>
           </form>
         </Form>
       </CardContent>
