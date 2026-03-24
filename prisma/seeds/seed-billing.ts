@@ -1,4 +1,6 @@
 import { PrismaClient } from '@db/client';
+import { detectAsaasEnvironmentFromBaseUrl, normalizeAsaasSecret } from '@/lib/billing/asaas-config';
+import { normalizeWalletId } from '@/lib/billing/split-payload';
 
 const billingPlans = [
   {
@@ -105,30 +107,89 @@ export async function seedBilling(prisma: PrismaClient) {
 
   console.log('✅ Catálogo de billing configurado com sucesso.');
 
-  const mainWalletId = process.env.ASAAS_MAIN_WALLET_ID?.trim();
-  const splitWalletId = process.env.ASAAS_SPLIT_WALLET_ID?.trim();
+  const mainWalletId = normalizeWalletId(
+    process.env.ASAAS_MAIN_WALLET_ID ?? process.env.WALLET_ASAAS_ID
+  );
+  const splitWalletId = normalizeWalletId(process.env.ASAAS_SPLIT_WALLET_ID);
+  const asaasEnvironment = detectAsaasEnvironmentFromBaseUrl(process.env.ASAAS_BASE_URL);
+  const asaasApiKey = normalizeAsaasSecret(process.env.ASAAS_API_KEY);
+  const asaasWebhookToken = normalizeAsaasSecret(process.env.ASAAS_WEBHOOK_TOKEN);
+
+  const systemConfigs: Array<{
+    key: string
+    value: string
+    type: 'string'
+    label: string
+    description: string
+    category: string
+  }> = [
+    {
+      key: 'billing.asaas.environment',
+      value: asaasEnvironment,
+      type: 'string',
+      label: 'Ambiente do Asaas',
+      description: 'Ambiente usado nas chamadas da API do Asaas.',
+      category: 'billing',
+    },
+  ];
 
   if (mainWalletId) {
-    await prisma.systemConfig.upsert({
-      where: { key: 'billing.asaas.mainWalletId' },
-      update: {
-        value: mainWalletId,
-        type: 'string',
-        label: 'Carteira principal Asaas',
-        description: 'Wallet ID principal da conta emissora da Kadernim no Asaas.',
-        category: 'billing',
-      },
-      create: {
-        key: 'billing.asaas.mainWalletId',
-        value: mainWalletId,
-        type: 'string',
-        label: 'Carteira principal Asaas',
-        description: 'Wallet ID principal da conta emissora da Kadernim no Asaas.',
-        category: 'billing',
-      },
+    systemConfigs.push({
+      key: 'billing.asaas.mainWalletId',
+      value: mainWalletId,
+      type: 'string',
+      label: 'Carteira principal Asaas',
+      description: 'Wallet ID principal da conta emissora da Kadernim no Asaas.',
+      category: 'billing',
     });
+  }
 
+  if (asaasApiKey) {
+    systemConfigs.push({
+      key: 'billing.asaas.apiKey',
+      value: asaasApiKey,
+      type: 'string',
+      label: 'API Key do Asaas',
+      description: 'Chave privada usada nas chamadas autenticadas da API do Asaas.',
+      category: 'billing',
+    });
+  }
+
+  if (asaasWebhookToken) {
+    systemConfigs.push({
+      key: 'billing.asaas.webhookToken',
+      value: asaasWebhookToken,
+      type: 'string',
+      label: 'Webhook Token do Asaas',
+      description: 'Token usado para validar a origem dos webhooks do Asaas.',
+      category: 'billing',
+    });
+  }
+
+  for (const config of systemConfigs) {
+    await prisma.systemConfig.upsert({
+      where: { key: config.key },
+      update: {
+        value: config.value,
+        type: config.type,
+        label: config.label,
+        description: config.description,
+        category: config.category,
+      },
+      create: config,
+    });
+  }
+
+  if (mainWalletId) {
     console.log('✅ Carteira principal do Asaas configurada com sucesso.');
+  }
+
+  if (asaasApiKey) {
+    console.log('✅ API Key do Asaas configurada com sucesso.');
+  }
+
+  if (asaasWebhookToken) {
+    console.log('✅ Webhook Token do Asaas configurado com sucesso.');
   }
 
   if (!splitWalletId) {
