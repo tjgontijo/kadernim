@@ -13,15 +13,14 @@ export const prisma =
   new PrismaClient({
     adapter: new PrismaPg(createPrismaPgPoolConfig(connectionString)),
     log: process.env.NODE_ENV === 'development'
-      ? ['error', 'warn']
-      : ['error', 'warn'],
+      ? ['error', 'warn', 'info']
+      : ['error'],
   })
 
 // Re-export Prisma namespace for SQL operations
 export { Prisma }
 
-// Log de inicialização
-if (process.env.NODE_ENV === 'production') {
+// Cache Prisma singleton in development for hot reloading
+if (process.env.NODE_ENV !== 'production') {
+  globalForPrisma.prisma = prisma
 }
-
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
