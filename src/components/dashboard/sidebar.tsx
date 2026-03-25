@@ -20,11 +20,6 @@ import {
   Send,
   Activity,
   CreditCard,
-  KeyRound,
-  Split,
-  History,
-  TrendingUp,
-  Wallet,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -89,9 +84,6 @@ const ICON_MAP = {
   Send,
   Activity,
   CreditCard,
-  Split,
-  History,
-  TrendingUp,
 } as const
 
 export function AdminSidebar({ user }: AdminSidebarProps) {
@@ -162,13 +154,6 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
       href: '/admin/billing',
       icon: 'CreditCard',
       permission: { action: 'manage', subject: 'all' },
-      subItems: [
-        { title: 'Visão Geral', href: '/admin/billing', icon: TrendingUp },
-        { title: 'Integração Asaas', href: '/admin/billing/integration', icon: KeyRound },
-        { title: 'Carteira Principal', href: '/admin/billing/wallet', icon: Wallet },
-        { title: 'Split', href: '/admin/billing/split', icon: Split },
-        { title: 'Auditoria', href: '/admin/billing/audit', icon: History },
-      ]
     },
   ]
 
