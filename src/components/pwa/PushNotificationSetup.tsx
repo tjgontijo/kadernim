@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,7 @@ export function PushNotificationSetup() {
   const [showDialog, setShowDialog] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const { data: session } = useSession();
+  const registrationAttemptedRef = useRef(false);
 
   const registerSubscriptionMutation = useMutation({
     mutationFn: async () => {
@@ -106,7 +107,9 @@ export function PushNotificationSetup() {
     }
 
     // CASO 2: Permissão já concedida -> Garantir que o registro está atualizado no servidor
-    if (Notification.permission === 'granted') {
+    // Mas apenas fazer isso UMA VEZ para evitar loop infinito
+    if (Notification.permission === 'granted' && !registrationAttemptedRef.current) {
+      registrationAttemptedRef.current = true;
       registerSubscriptionMutation.mutate();
     }
   }, [registerSubscriptionMutation, session]);

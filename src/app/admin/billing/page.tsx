@@ -170,48 +170,99 @@ async function IntegrationTab() {
         BillingAdminService.getWalletPageData(),
     ])
 
+    const isFullyConfigured = asaasConfig.hasApiKey && asaasConfig.hasWebhookToken && billingWallet.mainWalletId
+
     return (
-        <div className="space-y-10 max-w-xl">
-            {/* Asaas Config */}
-            <div className="space-y-4">
-                <div className="space-y-1">
-                    <h3 className="text-lg font-semibold">Conexão Asaas</h3>
-                    <p className="text-sm text-muted-foreground">
-                        Credenciais e ambiente da integração com o gateway de pagamento.
-                    </p>
-                    <div className="flex flex-wrap gap-2 pt-1">
-                        <Badge variant="secondary">{ASAAS_ENVIRONMENT_LABELS[asaasConfig.environment]}</Badge>
-                        <Badge variant={asaasConfig.hasApiKey ? 'secondary' : 'outline'}>
-                            API Key {asaasConfig.hasApiKey ? 'configurada' : 'pendente'}
-                        </Badge>
-                        <Badge variant={asaasConfig.hasWebhookToken ? 'secondary' : 'outline'}>
-                            Webhook {asaasConfig.hasWebhookToken ? 'configurado' : 'pendente'}
+        <div className="max-w-2xl space-y-6">
+            {/* Status Overview */}
+            <Card className="border-2">
+                <CardContent className="pt-6">
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                            <p className="text-sm font-medium">Ambiente Asaas</p>
+                            <div className="flex items-center gap-2">
+                                <div className={`h-2 w-2 rounded-full ${asaasConfig.environment === 'production' ? 'bg-red-500' : 'bg-amber-500'}`} />
+                                <span className="text-sm font-mono">
+                                    {ASAAS_ENVIRONMENT_LABELS[asaasConfig.environment]}
+                                </span>
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <p className="text-sm font-medium">Status Geral</p>
+                            <div className="flex items-center gap-2">
+                                <div className={`h-2 w-2 rounded-full ${isFullyConfigured ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                                <span className="text-sm">
+                                    {isFullyConfigured ? '✅ Integração completa' : '⚠️ Configuração incompleta'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Asaas Configuration */}
+            <Card>
+                <CardHeader className="pb-4">
+                    <div className="flex items-start justify-between">
+                        <div className="space-y-1">
+                            <CardTitle className="text-base">Credenciais Asaas</CardTitle>
+                            <p className="text-xs text-muted-foreground">
+                                Configure as chaves da API e webhook para processar pagamentos
+                            </p>
+                        </div>
+                        <div className="flex gap-1">
+                            <Badge variant={asaasConfig.hasApiKey ? 'secondary' : 'outline'} className="text-xs">
+                                {asaasConfig.hasApiKey ? '✓ API' : '○ API'}
+                            </Badge>
+                            <Badge variant={asaasConfig.hasWebhookToken ? 'secondary' : 'outline'} className="text-xs">
+                                {asaasConfig.hasWebhookToken ? '✓ Webhook' : '○ Webhook'}
+                            </Badge>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <AsaasConfigForm initialData={asaasConfig} />
+                </CardContent>
+            </Card>
+
+            {/* Wallet Configuration */}
+            <Card>
+                <CardHeader className="pb-4">
+                    <div className="flex items-start justify-between">
+                        <div className="space-y-1">
+                            <CardTitle className="text-base">Carteira Principal</CardTitle>
+                            <p className="text-xs text-muted-foreground">
+                                ID da carteira emissora no Asaas (necessária para ativar splits)
+                            </p>
+                        </div>
+                        <Badge variant={billingWallet.mainWalletId ? 'secondary' : 'outline'} className="text-xs">
+                            {billingWallet.mainWalletId ? '✓ Configurada' : '○ Não configurada'}
                         </Badge>
                     </div>
-                </div>
-                <AsaasConfigForm initialData={asaasConfig} />
-            </div>
+                </CardHeader>
+                <CardContent>
+                    <MainWalletForm initialData={{ mainWalletId: billingWallet.mainWalletId ?? '' }} />
+                </CardContent>
+            </Card>
 
-            <Separator />
-
-            {/* Carteira Principal */}
-            <div className="space-y-4">
-                <div className="space-y-1">
-                    <h3 className="text-lg font-semibold">Carteira Principal</h3>
-                    <p className="text-sm text-muted-foreground">
-                        ID da carteira emissora no Asaas. Necessário para ativar o split de pagamento.
-                    </p>
-                    <div className="flex flex-wrap gap-2 pt-1">
-                        <Badge variant={billingWallet.mainWalletId ? 'secondary' : 'outline'}>
-                            {billingWallet.mainWalletId ? 'Carteira configurada' : 'Sem carteira'}
-                        </Badge>
-                        <Badge variant={hasActiveSplit ? 'secondary' : 'outline'}>
-                            Split {hasActiveSplit ? 'ativo' : 'inativo'}
-                        </Badge>
-                    </div>
-                </div>
-                <MainWalletForm initialData={{ mainWalletId: billingWallet.mainWalletId ?? '' }} />
-            </div>
+            {/* Status da divisão */}
+            {billingWallet.mainWalletId && (
+                <Card className="bg-muted/30 border-dashed">
+                    <CardContent className="pt-6">
+                        <div className="flex items-center gap-3">
+                            <div className={`h-2 w-2 rounded-full ${hasActiveSplit ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                            <div>
+                                <p className="text-sm font-medium">Split de Pagamento</p>
+                                <p className="text-xs text-muted-foreground">
+                                    {hasActiveSplit
+                                        ? 'Split ativo - receita está sendo dividida'
+                                        : 'Nenhum split configurado - acesse a aba "Split de Pagamento" para configurar'}
+                                </p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
         </div>
     )
 }
