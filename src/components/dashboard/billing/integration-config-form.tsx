@@ -15,8 +15,14 @@ import type { BillingAsaasSettings } from '@/schemas/billing/asaas-settings-sche
 
 const FormSchema = z.object({
   environment: z.enum(ASAAS_ENVIRONMENT_VALUES),
-  sandbox: z.object({ apiKey: z.string().optional(), webhookToken: z.string().optional() }),
-  production: z.object({ apiKey: z.string().optional(), webhookToken: z.string().optional() }),
+  sandbox: z.object({
+    apiKey: z.string().optional(),
+    webhookToken: z.string().optional(),
+  }),
+  production: z.object({
+    apiKey: z.string().optional(),
+    webhookToken: z.string().optional(),
+  }),
   mainWalletId: z.string().optional(),
 })
 
@@ -27,36 +33,27 @@ interface Props {
   mainWalletId: string | null
 }
 
-function SecretInput({
+function TokenInput({
   id,
   label,
-  preview,
-  placeholder,
-  ...inputProps
+  registration,
 }: {
   id: string
   label: string
-  preview: string | null
-  placeholder: string
-} & React.InputHTMLAttributes<HTMLInputElement>) {
+  registration: React.InputHTMLAttributes<HTMLInputElement>
+}) {
   const [visible, setVisible] = useState(false)
 
   return (
     <div className="space-y-1.5">
-      <div className="flex items-baseline justify-between">
-        <Label htmlFor={id} className="text-sm">{label}</Label>
-        {preview && (
-          <span className="font-mono text-xs text-muted-foreground">{preview}</span>
-        )}
-      </div>
+      <Label htmlFor={id}>{label}</Label>
       <div className="relative">
         <Input
           id={id}
           type={visible ? 'text' : 'password'}
-          placeholder={preview ? 'Nova chave (deixe vazio para manter)' : placeholder}
           autoComplete="new-password"
           className="pr-10 font-mono text-sm"
-          {...inputProps}
+          {...registration}
         />
         <button
           type="button"
@@ -78,8 +75,14 @@ export function IntegrationConfigForm({ asaasConfig, mainWalletId }: Props) {
     resolver: zodResolver(FormSchema),
     defaultValues: {
       environment: asaasConfig.environment,
-      sandbox: { apiKey: '', webhookToken: '' },
-      production: { apiKey: '', webhookToken: '' },
+      sandbox: {
+        apiKey: asaasConfig.sandbox.apiKey ?? '',
+        webhookToken: asaasConfig.sandbox.webhookToken ?? '',
+      },
+      production: {
+        apiKey: asaasConfig.production.apiKey ?? '',
+        webhookToken: asaasConfig.production.webhookToken ?? '',
+      },
       mainWalletId: mainWalletId ?? '',
     },
   })
@@ -109,7 +112,7 @@ export function IntegrationConfigForm({ asaasConfig, mainWalletId }: Props) {
           ? fetch('/api/v1/billing/wallet', {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ mainWalletId: values.mainWalletId.trim() }),
+              body: JSON.stringify({ mainWalletId: values.mainWalletId!.trim() }),
             })
           : Promise.resolve(null),
       ])
@@ -130,10 +133,6 @@ export function IntegrationConfigForm({ asaasConfig, mainWalletId }: Props) {
       }
 
       toast.success('Configurações salvas')
-      setValue('sandbox.apiKey', '')
-      setValue('sandbox.webhookToken', '')
-      setValue('production.apiKey', '')
-      setValue('production.webhookToken', '')
     } catch {
       toast.error('Falha de conexão')
     } finally {
@@ -149,7 +148,7 @@ export function IntegrationConfigForm({ asaasConfig, mainWalletId }: Props) {
         <div>
           <p className="text-sm font-medium">Ambiente ativo</p>
           <p className="text-xs text-muted-foreground">
-            Determina qual conjunto de credenciais é usado nos pagamentos
+            Define qual conjunto de credenciais é usado nos pagamentos
           </p>
         </div>
         <div className="inline-flex rounded-lg border p-1 gap-1">
@@ -159,7 +158,7 @@ export function IntegrationConfigForm({ asaasConfig, mainWalletId }: Props) {
               type="button"
               onClick={() => setValue('environment', env)}
               className={cn(
-                'rounded-md px-4 py-1.5 text-sm font-medium transition-colors',
+                'rounded-md px-5 py-1.5 text-sm font-medium transition-colors',
                 activeEnv === env
                   ? 'bg-foreground text-background'
                   : 'text-muted-foreground hover:text-foreground',
@@ -174,61 +173,53 @@ export function IntegrationConfigForm({ asaasConfig, mainWalletId }: Props) {
         </p>
       </div>
 
-      {/* Sandbox credentials */}
+      {/* Sandbox */}
       <div className="space-y-4">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             Sandbox
           </p>
           {activeEnv === 'sandbox' && (
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
               ativo
             </span>
           )}
         </div>
-        <SecretInput
+        <TokenInput
           id="sandbox-api-key"
           label="API Key"
-          preview={asaasConfig.sandbox.apiKeyPreview}
-          placeholder="$aact_hmlg_..."
-          {...register('sandbox.apiKey')}
+          registration={register('sandbox.apiKey')}
         />
-        <SecretInput
+        <TokenInput
           id="sandbox-webhook"
           label="Webhook Token"
-          preview={asaasConfig.sandbox.webhookTokenPreview}
-          placeholder="whsec_..."
-          {...register('sandbox.webhookToken')}
+          registration={register('sandbox.webhookToken')}
         />
       </div>
 
       <div className="border-t" />
 
-      {/* Production credentials */}
+      {/* Production */}
       <div className="space-y-4">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             Produção
           </p>
           {activeEnv === 'production' && (
-            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
               ativo
             </span>
           )}
         </div>
-        <SecretInput
+        <TokenInput
           id="production-api-key"
           label="API Key"
-          preview={asaasConfig.production.apiKeyPreview}
-          placeholder="$aact_prod_..."
-          {...register('production.apiKey')}
+          registration={register('production.apiKey')}
         />
-        <SecretInput
+        <TokenInput
           id="production-webhook"
           label="Webhook Token"
-          preview={asaasConfig.production.webhookTokenPreview}
-          placeholder="whsec_..."
-          {...register('production.webhookToken')}
+          registration={register('production.webhookToken')}
         />
       </div>
 
@@ -240,7 +231,7 @@ export function IntegrationConfigForm({ asaasConfig, mainWalletId }: Props) {
           Carteira
         </p>
         <div className="space-y-1.5">
-          <Label htmlFor="walletId" className="text-sm">Wallet ID</Label>
+          <Label htmlFor="walletId">Wallet ID</Label>
           <Input
             id="walletId"
             placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"

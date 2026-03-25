@@ -1,13 +1,11 @@
 import { z } from 'zod'
 import { ASAAS_ENVIRONMENT_VALUES } from '@/lib/billing/asaas-config'
 
-// Shape returned to the admin (previews for display, not full secrets)
-const EnvironmentStatusSchema = z.object({
-  apiKeyPreview: z.string().nullable(),       // e.g. "$aact_hm…" or null
-  webhookTokenPreview: z.string().nullable(), // e.g. "whsec_PH…" or null
+const EnvironmentValuesSchema = z.object({
+  apiKey: z.string().nullable(),
+  webhookToken: z.string().nullable(),
 })
 
-// Shape sent by the admin form (blank = keep existing)
 const EnvironmentUpdateSchema = z.object({
   apiKey: z.string().trim().optional(),
   webhookToken: z.string().trim().optional(),
@@ -15,8 +13,8 @@ const EnvironmentUpdateSchema = z.object({
 
 export const BillingAsaasSettingsSchema = z.object({
   environment: z.enum(ASAAS_ENVIRONMENT_VALUES),
-  sandbox: EnvironmentStatusSchema,
-  production: EnvironmentStatusSchema,
+  sandbox: EnvironmentValuesSchema,
+  production: EnvironmentValuesSchema,
 })
 
 export const BillingAsaasSettingsUpdateSchema = z.object({

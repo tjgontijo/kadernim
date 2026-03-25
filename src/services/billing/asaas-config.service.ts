@@ -29,12 +29,6 @@ export interface BillingAsaasRuntimeConfig {
   webhookToken: string | null
 }
 
-/** Returns first N chars + "…" to confirm a value exists without exposing it */
-function maskSecret(value: string | null | undefined): string | null {
-  const s = normalizeAsaasSecret(value)
-  if (!s) return null
-  return s.length > 12 ? s.slice(0, 12) + '…' : s
-}
 
 async function resolveActiveEnvironment(): Promise<AsaasEnvironment> {
   const [stored, legacyBaseUrl] = await Promise.all([
@@ -92,23 +86,23 @@ export class BillingAsaasConfigService {
 
     const resolvedEnv = normalizeAsaasEnvironment(environment) ?? detectAsaasEnvironmentFromBaseUrl(null)
 
-    // Sandbox previews: dedicated key first, fallback to legacy if env was sandbox
-    const sandboxKey = sbKey || (resolvedEnv === 'sandbox' ? legacyKey : null)
-    const sandboxWebhook = sbWebhook || (resolvedEnv === 'sandbox' ? legacyWebhook : null)
+    // Sandbox: dedicated key first, fallback to legacy if active env was sandbox
+    const sandboxApiKey = normalizeAsaasSecret(sbKey) ?? (resolvedEnv === 'sandbox' ? normalizeAsaasSecret(legacyKey) : null)
+    const sandboxWebhook = normalizeAsaasSecret(sbWebhook) ?? (resolvedEnv === 'sandbox' ? normalizeAsaasSecret(legacyWebhook) : null)
 
-    // Production previews: dedicated key first, fallback to legacy if env was production
-    const productionKey = prodKey || (resolvedEnv === 'production' ? legacyKey : null)
-    const productionWebhook = prodWebhook || (resolvedEnv === 'production' ? legacyWebhook : null)
+    // Production: dedicated key first, fallback to legacy if active env was production
+    const productionApiKey = normalizeAsaasSecret(prodKey) ?? (resolvedEnv === 'production' ? normalizeAsaasSecret(legacyKey) : null)
+    const productionWebhook = normalizeAsaasSecret(prodWebhook) ?? (resolvedEnv === 'production' ? normalizeAsaasSecret(legacyWebhook) : null)
 
     return {
       environment: resolvedEnv,
       sandbox: {
-        apiKeyPreview: maskSecret(sandboxKey),
-        webhookTokenPreview: maskSecret(sandboxWebhook),
+        apiKey: sandboxApiKey,
+        webhookToken: sandboxWebhook,
       },
       production: {
-        apiKeyPreview: maskSecret(productionKey),
-        webhookTokenPreview: maskSecret(productionWebhook),
+        apiKey: productionApiKey,
+        webhookToken: productionWebhook,
       },
     }
   }
