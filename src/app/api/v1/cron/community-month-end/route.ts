@@ -1,20 +1,29 @@
 import { NextResponse } from 'next/server'
-import { processCommunityMonthEnd } from '@/services/community/community-cron.service'
+import { logger } from '@/server/logger'
+import { processCommunityMonthEnd } from '@/lib/community/services'
 
-/**
- * Monthly Processing Job
- * Triggered on the 1st day of each month at 00:00 BRT.
- */
 export async function POST(request: Request) {
-    // TODO: Add cron secret validation
-    // const authHeader = request.headers.get('authorization')
-    // if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) { ... }
+  // TODO: Add cron secret validation
+  // const authHeader = request.headers.get('authorization')
+  // if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) { ... }
 
-    try {
-        const outcome = await processCommunityMonthEnd()
-        return NextResponse.json({ success: true, month: outcome.month, result: outcome.result })
-    } catch (error) {
-        console.error('[CRON MonthEnd] Error:', error)
-        return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 })
+  try {
+    const outcome = await processCommunityMonthEnd()
+
+    if (!outcome.success) {
+      return NextResponse.json({ success: false, error: outcome.error }, { status: 500 })
     }
+
+    return NextResponse.json({
+      success: true,
+      month: outcome.data.month,
+      result: outcome.data.result,
+    })
+  } catch (error) {
+    logger.error(
+      { route: '/api/v1/cron/community-month-end', error: error instanceof Error ? error.message : String(error) },
+      'Failed to process community month end'
+    )
+    return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 })
+  }
 }

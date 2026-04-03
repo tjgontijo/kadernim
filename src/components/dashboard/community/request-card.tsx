@@ -14,9 +14,9 @@ interface RequestCardProps {
         description: string
         voteCount: number
         hasVoted: boolean
-        user: { name: string; image?: string | null }
-        educationLevel: { name: string }
-        subject: { name: string }
+        user: { name: string | null; image?: string | null }
+        educationLevel: { name: string } | null
+        subject: { name: string } | null
         grade?: { name: string } | null
         createdAt: string
         hasBnccAlignment?: boolean
@@ -38,6 +38,9 @@ export function RequestCard({
     disabled = false
 }: RequestCardProps) {
     const isTrending = rank !== undefined && rank <= 3
+    const subjectName = request.subject?.name || 'Geral'
+    const educationLabel = request.grade?.name || request.educationLevel?.name || 'Livre'
+    const authorName = request.user.name?.split(' ')[0] || 'Usuário'
     return (
         <motion.div
             layout
@@ -63,7 +66,7 @@ export function RequestCard({
                     <div className="flex gap-2">
                         <Badge variant="secondary" className="bg-background text-[10px] font-black uppercase tracking-widest border-border/50 rounded-full px-3">
                             <BookOpen className="h-3 w-3 mr-1 text-primary" />
-                            {request.subject.name}
+                            {subjectName}
                         </Badge>
                         {isTrending && (
                             <Badge variant="secondary" className="bg-orange-500 text-white text-[10px] font-black uppercase tracking-widest border-none rounded-full px-3 shadow-lg shadow-orange-500/20 animate-pulse">
@@ -88,7 +91,7 @@ export function RequestCard({
                 <div className="p-6 pb-4 space-y-3 flex-grow">
                     <div className="flex flex-wrap gap-2">
                         <Badge variant="outline" className="text-[9px] font-black uppercase border-primary/30 text-primary rounded-lg py-0">
-                            {request.grade?.name || request.educationLevel.name}
+                            {educationLabel}
                         </Badge>
                         {request.hasBnccAlignment && request.bnccSkillCodes && request.bnccSkillCodes.length > 0 && (
                             <div className="flex gap-1">
@@ -118,7 +121,7 @@ export function RequestCard({
                     <div className="flex items-center gap-2.5">
                         <div className="h-10 w-10 rounded-2xl bg-muted border-2 border-border/50 overflow-hidden flex items-center justify-center group-hover:border-primary/30 transition-colors">
                             {request.user.image ? (
-                                <img src={request.user.image} alt={request.user.name} className="h-full w-full object-cover" />
+                                <img src={request.user.image} alt={authorName} className="h-full w-full object-cover" />
                             ) : (
                                 <User className="h-5 w-5 text-muted-foreground" />
                             )}
@@ -126,7 +129,7 @@ export function RequestCard({
                         <div className="flex flex-col">
                             <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-50">Sugerido por</span>
                             <span className="text-sm font-black text-foreground/80 truncate max-w-[100px]">
-                                {request.user.name.split(' ')[0]}
+                                {authorName}
                             </span>
                         </div>
                     </div>

@@ -1,64 +1,42 @@
-import { NextResponse } from 'next/server';
-import { z } from 'zod';
-import { RefineCommunityRequestSchema } from '@/schemas/community/community-schemas';
-import { refineRequestDescription } from '@/services/community/refine-description';
+import { NextResponse } from 'next/server'
+import { z } from 'zod'
+import { RefineCommunityRequestSchema } from '@/lib/community/schemas'
+import { refineRequestDescription } from '@/lib/community/services'
+import { logger } from '@/server/logger'
 
-/**
- * POST /api/v1/community/refine-request
- *
- * Refina uma descrição de pedido em 3 versões estruturadas usando IA
- *
- * Request body:
- * {
- *   rawDescription: string,
- *   educationLevelName: string,
- *   subjectName: string,
- *   gradeNames: string[]
- * }
- *
- * Response:
- * {
- *   success: true,
- *   data: {
- *     refined: [
- *       { type: 'format', label: string, text: string },
- *       { type: 'usability', label: string, text: string },
- *       { type: 'pedagogy', label: string, text: string }
- *     ]
- *   }
- * }
- */
 export async function POST(request: Request) {
-    try {
-        const body = await request.json();
-        const validated = RefineCommunityRequestSchema.parse(body);
+  try {
+    const body = await request.json()
+    const validated = RefineCommunityRequestSchema.parse(body)
+    const result = await refineRequestDescription(validated)
 
-        const refined = await refineRequestDescription(validated);
-
-        return NextResponse.json({
-            success: true,
-            data: { refined },
-        });
-    } catch (error) {
-        console.error('[POST /api/v1/community/refine-request] Error:', error);
-
-        if (error instanceof z.ZodError) {
-            return NextResponse.json(
-                { success: false, error: 'Dados inválidos', details: error.issues },
-                { status: 400 }
-            );
-        }
-
-        if (error instanceof Error) {
-            return NextResponse.json(
-                { success: false, error: error.message },
-                { status: 500 }
-            );
-        }
-
-        return NextResponse.json(
-            { success: false, error: 'Erro ao processar com IA' },
-            { status: 500 }
-        );
+    if (!result.success) {
+      return NextResponse.json(
+        { success: false, error: result.error },
+        { status: 500 }
+      )
     }
+
+    return NextResponse.json({
+      success: true,
+      data: { refined: result.data },
+    })
+  } catch (error) {
+    logger.error(
+      { route: '/api/v1/community/refine-request', error: error instanceof Error ? error.message : String(error) },
+      'Failed to refine community request'
+    )
+
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { success: false, error: 'Dados inválidos', details: error.issues },
+        { status: 400 }
+      )
+    }
+
+    return NextResponse.json(
+      { success: false, error: 'Erro ao processar com IA' },
+      { status: 500 }
+    )
+  }
 }

@@ -36,6 +36,7 @@ import {
 import { PageScaffoldSkeleton } from '@/components/dashboard/shared/skeletons/page-scaffold-skeleton'
 import { RequestCardSkeleton } from '@/components/dashboard/shared/skeletons/request-card-skeleton'
 import { useEducationLevels, useGrades, useSubjects } from '@/hooks/taxonomy/use-taxonomy'
+import { fetchCommunityRequests, voteForCommunityRequest } from '@/lib/community/api-client'
 
 export default function CommunityPage() {
     const { isMobile } = useMobile()
@@ -86,18 +87,17 @@ export default function CommunityPage() {
     } = useInfiniteQuery({
         queryKey: ['community.requests', debouncedQuery, level, grade, subject, activeTab],
         queryFn: async ({ pageParam = 1 }) => {
-            const params = new URLSearchParams({
-                page: String(pageParam),
-                limit: '12',
-                ...(debouncedQuery && { q: debouncedQuery }),
-                ...(level !== 'all' && { educationLevelSlug: level }),
-                ...(grade !== 'all' && { gradeSlug: grade }),
-                ...(subject !== 'all' && { subjectSlug: subject }),
-                ...(activeTab === 'mine' && { userId: session?.user?.id })
-            })
-            const res = await fetch(`/api/v1/community/requests?${params}`)
-            if (!res.ok) throw new Error('Erro ao carregar pedidos')
-            return res.json()
+            return {
+                data: await fetchCommunityRequests({
+                    page: Number(pageParam),
+                    limit: 12,
+                    q: debouncedQuery || undefined,
+                    educationLevelSlug: level !== 'all' ? level : undefined,
+                    gradeSlug: grade !== 'all' ? grade : undefined,
+                    subjectSlug: subject !== 'all' ? subject : undefined,
+                    mine: activeTab === 'mine',
+                }),
+            }
         },
         initialPageParam: 1,
         getNextPageParam: (lastPage) => {
@@ -109,13 +109,12 @@ export default function CommunityPage() {
     const { data: rankingData } = useQuery({
         queryKey: ['community.ranking'],
         queryFn: async () => {
-            const params = new URLSearchParams({
-                page: '1',
-                limit: '3',
-            })
-            const res = await fetch(`/api/v1/community/requests?${params}`)
-            if (!res.ok) throw new Error('Erro ao carregar ranking')
-            return res.json()
+            return {
+                data: await fetchCommunityRequests({
+                    page: 1,
+                    limit: 3,
+                }),
+            }
         },
     })
 
@@ -124,16 +123,7 @@ export default function CommunityPage() {
     }, [rankingData])
 
     const voteMutation = useMutation({
-        mutationFn: async (requestId: string) => {
-            const res = await fetch(`/api/v1/community/requests/${requestId}/vote`, {
-                method: 'POST',
-            })
-            if (!res.ok) {
-                const err = await res.json()
-                throw new Error(err.error || 'Erro ao votar')
-            }
-            return res.json()
-        },
+        mutationFn: voteForCommunityRequest,
         onSuccess: () => {
             toast.success('Voto computado com sucesso!', { icon: '💖' })
             triggerConfetti()

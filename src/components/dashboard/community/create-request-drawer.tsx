@@ -17,6 +17,7 @@ import { QuestionTaxonomy } from './questions/question-taxonomy';
 import { QuestionBnccSkills } from './questions/question-bncc-skills';
 import { QuestionContent } from './questions/question-content';
 import { useCommunityConfig } from '@/hooks/community/use-community';
+import { createCommunityRequestRequest } from '@/lib/community/api-client';
 
 /**
  * Wizard state interface - Atualizada Fase 03
@@ -108,12 +109,7 @@ export function CreateRequestDrawer({ open, onOpenChange }: CreateRequestDrawerP
                 wizardState.attachments.forEach(file => formData.append('attachments', file));
             }
 
-            const response = await fetch('/api/v1/community/requests', {
-                method: 'POST',
-                body: formData,
-            });
-            const data = await response.json();
-            if (!data.success) throw new Error(data.error || 'Erro ao enviar pedido');
+            await createCommunityRequestRequest(formData)
         },
         onSuccess: () => {
             toast.success('Sugestão enviada com sucesso!');

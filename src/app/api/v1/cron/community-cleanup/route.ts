@@ -1,20 +1,24 @@
 import { NextResponse } from 'next/server'
-import { cleanupStaleCommunityRequests } from '@/services/community/community-cron.service'
+import { logger } from '@/server/logger'
+import { cleanupStaleCommunityRequests } from '@/lib/community/services'
 
-/**
- * Weekly/Daily Cleanup Job
- * Deletes unfeasible requests after 30 days.
- */
 export async function POST(request: Request) {
-    try {
-        const deleted = await cleanupStaleCommunityRequests()
+  try {
+    const result = await cleanupStaleCommunityRequests()
 
-        return NextResponse.json({
-            success: true,
-            deleted
-        })
-    } catch (error) {
-        console.error('[CRON Cleanup] Error:', error)
-        return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 })
+    if (!result.success) {
+      return NextResponse.json({ success: false, error: result.error }, { status: 500 })
     }
+
+    return NextResponse.json({
+      success: true,
+      deleted: result.data.deleted,
+    })
+  } catch (error) {
+    logger.error(
+      { route: '/api/v1/cron/community-cleanup', error: error instanceof Error ? error.message : String(error) },
+      'Failed to cleanup community cron'
+    )
+    return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 })
+  }
 }

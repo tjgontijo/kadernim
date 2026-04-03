@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { QuizStep } from '@/components/dashboard/quiz/QuizStep';
 import { Layout, Users, GraduationCap, ArrowRight, Loader2 } from 'lucide-react';
+import { refineCommunityRequestDescriptionRequest } from '@/lib/community/api-client';
 
 interface Refinement {
     type: string;
@@ -45,25 +46,12 @@ export function QuestionRefineDescription({
             subjectName,
             gradeNames.join('|'),
         ],
-        queryFn: async () => {
-            const response = await fetch('/api/v1/community/refine-request', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    rawDescription,
-                    educationLevelName,
-                    subjectName,
-                    gradeNames,
-                }),
-            });
-            const data = await response.json();
-
-            if (!response.ok || !data.success) {
-                throw new Error(data.error || 'Erro ao gerar sugestões.');
-            }
-
-            return data.data.refined;
-        },
+        queryFn: () => refineCommunityRequestDescriptionRequest({
+            rawDescription,
+            educationLevelName,
+            subjectName,
+            gradeNames,
+        }),
         retry: false,
     });
 

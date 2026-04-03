@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { QuizStep } from '@/components/dashboard/quiz/QuizStep';
 import { Type, FileText, Sparkles, Loader2 } from 'lucide-react';
+import { generateCommunityTitleOptionsRequest } from '@/lib/community/api-client';
 
 interface TitleOption {
     type: string;
@@ -37,20 +38,7 @@ export function QuestionSelectTitle({
         error,
     } = useQuery<TitleOption[]>({
         queryKey: ['community-generated-titles', description],
-        queryFn: async () => {
-            const response = await fetch('/api/v1/community/generate-title', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ description }),
-            });
-            const data = await response.json();
-
-            if (!response.ok || !data.success) {
-                throw new Error(data.error || 'Erro ao gerar títulos.');
-            }
-
-            return data.data.titles;
-        },
+        queryFn: () => generateCommunityTitleOptionsRequest(description),
         retry: false,
     });
 
