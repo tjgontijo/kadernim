@@ -5,8 +5,9 @@ import { useMutation } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Bell, Sparkles } from 'lucide-react';
-import type { PushSubscriptionCreate } from '@/schemas/notifications/push-notification-schemas';
 import { useSession } from '@/lib/auth';
+import { subscribePushNotifications } from '@/lib/notifications/api-client';
+import type { PushSubscriptionCreate } from '@/lib/notifications/types';
 
 /**
  * PushNotificationSetup
@@ -75,15 +76,7 @@ export function PushNotificationSetup() {
         },
       };
 
-      const response = await fetch('/api/v1/notifications/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error('Falha ao registrar push notifications');
-      }
+      await subscribePushNotifications(payload);
     },
   });
 

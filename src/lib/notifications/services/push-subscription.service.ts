@@ -1,13 +1,7 @@
 import { prisma } from '@/lib/db'
-import type {
-  PushSubscriptionCreate,
-  UnsubscribePush,
-} from '@/schemas/notifications/push-notification-schemas'
+import type { PushSubscriptionCreate, UnsubscribePush } from '@/lib/notifications/schemas'
 
-export async function upsertPushSubscription(
-  userId: string,
-  input: PushSubscriptionCreate
-) {
+export async function upsertPushSubscription(userId: string, input: PushSubscriptionCreate) {
   return prisma.pushSubscription.upsert({
     where: {
       endpoint: input.endpoint,

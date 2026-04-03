@@ -39,6 +39,7 @@ import {
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { sendTestPush } from '@/lib/notifications/api-client'
 import { cn } from '@/lib/utils/index'
 import { CampaignSchema, type CampaignInput } from '@/lib/campaigns/schemas'
 
@@ -128,18 +129,7 @@ export function CampaignForm({ initialData, onSubmit, isLoading }: CampaignFormP
                 role: testAudiencType === 'role' ? testRole : undefined,
             }
 
-            const response = await fetch('/api/v1/notifications/test-push', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            })
-
-            const result = await response.json()
-
-            if (!response.ok) {
-                throw new Error(result.error || 'Erro ao enviar teste')
-            }
-            return result
+            return sendTestPush(payload)
         },
         onSuccess: (result) => {
             toast.success(result.message || 'Teste enviado com sucesso!')

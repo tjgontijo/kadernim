@@ -1,30 +1,29 @@
 import { prisma } from '@/lib/db'
 
 export async function getPushDebugStatus(userId: string) {
-  const [userSubscriptions, totalActiveSubscriptions, staleSubscriptions] =
-    await Promise.all([
-      prisma.pushSubscription.findMany({
-        where: { userId },
-        select: {
-          id: true,
-          endpoint: true,
-          active: true,
-          createdAt: true,
-          updatedAt: true,
+  const [userSubscriptions, totalActiveSubscriptions, staleSubscriptions] = await Promise.all([
+    prisma.pushSubscription.findMany({
+      where: { userId },
+      select: {
+        id: true,
+        endpoint: true,
+        active: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    }),
+    prisma.pushSubscription.count({
+      where: { active: true },
+    }),
+    prisma.pushSubscription.count({
+      where: {
+        active: true,
+        updatedAt: {
+          lt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
         },
-      }),
-      prisma.pushSubscription.count({
-        where: { active: true },
-      }),
-      prisma.pushSubscription.count({
-        where: {
-          active: true,
-          updatedAt: {
-            lt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-          },
-        },
-      }),
-    ])
+      },
+    }),
+  ])
 
   return {
     totalActiveSubscriptions,

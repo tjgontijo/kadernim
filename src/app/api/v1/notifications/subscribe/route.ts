@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PushSubscriptionCreateSchema } from '@/schemas/notifications/push-notification-schemas';
-import { upsertPushSubscription } from '@/services/notification/push-subscription.service';
+import { PushSubscriptionCreateSchema } from '@/lib/notifications/schemas';
+import { upsertPushSubscription } from '@/lib/notifications/services';
 import { auth } from '@/server/auth';
 
 /**

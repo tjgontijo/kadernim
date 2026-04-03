@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
+import { getPushDebugStatus } from '@/lib/notifications/services';
 import { auth } from '@/server/auth/auth';
 import { headers } from 'next/headers';
-import { getPushDebugStatus } from '@/services/notification/push-debug.service';
 
 export const dynamic = 'force-dynamic';
 

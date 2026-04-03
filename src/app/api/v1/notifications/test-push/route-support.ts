@@ -1,17 +1,17 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/server/auth/auth'
-import { headers } from 'next/headers'
 import {
   countActiveSubscriptions,
-  sendPushToAll,
   sendPushToSubscriptions,
-} from '@/services/notification/push-send'
-import { listTargetPushSubscriptions } from '@/services/notification/push-debug.service'
+  sendPushToAll,
+  listTargetPushSubscriptions,
+} from '@/lib/notifications/services'
 import {
   PushPayload,
   TestPushRequest,
   TestPushRequestSchema,
-} from '@/schemas/notifications/push-notification-schemas'
+} from '@/lib/notifications/schemas'
+import { auth } from '@/server/auth/auth'
+import { headers } from 'next/headers'
 
 const iconMapping: Record<string, string> = {
   bell: '/icons/bell.png',

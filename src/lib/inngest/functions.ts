@@ -1,14 +1,14 @@
 import { inngest, KadernimEvents } from './client';
 import { prisma } from '@/lib/db';
 import {
+    buildTemplateContext,
     sendEmailFromTemplate,
     extractRecipientEmail,
     extractRecipientPhone,
-    buildTemplateContext,
     renderTemplate
-} from '@/services/notification/automation-email';
-import { sendPushToAll, sendPushToSubscriptions } from '@/services/notification/push-send';
-import { getSegmentedPushSubscriptions, type AudienceFilter } from '@/services/notification/audience-segmentation';
+} from '@/lib/notifications/services/automation-email';
+import { getSegmentedPushSubscriptions, sendPushToAll, sendPushToSubscriptions } from '@/lib/notifications/services';
+import type { AudienceFilter } from '@/lib/notifications/types';
 
 
 /**
@@ -598,4 +598,3 @@ export const functions = [
     handleGenericEvent,
     handleCampaignScheduled,
 ];
-

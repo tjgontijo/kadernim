@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { UnsubscribePushSchema } from '@/schemas/notifications/push-notification-schemas';
-import { deactivatePushSubscription } from '@/services/notification/push-subscription.service';
+import { UnsubscribePushSchema } from '@/lib/notifications/schemas';
+import { deactivatePushSubscription } from '@/lib/notifications/services';
 
 /**
  * POST /api/v1/notifications/unsubscribe
