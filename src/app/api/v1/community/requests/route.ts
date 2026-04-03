@@ -4,7 +4,7 @@ import { logger } from '@/server/logger'
 import { CommunityFilterSchema, CommunityRequestSchema } from '@/lib/community/schemas'
 import { listCommunityRequests } from '@/lib/community/queries'
 import { createCommunityRequest } from '@/lib/community/services'
-import { getUserRole } from '@/services/users/get-user-role'
+import { getUserRole } from '@/lib/users/queries'
 
 export async function GET(request: NextRequest) {
   try {

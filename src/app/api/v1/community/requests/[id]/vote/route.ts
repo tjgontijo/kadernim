@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/server/auth/auth'
 import { logger } from '@/server/logger'
 import { voteForRequest } from '@/lib/community/services'
-import { getUserRole } from '@/services/users/get-user-role'
+import { getUserRole } from '@/lib/users/queries'
 
 /**
  * POST /api/v1/community/requests/[id]/vote

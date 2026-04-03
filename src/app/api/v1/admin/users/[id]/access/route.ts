@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { ToggleUserAccessSchema } from '@/lib/users/schemas'
+import { getUserResourceAccessService, toggleUserResourceAccessService } from '@/lib/users/services'
 import { requirePermission } from '@/server/auth/middleware'
 import { checkRateLimit } from '@/server/utils/rate-limit'
-import { ToggleUserAccessSchema } from '@/schemas/users/admin-user-schemas'
-import { getUserResourceAccessService, toggleUserResourceAccessService } from '@/services/users/user-access'
 
 /**
  * GET /api/v1/admin/users/[id]/access

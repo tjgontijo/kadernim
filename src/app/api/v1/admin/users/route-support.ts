@@ -1,16 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ZodType } from 'zod'
-import { requirePermission } from '@/server/auth/middleware'
-import { checkRateLimit } from '@/server/utils/rate-limit'
-import {
+import type {
   CreateAdminUserInput,
-  CreateAdminUserSchema,
   ListUsersFilter,
-  ListUsersFilterSchema,
   UpdateUserInput,
+} from '@/lib/users/types'
+import {
+  CreateAdminUserSchema,
+  ListUsersFilterSchema,
   UpdateUserSchema,
   UserListResponseSchema,
-} from '@/schemas/users/admin-user-schemas'
+} from '@/lib/users/schemas'
+import { requirePermission } from '@/server/auth/middleware'
+import { checkRateLimit } from '@/server/utils/rate-limit'
 
 type UserRateLimitConfig = {
   permission: 'manage:users' | 'delete:users'

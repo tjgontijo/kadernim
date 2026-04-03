@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/server/auth'
 import { CreateLessonPlanSchema } from '@/lib/lesson-plans/schemas'
-import { getUserRole } from '@/services/users/get-user-role'
+import { getUserRole } from '@/lib/users/queries'
 
 type LessonPlanUser = {
   id: string

@@ -36,6 +36,7 @@ import { UserEditDrawer, UserCreateDrawer } from '@/components/dashboard/users'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils/index'
 import { getRoleBadge as getRoleBadgeClass } from '@/lib/utils/badge-variants'
+import { deleteAdminUser, updateAdminUser } from '@/lib/users/api-client'
 
 interface User {
     id: string
@@ -110,15 +111,7 @@ export default function AdminUsersCrudPage() {
 
     const toggleBanMutation = useMutation({
         mutationFn: async (user: User) => {
-            const response = await fetch(`/api/v1/admin/users/${user.id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ banned: !user.banned })
-            })
-
-            if (!response.ok) {
-                throw new Error('Erro ao atualizar usuário')
-            }
+            return updateAdminUser(user.id, { banned: !user.banned })
         },
         onSuccess: (_data, user) => {
             toast.success(user.banned ? 'Usuário desbanido' : 'Usuário banido')
@@ -131,14 +124,7 @@ export default function AdminUsersCrudPage() {
 
     const deleteMutation = useMutation({
         mutationFn: async (id: string) => {
-            const response = await fetch(`/api/v1/admin/users/${id}`, {
-                method: 'DELETE'
-            })
-
-            if (!response.ok) {
-                const err = await response.json().catch(() => ({}))
-                throw new Error(err.error || 'Erro ao excluir usuário')
-            }
+            return deleteAdminUser(id)
         },
         onSuccess: () => {
             toast.success('Usuário excluído com sucesso')

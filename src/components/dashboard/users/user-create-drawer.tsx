@@ -30,6 +30,7 @@ import {
     SelectValue,
 } from '@/components/ui/select'
 import { toast } from 'sonner'
+import { createAdminUser } from '@/lib/users/api-client'
 import {
     applyWhatsAppMask,
     removeWhatsAppMask,
@@ -62,21 +63,12 @@ export function UserCreateDrawer({ open, onOpenChange, onSuccess }: UserCreateDr
 
     const createMutation = useMutation({
         mutationFn: async () => {
-            const response = await fetch('/api/v1/admin/users', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name,
-                    email,
-                    phone: phone ? normalizeWhatsApp(removeWhatsAppMask(phone)) : null,
-                    role
-                })
+            return createAdminUser({
+                name,
+                email,
+                phone: phone ? normalizeWhatsApp(removeWhatsAppMask(phone)) : null,
+                role: role as 'user' | 'subscriber' | 'admin',
             })
-
-            if (!response.ok) {
-                const err = await response.json().catch(() => ({}))
-                throw new Error(err.error || 'Erro ao criar usuário')
-            }
         },
         onSuccess: () => {
             toast.success('Usuário criado com sucesso!')

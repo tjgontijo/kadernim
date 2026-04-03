@@ -7,6 +7,7 @@ import {
   grantResourceAccess,
   revokeResourceAccess,
 } from "@/lib/resources/api-client"
+import { searchAdminUsers } from "@/lib/users/api-client"
 import type { ResourceAccessRecord } from "@/lib/resources/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -66,13 +67,7 @@ export function ResourceAccessManager({
     queryKey: ["users-search", searchQuery],
     queryFn: async () => {
       if (searchQuery.length < 2) return { users: [] }
-      const response = await fetch(
-        `/api/v1/admin/users/search?q=${encodeURIComponent(searchQuery)}`
-      )
-      if (!response.ok) {
-        throw new Error("Failed to search users")
-      }
-      return response.json() as Promise<{ users: User[] }>
+      return searchAdminUsers(searchQuery) as Promise<{ users: User[] }>
     },
     enabled: searchQuery.length >= 2,
   })

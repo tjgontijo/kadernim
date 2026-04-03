@@ -1,4 +1,4 @@
-import { updateUserService, deleteUserService } from '@/services/users/update-user'
+import { updateUserService, deleteUserService } from '@/lib/users/services'
 import {
     createAdminUserCrudHandlers,
 } from '../route-support'

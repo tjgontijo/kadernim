@@ -1,5 +1,4 @@
-import { listUsersService } from '@/services/users/list-users'
-import { createAdminUserService } from '@/services/users/update-user'
+import { listUsersService, createAdminUserService } from '@/lib/users/services'
 import {
     createAdminUsersCollectionHandlers,
 } from './route-support'
