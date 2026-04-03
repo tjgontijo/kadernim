@@ -2,25 +2,24 @@ import { prisma, Prisma } from '@/lib/db'
 import type {
   NotificationTemplateCreateInput,
   NotificationTemplateUpdateInput,
-} from '@/schemas/templates/notification-template-schemas'
+} from '@/lib/templates/schemas'
 
 export class NotificationTemplateService {
   static async listAllUnified() {
-    const [notificationTemplates, emailTemplates, whatsappTemplates, pushTemplates] =
-      await Promise.all([
-        prisma.notificationTemplate.findMany({
-          orderBy: [{ type: 'asc' }, { name: 'asc' }],
-        }),
-        prisma.emailTemplate.findMany({
-          orderBy: { name: 'asc' },
-        }),
-        prisma.whatsAppTemplate.findMany({
-          orderBy: { name: 'asc' },
-        }),
-        prisma.pushTemplate.findMany({
-          orderBy: { name: 'asc' },
-        }),
-      ])
+    const [notificationTemplates, emailTemplates, whatsappTemplates, pushTemplates] = await Promise.all([
+      prisma.notificationTemplate.findMany({
+        orderBy: [{ type: 'asc' }, { name: 'asc' }],
+      }),
+      prisma.emailTemplate.findMany({
+        orderBy: { name: 'asc' },
+      }),
+      prisma.whatsAppTemplate.findMany({
+        orderBy: { name: 'asc' },
+      }),
+      prisma.pushTemplate.findMany({
+        orderBy: { name: 'asc' },
+      }),
+    ])
 
     return [
       ...notificationTemplates.map((template) => ({
@@ -59,12 +58,7 @@ export class NotificationTemplateService {
   }
 
   static async create(data: NotificationTemplateCreateInput) {
-    const variables =
-      data.variables === undefined
-        ? undefined
-        : data.variables === null
-          ? Prisma.JsonNull
-          : data.variables
+    const variables = data.variables === undefined ? undefined : data.variables === null ? Prisma.JsonNull : data.variables
 
     return prisma.notificationTemplate.create({
       data: {
@@ -81,12 +75,7 @@ export class NotificationTemplateService {
   }
 
   static async update(id: string, data: NotificationTemplateUpdateInput) {
-    const variables =
-      data.variables === undefined
-        ? undefined
-        : data.variables === null
-          ? Prisma.JsonNull
-          : data.variables
+    const variables = data.variables === undefined ? undefined : data.variables === null ? Prisma.JsonNull : data.variables
 
     return prisma.notificationTemplate.update({
       where: { id },

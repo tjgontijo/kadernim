@@ -1,9 +1,5 @@
 import { prisma, Prisma } from '@/lib/db'
-import type {
-  PushTemplateCreate,
-  PushTemplateList,
-  PushTemplateUpdate,
-} from '@/schemas/templates/push-template-schemas'
+import type { PushTemplateCreate, PushTemplateList, PushTemplateUpdate } from '@/lib/templates/schemas'
 
 export class PushTemplateService {
   static async list(filters: PushTemplateList) {
@@ -32,9 +28,7 @@ export class PushTemplateService {
   }
 
   static async getById(id: string) {
-    return prisma.pushTemplate.findUnique({
-      where: { id },
-    })
+    return prisma.pushTemplate.findUnique({ where: { id } })
   }
 
   static async getBySlug(slug: string) {

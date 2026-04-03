@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { NotificationTemplateCreateSchema } from '@/lib/templates/schemas'
+import { NotificationTemplateService } from '@/lib/templates/services'
 import { requirePermission } from '@/server/auth/middleware'
-import { NotificationTemplateCreateSchema } from '@/schemas/templates/notification-template-schemas'
-import { NotificationTemplateService } from '@/services/templates/notification-template.service'
 
 export const dynamic = 'force-dynamic'
 

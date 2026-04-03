@@ -1,5 +1,5 @@
-import { PushTemplateUpdateSchema } from '@/schemas/templates/push-template-schemas'
-import { PushTemplateService } from '@/services/templates/push-template.service'
+import { PushTemplateUpdateSchema } from '@/lib/templates/schemas'
+import { PushTemplateService } from '@/lib/templates/services'
 import { createTemplateCrudHandlers } from '../../templates/route-support'
 
 export const dynamic = 'force-dynamic'

@@ -3,6 +3,13 @@
 import React, { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  createPushTemplate,
+  deletePushTemplate,
+  fetchPushTemplates,
+  updatePushTemplate,
+} from '@/lib/templates/api-client';
+import type { PushTemplateCreate, PushTemplateRecord, PushTemplateUpdate } from '@/lib/templates/types';
+import {
   Bell,
   Pencil,
   Trash2,
@@ -63,33 +70,15 @@ import { PreviewDialog } from '@/components/dashboard/shared';
 import { getStatusBadge } from '@/lib/utils/badge-variants';
 import { PermissionGuard } from '@/components/auth/permission-guard';
 
-interface PushTemplate {
-  id: string;
-  slug: string;
-  name: string;
-  title: string;
-  body: string;
-  icon: string | null;
-  badge: string | null;
-  image: string | null;
-  url: string | null;
-  tag: string | null;
-  eventType: string;
-  description: string | null;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export default function PushTemplatesPage() {
   const queryClient = useQueryClient();
   const [view, setView] = useState<ViewType>('cards');
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<PushTemplate | null>(
+  const [editingTemplate, setEditingTemplate] = useState<PushTemplateRecord | null>(
     null
   );
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewTemplate, setPreviewTemplate] = useState<PushTemplate | null>(
+  const [previewTemplate, setPreviewTemplate] = useState<PushTemplateRecord | null>(
     null
   );
 
@@ -117,36 +106,18 @@ export default function PushTemplatesPage() {
     description: '',
   });
 
-  const { data: templates = [], isLoading: loading } = useQuery<PushTemplate[]>({
+  const { data: templates = [], isLoading: loading } = useQuery<PushTemplateRecord[]>({
     queryKey: ['admin-push-templates'],
-    queryFn: async () => {
-      const response = await fetch('/api/v1/admin/push-templates');
-      const json = await response.json();
-      if (!response.ok || !json.success) {
-        throw new Error(json.error || 'Erro ao buscar templates de push');
-      }
-      return json.data;
-    },
+    queryFn: fetchPushTemplates,
   });
 
   const saveMutation = useMutation({
-    mutationFn: async (payload: Record<string, unknown>) => {
-      const url = editingTemplate
-        ? `/api/v1/admin/push-templates/${editingTemplate.id}`
-        : '/api/v1/admin/push-templates';
-
-      const response = await fetch(url, {
-        method: editingTemplate ? 'PATCH' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      const json = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(json.error || 'Erro ao salvar');
+    mutationFn: async (payload: PushTemplateCreate | PushTemplateUpdate) => {
+      if (editingTemplate) {
+        return updatePushTemplate(editingTemplate.id, payload as PushTemplateUpdate);
       }
 
-      return json;
+      return createPushTemplate(payload as PushTemplateCreate);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-push-templates'] });
@@ -160,20 +131,11 @@ export default function PushTemplatesPage() {
   });
 
   const toggleMutation = useMutation({
-    mutationFn: async (template: PushTemplate) => {
-      const response = await fetch(`/api/v1/admin/push-templates/${template.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isActive: !template.isActive }),
-      });
-
-      const json = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(json.error || 'Erro ao alterar status');
-      }
+    mutationFn: async (template: PushTemplateRecord) => {
+      return updatePushTemplate(template.id, { isActive: !template.isActive });
     },
     onSuccess: (_data, template) => {
-      queryClient.setQueryData<PushTemplate[]>(['admin-push-templates'], (current = []) =>
+      queryClient.setQueryData<PushTemplateRecord[]>(['admin-push-templates'], (current = []) =>
         current.map((item) =>
           item.id === template.id ? { ...item, isActive: !template.isActive } : item
         )
@@ -187,17 +149,10 @@ export default function PushTemplatesPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await fetch(`/api/v1/admin/push-templates/${id}`, {
-        method: 'DELETE',
-      });
-
-      const json = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(json.error || 'Erro ao excluir');
-      }
+      return deletePushTemplate(id);
     },
     onSuccess: (_data, id) => {
-      queryClient.setQueryData<PushTemplate[]>(['admin-push-templates'], (current = []) =>
+      queryClient.setQueryData<PushTemplateRecord[]>(['admin-push-templates'], (current = []) =>
         current.filter((item) => item.id !== id)
       );
       toast.success('Template excluído');
@@ -225,7 +180,7 @@ export default function PushTemplatesPage() {
     setEditingTemplate(null);
   };
 
-  const openEditDrawer = (template: PushTemplate) => {
+  const openEditDrawer = (template: PushTemplateRecord) => {
     setEditingTemplate(template);
     setFormData({
       name: template.name || '',
@@ -274,7 +229,7 @@ export default function PushTemplatesPage() {
     });
   };
 
-  const handleToggle = async (template: PushTemplate) => {
+  const handleToggle = async (template: PushTemplateRecord) => {
     toggleMutation.mutate(template);
   };
 
@@ -284,7 +239,7 @@ export default function PushTemplatesPage() {
   };
 
   // Columns
-  const columns: ColumnDef<PushTemplate>[] = [
+  const columns: ColumnDef<PushTemplateRecord>[] = [
     {
       key: 'title',
       label: 'Template',
@@ -349,7 +304,7 @@ export default function PushTemplatesPage() {
   ];
 
   // Card View
-  const cardConfig: CardConfig<PushTemplate> = {
+  const cardConfig: CardConfig<PushTemplateRecord> = {
     title: (template) => template.name,
     subtitle: (template) => (
       <div className="flex flex-col gap-1 w-full mt-1">

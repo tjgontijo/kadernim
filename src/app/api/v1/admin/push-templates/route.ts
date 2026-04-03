@@ -1,9 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
 import {
   PushTemplateCreateSchema,
   PushTemplateListSchema,
-} from '@/schemas/templates/push-template-schemas'
-import { PushTemplateService } from '@/services/templates/push-template.service'
+} from '@/lib/templates/schemas'
+import { PushTemplateService } from '@/lib/templates/services'
 import { createTemplateCollectionHandlers } from '../templates/route-support'
 
 export const dynamic = 'force-dynamic'

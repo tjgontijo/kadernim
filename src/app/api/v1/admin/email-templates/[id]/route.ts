@@ -1,5 +1,5 @@
-import { EmailTemplateUpdateSchema } from '@/schemas/templates/email-template-schemas'
-import { EmailTemplateService } from '@/services/templates/email-template.service'
+import { EmailTemplateUpdateSchema } from '@/lib/templates/schemas'
+import { EmailTemplateService } from '@/lib/templates/services'
 import { createTemplateCrudHandlers } from '../../templates/route-support'
 
 export const dynamic = 'force-dynamic'

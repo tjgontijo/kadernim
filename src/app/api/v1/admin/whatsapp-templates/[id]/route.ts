@@ -1,5 +1,5 @@
-import { WhatsAppTemplateUpdateSchema } from '@/schemas/templates/whatsapp-template-schemas'
-import { WhatsAppTemplateService } from '@/services/templates/whatsapp-template.service'
+import { WhatsAppTemplateUpdateSchema } from '@/lib/templates/schemas'
+import { WhatsAppTemplateService } from '@/lib/templates/services'
 import { createTemplateCrudHandlers } from '../../templates/route-support'
 
 export const dynamic = 'force-dynamic'

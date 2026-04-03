@@ -1,9 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
 import {
   WhatsAppTemplateCreateSchema,
   WhatsAppTemplateListSchema,
-} from '@/schemas/templates/whatsapp-template-schemas'
-import { WhatsAppTemplateService } from '@/services/templates/whatsapp-template.service'
+} from '@/lib/templates/schemas'
+import { WhatsAppTemplateService } from '@/lib/templates/services'
 import { createTemplateCollectionHandlers } from '../templates/route-support'
 
 export const dynamic = 'force-dynamic'

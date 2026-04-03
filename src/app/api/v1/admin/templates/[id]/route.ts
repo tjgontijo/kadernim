@@ -1,5 +1,5 @@
-import { NotificationTemplateUpdateSchema } from '@/schemas/templates/notification-template-schemas'
-import { NotificationTemplateService } from '@/services/templates/notification-template.service'
+import { NotificationTemplateUpdateSchema } from '@/lib/templates/schemas'
+import { NotificationTemplateService } from '@/lib/templates/services'
 import { createTemplateCrudHandlers } from '../route-support'
 
 export const dynamic = 'force-dynamic'

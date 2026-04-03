@@ -3,7 +3,7 @@ import type {
   WhatsAppTemplateCreate,
   WhatsAppTemplateList,
   WhatsAppTemplateUpdate,
-} from '@/schemas/templates/whatsapp-template-schemas'
+} from '@/lib/templates/schemas'
 
 export class WhatsAppTemplateService {
   static async list(filters: WhatsAppTemplateList) {
@@ -32,9 +32,7 @@ export class WhatsAppTemplateService {
   }
 
   static async getById(id: string) {
-    return prisma.whatsAppTemplate.findUnique({
-      where: { id },
-    })
+    return prisma.whatsAppTemplate.findUnique({ where: { id } })
   }
 
   static async getBySlug(slug: string) {

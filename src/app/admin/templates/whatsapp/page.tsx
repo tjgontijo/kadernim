@@ -3,6 +3,17 @@
 import React, { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+    createWhatsAppTemplate,
+    deleteWhatsAppTemplate,
+    fetchWhatsAppTemplates,
+    updateWhatsAppTemplate,
+} from '@/lib/templates/api-client';
+import type {
+    WhatsAppTemplateCreate,
+    WhatsAppTemplateRecord,
+    WhatsAppTemplateUpdate,
+} from '@/lib/templates/types';
+import {
     MessageCircle,
     Pencil,
     Trash2,
@@ -35,28 +46,16 @@ import { PreviewDialog } from '@/components/dashboard/shared';
 import { getStatusBadge } from '@/lib/utils/badge-variants';
 import { PermissionGuard } from '@/components/auth/permission-guard';
 
-interface WhatsAppTemplate {
-    id: string;
-    slug: string;
-    name: string;
-    body: string;
-    eventType: string;
-    description: string | null;
-    isActive: boolean;
-    createdAt: string;
-    updatedAt: string;
-}
-
 
 export default function WhatsAppTemplatesPage() {
     const queryClient = useQueryClient();
     const [view, setView] = useState<ViewType>('cards');
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const [editingTemplate, setEditingTemplate] = useState<WhatsAppTemplate | null>(
+    const [editingTemplate, setEditingTemplate] = useState<WhatsAppTemplateRecord | null>(
         null
     );
     const [previewOpen, setPreviewOpen] = useState(false);
-    const [previewTemplate, setPreviewTemplate] = useState<WhatsAppTemplate | null>(
+    const [previewTemplate, setPreviewTemplate] = useState<WhatsAppTemplateRecord | null>(
         null
     );
 
@@ -78,36 +77,18 @@ export default function WhatsAppTemplatesPage() {
         description: '',
     });
 
-    const { data: templates = [], isLoading: loading } = useQuery<WhatsAppTemplate[]>({
+    const { data: templates = [], isLoading: loading } = useQuery<WhatsAppTemplateRecord[]>({
         queryKey: ['admin-whatsapp-templates'],
-        queryFn: async () => {
-            const response = await fetch('/api/v1/admin/whatsapp-templates');
-            const json = await response.json();
-            if (!response.ok || !json.success) {
-                throw new Error(json.error || 'Erro ao buscar templates de WhatsApp');
-            }
-            return json.data;
-        },
+        queryFn: fetchWhatsAppTemplates,
     });
 
     const saveMutation = useMutation({
-        mutationFn: async (payload: Record<string, unknown>) => {
-            const url = editingTemplate
-                ? `/api/v1/admin/whatsapp-templates/${editingTemplate.id}`
-                : '/api/v1/admin/whatsapp-templates';
-
-            const response = await fetch(url, {
-                method: editingTemplate ? 'PATCH' : 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
-
-            const json = await response.json().catch(() => ({}));
-            if (!response.ok) {
-                throw new Error(json.error || 'Erro ao salvar');
+        mutationFn: async (payload: WhatsAppTemplateCreate | WhatsAppTemplateUpdate) => {
+            if (editingTemplate) {
+                return updateWhatsAppTemplate(editingTemplate.id, payload as WhatsAppTemplateUpdate);
             }
 
-            return json;
+            return createWhatsAppTemplate(payload as WhatsAppTemplateCreate);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin-whatsapp-templates'] });
@@ -121,20 +102,11 @@ export default function WhatsAppTemplatesPage() {
     });
 
     const toggleMutation = useMutation({
-        mutationFn: async (template: WhatsAppTemplate) => {
-            const response = await fetch(`/api/v1/admin/whatsapp-templates/${template.id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ isActive: !template.isActive }),
-            });
-
-            const json = await response.json().catch(() => ({}));
-            if (!response.ok) {
-                throw new Error(json.error || 'Erro ao alterar status');
-            }
+        mutationFn: async (template: WhatsAppTemplateRecord) => {
+            return updateWhatsAppTemplate(template.id, { isActive: !template.isActive });
         },
         onSuccess: (_data, template) => {
-            queryClient.setQueryData<WhatsAppTemplate[]>(['admin-whatsapp-templates'], (current = []) =>
+            queryClient.setQueryData<WhatsAppTemplateRecord[]>(['admin-whatsapp-templates'], (current = []) =>
                 current.map((item) =>
                     item.id === template.id ? { ...item, isActive: !template.isActive } : item
                 )
@@ -148,17 +120,10 @@ export default function WhatsAppTemplatesPage() {
 
     const deleteMutation = useMutation({
         mutationFn: async (id: string) => {
-            const response = await fetch(`/api/v1/admin/whatsapp-templates/${id}`, {
-                method: 'DELETE',
-            });
-
-            const json = await response.json().catch(() => ({}));
-            if (!response.ok) {
-                throw new Error(json.error || 'Erro ao excluir');
-            }
+            return deleteWhatsAppTemplate(id);
         },
         onSuccess: (_data, id) => {
-            queryClient.setQueryData<WhatsAppTemplate[]>(['admin-whatsapp-templates'], (current = []) =>
+            queryClient.setQueryData<WhatsAppTemplateRecord[]>(['admin-whatsapp-templates'], (current = []) =>
                 current.filter((item) => item.id !== id)
             );
             toast.success('Template excluído');
@@ -180,7 +145,7 @@ export default function WhatsAppTemplatesPage() {
         setEditingTemplate(null);
     };
 
-    const openEditDrawer = (template: WhatsAppTemplate) => {
+    const openEditDrawer = (template: WhatsAppTemplateRecord) => {
         setEditingTemplate(template);
         setFormData({
             name: template.name || '',
@@ -207,7 +172,7 @@ export default function WhatsAppTemplatesPage() {
         });
     };
 
-    const handleToggle = async (template: WhatsAppTemplate) => {
+    const handleToggle = async (template: WhatsAppTemplateRecord) => {
         toggleMutation.mutate(template);
     };
 
@@ -217,7 +182,7 @@ export default function WhatsAppTemplatesPage() {
     };
 
     // Columns
-    const columns: ColumnDef<WhatsAppTemplate>[] = [
+    const columns: ColumnDef<WhatsAppTemplateRecord>[] = [
         {
             key: 'name',
             label: 'Template',
@@ -291,7 +256,7 @@ export default function WhatsAppTemplatesPage() {
     ];
 
     // Card View
-    const cardConfig: CardConfig<WhatsAppTemplate> = {
+    const cardConfig: CardConfig<WhatsAppTemplateRecord> = {
         title: (template) => template.name,
         subtitle: (template) => (
             <div className="flex flex-col gap-1 w-full mt-1">

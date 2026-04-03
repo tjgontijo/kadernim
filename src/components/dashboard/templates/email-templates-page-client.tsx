@@ -24,12 +24,18 @@ import {
     type CardConfig,
     type ViewType,
 } from '@/components/dashboard/crud';
+import {
+    createEmailTemplate,
+    deleteEmailTemplate,
+    fetchEmailTemplates,
+    updateEmailTemplate,
+} from '@/lib/templates/api-client';
+import type { EmailTemplate, EmailTemplateCreate, EmailTemplateUpdate } from '@/lib/templates/types';
 import { toast } from 'sonner';
 import { EmailTemplateForm } from '@/components/dashboard/templates/email-template-form';
 import { PreviewDialog } from '@/components/dashboard/shared';
 import { getStatusBadge } from '@/lib/utils/badge-variants';
 import { PermissionGuard } from '@/components/auth/permission-guard';
-import { EmailTemplate } from '@/types/templates/email-template';
 
 export function EmailTemplatesPageClient() {
     const queryClient = useQueryClient();
@@ -75,34 +81,16 @@ export function EmailTemplatesPageClient() {
 
     const { data: templates = [], isLoading: loading } = useQuery<EmailTemplate[]>({
         queryKey: ['admin-email-templates'],
-        queryFn: async () => {
-            const response = await fetch('/api/v1/admin/email-templates');
-            const json = await response.json();
-            if (!response.ok || !json.success) {
-                throw new Error(json.error || 'Erro ao buscar templates de email');
-            }
-            return json.data;
-        },
+        queryFn: fetchEmailTemplates,
     });
 
     const saveMutation = useMutation({
-        mutationFn: async (payload: Record<string, unknown>) => {
-            const url = editingTemplate
-                ? `/api/v1/admin/email-templates/${editingTemplate.id}`
-                : '/api/v1/admin/email-templates';
-
-            const response = await fetch(url, {
-                method: editingTemplate ? 'PATCH' : 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
-
-            const json = await response.json().catch(() => ({}));
-            if (!response.ok) {
-                throw new Error(json.error || 'Erro ao salvar');
+        mutationFn: async (payload: EmailTemplateCreate | EmailTemplateUpdate) => {
+            if (editingTemplate) {
+                return updateEmailTemplate(editingTemplate.id, payload as EmailTemplateUpdate);
             }
 
-            return json;
+            return createEmailTemplate(payload as EmailTemplateCreate);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin-email-templates'] });
@@ -117,16 +105,7 @@ export function EmailTemplatesPageClient() {
 
     const toggleMutation = useMutation({
         mutationFn: async (template: EmailTemplate) => {
-            const response = await fetch(`/api/v1/admin/email-templates/${template.id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ isActive: !template.isActive }),
-            });
-
-            const json = await response.json().catch(() => ({}));
-            if (!response.ok) {
-                throw new Error(json.error || 'Erro ao alterar status');
-            }
+            return updateEmailTemplate(template.id, { isActive: !template.isActive });
         },
         onSuccess: (_data, template) => {
             queryClient.setQueryData<EmailTemplate[]>(['admin-email-templates'], (current = []) =>
@@ -143,14 +122,7 @@ export function EmailTemplatesPageClient() {
 
     const deleteMutation = useMutation({
         mutationFn: async (id: string) => {
-            const response = await fetch(`/api/v1/admin/email-templates/${id}`, {
-                method: 'DELETE',
-            });
-
-            const json = await response.json().catch(() => ({}));
-            if (!response.ok) {
-                throw new Error(json.error || 'Erro ao excluir');
-            }
+            return deleteEmailTemplate(id);
         },
         onSuccess: (_data, id) => {
             queryClient.setQueryData<EmailTemplate[]>(['admin-email-templates'], (current = []) =>

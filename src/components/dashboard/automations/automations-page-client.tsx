@@ -39,6 +39,7 @@ import {
     type ColumnDef,
     type CardConfig,
 } from '@/components/dashboard/crud';
+import { fetchEmailTemplates } from '@/lib/templates/api-client';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { getAllEvents, getCategories } from '@/lib/events/catalog';
@@ -90,14 +91,7 @@ export function AutomationsPageClient() {
 
     const { data: templates = [] } = useQuery<any[]>({
         queryKey: ['admin-email-templates-for-automations'],
-        queryFn: async () => {
-            const res = await fetch('/api/v1/admin/email-templates');
-            const json = await res.json();
-            if (!res.ok || !json.success) {
-                throw new Error(json.error || 'Erro ao buscar templates');
-            }
-            return json.data;
-        },
+        queryFn: fetchEmailTemplates,
     });
 
     const saveMutation = useMutation({

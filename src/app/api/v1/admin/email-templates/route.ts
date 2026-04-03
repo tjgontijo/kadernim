@@ -1,8 +1,8 @@
-import { EmailTemplateService } from '@/services/templates/email-template.service';
 import {
     EmailTemplateCreateSchema,
     EmailTemplateListSchema,
-} from '@/schemas/templates/email-template-schemas';
+} from '@/lib/templates/schemas';
+import { EmailTemplateService } from '@/lib/templates/services';
 import { createTemplateCollectionHandlers } from '../templates/route-support';
 
 export const dynamic = 'force-dynamic';
