@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { SubjectSchema } from '@/lib/taxonomy/schemas'
+import { TaxonomyService } from '@/lib/taxonomy/services'
 import { requirePermission } from '@/server/auth/middleware'
-import { TaxonomyService } from '@/services/taxonomy/taxonomy.service'
-import { SubjectSchema } from '@/schemas/subjects/subject-schemas'
 
 /**
  * PUT /api/v1/admin/subjects/[id]

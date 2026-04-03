@@ -8,13 +8,13 @@ import { CrudDataView } from '@/components/dashboard/crud/crud-data-view'
 import { CrudEditDrawer } from '@/components/dashboard/crud/crud-edit-drawer'
 import { PermissionGuard } from '@/components/auth/permission-guard'
 import { useDataTable } from '@/hooks/utils/use-data-table'
+import { createAdminSubject, deleteAdminSubject, updateAdminSubject } from '@/lib/taxonomy/api-client'
 import { SubjectForm } from '@/components/dashboard/subjects/subject-form'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import { SubjectInput } from '@/schemas/subjects/subject-schemas'
+import { type SubjectInput, type Subject } from '@/lib/taxonomy/types'
 import { DeleteConfirmDialog } from '@/components/dashboard/crud/delete-confirm-dialog'
-import { Subject } from '@/types/taxonomy/subject'
 
 export function SubjectsPageClient() {
     const [isDeletingId, setIsDeletingId] = useState<string | null>(null)
@@ -26,21 +26,11 @@ export function SubjectsPageClient() {
 
     const saveMutation = useMutation({
         mutationFn: async (data: SubjectInput) => {
-            const method = crud.itemToEdit ? 'PUT' : 'POST'
-            const url = crud.itemToEdit
-                ? `/api/v1/admin/subjects/${crud.itemToEdit.id}`
-                : '/api/v1/admin/subjects'
-
-            const response = await fetch(url, {
-                method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            })
-
-            if (!response.ok) {
-                const err = await response.json().catch(() => ({}))
-                throw new Error(err.error || 'Erro ao salvar')
+            if (crud.itemToEdit) {
+                return updateAdminSubject(crud.itemToEdit.id, data)
             }
+
+            return createAdminSubject(data)
         },
         onSuccess: () => {
             toast.success(crud.itemToEdit ? 'Matéria atualizada' : 'Matéria criada')
@@ -54,14 +44,7 @@ export function SubjectsPageClient() {
 
     const deleteMutation = useMutation({
         mutationFn: async (id: string) => {
-            const response = await fetch(`/api/v1/admin/subjects/${id}`, {
-                method: 'DELETE'
-            })
-
-            if (!response.ok) {
-                const err = await response.json().catch(() => ({}))
-                throw new Error(err.error || 'Erro ao excluir')
-            }
+            return deleteAdminSubject(id)
         },
         onSuccess: () => {
             toast.success('Matéria excluída com sucesso')
@@ -144,7 +127,7 @@ export function SubjectsPageClient() {
                                                 <td className="px-4 py-3">
                                                     <div className="flex items-center justify-center">
                                                         <span className="inline-flex items-center justify-center h-7 min-w-[28px] px-2 rounded-full bg-primary/10 text-primary font-bold text-xs">
-                                                            {subject._count.resources}
+                                                            {subject._count?.resources ?? 0}
                                                         </span>
                                                     </div>
                                                 </td>
@@ -209,7 +192,7 @@ export function SubjectsPageClient() {
                                                 </code>
                                                 <span className="text-muted-foreground/30">•</span>
                                                 <span className="text-[10px] font-bold text-primary">
-                                                    {subject._count.resources} {subject._count.resources === 1 ? 'recurso' : 'recursos'}
+                                                    {subject._count?.resources ?? 0} {(subject._count?.resources ?? 0) === 1 ? 'recurso' : 'recursos'}
                                                 </span>
                                             </div>
                                         </div>

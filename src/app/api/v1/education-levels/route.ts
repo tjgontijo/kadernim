@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { TaxonomyService } from '@/services/taxonomy/taxonomy.service';
+import { TaxonomyService } from '@/lib/taxonomy/services';
 
 /**
  * GET /api/v1/education-levels

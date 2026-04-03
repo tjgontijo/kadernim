@@ -12,7 +12,7 @@ import {
     FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { SubjectSchema, type SubjectInput } from '@/schemas/subjects/subject-schemas'
+import { SubjectSchema, type SubjectInput } from '@/lib/taxonomy/schemas'
 
 interface SubjectFormProps {
     initialData?: SubjectInput | null

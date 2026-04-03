@@ -1,27 +1,8 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-
-export interface EducationLevel {
-    id: string;
-    slug: string;
-    name: string;
-    order: number;
-}
-
-export interface Grade {
-    id: string;
-    slug: string;
-    name: string;
-    order: number;
-    educationLevelSlug: string;
-}
-
-export interface Subject {
-    id: string;
-    slug: string;
-    name: string;
-}
+import { fetchEducationLevels, fetchGrades, fetchSubjects } from '@/lib/taxonomy/api-client';
+import type { EducationLevel, Grade, Subject } from '@/lib/taxonomy/types';
 
 export interface BnccSkill {
     code: string;
@@ -39,12 +20,7 @@ interface TaxonomyResponse<T> {
 export function useEducationLevels() {
     return useQuery({
         queryKey: ['taxonomy', 'education-levels'],
-        queryFn: async () => {
-            const response = await fetch('/api/v1/education-levels');
-            if (!response.ok) throw new Error('Erro ao carregar etapas de ensino');
-            const data: TaxonomyResponse<EducationLevel> = await response.json();
-            return data.data;
-        },
+        queryFn: fetchEducationLevels,
         staleTime: 1000 * 60 * 60, // 1 hora de cache (dados estáticos)
     });
 }
@@ -54,10 +30,7 @@ export function useGrades(educationLevelSlug?: string) {
         queryKey: ['taxonomy', 'grades', educationLevelSlug],
         queryFn: async () => {
             if (!educationLevelSlug || educationLevelSlug === 'all') return [];
-            const response = await fetch(`/api/v1/grades?educationLevelSlug=${educationLevelSlug}`);
-            if (!response.ok) throw new Error('Erro ao carregar anos/faixas etárias');
-            const data: TaxonomyResponse<Grade> = await response.json();
-            return data.data;
+            return fetchGrades(educationLevelSlug);
         },
         enabled: !!educationLevelSlug && educationLevelSlug !== 'all',
         staleTime: 1000 * 60 * 60,
@@ -75,10 +48,7 @@ export function useSubjects(educationLevelSlug?: string, gradeSlug?: string, bnc
 
             if (params.toString() === '') return [];
 
-            const response = await fetch(`/api/v1/subjects?${params.toString()}`);
-            if (!response.ok) throw new Error('Erro ao carregar disciplinas/campos');
-            const data: TaxonomyResponse<Subject> = await response.json();
-            return data.data;
+            return fetchSubjects(params);
         },
         enabled: (!!educationLevelSlug && educationLevelSlug !== 'all') || (!!gradeSlug && gradeSlug !== 'all'),
         staleTime: 1000 * 60 * 60,
