@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { CampaignService } from '@/services/campaigns/campaign.service';
+import { CampaignService } from '@/lib/campaigns/services';
 
 /**
  * GET /api/v1/track/push/[campaignId]

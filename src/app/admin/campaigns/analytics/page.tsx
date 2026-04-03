@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { fetchCampaignAnalytics } from '@/lib/campaigns/api-client';
+import type { CampaignAnalyticsData } from '@/lib/campaigns/types';
 import {
     Activity,
     Send,
@@ -47,35 +49,6 @@ import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils/index';
 import Link from 'next/link';
 
-interface AnalyticsData {
-    kpis: {
-        totalCampaigns: number;
-        sentCampaigns: number;
-        totalSent: number;
-        totalClicked: number;
-        ctr: string;
-        topCampaign: {
-            title: string;
-            totalSent: number;
-            totalClicked: number;
-            ctr: string;
-        } | null;
-    };
-    daily: Array<{
-        date: string;
-        sent: number;
-        clicked: number;
-    }>;
-    campaigns: Array<{
-        id: string;
-        title: string;
-        totalSent: number;
-        totalClicked: number;
-        ctr: string;
-        sentAt: string;
-    }>;
-}
-
 export default function CampaignsAnalyticsPage() {
     const [period, setPeriod] = useState('30d');
     const {
@@ -83,16 +56,9 @@ export default function CampaignsAnalyticsPage() {
         isLoading: loading,
         isFetching: refreshing,
         refetch,
-    } = useQuery<AnalyticsData>({
+    } = useQuery<CampaignAnalyticsData>({
         queryKey: ['admin-campaign-analytics', period],
-        queryFn: async () => {
-            const response = await fetch(`/api/v1/admin/campaigns/analytics?period=${period}`);
-            const json = await response.json();
-            if (!response.ok || !json.success) {
-                throw new Error(json.error || 'Erro ao buscar analytics');
-            }
-            return json.data;
-        },
+        queryFn: () => fetchCampaignAnalytics(period),
     });
 
     const handleRefresh = async () => {

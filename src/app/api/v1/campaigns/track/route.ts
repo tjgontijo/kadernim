@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/server/auth';
-import { CampaignTrackSchema } from '@/schemas/campaigns/campaign-schemas';
-import { CampaignService } from '@/services/campaigns/campaign.service';
+import { CampaignTrackSchema } from '@/lib/campaigns/schemas';
+import { CampaignService } from '@/lib/campaigns/services';
 
 /**
  * POST /api/v1/campaigns/track

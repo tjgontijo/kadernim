@@ -7,15 +7,15 @@ import { CrudPageShell } from '@/components/dashboard/crud/crud-page-shell'
 import { CrudDataView } from '@/components/dashboard/crud/crud-data-view'
 import { CrudEditDrawer } from '@/components/dashboard/crud/crud-edit-drawer'
 import { useDataTable } from '@/hooks/utils/use-data-table'
+import { createCampaign, deleteCampaign, updateCampaign } from '@/lib/campaigns/api-client'
+import { type CampaignInput, type PushCampaign } from '@/lib/campaigns/types'
 import { CampaignForm } from '@/components/dashboard/campaigns/campaign-form'
-import { type CampaignInput } from '@/schemas/campaigns/campaign-schemas'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { DeleteConfirmDialog } from '@/components/dashboard/crud/delete-confirm-dialog'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { PushCampaign } from '@/types/campaigns/campaign'
 
 export function CampaignsPageClient() {
     const [isDeletingId, setIsDeletingId] = useState<string | null>(null)
@@ -27,21 +27,11 @@ export function CampaignsPageClient() {
 
     const saveMutation = useMutation({
         mutationFn: async (data: CampaignInput) => {
-            const method = crud.itemToEdit ? 'PATCH' : 'POST'
-            const url = crud.itemToEdit
-                ? `/api/v1/admin/campaigns/${crud.itemToEdit.id}`
-                : '/api/v1/admin/campaigns'
-
-            const response = await fetch(url, {
-                method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
-            })
-
-            if (!response.ok) {
-                const err = await response.json().catch(() => ({}))
-                throw new Error(err.error || 'Erro ao salvar')
+            if (crud.itemToEdit) {
+                return updateCampaign(crud.itemToEdit.id, data)
             }
+
+            return createCampaign(data)
         },
         onSuccess: () => {
             toast.success(crud.itemToEdit ? 'Campanha atualizada' : 'Campanha criada')
@@ -55,14 +45,7 @@ export function CampaignsPageClient() {
 
     const deleteMutation = useMutation({
         mutationFn: async (id: string) => {
-            const response = await fetch(`/api/v1/admin/campaigns/${id}`, {
-                method: 'DELETE',
-            })
-
-            if (!response.ok) {
-                const err = await response.json().catch(() => ({}))
-                throw new Error(err.error || 'Erro ao excluir')
-            }
+            return deleteCampaign(id)
         },
         onSuccess: () => {
             toast.success('Campanha excluída com sucesso')

@@ -40,6 +40,7 @@ import {
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { cn } from '@/lib/utils/index'
+import { CampaignSchema, type CampaignInput } from '@/lib/campaigns/schemas'
 
 // Ícones disponíveis para notificações
 const NOTIFICATION_ICONS = [
@@ -56,9 +57,6 @@ const NOTIFICATION_ICONS = [
     { value: 'trophy', label: 'Troféu', icon: Trophy },
     { value: 'flame', label: 'Destaque', icon: Flame },
 ]
-
-import { CampaignSchema, type CampaignInput } from '@/schemas/campaigns/campaign-schemas';
-
 interface CampaignFormProps {
     initialData?: Partial<CampaignInput> | null
     onSubmit: (data: CampaignInput) => void
