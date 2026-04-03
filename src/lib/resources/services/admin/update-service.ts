@@ -1,6 +1,6 @@
-import { prisma } from '@/lib/db'
+import { prisma } from '@/server/db'
 import type { Resource, EducationLevel, Subject } from '@db/client'
-import { UpdateResourceInput } from '@/schemas/resources/admin-resource-schemas'
+import { UpdateResourceInput } from '@/lib/resources/schemas/admin-resource-schemas'
 
 export interface UpdateResourceServiceInput extends UpdateResourceInput {
   id: string

@@ -2,6 +2,12 @@
 
 import React, { useState } from "react"
 import { useMutation, useQuery } from "@tanstack/react-query"
+import {
+  fetchResourceAccessList,
+  grantResourceAccess,
+  revokeResourceAccess,
+} from "@/lib/resources/api-client"
+import type { ResourceAccessRecord } from "@/lib/resources/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -38,20 +44,6 @@ interface User {
   email: string
 }
 
-interface AccessRecord {
-  id: string
-  userId: string
-  resourceId: string
-  user: {
-    id: string
-    name: string
-    email: string
-  }
-  source: string | null
-  grantedAt: string
-  expiresAt: string | null
-}
-
 interface ResourceAccessManagerProps {
   resourceId: string
 }
@@ -66,15 +58,7 @@ export function ResourceAccessManager({
   // Fetch current access records
   const { data: accessListData, refetch: refetchAccessList } = useQuery({
     queryKey: ["resource-access", resourceId],
-    queryFn: async () => {
-      const response = await fetch(
-        `/api/v1/admin/resources/${resourceId}/access`
-      )
-      if (!response.ok) {
-        throw new Error("Failed to fetch access records")
-      }
-      return response.json() as Promise<{ accessList: AccessRecord[] }>
-    },
+    queryFn: () => fetchResourceAccessList(resourceId),
   })
 
   // Search users
@@ -95,28 +79,11 @@ export function ResourceAccessManager({
 
   // Grant access mutation
   const grantMutation = useMutation({
-    mutationFn: async (userId: string) => {
-      const response = await fetch(
-        `/api/v1/admin/resources/${resourceId}/access`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId,
-            expiresAt: expiresAt || null,
-          }),
-        }
-      )
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || "Failed to grant access")
-      }
-
-      return response.json()
-    },
+    mutationFn: (userId: string) =>
+      grantResourceAccess(resourceId, {
+        userId,
+        expiresAt: expiresAt ?? null,
+      }),
     onSuccess: () => {
       setSelectedUserId(null)
       setExpiresAt(undefined)
@@ -127,18 +94,7 @@ export function ResourceAccessManager({
 
   // Revoke access mutation
   const revokeMutation = useMutation({
-    mutationFn: async (accessId: string) => {
-      const response = await fetch(
-        `/api/v1/admin/resources/${resourceId}/access/${accessId}`,
-        {
-          method: "DELETE",
-        }
-      )
-
-      if (!response.ok) {
-        throw new Error("Failed to revoke access")
-      }
-    },
+    mutationFn: (accessId: string) => revokeResourceAccess(resourceId, accessId),
     onSuccess: () => {
       refetchAccessList()
     },
@@ -174,7 +130,7 @@ export function ResourceAccessManager({
   const selectedUser = (usersData?.users || []).find(
     (u) => u.id === selectedUserId
   )
-  const accessList = accessListData?.accessList || []
+  const accessList: ResourceAccessRecord[] = accessListData?.accessList || []
   const filteredUsers = (usersData?.users || []).filter(
     (u) => !accessList.some((a) => a.userId === u.id)
   )

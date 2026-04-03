@@ -27,34 +27,17 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import {
+    deleteAdminResource,
+    fetchAdminResourceDetail,
+} from '@/lib/resources/api-client'
+import type { AdminResourceDetail as ResourceDetail } from '@/lib/resources/types'
 import { ResourceDetailsForm } from '@/components/dashboard/resources/edit/resource-details-form'
 import { ResourceFilesManager } from '@/components/dashboard/resources/edit/resource-files-manager'
 import { ResourceAccessManager } from '@/components/dashboard/resources/edit/resource-access-manager'
 import { ResourceImagesManager } from '@/components/dashboard/resources/edit/resource-images-manager'
 import { ResourceVideosManager } from '@/components/dashboard/resources/edit/resource-videos-manager'
 import { DeleteConfirmDialog } from '@/components/dashboard/crud/delete-confirm-dialog'
-
-interface ResourceDetail {
-    id: string
-    title: string
-    description: string | null
-    educationLevel: string
-    subject: string
-    externalId: number
-    isFree: boolean
-    thumbUrl: string | null
-    grades: string[]
-    createdAt: string
-    updatedAt: string
-    files: Array<any>
-    images: Array<any>
-    videos: Array<any>
-    stats: {
-        totalUsers: number
-        accessGrants: number
-        subscriberAccess: number
-    }
-}
 
 interface ResourceEditDrawerProps {
     resourceId: string | null
@@ -69,27 +52,13 @@ export function ResourceEditDrawer({ resourceId, open, onOpenChange, onSuccess }
 
     // Fetch full resource details
     const { data: resource, isLoading, error } = useQuery({
-        queryKey: ['resource-detail', resourceId],
-        queryFn: async () => {
-            const response = await fetch(`/api/v1/admin/resources/${resourceId}`)
-            if (!response.ok) {
-                throw new Error('Failed to fetch resource')
-            }
-            return response.json() as Promise<ResourceDetail>
-        },
+        queryKey: ['admin-resource-detail', resourceId],
+        queryFn: () => fetchAdminResourceDetail(resourceId!),
         enabled: !!resourceId && open,
     })
 
     const deleteMutation = useMutation({
-        mutationFn: async () => {
-            const response = await fetch(`/api/v1/admin/resources/${resourceId}`, {
-                method: 'DELETE',
-            })
-            if (!response.ok) {
-                throw new Error('Erro ao excluir recurso')
-            }
-            return response.status === 204 ? null : response.json()
-        },
+        mutationFn: () => deleteAdminResource(resourceId!),
         onSuccess: () => {
             toast.success('Recurso deletado permanentemente')
             onOpenChange(false)

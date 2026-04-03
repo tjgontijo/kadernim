@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+import { resolveResourceDownloadByToken } from '@/lib/resources/services/catalog'
 import { verifyDownloadToken } from '@/services/auth/token-service'
 import { checkRateLimit } from '@/server/utils/rate-limit'
-import { resolveResourceDownloadByToken } from '@/services/resources/catalog'
 
 export const dynamic = 'force-dynamic'
 

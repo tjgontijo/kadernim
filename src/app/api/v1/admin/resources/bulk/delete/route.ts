@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { BulkDeleteResourcesSchema } from '@/lib/resources/schemas'
 import { requirePermission } from '@/server/auth/middleware'
 import { checkRateLimit } from '@/server/utils/rate-limit'
-import { BulkDeleteResourcesSchema } from '@/schemas/resources/admin-resource-schemas'
 
 /**
  * POST /api/v1/admin/resources/bulk/delete
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
 
     // Execute bulk delete
     const { bulkDeleteResourcesService } = await import(
-      '@/services/resources/admin/bulk-service'
+      '@/lib/resources/services/admin/bulk-service'
     )
     const result = await bulkDeleteResourcesService(parsed.data, userId)
 

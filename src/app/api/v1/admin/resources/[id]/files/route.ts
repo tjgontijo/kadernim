@@ -2,7 +2,7 @@ import { uploadFile } from '@/server/clients/cloudinary/file-client'
 import {
   assertAdminResourceExists,
   createFileService,
-} from '@/services/resources/admin'
+} from '@/lib/resources/services/admin'
 import {
   createAdminResourceFileUploadHandler,
 } from '../../route-support'

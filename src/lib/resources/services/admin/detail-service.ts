@@ -1,8 +1,8 @@
-import { prisma } from '@/lib/db'
+import { prisma } from '@/server/db'
 import {
   ResourceDetailResponseSchema,
   type ResourceDetailResponse,
-} from '@/schemas/resources/admin-resource-schemas'
+} from '@/lib/resources/schemas/admin-resource-schemas'
 
 export async function assertAdminResourceExists(resourceId: string) {
   const resource = await prisma.resource.findUnique({

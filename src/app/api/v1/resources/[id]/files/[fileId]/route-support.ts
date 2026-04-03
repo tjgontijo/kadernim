@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getResourceDownloadGrant } from '@/lib/resources/services/catalog'
 import { checkRateLimit } from '@/server/utils/rate-limit'
 import {
   createDownloadToken,
   DOWNLOAD_TOKEN_DEFAULT_TTL_MS,
 } from '@/services/auth/token-service'
-import { getResourceDownloadGrant } from '@/services/resources/catalog'
 import { authorizeResourceListRequest } from '../../../route-support'
 
 export async function createResourceFileDownloadPayload(

@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { deleteImage } from '@/server/clients/cloudinary/image-client'
-import { UpdateResourceImageSchema } from '@/schemas/resources/admin-resource-schemas'
+import { UpdateResourceImageSchema } from '@/lib/resources/schemas'
 import {
   deleteResourceImage,
   getResourceImageById,
   updateResourceImage,
-} from '@/services/resources/admin'
+} from '@/lib/resources/services/admin'
+import { deleteImage } from '@/server/clients/cloudinary/image-client'
 import { parseWithSchema } from '../../../route-support'
 import {
   deleteCloudinaryAsset,

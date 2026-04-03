@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getResourceMeta, getResourceMetaForUser } from '@/lib/resources/services/catalog'
 import { auth } from '@/server/auth/auth'
-import { getResourceMeta, getResourceMetaForUser } from '@/services/resources/catalog'
 
 export async function GET(request: NextRequest) {
     try {

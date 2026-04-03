@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ZodType } from 'zod'
-import { requirePermission } from '@/server/auth/middleware'
-import { checkRateLimit } from '@/server/utils/rate-limit'
 import {
   CreateResourceSchema,
   GrantResourceAccessSchema,
@@ -9,7 +7,9 @@ import {
   ListResourcesFilterSchema,
   ResourceListResponseSchema,
   UpdateResourceSchema,
-} from '@/schemas/resources/admin-resource-schemas'
+} from '@/lib/resources/schemas'
+import { requirePermission } from '@/server/auth/middleware'
+import { checkRateLimit } from '@/server/utils/rate-limit'
 import { emitEvent } from '@/lib/inngest'
 
 type RateLimitConfig = {

@@ -1,4 +1,7 @@
-import { createResourceService, listResourcesService } from '@/services/resources'
+import {
+  createResourceService,
+  listResourcesService,
+} from '@/lib/resources/services'
 import {
   buildCreatedResourceResponse,
   createAdminResourceCollectionHandlers,

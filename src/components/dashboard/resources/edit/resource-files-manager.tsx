@@ -1,5 +1,9 @@
 import React, { useState, useRef, useEffect } from "react"
 import { Download, File, Trash2, Loader2, Upload as UploadIcon, CheckCircle2, AlertCircle, FileText } from "lucide-react"
+import {
+  deleteResourceFile,
+  uploadResourceFileWithProgress,
+} from "@/lib/resources/api-client"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -12,10 +16,10 @@ import { cn } from "@/lib/utils/index"
 interface FileData {
   id: string
   name: string
-  cloudinaryPublicId: string
+  cloudinaryPublicId?: string
   url: string
-  fileType: string
-  sizeBytes: number
+  fileType: string | null
+  sizeBytes: number | null
   createdAt: string
 }
 
@@ -53,79 +57,51 @@ export function ResourceFilesManager({
       [uploadId]: { fileName: file.name, progress: 0, status: "uploading" }
     }))
 
-    const xhr = new XMLHttpRequest()
-    const formData = new FormData()
-    formData.append("file", file)
-
-    xhr.upload.addEventListener("progress", (event) => {
-      if (event.lengthComputable) {
-        // Limitamos a 98% para a transferência, deixando os 2% finais para o processamento do servidor
-        const percent = Math.min(Math.round((event.loaded / event.total) * 100), 98)
+    uploadResourceFileWithProgress({
+      resourceId,
+      file,
+      onProgress: progress => {
         setActiveUploads(prev => ({
           ...prev,
-          [uploadId]: { ...prev[uploadId], progress: percent }
+          [uploadId]: { ...prev[uploadId], progress }
         }))
-      }
+      },
     })
+      .then(newFileData => {
+        setActiveUploads(prev => ({
+          ...prev,
+          [uploadId]: { ...prev[uploadId], progress: 100, status: "success" }
+        }))
 
-    xhr.addEventListener("load", () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          const newFileData = JSON.parse(xhr.responseText)
-
-          // Sucesso real: completamos para 100%
-          setActiveUploads(prev => ({
-            ...prev,
-            [uploadId]: { ...prev[uploadId], progress: 100, status: "success" }
-          }))
+        setTimeout(() => {
+          setFiles(prev => [...prev, newFileData])
+          queryClient.invalidateQueries({ queryKey: ["admin-resource-detail", resourceId] })
+          toast.success(`${file.name} enviado corretamente`)
 
           setTimeout(() => {
-            setFiles(prev => [...prev, newFileData])
-            queryClient.invalidateQueries({ queryKey: ["resource-detail", resourceId] })
-            toast.success(`${file.name} enviado corretamente`)
-
-            // Remove o slot após um breve momento de confirmação visual
-            setTimeout(() => {
-              setActiveUploads(prev => {
-                const newState = { ...prev }
-                delete newState[uploadId]
-                return newState
-              })
-            }, 500)
-          }, 400)
-        } catch (e) {
-          handleError()
-        }
-      } else {
-        handleError()
-      }
-    })
-
-    xhr.addEventListener("error", () => handleError())
-
-    const handleError = () => {
-      setActiveUploads(prev => ({
-        ...prev,
-        [uploadId]: { ...prev[uploadId], status: "error" }
-      }))
-      toast.error(`Erro ao enviar ${file.name}`)
-    }
-
-    xhr.open("POST", `/api/v1/admin/resources/${resourceId}/files`)
-    xhr.send(formData)
+            setActiveUploads(prev => {
+              const newState = { ...prev }
+              delete newState[uploadId]
+              return newState
+            })
+          }, 500)
+        }, 400)
+      })
+      .catch(() => {
+        setActiveUploads(prev => ({
+          ...prev,
+          [uploadId]: { ...prev[uploadId], status: "error" }
+        }))
+        toast.error(`Erro ao enviar ${file.name}`)
+      })
   }
 
   const deleteMutation = useMutation({
-    mutationFn: async (fileId: string) => {
-      const response = await fetch(`/api/v1/admin/resources/${resourceId}/files/${fileId}`, {
-        method: "DELETE",
-      })
-      if (!response.ok) throw new Error("Falha ao excluir arquivo")
-    },
+    mutationFn: (fileId: string) => deleteResourceFile(resourceId, fileId),
     onSuccess: (_, fileId) => {
       setFiles((prev) => prev.filter((f) => f.id !== fileId))
       toast.success("Arquivo removido")
-      queryClient.invalidateQueries({ queryKey: ["resource-detail", resourceId] })
+      queryClient.invalidateQueries({ queryKey: ["admin-resource-detail", resourceId] })
     },
   })
 
@@ -219,7 +195,7 @@ export function ResourceFilesManager({
         </div>
         {files.length > 0 && (
           <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-            Total: {formatFileSize(files.reduce((acc, curr) => acc + curr.sizeBytes, 0))}
+            Total: {formatFileSize(files.reduce((acc, curr) => acc + (curr.sizeBytes ?? 0), 0))}
           </p>
         )}
       </div>
@@ -275,7 +251,7 @@ export function ResourceFilesManager({
                 </p>
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-[11px] text-muted-foreground font-medium">
                   <span className="flex items-center gap-1">
-                    {formatFileSize(file.sizeBytes)}
+                    {formatFileSize(file.sizeBytes ?? 0)}
                   </span>
                   <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
                   <span>

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { uploadImage } from '@/server/clients/cloudinary/image-client'
 import {
   assertAdminResourceExists,
   createResourceImage,
   getResourceImages,
-} from '@/services/resources/admin'
+} from '@/lib/resources/services/admin'
+import { uploadImage } from '@/server/clients/cloudinary/image-client'
 import { createAdminResourceImageHandlers } from '../../route-support'
 import { serializeResourceImage } from '../media-route-support'
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { unlinkResourceBnccSkill } from '@/lib/resources/services/admin'
 import { requirePermission } from '@/server/auth/middleware'
 import { checkRateLimit } from '@/server/utils/rate-limit'
-import { unlinkResourceBnccSkill } from '@/services/resources/admin'
 
 /**
  * DELETE /api/v1/admin/resources/:id/bncc-skills/:skillId

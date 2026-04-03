@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { uploadVideo, getVideoThumbnail } from '@/server/clients/cloudinary/video-client'
 import {
   assertAdminResourceExists,
   createResourceVideo,
   getResourceVideos,
-} from '@/services/resources/admin'
+} from '@/lib/resources/services/admin'
+import { uploadVideo, getVideoThumbnail } from '@/server/clients/cloudinary/video-client'
 import { createAdminResourceVideoHandlers } from '../../route-support'
 import { serializeResourceVideo } from '../media-route-support'
 

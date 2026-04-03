@@ -4,6 +4,11 @@ import React, { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import {
+  deleteAdminResource,
+  fetchAdminResourceDetail,
+} from '@/lib/resources/api-client'
+import type { AdminResourceDetail as ResourceDetail } from '@/lib/resources/types'
+import {
   ArrowLeft,
   Loader2,
   FileText,
@@ -39,52 +44,6 @@ import { DeleteConfirmDialog } from '@/components/dashboard/crud/delete-confirm-
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils/index'
 
-interface ResourceDetail {
-  id: string
-  title: string
-  description: string | null
-  educationLevel: string
-  subject: string
-  externalId: number
-  isFree: boolean
-  thumbUrl: string | null
-  grades: string[]
-  createdAt: string
-  updatedAt: string
-  files: Array<{
-    id: string
-    name: string
-    cloudinaryPublicId: string
-    url: string
-    fileType: string
-    sizeBytes: number
-    createdAt: string
-  }>
-  images: Array<{
-    id: string
-    cloudinaryPublicId: string
-    url: string
-    alt: string | null
-    order: number
-    createdAt: string
-  }>
-  videos: Array<{
-    id: string
-    title: string
-    cloudinaryPublicId: string
-    url: string
-    thumbnail: string | null
-    duration: number | null
-    order: number
-    createdAt: string
-  }>
-  stats: {
-    totalUsers: number
-    accessGrants: number
-    subscriberAccess: number
-  }
-}
-
 export default function EditResourcePage() {
   const router = useRouter()
   const params = useParams()
@@ -94,14 +53,8 @@ export default function EditResourcePage() {
 
   // Fetch resource details
   const { data: resource, isLoading, error } = useQuery({
-    queryKey: ['resource-detail', resourceId],
-    queryFn: async () => {
-      const response = await fetch(`/api/v1/admin/resources/${resourceId}`)
-      if (!response.ok) {
-        throw new Error('Failed to fetch resource')
-      }
-      return response.json() as Promise<ResourceDetail>
-    },
+    queryKey: ['admin-resource-detail', resourceId],
+    queryFn: () => fetchAdminResourceDetail(resourceId),
     enabled: !!resourceId,
   })
 
@@ -114,20 +67,7 @@ export default function EditResourcePage() {
   }, [resource?.title, setResourceTitle])
 
   const deleteResourceMutation = useMutation({
-    mutationFn: async () => {
-      const response = await fetch(`/api/v1/admin/resources/${resourceId}`, {
-        method: 'DELETE',
-      })
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.error || 'Falha ao excluir recurso')
-      }
-      // Status 204 não tem conteúdo, não tente fazer parse
-      if (response.status === 204) {
-        return null
-      }
-      return response.json()
-    },
+    mutationFn: () => deleteAdminResource(resourceId),
     onSuccess: () => {
       toast.success('Recurso excluído com sucesso')
       // Pequeno delay para garantir que o toast seja exibido antes do redirect

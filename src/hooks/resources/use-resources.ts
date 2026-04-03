@@ -1,24 +1,12 @@
 'use client'
 
 import { useQuery, useInfiniteQuery, type InfiniteData } from '@tanstack/react-query'
-import type { Resource } from '@/schemas/resources/resource-schemas'
-
-// Types from use-resource-meta.ts
-export interface ResourceMetaItem {
-    key: string
-    label: string
-}
-
-export interface ResourceMetaResponse {
-    educationLevels: ResourceMetaItem[]
-    subjects: ResourceMetaItem[]
-    grades: (ResourceMetaItem & { educationLevelKey: string; subjects: string[] })[]
-    user: {
-        role: string | null
-        isAdmin: boolean
-        isSubscriber: boolean
-    }
-}
+import { fetchResourceMeta, fetchResourcesSummary } from '@/lib/resources/api-client'
+import type {
+    Resource,
+    ResourceMetaResponse,
+    ResourcesSummaryResponse,
+} from '@/lib/resources/types'
 
 // Types from use-resources-summary-query.ts
 interface Filters {
@@ -36,42 +24,13 @@ export interface UseResourcesSummaryQueryParams {
     filters: Filters
 }
 
-export interface ResourcesSummaryResponse {
-    items: Resource[]
-    pagination: {
-        page: number
-        limit: number
-        hasMore: boolean
-    }
-    counts: {
-        all: number
-        mine: number
-        free: number
-    }
-    meta: {
-        educationLevels: { key: string; label: string }[]
-        subjects: { key: string; label: string }[]
-        user: {
-            role: string | null
-            isAdmin: boolean
-            isSubscriber: boolean
-        }
-    }
-}
-
 /**
  * Hook to fetch resource metadata (education levels, subjects, grades)
  */
 export function useResourceMeta() {
     return useQuery<ResourceMetaResponse>({
         queryKey: ['resource-meta'],
-        queryFn: async () => {
-            const response = await fetch('/api/v1/resources/meta')
-            if (!response.ok) {
-                throw new Error('Failed to fetch resource metadata')
-            }
-            return response.json()
-        },
+        queryFn: fetchResourceMeta,
         staleTime: 1000 * 60 * 60, // 1 hour
     })
 }
@@ -87,34 +46,16 @@ export function useResourcesSummaryQuery({
     const query = useInfiniteQuery<ResourcesSummaryResponse, Error>({
         queryKey: ['resources-summary', tab, filters],
 
-        queryFn: async ({ pageParam = 1 }) => {
-            const params = new URLSearchParams()
-
-            params.set('page', String(pageParam))
-            params.set('limit', String(pageSize))
-            params.set('tab', tab)
-
-            if (filters.q && filters.q.trim().length >= 2) {
-                params.set('q', filters.q.trim())
-            }
-            if (filters.educationLevel) {
-                params.set('educationLevel', filters.educationLevel)
-            }
-            if (filters.grade) {
-                params.set('grade', filters.grade)
-            }
-            if (filters.subject) {
-                params.set('subject', filters.subject)
-            }
-
-            const res = await fetch('/api/v1/resources/summary?' + params.toString())
-            if (!res.ok) {
-                throw new Error('Erro ao carregar recursos')
-            }
-
-            const json: ResourcesSummaryResponse = await res.json()
-            return json
-        },
+        queryFn: ({ pageParam = 1 }) =>
+            fetchResourcesSummary({
+                page: Number(pageParam),
+                limit: pageSize,
+                tab,
+                q: filters.q?.trim().length && filters.q.trim().length >= 2 ? filters.q.trim() : undefined,
+                educationLevel: filters.educationLevel,
+                grade: filters.grade,
+                subject: filters.subject,
+            }),
 
         getNextPageParam: lastPage => {
             return lastPage.pagination.hasMore

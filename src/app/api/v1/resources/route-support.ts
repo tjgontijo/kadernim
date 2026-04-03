@@ -1,22 +1,19 @@
 import { unstable_cache } from 'next/cache'
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/server/auth/auth'
-import {
-  ResourceFilter,
-  ResourceFilterSchema,
-} from '@/schemas/resources/resource-schemas'
-import {
-  buildResourceCacheKey,
-  buildResourceCacheTag,
-} from '@/server/utils/cache'
-import { checkRateLimit } from '@/server/utils/rate-limit'
+import { ResourceFilter, ResourceFilterSchema } from '@/lib/resources/schemas'
 import {
   getResourceAccessContext,
   getResourceCounts,
   getResourceMetaForUser,
   getResourceList,
   getResourceSummary,
-} from '@/services/resources/catalog'
+} from '@/lib/resources/services/catalog'
+import { auth } from '@/server/auth/auth'
+import {
+  buildResourceCacheKey,
+  buildResourceCacheTag,
+} from '@/server/utils/cache'
+import { checkRateLimit } from '@/server/utils/rate-limit'
 
 export async function authorizeResourceListRequest(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers })

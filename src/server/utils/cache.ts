@@ -1,4 +1,4 @@
-import type { ResourceFilter } from '@/schemas/resources/resource-schemas'
+import type { ResourceFilter } from '@/lib/resources/schemas'
 
 export type ResourceCacheFilters = Pick<
   ResourceFilter,

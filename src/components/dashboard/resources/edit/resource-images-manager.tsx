@@ -3,6 +3,12 @@
 import React, { useState, useEffect } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
+    deleteResourceImage,
+    reorderResourceImages,
+    updateAdminResource,
+    uploadResourceImage,
+} from '@/lib/resources/api-client'
+import {
     Plus,
     Trash2,
     Image as ImageIcon,
@@ -40,8 +46,8 @@ import imageCompression from 'browser-image-compression'
 
 interface ResourceImage {
     id: string
-    cloudinaryPublicId: string
-    url: string
+    cloudinaryPublicId?: string
+    url: string | null
     alt: string | null
     order: number
 }
@@ -68,25 +74,11 @@ export function ResourceImagesManager({
     }, [initialImages])
 
     const uploadMutation = useMutation({
-        mutationFn: async (file: File) => {
-            const formData = new FormData()
-            formData.append('file', file)
-
-            const response = await fetch(`/api/v1/admin/resources/${resourceId}/images`, {
-                method: 'POST',
-                body: formData,
-            })
-
-            if (!response.ok) {
-                throw new Error('Falha no upload da imagem')
-            }
-
-            return response.json()
-        },
+        mutationFn: (file: File) => uploadResourceImage(resourceId, file),
         onSuccess: (newImage) => {
             setImages((prev) => [...prev, newImage])
             toast.success('Imagem enviada com sucesso')
-            queryClient.invalidateQueries({ queryKey: ['resource-detail', resourceId] })
+            queryClient.invalidateQueries({ queryKey: ['admin-resource-detail', resourceId] })
         },
         onError: (error) => {
             toast.error(error instanceof Error ? error.message : 'Erro ao enviar imagem')
@@ -95,56 +87,29 @@ export function ResourceImagesManager({
     })
 
     const deleteMutation = useMutation({
-        mutationFn: async (imageId: string) => {
-            const response = await fetch(`/api/v1/admin/resources/${resourceId}/images/${imageId}`, {
-                method: 'DELETE',
-            })
-
-            if (!response.ok) {
-                throw new Error('Falha ao excluir imagem')
-            }
-        },
+        mutationFn: (imageId: string) => deleteResourceImage(resourceId, imageId),
         onSuccess: (_, imageId) => {
             setImages((prev) => prev.filter((img) => img.id !== imageId))
             toast.success('Imagem excluída')
-            queryClient.invalidateQueries({ queryKey: ['resource-detail', resourceId] })
+            queryClient.invalidateQueries({ queryKey: ['admin-resource-detail', resourceId] })
         },
     })
 
     const setThumbMutation = useMutation({
-        mutationFn: async (url: string) => {
-            const response = await fetch(`/api/v1/admin/resources/${resourceId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ thumbUrl: url }),
-            })
-
-            if (!response.ok) {
-                throw new Error('Falha ao definir capa')
-            }
-        },
+        mutationFn: (url: string) => updateAdminResource(resourceId, { thumbUrl: url }),
         onSuccess: () => {
             toast.success('Capa do recurso atualizada')
-            queryClient.invalidateQueries({ queryKey: ['resource-detail', resourceId] })
+            queryClient.invalidateQueries({ queryKey: ['admin-resource-detail', resourceId] })
         },
     })
 
     const reorderMutation = useMutation({
-        mutationFn: async (updates: { id: string, order: number }[]) => {
-            const response = await fetch(`/api/v1/admin/resources/${resourceId}/images/reorder`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ updates }),
-            })
-
-            if (!response.ok) {
-                throw new Error('Falha ao reordenar imagens')
-            }
-        },
+        mutationFn: (updates: { id: string, order: number }[]) =>
+            reorderResourceImages(resourceId, updates),
         onError: () => {
             toast.error('Erro ao salvar nova ordem')
             // Revert changes on error would be ideal, but for now just invalidating will reset to server state
-            queryClient.invalidateQueries({ queryKey: ['resource-detail', resourceId] })
+            queryClient.invalidateQueries({ queryKey: ['admin-resource-detail', resourceId] })
         }
     })
 
@@ -300,11 +265,15 @@ export function ResourceImagesManager({
                                 return (
                                     <Card className="overflow-hidden border bg-background shadow-xl">
                                         <div className="aspect-square relative overflow-hidden bg-muted/50 flex items-center justify-center">
-                                            <img
-                                                src={img.url}
-                                                alt={img.alt || 'drag'}
-                                                className="relative z-10 max-w-full max-h-full object-contain"
-                                            />
+                                            {img.url ? (
+                                                <img
+                                                    src={img.url}
+                                                    alt={img.alt || 'drag'}
+                                                    className="relative z-10 max-w-full max-h-full object-contain"
+                                                />
+                                            ) : (
+                                                <ImageIcon className="relative z-10 h-10 w-10 text-muted-foreground/40" />
+                                            )}
                                         </div>
                                     </Card>
                                 )
@@ -369,13 +338,17 @@ function SortableImageItem({
                 >
                     <div
                         className="absolute inset-0 bg-cover bg-center blur-xl opacity-20 scale-110"
-                        style={{ backgroundImage: `url(${image.url})` }}
+                        style={image.url ? { backgroundImage: `url(${image.url})` } : undefined}
                     />
-                    <img
-                        src={image.url}
-                        alt={image.alt || 'Resource image'}
-                        className="relative z-10 max-w-full max-h-full object-contain pointer-events-none"
-                    />
+                    {image.url ? (
+                        <img
+                            src={image.url}
+                            alt={image.alt || 'Resource image'}
+                            className="relative z-10 max-w-full max-h-full object-contain pointer-events-none"
+                        />
+                    ) : (
+                        <ImageIcon className="relative z-10 h-10 w-10 text-muted-foreground/40" />
+                    )}
 
                     {/* Actions Overlay - prevent drag on buttons */}
                     <div
@@ -386,7 +359,8 @@ function SortableImageItem({
                             size="icon"
                             variant="secondary"
                             className="h-9 w-9 rounded-full"
-                            onClick={() => window.open(image.url, '_blank')}
+                            onClick={() => image.url && window.open(image.url, '_blank')}
+                            disabled={!image.url}
                         >
                             <Maximize2 className="h-4 w-4" />
                         </Button>
@@ -420,8 +394,8 @@ function SortableImageItem({
                         variant={isThumb ? "secondary" : "outline"}
                         size="sm"
                         className="w-full h-9 font-bold text-[10px] uppercase tracking-wider"
-                        onClick={() => setThumb(image.url)}
-                        disabled={isThumb || isProcessing}
+                        onClick={() => image.url && setThumb(image.url)}
+                        disabled={isThumb || isProcessing || !image.url}
                     >
                         {isThumb ? (
                             <>
@@ -437,4 +411,3 @@ function SortableImageItem({
         </div>
     );
 }
-

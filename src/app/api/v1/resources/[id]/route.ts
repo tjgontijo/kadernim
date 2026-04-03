@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getResourceDetailForUser } from '@/lib/resources/services/catalog'
 import { auth } from '@/server/auth/auth'
-import { getResourceDetailForUser } from '@/services/resources/catalog'
 
 export const dynamic = 'force-dynamic'
 

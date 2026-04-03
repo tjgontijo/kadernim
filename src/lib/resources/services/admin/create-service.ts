@@ -1,6 +1,6 @@
-import { prisma } from '@/lib/db'
+import { prisma } from '@/server/db'
 import type { Resource, EducationLevel, Subject } from '@db/client'
-import { CreateResourceInput } from '@/schemas/resources/admin-resource-schemas'
+import { CreateResourceInput } from '@/lib/resources/schemas/admin-resource-schemas'
 
 export interface CreateResourceServiceInput extends CreateResourceInput {
   adminId: string

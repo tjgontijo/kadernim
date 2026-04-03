@@ -1,4 +1,4 @@
-import { BulkUpdateResourcesInput, BulkDeleteResourcesInput } from '@/schemas/resources/admin-resource-schemas'
+import { BulkUpdateResourcesInput, BulkDeleteResourcesInput } from '@/lib/resources/schemas/admin-resource-schemas'
 import { updateResourceService } from './update-service'
 import { deleteResourceService } from './delete-service'
 

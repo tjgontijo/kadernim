@@ -1,6 +1,6 @@
-import { prisma } from '@/lib/db'
+import { prisma } from '@/server/db'
 import { isStaff } from '@/lib/auth/roles'
-import { ResourceDetailSchema } from '@/schemas/resources/resource-schemas'
+import { ResourceDetailSchema } from '@/lib/resources/schemas/resource-schemas'
 import {
   computeHasAccessForResource,
   type SubscriptionContext,

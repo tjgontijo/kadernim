@@ -18,10 +18,14 @@ import {
 } from '@/components/ui/form'
 import { Switch } from '@/components/ui/switch'
 import {
+  createAdminResource,
+  updateAdminResource,
+} from '@/lib/resources/api-client'
+import {
   UpdateResourceSchema,
   CreateResourceSchema,
   type UpdateResourceInput,
-} from '@/schemas/resources/admin-resource-schemas'
+} from '@/lib/resources/schemas'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { RichTextEditor } from '@/components/dashboard/editor/rich-text-editor'
@@ -35,7 +39,7 @@ interface ResourceDetailsFormProps {
     subject: string
     isFree: boolean
     grades: string[]
-    externalId?: number
+    externalId?: number | null
   }
   onSuccess?: (resource: any) => void
 }
@@ -55,26 +59,8 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
   })
 
   const saveMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const url = isEditing
-        ? `/api/v1/admin/resources/${resource.id}`
-        : `/api/v1/admin/resources`
-
-      const response = await fetch(url, {
-        method: isEditing ? 'PUT' : 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      })
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}))
-        throw new Error(errData.error || 'Failed to save resource')
-      }
-
-      return response.json()
-    },
+    mutationFn: async (data: any) =>
+      isEditing ? updateAdminResource(resource.id!, data) : createAdminResource(data),
     onSuccess: (data) => {
       toast(isEditing ? 'Alterações salvas' : 'Recurso criado', {
         description: isEditing
@@ -82,7 +68,7 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
           : 'O novo recurso foi adicionado ao catálogo.',
       })
       if (isEditing) {
-        queryClient.invalidateQueries({ queryKey: ['resource-detail', resource.id] })
+        queryClient.invalidateQueries({ queryKey: ['admin-resource-detail', resource.id] })
       }
       queryClient.invalidateQueries({ queryKey: ['admin-resources'] })
       onSuccess?.(data)

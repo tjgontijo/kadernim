@@ -3,6 +3,10 @@
 import React, { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
+    deleteResourceVideo,
+    uploadResourceVideo,
+} from '@/lib/resources/api-client'
+import {
     Plus,
     Trash2,
     Video,
@@ -23,8 +27,8 @@ import { DeleteConfirmDialog } from '@/components/dashboard/crud/delete-confirm-
 interface ResourceVideo {
     id: string
     title: string
-    cloudinaryPublicId: string
-    url: string
+    cloudinaryPublicId?: string
+    url: string | null
     thumbnail: string | null
     duration: number | null
 }
@@ -44,27 +48,13 @@ export function ResourceVideosManager({
     const [videoTitle, setVideoTitle] = useState('')
 
     const uploadMutation = useMutation({
-        mutationFn: async ({ file, title }: { file: File, title: string }) => {
-            const formData = new FormData()
-            formData.append('file', file)
-            formData.append('title', title)
-
-            const response = await fetch(`/api/v1/admin/resources/${resourceId}/videos`, {
-                method: 'POST',
-                body: formData,
-            })
-
-            if (!response.ok) {
-                throw new Error('Falha no upload do vídeo')
-            }
-
-            return response.json()
-        },
+        mutationFn: ({ file, title }: { file: File, title: string }) =>
+            uploadResourceVideo(resourceId, file, title),
         onSuccess: (newVideo) => {
             setVideos((prev) => [...prev, newVideo])
             toast.success('Vídeo enviado com sucesso')
             setVideoTitle('')
-            queryClient.invalidateQueries({ queryKey: ['resource-detail', resourceId] })
+            queryClient.invalidateQueries({ queryKey: ['admin-resource-detail', resourceId] })
         },
         onError: (error) => {
             toast.error(error instanceof Error ? error.message : 'Erro ao enviar vídeo')
@@ -73,19 +63,11 @@ export function ResourceVideosManager({
     })
 
     const deleteMutation = useMutation({
-        mutationFn: async (videoId: string) => {
-            const response = await fetch(`/api/v1/admin/resources/${resourceId}/videos/${videoId}`, {
-                method: 'DELETE',
-            })
-
-            if (!response.ok) {
-                throw new Error('Falha ao excluir vídeo')
-            }
-        },
+        mutationFn: (videoId: string) => deleteResourceVideo(resourceId, videoId),
         onSuccess: (_, videoId) => {
             setVideos((prev) => prev.filter((v) => v.id !== videoId))
             toast.success('Vídeo removido')
-            queryClient.invalidateQueries({ queryKey: ['resource-detail', resourceId] })
+            queryClient.invalidateQueries({ queryKey: ['admin-resource-detail', resourceId] })
         },
     })
 
@@ -214,7 +196,8 @@ export function ResourceVideosManager({
                                         variant="ghost"
                                         size="sm"
                                         className="text-muted-foreground hover:text-foreground text-xs font-bold h-8"
-                                        onClick={() => window.open(video.url, '_blank')}
+                                        onClick={() => video.url && window.open(video.url, '_blank')}
+                                        disabled={!video.url}
                                     >
                                         Visualizar
                                     </Button>

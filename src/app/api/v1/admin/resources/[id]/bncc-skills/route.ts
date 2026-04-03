@@ -1,7 +1,7 @@
 import {
   linkResourceBnccSkill,
   listResourceBnccSkills,
-} from '@/services/resources/admin'
+} from '@/lib/resources/services/admin'
 import { createAdminResourceBnccHandlers } from '../../route-support'
 
 const handlers = createAdminResourceBnccHandlers({

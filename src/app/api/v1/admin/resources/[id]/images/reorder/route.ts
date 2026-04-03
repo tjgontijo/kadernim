@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { ReorderResourceImagesSchema } from '@/lib/resources/schemas'
+import { reorderResourceImagesByUpdates } from '@/lib/resources/services/admin'
 import { auth } from '@/server/auth/auth'
 import { z } from 'zod'
-import { ReorderResourceImagesSchema } from '@/schemas/resources/admin-resource-schemas'
-import { reorderResourceImagesByUpdates } from '@/services/resources/admin'
 
 export async function PUT(
     req: NextRequest,

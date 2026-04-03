@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revokeAccessService } from '@/lib/resources/services/admin/access-service'
 import { requirePermission } from '@/server/auth/middleware'
 import { checkRateLimit } from '@/server/utils/rate-limit'
-import { revokeAccessService } from '@/services/resources/admin/access-service'
 
 /**
  * DELETE /api/v1/admin/resources/:id/access/:accessId

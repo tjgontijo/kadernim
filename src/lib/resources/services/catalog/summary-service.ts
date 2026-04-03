@@ -1,4 +1,4 @@
-import type { ResourceFilter } from '@/schemas/resources/resource-schemas'
+import type { ResourceFilter } from '@/lib/resources/schemas/resource-schemas'
 
 import type { ResourceListResult } from './list-service'
 import { getResourceList } from './list-service'
@@ -6,7 +6,7 @@ import type { ResourceCountsResult } from './count-service'
 import { getResourceCounts } from './count-service'
 import type { ResourceMetaResult, ResourceMetaUser } from './meta-service'
 import { getResourceMeta } from './meta-service'
-import type { SubscriptionContext, UserAccessContext } from '../../auth/access-service'
+import type { SubscriptionContext, UserAccessContext } from '@/services/auth/access-service'
 
 export interface ResourceSummaryParams {
   user: UserAccessContext

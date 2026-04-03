@@ -1,13 +1,13 @@
-import { Prisma as PrismaNamespace } from '@/lib/db'
-import type { Prisma } from '@/lib/db'
-import { prisma } from '@/lib/db'
-import { ResourceFilter, ResourceSchema, type Resource } from '@/schemas/resources/resource-schemas'
+import { Prisma as PrismaNamespace } from '@/server/db'
+import type { Prisma } from '@/server/db'
+import { prisma } from '@/server/db'
+import { ResourceFilter, ResourceSchema, type Resource } from '@/lib/resources/schemas/resource-schemas'
 
 import {
   buildHasAccessConditionSql,
   type SubscriptionContext,
   type UserAccessContext,
-} from '../../auth/access-service'
+} from '@/services/auth/access-service'
 
 export interface ResourceListParams {
   user: UserAccessContext

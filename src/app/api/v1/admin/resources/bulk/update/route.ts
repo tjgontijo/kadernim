@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { BulkUpdateResourcesSchema } from '@/lib/resources/schemas'
 import { requirePermission } from '@/server/auth/middleware'
 import { checkRateLimit } from '@/server/utils/rate-limit'
-import { BulkUpdateResourcesSchema } from '@/schemas/resources/admin-resource-schemas'
 
 /**
  * POST /api/v1/admin/resources/bulk/update
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     // Execute bulk update
     const { bulkUpdateResourcesService } = await import(
-      '@/services/resources/admin/bulk-service'
+      '@/lib/resources/services/admin/bulk-service'
     )
     const result = await bulkUpdateResourcesService(parsed.data, userId)
 

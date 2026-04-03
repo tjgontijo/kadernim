@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { deleteFileService, getResourceFileById } from '@/lib/resources/services/admin'
 import { requirePermission } from '@/server/auth/middleware'
 import { checkRateLimit } from '@/server/utils/rate-limit'
 import { deleteFile } from '@/server/clients/cloudinary/file-client'
-import { deleteFileService, getResourceFileById } from '@/services/resources/admin'
 
 /**
  * DELETE /api/v1/admin/resources/:id/files/:fileId

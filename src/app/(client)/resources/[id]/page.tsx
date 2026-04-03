@@ -3,13 +3,17 @@
 import { use, useCallback, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft } from 'lucide-react'
+import {
+  createResourceDownloadLink,
+  fetchResourceDetail,
+} from '@/lib/resources/api-client'
+import type { ResourceDetail } from '@/lib/resources/types'
 import { AspectRatio } from '@/components/ui/aspect-ratio'
 import { DownloadList } from '@/components/shared/download-list'
 import { BadgeEducationLevel } from '@/components/dashboard/resources/BadgeEducationLevel'
 import { BadgeSubject } from '@/components/dashboard/resources/BadgeSubject'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import type { ResourceDetail } from '@/schemas/resources/resource-schemas'
 import { ResourceImageCarousel } from '@/components/dashboard/resources/ResourceImageCarousel'
 import { LazyImage } from '@/components/shared/lazy-image'
 
@@ -26,18 +30,7 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
     error,
   } = useQuery<ResourceDetail>({
     queryKey: ['resource-detail', id],
-    queryFn: async () => {
-      const response = await fetch(`/api/v1/resources/${id}`)
-      const json = await response.json().catch(() => ({}))
-
-      if (!response.ok) {
-        throw new Error(
-          typeof json.error === 'string' ? json.error : 'Recurso não encontrado'
-        )
-      }
-
-      return json.data
-    },
+    queryFn: () => fetchResourceDetail(id),
   })
 
   const handleDownload = useCallback(
@@ -47,45 +40,9 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
       try {
         setDownloadFeedback(null)
         setDownloadingFileId(file.id)
-        const response = await fetch(`/api/v1/resources/${resource.id}/files/${file.id}/download`)
+        const data = await createResourceDownloadLink(resource.id, file.id)
 
-        if (response.status === 401) {
-          setDownloadFeedback({
-            type: 'error',
-            text: 'Sessão expirada. Faça login novamente para baixar este recurso.',
-          })
-          return
-        }
-
-        if (response.status === 403) {
-          setDownloadFeedback({
-            type: 'error',
-            text: 'Acesso negado. Você não possui permissão para este arquivo.',
-          })
-          return
-        }
-
-        if (response.status === 429) {
-          setDownloadFeedback({
-            type: 'error',
-            text: 'Muitas tentativas. Aguarde alguns instantes e tente novamente.',
-          })
-          return
-        }
-
-        if (!response.ok) {
-          setDownloadFeedback({
-            type: 'error',
-            text: 'Não foi possível gerar o link de download. Tente novamente.',
-          })
-          return
-        }
-
-        const json = (await response.json()) as {
-          data: { downloadUrl?: string }
-        }
-
-        if (!json.data?.downloadUrl) {
+        if (!data.downloadUrl) {
           setDownloadFeedback({
             type: 'error',
             text: 'Recebemos uma resposta sem URL válida.',
@@ -93,13 +50,37 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
           return
         }
 
-        window.open(json.data.downloadUrl, '_blank', 'noopener,noreferrer')
+        window.open(data.downloadUrl, '_blank', 'noopener,noreferrer')
         setDownloadFeedback({
           type: 'info',
           text: 'Download iniciado. Caso não veja o arquivo, verifique o bloqueio de pop-ups.',
         })
       } catch (err) {
-        console.error('Erro ao efetuar download:', err)
+        const message = err instanceof Error ? err.message : ''
+        if (message === 'Unauthorized') {
+          setDownloadFeedback({
+            type: 'error',
+            text: 'Sessão expirada. Faça login novamente para baixar este recurso.',
+          })
+          return
+        }
+
+        if (message === 'Forbidden') {
+          setDownloadFeedback({
+            type: 'error',
+            text: 'Acesso negado. Você não possui permissão para este arquivo.',
+          })
+          return
+        }
+
+        if (message === 'rate_limited') {
+          setDownloadFeedback({
+            type: 'error',
+            text: 'Muitas tentativas. Aguarde alguns instantes e tente novamente.',
+          })
+          return
+        }
+
         setDownloadFeedback({
           type: 'error',
           text: 'Erro inesperado ao iniciar o download.',

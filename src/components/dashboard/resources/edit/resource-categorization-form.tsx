@@ -37,9 +37,12 @@ import {
 } from '@/components/ui/form'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
+    updateAdminResource,
+} from '@/lib/resources/api-client'
+import {
     UpdateResourceSchema,
     type UpdateResourceInput,
-} from '@/schemas/resources/admin-resource-schemas'
+} from '@/lib/resources/schemas'
 import { useResourceMeta } from '@/hooks/resources/use-resources'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { cn } from '@/lib/utils/index'
@@ -100,19 +103,9 @@ export function ResourceCategorizationForm({ resource }: ResourceCategorizationF
 
     // SILENT Mutation (No toasts)
     const silentSaveMutation = useMutation({
-        mutationFn: async (data: Partial<UpdateResourceInput>) => {
-            const response = await fetch(`/api/v1/admin/resources/${resource.id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
-            })
-            if (!response.ok) {
-                throw new Error('Failed to save')
-            }
-            return response.json()
-        },
+        mutationFn: (data: Partial<UpdateResourceInput>) => updateAdminResource(resource.id, data),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['resource-detail', resource.id] })
+            queryClient.invalidateQueries({ queryKey: ['admin-resource-detail', resource.id] })
             queryClient.invalidateQueries({ queryKey: ['admin-resources'] })
         }
     })

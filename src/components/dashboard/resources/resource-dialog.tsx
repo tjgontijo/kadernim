@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { toast } from 'sonner'
-import { CreateResourceSchema, UpdateResourceSchema } from '@/schemas/resources/admin-resource-schemas'
+import { CreateResourceSchema, UpdateResourceSchema } from '@/lib/resources/schemas'
 import { useCreateAdminResource, useUpdateAdminResource } from '@/hooks/resources/use-admin-resources'
 import { useResourceMeta } from '@/hooks/resources/use-resources'
 

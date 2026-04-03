@@ -1,7 +1,18 @@
 'use client'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import type { ListResourcesFilter, ResourceListResponse, CreateResourceInput, UpdateResourceInput } from '@/schemas/resources/admin-resource-schemas'
+import {
+  createAdminResource,
+  deleteAdminResource,
+  fetchAdminResources,
+  updateAdminResource,
+} from '@/lib/resources/api-client'
+import type {
+  AdminResourceListResponse as ResourceListResponse,
+  CreateResourceInput,
+  ListResourcesFilter,
+  UpdateResourceInput,
+} from '@/lib/resources/types'
 
 interface UseAdminResourcesOptions {
   filters?: Partial<ListResourcesFilter>
@@ -24,26 +35,18 @@ export function useAdminResources(options?: UseAdminResourcesOptions) {
 
   return useQuery<ResourceListResponse>({
     queryKey: ['admin-resources', { page, limit, q, educationLevel, grade, subject, isFree, sortBy, order }],
-    queryFn: async () => {
-      const params = new URLSearchParams({
-        page: String(page),
-        limit: String(limit),
-      })
-
-      if (q) params.append('q', q)
-      if (educationLevel) params.append('educationLevel', educationLevel)
-      if (grade) params.append('grade', grade)
-      if (subject) params.append('subject', subject)
-      if (isFree !== '') params.append('isFree', String(isFree))
-      params.append('sortBy', sortBy)
-      params.append('order', order)
-
-      const response = await fetch(`/api/v1/admin/resources?${params.toString()}`)
-      if (!response.ok) {
-        throw new Error('Failed to fetch resources')
-      }
-      return response.json()
-    },
+    queryFn: () =>
+      fetchAdminResources({
+        page,
+        limit,
+        q: q || undefined,
+        educationLevel: educationLevel || undefined,
+        grade: grade || undefined,
+        subject: subject || undefined,
+        isFree: isFree === '' ? undefined : Boolean(isFree),
+        sortBy,
+        order,
+      }),
   })
 }
 
@@ -54,20 +57,7 @@ export function useCreateAdminResource() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (data: CreateResourceInput) => {
-      const response = await fetch('/api/v1/admin/resources', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to create resource')
-      }
-
-      return response.json()
-    },
+    mutationFn: (data: CreateResourceInput) => createAdminResource(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-resources'] })
     },
@@ -81,22 +71,10 @@ export function useUpdateAdminResource(resourceId: string) {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (data: UpdateResourceInput) => {
-      const response = await fetch(`/api/v1/admin/resources/${resourceId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to update resource')
-      }
-
-      return response.json()
-    },
+    mutationFn: (data: UpdateResourceInput) => updateAdminResource(resourceId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-resources'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-resource-detail', resourceId] })
     },
   })
 }
@@ -108,18 +86,7 @@ export function useDeleteAdminResource() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (resourceId: string) => {
-      const response = await fetch(`/api/v1/admin/resources/${resourceId}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to delete resource')
-      }
-
-      return response.json()
-    },
+    mutationFn: (resourceId: string) => deleteAdminResource(resourceId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-resources'] })
     },

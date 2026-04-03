@@ -1,5 +1,5 @@
-import { prisma } from '@/lib/db'
-import type { ResourceFilter } from '@/schemas/resources/resource-schemas'
+import { prisma } from '@/server/db'
+import type { ResourceFilter } from '@/lib/resources/schemas/resource-schemas'
 
 export interface ResourceMetaUser {
   role: string | null

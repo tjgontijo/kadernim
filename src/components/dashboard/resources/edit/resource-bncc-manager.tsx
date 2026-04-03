@@ -2,6 +2,10 @@
 
 import React, { useState, useEffect, useMemo } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import {
+    linkResourceBnccSkill,
+    unlinkResourceBnccSkill,
+} from "@/lib/resources/api-client"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Loader2, BookOpen, CheckCircle2 } from "lucide-react"
 import { toast } from "sonner"
@@ -78,24 +82,10 @@ export function ResourceBnccManager({
 
     // Link skill mutation
     const linkMutation = useMutation({
-        mutationFn: async (skillId: string) => {
-            const response = await fetch(
-                `/api/v1/admin/resources/${resourceId}/bncc-skills`,
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ bnccSkillId: skillId }),
-                }
-            )
-            if (!response.ok) {
-                const error = await response.json()
-                throw new Error(error.error || "Failed to link skill")
-            }
-            return response.json()
-        },
+        mutationFn: (skillId: string) => linkResourceBnccSkill(resourceId, skillId),
         onSuccess: (_, skillId) => {
             setLinkedSkillIds(prev => new Set([...prev, skillId]))
-            queryClient.invalidateQueries({ queryKey: ["resource-detail", resourceId] })
+            queryClient.invalidateQueries({ queryKey: ["admin-resource-detail", resourceId] })
         },
         onError: (error) => {
             toast.error(error instanceof Error ? error.message : "Erro ao vincular")
@@ -104,22 +94,14 @@ export function ResourceBnccManager({
 
     // Unlink skill mutation
     const unlinkMutation = useMutation({
-        mutationFn: async (skillId: string) => {
-            const response = await fetch(
-                `/api/v1/admin/resources/${resourceId}/bncc-skills/${skillId}`,
-                { method: "DELETE" }
-            )
-            if (!response.ok) {
-                throw new Error("Failed to unlink skill")
-            }
-        },
+        mutationFn: (skillId: string) => unlinkResourceBnccSkill(resourceId, skillId),
         onSuccess: (_, skillId) => {
             setLinkedSkillIds(prev => {
                 const next = new Set(prev)
                 next.delete(skillId)
                 return next
             })
-            queryClient.invalidateQueries({ queryKey: ["resource-detail", resourceId] })
+            queryClient.invalidateQueries({ queryKey: ["admin-resource-detail", resourceId] })
         },
         onError: () => {
             toast.error("Erro ao remover habilidade")

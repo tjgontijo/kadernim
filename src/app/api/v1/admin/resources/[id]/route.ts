@@ -2,7 +2,7 @@ import {
   deleteResourceService,
   getAdminResourceDetail,
   updateResourceService,
-} from '@/services/resources'
+} from '@/lib/resources/services'
 import { createAdminResourceCrudHandlers } from '../route-support'
 
 const handlers = createAdminResourceCrudHandlers({

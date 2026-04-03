@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { deleteVideo } from '@/server/clients/cloudinary/video-client'
-import {
-  UpdateResourceVideoSchema,
-} from '@/schemas/resources/admin-resource-schemas'
+import { UpdateResourceVideoSchema } from '@/lib/resources/schemas'
 import {
   deleteResourceVideo,
   getResourceVideoById,
   updateResourceVideo,
-} from '@/services/resources/admin'
+} from '@/lib/resources/services/admin'
+import { deleteVideo } from '@/server/clients/cloudinary/video-client'
 import { parseWithSchema } from '../../../route-support'
 import {
   deleteCloudinaryAsset,
