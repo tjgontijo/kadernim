@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/server/auth'
-import { CreateLessonPlanSchema } from '@/schemas/lesson-plans/lesson-plan-schemas'
+import { CreateLessonPlanSchema } from '@/lib/lesson-plans/schemas'
 import { getUserRole } from '@/services/users/get-user-role'
 
 type LessonPlanUser = {

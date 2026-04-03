@@ -1,59 +1,25 @@
 import { prisma } from '@/lib/db'
+import { getLessonPlanById, getLessonPlanByIdWithBnccDescriptions, listLessonPlansByUser } from '@/lib/lesson-plans/queries'
+import { FullLessonPlanContentSchema, type BnccSkillDetail } from '@/lib/lesson-plans/schemas'
 import { emitEvent } from '@/lib/inngest'
 import { generateLessonPlanContent } from './generate-content'
 import { incrementLessonPlanUsage } from './increment-usage'
 import { canCreateLessonPlan } from './get-usage'
-import { FullLessonPlanContentSchema, type BnccSkillDetail } from '@/schemas/lesson-plans/lesson-plan-schemas'
 
 export class LessonPlanService {
     static async listByUser(userId: string) {
-        return prisma.lessonPlan.findMany({
-            where: { userId },
-            orderBy: { createdAt: 'desc' },
-        })
+        return listLessonPlansByUser(userId)
     }
 
     static async getById(id: string, userId?: string) {
-        const where: any = { id }
-        if (userId) where.userId = userId
-
-        return prisma.lessonPlan.findUnique({
-            where,
-        })
+        return getLessonPlanById(id, userId)
     }
 
     static async getByIdWithBnccDescriptions(
         id: string,
         params: { userId: string; isAdmin: boolean }
     ) {
-        const plan = await prisma.lessonPlan.findUnique({
-            where: { id },
-        })
-
-        if (!plan) {
-            throw new Error('LESSON_PLAN_NOT_FOUND')
-        }
-
-        if (plan.userId !== params.userId && !params.isAdmin) {
-            throw new Error('LESSON_PLAN_FORBIDDEN')
-        }
-
-        const bnccSkillDescriptions = await prisma.bnccSkill.findMany({
-            where: {
-                code: {
-                    in: plan.bnccSkillCodes || [],
-                },
-            },
-            select: {
-                code: true,
-                description: true,
-            },
-        })
-
-        return {
-            ...plan,
-            bnccSkillDescriptions,
-        }
+        return getLessonPlanByIdWithBnccDescriptions(id, params)
     }
 
     static async create(userId: string, data: any) {

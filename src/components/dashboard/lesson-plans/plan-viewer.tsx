@@ -33,7 +33,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { type LessonPlanResponse } from '@/schemas/lesson-plans/lesson-plan-schemas';
+import { type LessonPlanResponse } from '@/lib/lesson-plans/schemas';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useDownloadFile } from '@/hooks/utils/use-download-file';

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
-import { type LessonPlanResponse } from '@/schemas/lesson-plans/lesson-plan-schemas';
+import { type LessonPlanResponse } from '@/lib/lesson-plans/schemas';
 import { BookOpen, Calendar, GraduationCap, Layout, Users } from 'lucide-react';
 
 interface PlanCardProps {

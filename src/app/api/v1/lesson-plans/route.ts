@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { LessonPlanService } from '@/services/lesson-plans/lesson-plan-service'
+import { LessonPlanService } from '@/lib/lesson-plans/services/lesson-plan-service'
 import {
   buildLessonPlanDownloadUrls,
   lessonPlanRouteErrorResponse,

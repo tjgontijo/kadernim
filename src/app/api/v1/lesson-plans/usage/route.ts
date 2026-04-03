@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/server/auth';
-import { getLessonPlanUsage } from '@/services/lesson-plans/get-usage';
+import { getLessonPlanUsage } from '@/lib/lesson-plans/services/get-usage';
 
 /**
  * GET /api/v1/lesson-plans/usage

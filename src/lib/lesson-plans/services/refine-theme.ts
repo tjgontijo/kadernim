@@ -1,6 +1,6 @@
 import { generateObject } from 'ai';
 import { openai } from '@ai-sdk/openai';
-import { RefinedThemesSchema } from '@/schemas/lesson-plans/lesson-plan-schemas';
+import { RefinedThemesSchema } from '@/lib/lesson-plans/schemas';
 import { getRefineSystemPrompt, buildRefineUserPrompt, type RefineThemeParams } from '@/lib/ai/prompts/theme';
 import { logLlmUsage } from '@/services/llm/llm-usage-service';
 

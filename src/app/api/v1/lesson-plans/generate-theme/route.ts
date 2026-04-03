@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/server/auth';
-import { generateTheme } from '@/services/lesson-plans/generate-theme';
+import { generateTheme } from '@/lib/lesson-plans/services/generate-theme';
 
 /**
  * POST /api/v1/lesson-plans/generate-theme

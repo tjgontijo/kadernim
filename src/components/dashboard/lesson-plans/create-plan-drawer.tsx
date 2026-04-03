@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { useDownloadFile } from '@/hooks/utils/use-download-file';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { createLessonPlan } from '@/lib/lesson-plans/api-client';
 import { QuizLayout } from '@/components/dashboard/quiz/QuizLayout';
 import { MomentContext, MomentContent, MomentReview } from './moments';
 import { QuestionGenerating } from './questions/question-generating';
@@ -74,27 +75,16 @@ export function CreatePlanDrawer({ open, onOpenChange }: CreatePlanDrawerProps) 
   // Mutação para gerar o plano final
   const generateMutation = useMutation({
     mutationFn: async () => {
-      const mainSkill = wizardState.selectedSkills.find(s => s.role === 'main');
-
-      const response = await fetch('/api/v1/lesson-plans', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          // Título: prioriza o que o usuário definiu, depois intentRaw
-          // Se nenhum, deixa o backend gerar baseado no knowledgeObject
-          title: wizardState.title || wizardState.intentRaw || undefined,
-          numberOfClasses: wizardState.numberOfClasses,
-          educationLevelSlug: wizardState.educationLevelSlug,
-          gradeSlug: wizardState.gradeSlug,
-          subjectSlug: wizardState.subjectSlug,
-          bnccSkillCodes: wizardState.selectedSkills.map(s => s.code),
-          intentRaw: wizardState.intentRaw,
-          skills: wizardState.selectedSkills,
-        }),
+      return createLessonPlan({
+        title: wizardState.title || wizardState.intentRaw || undefined,
+        numberOfClasses: wizardState.numberOfClasses!,
+        educationLevelSlug: wizardState.educationLevelSlug!,
+        gradeSlug: wizardState.gradeSlug,
+        subjectSlug: wizardState.subjectSlug,
+        bnccSkillCodes: wizardState.selectedSkills.map(s => s.code),
+        intentRaw: wizardState.intentRaw,
+        skills: wizardState.selectedSkills,
       });
-      const data = await response.json();
-      if (!data.success) throw new Error(data.error || 'Erro ao gerar plano');
-      return data.data;
     },
     onMutate: () => {
       goToMoment('generating');

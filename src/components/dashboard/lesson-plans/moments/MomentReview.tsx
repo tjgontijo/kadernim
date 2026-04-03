@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils/index';
 import { QuizStep } from '@/components/dashboard/quiz/QuizStep';
 import { QuizAction } from '@/components/dashboard/quiz/QuizAction';
+import { generateLessonPlanTheme } from '@/lib/lesson-plans/api-client';
 
 interface SkillSelection {
     code: string;
@@ -96,34 +97,21 @@ export function MomentReview({
     };
 
     const generateThemeMutation = useMutation({
-        mutationFn: async () => {
+        mutationFn: () => {
             if (!mainSkill) {
                 throw new Error('Habilidade principal não informada');
             }
-
-            const response = await fetch('/api/v1/lesson-plans/generate-theme', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    educationLevelSlug: data.educationLevelSlug,
-                    gradeSlug: data.gradeSlug,
-                    subjectSlug: data.subjectSlug,
-                    mainSkillCode: mainSkill.code,
-                    mainSkillDescription: mainSkill.description,
-                    intentRaw: data.intentRaw,
-                }),
+            return generateLessonPlanTheme({
+                educationLevelSlug: data.educationLevelSlug,
+                gradeSlug: data.gradeSlug,
+                subjectSlug: data.subjectSlug,
+                mainSkillCode: mainSkill.code,
+                mainSkillDescription: mainSkill.description,
+                intentRaw: data.intentRaw,
             });
-
-            const result = await response.json();
-
-            if (result.success && result.data?.theme) {
-                return result.data.theme as string;
-            } else {
-                throw new Error(result.error || 'Erro ao gerar tema');
-            }
         },
-        onSuccess: (theme) => {
-            onChange({ title: theme });
+        onSuccess: (result) => {
+            onChange({ title: result.theme });
         },
         onSettled: () => {
             setGeneratingTheme(false);

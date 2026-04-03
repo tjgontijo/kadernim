@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { RefineThemeRequestSchema } from '@/schemas/lesson-plans/lesson-plan-schemas';
+import { RefineThemeRequestSchema } from '@/lib/lesson-plans/schemas';
 import { auth } from '@/server/auth';
-import { refineTheme } from '@/services/lesson-plans/refine-theme';
+import { refineTheme } from '@/lib/lesson-plans/services/refine-theme';
 
 /**
  * POST /api/v1/lesson-plans/refine-theme

@@ -10,6 +10,7 @@ import { QuizStep } from '@/components/dashboard/quiz/QuizStep';
 import { QuizChoice, type QuizOption } from '@/components/dashboard/quiz/QuizChoice';
 import { useBnccThemes } from '@/hooks/taxonomy/use-taxonomy';
 import { useMutation } from '@tanstack/react-query';
+import { refineLessonPlanTheme } from '@/lib/lesson-plans/api-client';
 
 interface RefinedTheme {
   version: 'short' | 'medium' | 'long';
@@ -49,24 +50,16 @@ export function QuestionTheme({
 
   // Mutação para refinar o tema com IA
   const refineMutation = useMutation({
-    mutationFn: async (currentRawTheme: string) => {
-      const response = await fetch('/api/v1/lesson-plans/refine-theme', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          rawTheme: currentRawTheme,
-          educationLevelSlug,
-          gradeSlug,
-          subjectSlug,
-          seed: regenerateCount,
-        }),
-      });
-      const data = await response.json();
-      if (!data.success) throw new Error(data.error || 'Erro ao refinar tema');
-      return data.data.refined as RefinedTheme[];
-    },
+    mutationFn: (currentRawTheme: string) =>
+      refineLessonPlanTheme({
+        rawTheme: currentRawTheme,
+        educationLevelSlug,
+        gradeSlug,
+        subjectSlug,
+        seed: regenerateCount,
+      }),
     onSuccess: (data) => {
-      setRefinedThemes(data);
+      setRefinedThemes(data.refined);
       setStep('selection');
     },
     onError: (error) => {

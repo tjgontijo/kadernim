@@ -32,7 +32,7 @@ import {
   DrawerDescription,
 } from "@/components/ui/drawer";
 import { useState, useMemo } from 'react';
-import { type LessonPlanResponse } from '@/schemas/lesson-plans/lesson-plan-schemas';
+import { type LessonPlanResponse } from '@/lib/lesson-plans/schemas';
 import { PageScaffoldSkeleton } from '@/components/dashboard/shared/skeletons/page-scaffold-skeleton';
 import { PlanCardSkeleton } from '@/components/dashboard/shared/skeletons/plan-card-skeleton';
 

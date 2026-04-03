@@ -1,4 +1,4 @@
-import type { BnccSkillDetail } from '@/schemas/lesson-plans/lesson-plan-schemas';
+import type { BnccSkillDetail } from '@/lib/lesson-plans/schemas';
 
 /**
  * System Prompt MVP - Ensino Fundamental (EF)

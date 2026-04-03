@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { LessonPlanService } from '@/lib/lesson-plans/services/lesson-plan-service'
+import { type LessonPlanResponse } from '@/lib/lesson-plans/schemas'
 import { generatePDFBuffer } from '@/lib/export/pdf-template'
 import { generateWordDocument } from '@/lib/export/word-template'
-import { type LessonPlanResponse } from '@/schemas/lesson-plans/lesson-plan-schemas'
-import { LessonPlanService } from '@/services/lesson-plans/lesson-plan-service'
 import {
   invalidLessonPlanFormat,
   lessonPlanRouteErrorResponse,
