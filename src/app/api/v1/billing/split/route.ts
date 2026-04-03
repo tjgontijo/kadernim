@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { SplitUpdateSchema } from '@/lib/billing/schemas'
+import { SplitService } from '@/lib/billing/services/split.service'
+import { billingLog } from '@/lib/billing/services/logger'
 import { auth } from '@/server/auth/auth'
-import { SplitService } from '@/services/billing/split.service'
-import { SplitUpdateSchema } from '@/schemas/billing/split-schemas'
-import { billingLog } from '@/services/billing/logger'
 
 /**
  * GET: Retrieves the current active split configuration

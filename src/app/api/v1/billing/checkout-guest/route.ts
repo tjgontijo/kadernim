@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { GuestCheckoutRequestSchema } from '@/schemas/billing/payment-schemas'
-import { CheckoutCustomerService } from '@/services/billing/checkout-customer.service'
-import { CheckoutService } from '@/services/billing/checkout.service'
-import { billingLog } from '@/services/billing/logger'
+import { GuestCheckoutRequestSchema } from '@/lib/billing/schemas'
+import { CheckoutCustomerService } from '@/lib/billing/services/checkout-customer.service'
+import { CheckoutService } from '@/lib/billing/services/checkout.service'
+import { billingLog } from '@/lib/billing/services/logger'
 
 function getRequestIp(request: NextRequest) {
   return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()

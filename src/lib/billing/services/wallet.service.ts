@@ -1,8 +1,5 @@
-import { getConfig, setConfig } from '@/services/config/system-config'
 import { normalizeWalletId } from '@/lib/billing/split-payload'
 import { billingLog } from './logger'
-
-const MAIN_WALLET_CONFIG_KEY = 'billing.asaas.mainWalletId'
 
 export interface BillingMainWalletUpdate {
   mainWalletId: string
@@ -10,7 +7,7 @@ export interface BillingMainWalletUpdate {
 
 export class BillingWalletService {
   static async getMainWalletId() {
-    const walletId = await getConfig<string | null>(MAIN_WALLET_CONFIG_KEY, null)
+    const walletId = process.env.WALLET_ASAAS_ID ?? null
     return normalizeWalletId(walletId)
   }
 
@@ -27,12 +24,10 @@ export class BillingWalletService {
       throw new Error('Wallet principal inválida.')
     }
 
-    await setConfig(MAIN_WALLET_CONFIG_KEY, mainWalletId, 'string')
-
-    billingLog('info', 'Billing main wallet updated', {
+    billingLog('warn', 'Attempt to update Asaas wallet via API while env-managed', {
       mainWalletId,
     })
 
-    return { mainWalletId }
+    throw new Error('A carteira principal do Asaas agora é gerenciada via variável de ambiente (.env).')
   }
 }

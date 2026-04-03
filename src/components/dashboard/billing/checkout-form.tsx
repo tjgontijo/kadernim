@@ -25,6 +25,7 @@ import {
   type CheckoutPlanCatalog,
   type CheckoutPlanId,
 } from '@/lib/billing/checkout-offer'
+import { createBillingCheckout } from '@/lib/billing/api-client'
 import { applyCpfCnpjMask, isValidCpfCnpj, normalizeCpfCnpj } from '@/lib/utils/cpf-cnpj'
 import { PixQrCode } from './checkout-pix-qrcode'
 
@@ -319,27 +320,26 @@ export function GuestCheckoutForm({
         }
       }
 
-      const endpoint = isLoggedIn ? '/api/v1/billing/checkout' : '/api/v1/billing/checkout-guest'
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+      const data = await createBillingCheckout({
+        isLoggedIn,
+        payload: body as never,
       })
-
-      const data = await response.json()
-      if (!response.ok) {
-        throw new Error(data.error || 'Erro ao processar pagamento')
-      }
-
       return { data, paymentMethod: selectedPaymentMethod }
     },
     onSuccess: ({ data, paymentMethod }) => {
       if (paymentMethod === 'PIX' || paymentMethod === 'PIX_AUTOMATIC') {
+        const statusId = data.authorizationId || data.invoiceId
+
+        if (!data.qrCodePayload || !data.qrCodeImage || !data.expirationDate || !statusId) {
+          toast.error('Resposta de checkout PIX incompleta.')
+          return
+        }
+
         setPixData({
           payload: data.qrCodePayload,
           image: data.qrCodeImage,
           expirationDate: data.expirationDate,
-          statusId: data.authorizationId || data.invoiceId,
+          statusId,
           amountLabel: data.amountLabel ?? selectedPricing.priceLabel,
           statusToken: data.statusToken,
           isAutomatic: paymentMethod === 'PIX_AUTOMATIC',

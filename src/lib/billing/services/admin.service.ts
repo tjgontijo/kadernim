@@ -1,7 +1,6 @@
 import { prisma } from '@/lib/db'
 import { InvoiceStatus } from '@db'
-import type { SplitUpdate } from '@/schemas/billing/split-schemas'
-import { BillingAsaasConfigService } from './asaas-config.service'
+import type { SplitUpdate } from '@/lib/billing/schemas'
 import { SplitService } from './split.service'
 import { BillingWalletService } from './wallet.service'
 
@@ -63,24 +62,6 @@ export class BillingAdminService {
     })
 
     return { logs }
-  }
-
-  static async getIntegrationPageData() {
-    return {
-      asaasConfig: await BillingAsaasConfigService.getAdminConfig(),
-    }
-  }
-
-  static async getWalletPageData() {
-    const [billingWallet, splitConfig] = await Promise.all([
-      BillingWalletService.getConfig(),
-      SplitService.getConfig(),
-    ])
-
-    return {
-      billingWallet,
-      hasActiveSplit: !!splitConfig,
-    }
   }
 
   static async getSplitPageData() {

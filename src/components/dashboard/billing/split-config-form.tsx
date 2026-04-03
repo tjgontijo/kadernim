@@ -5,7 +5,8 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { SplitType } from '@db'
 import { toast } from 'sonner'
-import { SplitUpdate, SplitUpdateSchema } from '@/schemas/billing/split-schemas'
+import { updateBillingSplitConfig } from '@/lib/billing/api-client'
+import { SplitUpdate, SplitUpdateSchema } from '@/lib/billing/schemas'
 import { applyCnpjMask } from '@/lib/utils/cpf-cnpj'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -56,19 +57,7 @@ export function SplitConfigForm({ initialData }: SplitConfigFormProps) {
     const kadernimValue = simulationBase - partnerValue
 
     const saveMutation = useMutation({
-        mutationFn: async (values: SplitUpdate) => {
-            const response = await fetch('/api/v1/billing/split', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(values),
-            })
-
-            const payload = await response.json().catch(() => null)
-
-            if (!response.ok) {
-                throw new Error(payload?.error || 'Falha ao atualizar configuração')
-            }
-        },
+        mutationFn: (values: SplitUpdate) => updateBillingSplitConfig(values),
         onSuccess: () => {
             toast.success('Configuração de split atualizada com sucesso!')
         },

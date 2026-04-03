@@ -8,9 +8,12 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { SplitConfigForm } from '@/components/dashboard/billing/split-config-form'
 import { BillingTabNav, type BillingTab } from '@/components/dashboard/billing/billing-tab-nav'
-import { IntegrationConfigForm } from '@/components/dashboard/billing/integration-config-form'
+import {
+    getBillingAuditData,
+    getBillingOverviewData,
+    getBillingSplitData,
+} from '@/lib/billing/queries'
 import { auth } from '@/server/auth/auth'
-import { BillingAdminService } from '@/services/billing/admin.service'
 
 export const metadata: Metadata = {
     title: 'Faturamento | Admin Kadernim',
@@ -19,7 +22,7 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic'
 
-const VALID_TABS: BillingTab[] = ['overview', 'integration', 'split', 'audit']
+const VALID_TABS: BillingTab[] = ['overview', 'split', 'audit']
 
 export default async function AdminBillingPage({
     searchParams,
@@ -47,7 +50,6 @@ export default async function AdminBillingPage({
 
             <div className="pt-2">
                 {tab === 'overview' && <OverviewTab />}
-                {tab === 'integration' && <IntegrationTab />}
                 {tab === 'split' && <SplitTab />}
                 {tab === 'audit' && <AuditTab />}
             </div>
@@ -59,13 +61,13 @@ export default async function AdminBillingPage({
 
 async function OverviewTab() {
     const {
-        totalSubscribers,
-        grossRevenueThisMonth,
-        paidInvoicesThisMonth,
-        pendingInvoicesCount,
-        overdueInvoicesCount,
-        recentInvoices,
-    } = await BillingAdminService.getOverviewData()
+      totalSubscribers,
+      grossRevenueThisMonth,
+      paidInvoicesThisMonth,
+      pendingInvoicesCount,
+      overdueInvoicesCount,
+      recentInvoices,
+    } = await getBillingOverviewData()
 
     const brl = (value: number) =>
         new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
@@ -159,28 +161,10 @@ async function OverviewTab() {
     )
 }
 
-// ─── Tab: Integration ─────────────────────────────────────────────────────────
-
-async function IntegrationTab() {
-    const [{ asaasConfig }, { billingWallet }] = await Promise.all([
-        BillingAdminService.getIntegrationPageData(),
-        BillingAdminService.getWalletPageData(),
-    ])
-
-    return (
-        <div className="max-w-lg">
-            <IntegrationConfigForm
-                asaasConfig={asaasConfig}
-                mainWalletId={billingWallet.mainWalletId}
-            />
-        </div>
-    )
-}
-
 // ─── Tab: Split ───────────────────────────────────────────────────────────────
 
 async function SplitTab() {
-    const { initialSplitConfig, hasMainWallet } = await BillingAdminService.getSplitPageData()
+    const { initialSplitConfig, hasMainWallet } = await getBillingSplitData()
 
     return (
         <div className="space-y-4 max-w-2xl">
@@ -194,7 +178,7 @@ async function SplitTab() {
             {!hasMainWallet && (
                 <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-600 dark:text-amber-400">
                     <AlertTriangle className="h-4 w-4 shrink-0" />
-                    Configure a carteira principal (aba Integração) antes de salvar o split.
+                    Defina `WALLET_ASAAS_ID` no ambiente antes de salvar o split.
                 </div>
             )}
 
@@ -206,7 +190,7 @@ async function SplitTab() {
 // ─── Tab: Audit ───────────────────────────────────────────────────────────────
 
 async function AuditTab() {
-    const { logs } = await BillingAdminService.getAuditPageData()
+    const { logs } = await getBillingAuditData()
 
     return (
         <div className="space-y-4">

@@ -6,6 +6,7 @@ import { CheckCircle2, Copy } from 'lucide-react'
 import Image from 'next/image'
 import { InvoiceStatus } from '@db'
 import { toast } from 'sonner'
+import { fetchBillingPixStatus } from '@/lib/billing/api-client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 
@@ -64,24 +65,16 @@ export function PixQrCode({
   const { data: paymentStatus } = useQuery<string | null>({
     queryKey: ['billing-pix-status', statusId, isAutomatic, statusToken],
     queryFn: async () => {
-      const url = new URL(
-        isAutomatic
-          ? `/api/v1/billing/pix-automatic/${statusId}/status`
-          : `/api/v1/billing/checkout/${statusId}/status`,
-        window.location.origin,
-      )
-
-      if (statusToken) {
-        url.searchParams.set('token', statusToken)
-      }
-
-      const response = await fetch(url.toString())
-      if (!response.ok) {
+      try {
+        const data = await fetchBillingPixStatus({
+          statusId,
+          isAutomatic,
+          statusToken,
+        })
+        return data.status ?? null
+      } catch {
         return null
       }
-
-      const data = await response.json()
-      return data.status ?? null
     },
     refetchInterval: (query) => {
       const status = query.state.data

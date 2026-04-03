@@ -1,8 +1,8 @@
 import { Metadata } from 'next'
 import { headers } from 'next/headers'
+import { getBillingCheckoutCatalog } from '@/lib/billing/queries'
 import { auth } from '@/server/auth/auth'
 import { GuestCheckoutForm } from '@/components/dashboard/billing/checkout-form'
-import { BillingCatalogService } from '@/services/billing/catalog.service'
 import { BookOpen, Lock } from 'lucide-react'
 
 export const metadata: Metadata = {
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default async function CheckoutPage() {
   let prefilledUser: { id: string; name: string; email: string } | null = null
-  const catalog = await BillingCatalogService.getCheckoutCatalog()
+  const catalog = await getBillingCheckoutCatalog()
 
   try {
     const session = await auth.api.getSession({ headers: await headers() })

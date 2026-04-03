@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { CheckoutLookupQuerySchema } from '@/schemas/billing/payment-schemas'
-import { CheckoutCustomerService } from '@/services/billing/checkout-customer.service'
+import { CheckoutLookupQuerySchema } from '@/lib/billing/schemas'
+import { CheckoutCustomerService } from '@/lib/billing/services/checkout-customer.service'
 
 export async function GET(request: NextRequest) {
   const parsed = CheckoutLookupQuerySchema.safeParse({

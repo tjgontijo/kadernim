@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { WebhookHandler } from '@/services/billing/webhook.handler'
+import { WebhookHandler } from '@/lib/billing/services/webhook.handler'
 
 /**
  * Public Asaas Webhook Endpoint

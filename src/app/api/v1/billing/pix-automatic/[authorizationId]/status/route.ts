@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { CheckoutStatusTokenService } from '@/lib/billing/services/checkout-status-token.service'
+import { PixAutomaticService } from '@/lib/billing/services/pix-automatic.service'
 import { auth } from '@/server/auth/auth'
-import { CheckoutStatusTokenService } from '@/services/billing/checkout-status-token.service'
-import { PixAutomaticService } from '@/services/billing/pix-automatic.service'
 
 export async function GET(
   request: NextRequest,

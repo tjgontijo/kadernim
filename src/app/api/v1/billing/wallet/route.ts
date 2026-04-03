@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { BillingMainWalletUpdateSchema } from '@/lib/billing/schemas'
+import { BillingWalletService } from '@/lib/billing/services/wallet.service'
+import { billingLog } from '@/lib/billing/services/logger'
 import { auth } from '@/server/auth/auth'
-import { BillingMainWalletUpdateSchema } from '@/schemas/billing/wallet-schemas'
-import { BillingWalletService } from '@/services/billing/wallet.service'
-import { billingLog } from '@/services/billing/logger'
 
 async function requireAdmin(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers })

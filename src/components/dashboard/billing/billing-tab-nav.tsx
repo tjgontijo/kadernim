@@ -2,12 +2,11 @@
 
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { BarChart3, KeyRound, GitFork, History } from 'lucide-react'
+import { BarChart3, GitFork, History } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const TABS = [
   { id: 'overview', label: 'Visão Geral', icon: BarChart3 },
-  { id: 'integration', label: 'Integração', icon: KeyRound },
   { id: 'split', label: 'Split de Pagamento', icon: GitFork },
   { id: 'audit', label: 'Auditoria', icon: History },
 ] as const

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PaymentService } from '@/services/billing/payment.service'
-import { CheckoutStatusTokenService } from '@/services/billing/checkout-status-token.service'
+import { CheckoutStatusTokenService } from '@/lib/billing/services/checkout-status-token.service'
+import { PaymentService } from '@/lib/billing/services/payment.service'
 import { auth } from '@/server/auth/auth'
 
 export async function GET(

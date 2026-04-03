@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { BillingAsaasSettingsUpdateSchema } from '@/lib/billing/schemas'
+import { BillingAsaasConfigService } from '@/lib/billing/services/asaas-config.service'
+import { billingLog } from '@/lib/billing/services/logger'
 import { auth } from '@/server/auth/auth'
-import { BillingAsaasSettingsUpdateSchema } from '@/schemas/billing/asaas-settings-schemas'
-import { BillingAsaasConfigService } from '@/services/billing/asaas-config.service'
-import { billingLog } from '@/services/billing/logger'
 
 async function requireAdmin(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers })

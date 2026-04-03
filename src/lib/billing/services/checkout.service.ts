@@ -1,5 +1,5 @@
 import { PaymentMethod } from '@db'
-import { CheckoutRequest } from '@/schemas/billing/payment-schemas'
+import { CheckoutRequest } from '@/lib/billing/schemas'
 import { CheckoutStatusTokenService } from './checkout-status-token.service'
 import { PaymentService } from './payment.service'
 import { PixAutomaticService } from './pix-automatic.service'
