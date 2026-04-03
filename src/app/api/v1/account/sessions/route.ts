@@ -1,17 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from '@/services/auth/session-service'
-import { RevokeSessionsSchema } from '@/schemas/account/account-schemas'
-import {
-  listAccountSessions,
-  revokeAccountSessions,
-} from '@/services/account/account-service'
+import { listAccountSessions } from '@/lib/account/queries'
+import { RevokeSessionsSchema } from '@/lib/account/schemas'
+import { revokeAccountSessions } from '@/lib/account/services'
+import { logger } from '@/server/logger'
 
 export const dynamic = 'force-dynamic'
 
-/**
- * GET /api/v1/account/sessions
- * Lista todas as sessões ativas do usuário
- */
 export async function GET() {
   try {
     const session = await getServerSession()
@@ -27,7 +22,10 @@ export async function GET() {
 
     return NextResponse.json({ sessions: sessionsWithCurrent })
   } catch (error) {
-    console.error('[GET /api/v1/account/sessions]', error)
+    logger.error(
+      { route: '/api/v1/account/sessions', error: error instanceof Error ? error.message : String(error) },
+      'Failed to list account sessions'
+    )
     return NextResponse.json(
       { error: 'Erro ao buscar sessões' },
       { status: 500 }
@@ -35,10 +33,6 @@ export async function GET() {
   }
 }
 
-/**
- * DELETE /api/v1/account/sessions
- * Revoga todas as outras sessões (mantém a atual)
- */
 export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession()
@@ -63,14 +57,24 @@ export async function DELETE(request: NextRequest) {
       parsed.data.revokeAll
     )
 
+    if (!result.success) {
+      return NextResponse.json(
+        { error: 'Erro ao revogar sessões' },
+        { status: 500 }
+      )
+    }
+
     return NextResponse.json({
       message: parsed.data.revokeAll
         ? 'Todas as sessões foram encerradas'
         : 'Outras sessões encerradas',
-      count: result.count,
+      count: result.data.count,
     })
   } catch (error) {
-    console.error('[DELETE /api/v1/account/sessions]', error)
+    logger.error(
+      { route: '/api/v1/account/sessions', error: error instanceof Error ? error.message : String(error) },
+      'Failed to revoke account sessions'
+    )
     return NextResponse.json(
       { error: 'Erro ao revogar sessões' },
       { status: 500 }

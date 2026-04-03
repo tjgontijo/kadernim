@@ -1,60 +1,52 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from '@/services/auth/session-service'
-import { uploadImage } from '@/server/clients/cloudinary/image-client'
-import { updateAccountAvatar } from '@/services/account/account-service'
+import { UploadAccountAvatarSchema } from '@/lib/account/schemas'
+import { updateAccountAvatar } from '@/lib/account/services'
+import { logger } from '@/server/logger'
 
 export const dynamic = 'force-dynamic'
 
-/**
- * POST /api/v1/account/avatar
- * Upload a new avatar for the current user
- */
 export async function POST(request: NextRequest) {
-    try {
-        const session = await getServerSession()
+  try {
+    const session = await getServerSession()
 
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-        }
-
-        const formData = await request.formData()
-        const file = formData.get('file') as File | null
-
-        if (!file) {
-            return NextResponse.json({ error: 'No file provided' }, { status: 400 })
-        }
-
-        // Validate file type
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg']
-        if (!allowedTypes.includes(file.type)) {
-            return NextResponse.json({ error: 'Apenas JPG e PNG são permitidos' }, { status: 400 })
-        }
-
-        // Validate file size (max 2MB)
-        if (file.size > 2 * 1024 * 1024) {
-            return NextResponse.json({ error: 'A imagem deve ter no máximo 2MB' }, { status: 400 })
-        }
-
-        // Upload to Cloudinary using existing helper
-        const uploadResult = await uploadImage(
-            file,
-            'avatar',
-            `user-avatar-${session.user.id}`,
-            'User Avatar'
-        )
-
-        // Update user with new avatar URL
-        const image = await updateAccountAvatar(session.user.id, uploadResult.url)
-
-        return NextResponse.json({
-            message: 'Avatar atualizado com sucesso',
-            image,
-        })
-    } catch (error) {
-        console.error('[POST /api/v1/account/avatar]', error)
-        return NextResponse.json(
-            { error: 'Erro ao atualizar avatar' },
-            { status: 500 }
-        )
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    const formData = await request.formData()
+    const parsed = UploadAccountAvatarSchema.safeParse({
+      file: formData.get('file'),
+    })
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message ?? 'Dados inválidos' },
+        { status: 400 }
+      )
+    }
+
+    const result = await updateAccountAvatar(session.user.id, parsed.data)
+
+    if (!result.success) {
+      const status = result.error === 'User not found' ? 404 : 500
+      return NextResponse.json(
+        { error: result.error === 'User not found' ? result.error : 'Erro ao atualizar avatar' },
+        { status }
+      )
+    }
+    return NextResponse.json({
+      message: 'Avatar atualizado com sucesso',
+      image: result.data.image,
+    })
+  } catch (error) {
+    logger.error(
+      { route: '/api/v1/account/avatar', error: error instanceof Error ? error.message : String(error) },
+      'Failed to update account avatar'
+    )
+    return NextResponse.json(
+      { error: 'Erro ao atualizar avatar' },
+      { status: 500 }
+    )
+  }
 }
