@@ -93,11 +93,11 @@ export async function listResourcesService(
     include: {
       educationLevel: true,
       subject: true,
-      files: {
-        select: { id: true },
-      },
-      accessEntries: {
-        select: { id: true },
+      _count: {
+        select: {
+          files: true,
+          accessEntries: true,
+        },
       },
       images: {
         where: { order: 0 },
@@ -128,8 +128,8 @@ export async function listResourcesService(
     externalId: resource.externalId,
     isFree: resource.isFree,
     thumbUrl: buildThumbUrl(resource.images[0]),
-    fileCount: resource.files.length,
-    accessCount: resource.accessEntries.length,
+    fileCount: resource._count.files,
+    accessCount: resource._count.accessEntries,
     grades: resource.grades.map(rg => rg.grade.name),
     createdAt: resource.createdAt,
     updatedAt: resource.updatedAt,

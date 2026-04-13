@@ -21,7 +21,7 @@ export interface Subject {
   id: string
   name: string
   slug: string
-  isBncc?: boolean
+
   _count?: {
     resources: number
   }

@@ -6,7 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { Clock, Edit3 } from 'lucide-react'
 import { authClient } from '@/lib/auth/auth-client'
 import { Spinner } from '@/components/shared/spinner'
-import { InstallPWA } from '@/components/pwa/InstallPWA'
+
 import { toast } from 'sonner'
 
 interface VerifyState {
@@ -199,7 +199,7 @@ function OTPSentContent() {
             Informar outro email
           </button>
         </div>
-        <InstallPWA />
+
       </div>
     </div>
   )

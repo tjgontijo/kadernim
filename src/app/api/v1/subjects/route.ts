@@ -9,12 +9,11 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const educationLevelSlug = searchParams.get('educationLevelSlug') || undefined;
     const gradeSlug = searchParams.get('gradeSlug') || undefined;
-    const bnccOnly = searchParams.get('bnccOnly') === 'true';
+
 
     const subjects = await TaxonomyService.listSubjects({
       educationLevelSlug,
       gradeSlug,
-      bnccOnly
     });
 
     return NextResponse.json({

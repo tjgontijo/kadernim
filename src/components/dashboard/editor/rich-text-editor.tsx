@@ -24,16 +24,13 @@ import {
     DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils/index"
-import type { EventVariable } from "@/lib/events/catalog"
-
 interface RichTextEditorProps {
     value: string
     onChange: (value: string) => void
     placeholder?: string
-    availableVariables?: EventVariable[]
 }
 
-export function RichTextEditor({ value, onChange, availableVariables = [] }: RichTextEditorProps) {
+export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
     const extensions = React.useMemo(() => [
         StarterKit.configure({
             codeBlock: {
@@ -80,9 +77,7 @@ export function RichTextEditor({ value, onChange, availableVariables = [] }: Ric
         }
     }
 
-    const insertVariable = (variableKey: string) => {
-        editor.chain().focus().insertContent(`{{${variableKey}}}`).run()
-    }
+
 
     return (
         <div className="flex flex-col w-full border rounded-xl bg-background overflow-hidden focus-within:ring-2 focus-within:ring-primary/20 transition-all">
@@ -146,46 +141,7 @@ export function RichTextEditor({ value, onChange, availableVariables = [] }: Ric
 
                 <Separator orientation="vertical" className="h-5 mx-1" />
 
-                {/* Botão de Variáveis */}
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className={cn(
-                                "h-7 px-2 gap-1",
-                                availableVariables.length === 0 && "opacity-50 cursor-not-allowed"
-                            )}
-                            disabled={availableVariables.length === 0}
-                            title={availableVariables.length === 0 ? "Selecione um evento para ver as variáveis" : "Inserir variável"}
-                        >
-                            <Variable className="h-3.5 w-3.5" />
-                            <span className="text-[10px]">Variáveis</span>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    {availableVariables.length > 0 && (
-                        <DropdownMenuContent align="start" className="w-64 max-h-[400px] overflow-y-auto">
-                            <DropdownMenuLabel className="text-xs">Inserir Variável</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            {availableVariables.map((variable) => (
-                                <DropdownMenuItem
-                                    key={variable.key}
-                                    onClick={() => insertVariable(variable.key)}
-                                    className="flex flex-col items-start gap-1 py-2"
-                                >
-                                    <code className="text-xs font-mono text-primary">
-                                        {`{{${variable.key}}}`}
-                                    </code>
-                                    <span className="text-[10px] text-muted-foreground">
-                                        {variable.label}
-                                        {variable.example && <span className="text-primary"> · Ex: {variable.example}</span>}
-                                    </span>
-                                </DropdownMenuItem>
-                            ))}
-                        </DropdownMenuContent>
-                    )}
-                </DropdownMenu>
+
 
                 <Separator orientation="vertical" className="h-5 mx-1" />
 

@@ -14,8 +14,6 @@ export function MobileNav() {
     const isAdmin = session?.data?.user?.role === UserRole.admin;
 
     const navItems = [
-        { label: 'Planos', icon: FileText, href: '/lesson-plans' },
-        { label: 'Pedidos', icon: Sparkles, href: '/community' },
         { label: 'Recursos', icon: LayoutGrid, href: '/resources' },
         ...(isAdmin ? [{ label: 'Admin', icon: ShieldCheck, href: '/admin' }] : []),
         { label: 'Conta', icon: User, href: '/account' }

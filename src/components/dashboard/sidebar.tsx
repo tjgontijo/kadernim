@@ -112,40 +112,19 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
   // Dashboards Section
   const dashboardItems: NavItem[] = [
     { title: 'Geral', href: '/admin', icon: 'LayoutDashboard' },
-    { title: 'Analytics Push', href: '/admin/campaigns/analytics', icon: 'BarChart3', permission: { action: 'manage', subject: 'all' } },
-    { title: 'Analytics Automações', href: '/admin/automations/analytics', icon: 'Activity', permission: { action: 'manage', subject: 'all' } },
-    { title: 'Monitoramento IA', href: '/admin/llm-usage', icon: 'Cpu', permission: { action: 'manage', subject: 'all' } },
   ]
 
   // Gestão de Dados Section
   const dataItems: NavItem[] = [
     { title: 'Recursos', href: '/admin/resources', icon: 'BookOpen', permission: { action: 'read', subject: 'Resource' } },
-    { title: 'Pedidos', href: '/admin/community-requests', icon: 'Sparkles', permission: { action: 'read', subject: 'Resource' } },
     { title: 'Disciplinas', href: '/admin/subjects', icon: 'Hash', permission: { action: 'read', subject: 'Subject' } },
     { title: 'Usuários', href: '/admin/users', icon: 'Users', permission: { action: 'read', subject: 'User' } },
   ]
 
-  // Comunicação Section
-  const communicationItems: NavItem[] = [
-    { title: 'Automações', href: '/admin/automations', icon: 'Zap', permission: { action: 'manage', subject: 'all' } },
-    { title: 'Campanhas', href: '/admin/campaigns', icon: 'Send', permission: { action: 'manage', subject: 'all' } },
-    {
-      title: 'Templates',
-      href: '/admin/templates',
-      icon: 'FileText',
-      permission: { action: 'manage', subject: 'all' },
-      subItems: [
-        { title: 'Email', href: '/admin/templates/email', icon: Mail },
-        { title: 'Push', href: '/admin/templates/push', icon: Bell },
-        { title: 'WhatsApp', href: '/admin/templates/whatsapp', icon: MessageCircle },
-      ]
-    },
-  ]
+
 
   // Config Section
-  const configItems: NavItem[] = [
-    { title: 'Configurações', href: '/admin/settings', icon: 'Settings' },
-  ]
+
 
   // Faturamento Section
   const billingItems: NavItem[] = [
@@ -251,29 +230,9 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Comunicação */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Comunicação</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {communicationItems
-                .filter((item) => !item.permission || ability.can(item.permission.action, item.permission.subject))
-                .map(renderMenuItem)}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
 
-        {/* Configurações */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Sistema</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {configItems
-                .filter((item) => !item.permission || ability.can(item.permission.action, item.permission.subject))
-                .map(renderMenuItem)}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+
+
 
         {/* Faturamento */}
         <SidebarGroup>

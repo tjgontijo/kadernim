@@ -44,12 +44,9 @@ export class TaxonomyService {
   static async listSubjects(params: {
     educationLevelSlug?: string
     gradeSlug?: string
-    bnccOnly?: boolean
   }) {
     const subjectsWhere: any = {}
-    if (params.bnccOnly) {
-      subjectsWhere.isBncc = true
-    }
+
 
     if (params.gradeSlug) {
       const gradeSubjects = await prisma.gradeSubject.findMany({
@@ -59,7 +56,7 @@ export class TaxonomyService {
         },
         include: {
           subject: {
-            select: { slug: true, name: true, isBncc: true },
+            select: { slug: true, name: true },
           },
         },
         orderBy: {
@@ -79,7 +76,7 @@ export class TaxonomyService {
         },
         include: {
           subject: {
-            select: { slug: true, name: true, isBncc: true },
+            select: { slug: true, name: true },
           },
         },
         orderBy: {
@@ -92,7 +89,7 @@ export class TaxonomyService {
 
     return prisma.subject.findMany({
       where: subjectsWhere,
-      select: { slug: true, name: true, isBncc: true },
+      select: { slug: true, name: true },
       orderBy: { name: 'asc' },
     })
   }

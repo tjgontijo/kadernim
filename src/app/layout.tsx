@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Poppins, Open_Sans, Nunito_Sans } from "next/font/google";
 import "./globals.css";
-import ServiceWorkerRegister from "@/components/pwa/ServiceWorkerRegister";
+
 import { ReactQueryProvider } from "@/providers/react-query-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -43,33 +43,7 @@ export const metadata: Metadata = {
   title: appName,
   description: appDescription,
   applicationName: appName,
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: appName,
-    startupImage: [
-      {
-        url: "/pwa/apple-splash-1320-2868.png",
-        media: "(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3)", // iPhone 16 Pro Max
-      },
-      {
-        url: "/pwa/apple-splash-1290-2796.png",
-        media: "(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)", // iPhone 15 Pro Max, 14 Pro Max
-      },
-      {
-        url: "/pwa/apple-splash-1179-2556.png",
-        media: "(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)", // iPhone 16 Pro, 15 Pro, 14 Pro, 15
-      },
-      {
-        url: "/pwa/apple-splash-1170-2532.png",
-        media: "(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)", // iPhone 13 Pro, 13, 12 Pro, 12
-      },
-      {
-        url: "/pwa/apple-splash-828-1792.png",
-        media: "(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)", // iPhone 11, XR
-      },
-    ],
-  },
+
   icons: {
     icon: [
       { url: '/images/icons/apple-icon.png', sizes: '1024x1024', type: 'image/png' }
@@ -114,8 +88,8 @@ export const viewport: Viewport = {
   ],
 };
 
-import { AppSplashScreen } from "@/components/pwa/AppSplashScreen";
-import { PushNotificationSetup } from "@/components/pwa/PushNotificationSetup";
+
+
 
 export default function RootLayout({
   children,
@@ -129,11 +103,9 @@ export default function RootLayout({
       </head>
       <body
         className={`${inter.variable} ${poppins.variable} ${openSans.variable} ${nunitoSans.variable} antialiased`} suppressHydrationWarning>
-        <AppSplashScreen />
-        <ServiceWorkerRegister />
+
         <ThemeProvider>
           <ReactQueryProvider>
-            <PushNotificationSetup />
             {children}
             <Toaster />
           </ReactQueryProvider>

@@ -1,15 +1,26 @@
 import { v2 as cloudinary } from 'cloudinary';
-import dotenv from 'dotenv';
-dotenv.config();
+import { config } from 'dotenv';
+import fs from 'fs';
+import path from 'path';
 
+// Load env vars from .env.local if it exists, otherwise .env
+const envLocalPath = path.resolve(process.cwd(), '.env.local');
+const envPath = path.resolve(process.cwd(), '.env');
+
+if (fs.existsSync(envLocalPath)) {
+  config({ path: envLocalPath });
+} else {
+  config({ path: envPath });
+}
+
+// Configure Cloudinary with environment variables
 const cloudinaryUrl = process.env.CLOUDINARY_URL;
 
 if (!cloudinaryUrl) {
-    console.error('❌ CLOUDINARY_URL não encontrada nas variáveis de ambiente.');
-    process.exit(1);
+  throw new Error('CLOUDINARY_URL environment variable is not set');
 }
 
-// Configuração manual se necessário (caso o import do config do app falhe fora do contexto Next)
+// Parse CLOUDINARY_URL format: cloudinary://api_key:api_secret@cloud_name
 const urlParts = cloudinaryUrl.replace('cloudinary://', '').split('@');
 const cloudName = urlParts[1];
 const credentials = urlParts[0].split(':');
@@ -17,48 +28,29 @@ const apiKey = credentials[0];
 const apiSecret = credentials[1];
 
 cloudinary.config({
-    cloud_name: cloudName,
-    api_key: apiKey,
-    api_secret: apiSecret,
+  cloud_name: cloudName,
+  api_key: apiKey,
+  api_secret: apiSecret,
+  secure: true
 });
 
 async function clearCloudinary() {
-    console.log('🧹 Iniciando limpeza completa do Cloudinary...');
+  console.log('🧹 Iniciando limpeza do Cloudinary...');
+  
+  try {
+    // Apaga todas as imagens e vídeos (pode não apagar diretórios vazios imediatamente, mas limpa o conteúdo)
+    console.log('Apagando imagens...');
+    await cloudinary.api.delete_all_resources({ type: 'upload', resource_type: 'image' });
+    
+    console.log('Apagando vídeos/arquivos brute...');
+    await cloudinary.api.delete_all_resources({ type: 'upload', resource_type: 'video' });
+    await cloudinary.api.delete_all_resources({ type: 'upload', resource_type: 'raw' });
 
-    try {
-        // 1. Deletar Imagens
-        console.log('🖼️  Removendo imagens...');
-        await cloudinary.api.delete_all_resources({ resource_type: 'image' });
-
-        // 2. Deletar Vídeos
-        console.log('🎥 Removendo vídeos...');
-        await cloudinary.api.delete_all_resources({ resource_type: 'video' });
-
-        // 3. Deletar Outros arquivos (raw)
-        console.log('📄 Removendo arquivos raw...');
-        await cloudinary.api.delete_all_resources({ resource_type: 'raw' });
-
-        // 4. Deletar pastas (precisa ser feito uma a uma ou recursivamente)
-        console.log('📁 Removendo pastas...');
-        const { folders } = await cloudinary.api.root_folders();
-
-        for (const folder of folders) {
-            console.log(`   - Deletando pasta: ${folder.name}`);
-            try {
-                await cloudinary.api.delete_folder(folder.path);
-            } catch (folderError: any) {
-                console.warn(`   ⚠️  Não foi possível deletar a pasta ${folder.path}: ${folderError.message}`);
-                // Geralmente falha se a pasta não estiver vazia ou tiver subpastas
-                // O delete_all_resources acima deleta os arquivos, mas se houver subpastas 
-                // precisaríamos de um loop mais complexo. Para este script básico, isso deve cobrir a maioria.
-            }
-        }
-
-        console.log('✅ Limpeza do Cloudinary concluída com sucesso!');
-    } catch (error: any) {
-        console.error('❌ Erro durante a limpeza do Cloudinary:', error.message);
-        process.exit(1);
-    }
+    console.log('✅ Arquivos do Cloudinary apagados com sucesso!');
+  } catch (error) {
+    console.error('❌ Falha ao limpar o Cloudinary:', error);
+    process.exit(1);
+  }
 }
 
 clearCloudinary();

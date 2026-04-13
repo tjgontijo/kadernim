@@ -19,16 +19,7 @@ interface EmailTemplate {
   preheader?: string | null
 }
 
-interface PushTemplate {
-  id: string
-  name: string
-  title: string
-  body: string
-  icon?: string | null
-  image?: string | null
-  url?: string | null
-  tag?: string | null
-}
+
 
 interface WhatsAppTemplate {
   id: string
@@ -38,12 +29,12 @@ interface WhatsAppTemplate {
   description?: string | null
 }
 
-type Template = EmailTemplate | PushTemplate | WhatsAppTemplate
+type Template = EmailTemplate | WhatsAppTemplate
 
 interface PreviewDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  variant: 'email' | 'push' | 'whatsapp'
+  variant: 'email' | 'whatsapp'
   template: Template | null
 }
 
@@ -61,7 +52,7 @@ export function PreviewDialog({
         className={variant === 'email' ? 'max-w-4xl p-0 overflow-hidden rounded-2xl border-none bg-transparent' : 'max-w-md p-6 rounded-2xl'}
       >
         {variant === 'email' && <EmailPreview template={template as EmailTemplate} />}
-        {variant === 'push' && <PushPreview template={template as PushTemplate} />}
+
         {variant === 'whatsapp' && <WhatsAppPreview template={template as WhatsAppTemplate} />}
       </DialogContent>
     </Dialog>
@@ -127,76 +118,7 @@ function EmailPreview({ template }: { template: EmailTemplate }) {
   )
 }
 
-// Push Preview Component
-function PushPreview({ template }: { template: PushTemplate }) {
-  return (
-    <>
-      <DialogHeader>
-        <DialogTitle className="flex items-center gap-2">
-          <Bell className="h-5 w-5 text-warning" />
-          Preview da Notificação
-        </DialogTitle>
-      </DialogHeader>
-      <div className="mt-4">
-        {/* Push Notification Mockup */}
-        <div className="bg-muted rounded-xl p-4 shadow-lg border">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
-              {template.icon ? (
-                <img
-                  src={template.icon}
-                  alt="Icon"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <Bell className="w-5 h-5 text-primary" />
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-medium text-muted-foreground">
-                  Kadernim
-                </span>
-                <span className="text-[10px] text-muted-foreground">agora</span>
-              </div>
-              <p className="font-semibold text-sm mt-0.5 truncate">
-                {template.title || 'Título da Notificação'}
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                {template.body || 'Corpo da mensagem aparecerá aqui...'}
-              </p>
-            </div>
-          </div>
-          {template.image && (
-            <div className="mt-3 rounded-lg overflow-hidden border bg-background/50">
-              <img
-                src={template.image}
-                alt="Notification preview"
-                className="w-full h-32 object-cover"
-              />
-            </div>
-          )}
-        </div>
 
-        {/* Meta Info */}
-        <div className="mt-4 space-y-2 text-xs text-muted-foreground">
-          {template.url && (
-            <div className="flex items-center gap-2">
-              <LinkIcon className="h-3 w-3" />
-              <span className="truncate">{template.url}</span>
-            </div>
-          )}
-          {template.tag && (
-            <div className="flex items-center gap-2">
-              <Tag className="h-3 w-3" />
-              <span>{template.tag}</span>
-            </div>
-          )}
-        </div>
-      </div>
-    </>
-  )
-}
 
 // WhatsApp Preview Component
 function WhatsAppPreview({ template }: { template: WhatsAppTemplate }) {

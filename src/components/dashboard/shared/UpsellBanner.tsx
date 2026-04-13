@@ -16,9 +16,9 @@ export function UpsellBanner({
   description = 'Desbloqueie todos os recursos exclusivos, materiais e ferramentas premium para transformar seu planejamento agora.',
   ctaLabel = 'Quero Acesso Agora',
   benefits = [
-    'Criação ilimitada de planos de aula',
-    'Solicitação de recursos exclusivos',
-    'Voto em novas funcionalidades da comunidade',
+    'Biblioteca completa de materiais pedagógicos',
+    'Download ilimitado de recursos em PDF',
+    'Novos materiais lançados toda semana',
   ],
   onSubscribe,
 }: UpsellBannerProps) {

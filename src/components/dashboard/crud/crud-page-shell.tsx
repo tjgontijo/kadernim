@@ -183,9 +183,12 @@ export function CrudPageShell({
                 </div>
             )}
 
-            <div className={cn(
-                "flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-border"
-            )}>
+            <div 
+                id="crud-scroll-container"
+                className={cn(
+                    "flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-border relative"
+                )}
+            >
                 {isLoading ? (
                     <div className="flex items-center justify-center h-full">
                         <div className="flex flex-col items-center gap-3">
@@ -207,76 +210,8 @@ export function CrudPageShell({
                 <div className="flex items-center justify-between w-full gap-4">
                     <div className="flex items-center gap-4">
                         <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest whitespace-nowrap">
-                            <span className="text-foreground font-bold">{totalItems}</span> itens
+                            <span className="text-foreground font-bold">{totalItems}</span> itens encontrados
                         </div>
-
-                        {!isMobile && (
-                            <div className="flex items-center gap-2">
-                                <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Por página:</span>
-                                <Select
-                                    value={limit.toString()}
-                                    onValueChange={(v) => onLimitChange(Number(v))}
-                                >
-                                    <SelectTrigger size="sm" className="h-7 w-[65px] text-[10px] font-bold bg-muted/30 border-none ring-0 focus:ring-0">
-                                        <SelectValue placeholder={limit.toString()} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {[10, 15, 20, 50, 100].map((v) => (
-                                            <SelectItem key={v} value={v.toString()} className="text-[10px]">
-                                                {v}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0 rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
-                            onClick={() => onPageChange(Math.max(1, page - 1))}
-                            disabled={page === 1 || isLoading}
-                        >
-                            <ChevronLeft className="h-4 w-4" />
-                        </Button>
-
-                        {!isMobile && (
-                            <div className="flex items-center gap-1 mx-1">
-                                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                                    const pageNum = i + 1;
-                                    return (
-                                        <Button
-                                            key={pageNum}
-                                            variant={page === pageNum ? "secondary" : "ghost"}
-                                            size="sm"
-                                            className={cn(
-                                                "h-7 w-7 text-[10px] font-bold p-0 rounded-full transition-all",
-                                                page === pageNum ? "bg-primary/10 text-primary shadow-none" : "hover:bg-muted"
-                                            )}
-                                            onClick={() => onPageChange(pageNum)}
-                                        >
-                                            {pageNum}
-                                        </Button>
-                                    )
-                                })}
-                                {totalPages > 5 && (
-                                    <span className="text-[10px] text-muted-foreground px-1 font-bold">...</span>
-                                )}
-                            </div>
-                        )}
-
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0 rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
-                            onClick={() => onPageChange(page + 1)}
-                            disabled={!hasMore || isLoading}
-                        >
-                            <ChevronRight className="h-4 w-4" />
-                        </Button>
                     </div>
                 </div>
             </div>

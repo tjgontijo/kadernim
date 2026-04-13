@@ -6,10 +6,6 @@ import { seedUsers } from './seed-users';
 import { seedTaxonomy } from './seed-taxonomy';
 import { seedResources } from './seed-resources';
 import { seedResourceFiles } from './seed-resource-files';
-import { seedBnccSkillsInfantil } from './seed-bncc-infantil';
-import { seedBnccSkillsFundamental } from './seed-bncc-fundamental';
-import { seedTemplates } from './seed-templates';
-import { seedSystemConfig } from './seed-system-config';
 import { seedBilling } from './seed-billing';
 
 const prisma = new PrismaClient({
@@ -22,16 +18,11 @@ async function cleanDatabase() {
   try {
     await prisma.resourceFile.deleteMany()
     await prisma.resource.deleteMany()
-    await prisma.emailTemplate.deleteMany()
-    await prisma.whatsAppTemplate.deleteMany()
-    await prisma.pushTemplate.deleteMany()
     await prisma.billingAuditLog.deleteMany()
     await prisma.invoice.deleteMany()
     await prisma.splitConfig.deleteMany()
     await prisma.billingOffer.deleteMany()
     await prisma.billingPlan.deleteMany()
-    await prisma.systemConfig.deleteMany()
-    await prisma.bnccSkill.deleteMany()
     await prisma.gradeSubject.deleteMany()
     await prisma.grade.deleteMany()
     await prisma.subject.deleteMany()
@@ -56,14 +47,10 @@ async function createInitialData() {
     await cleanDatabase();
     console.log('✅ Banco de dados limpo.');
 
-    await seedSystemConfig(prisma);
     await seedUsers(prisma);
     await seedTaxonomy(prisma);
-    await seedBnccSkillsInfantil(prisma);
-    await seedBnccSkillsFundamental(prisma);
     await seedResources(prisma);
     await seedResourceFiles(prisma);
-    await seedTemplates(prisma);
     await seedBilling(prisma);
 
     console.log('✅ População do banco de dados concluída com sucesso!');

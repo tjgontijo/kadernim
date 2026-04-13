@@ -26,7 +26,7 @@ export const CreateResourceSchema = z.object({
     .optional()
     .nullable(),
   grades: z.array(z.string()),
-  bnccSkillIds: z.array(z.string()).optional(),
+
 })
 
 export type CreateResourceInput = z.infer<typeof CreateResourceSchema>
@@ -54,7 +54,7 @@ export const UpdateResourceSchema = z.object({
     .optional()
     .nullable(),
   grades: z.array(z.string()).optional(),
-  bnccSkillIds: z.array(z.string()).optional(),
+
 })
 
 export type UpdateResourceInput = z.infer<typeof UpdateResourceSchema>
@@ -150,11 +150,7 @@ export const ResourceDetailResponseSchema = z.object({
     accessGrants: z.number(),
     subscriberAccess: z.number(),
   }),
-  bnccSkills: z.array(z.object({
-    id: z.string(),
-    code: z.string(),
-    description: z.string(),
-  })).optional(),
+
 })
 
 export type ResourceDetailResponse = z.infer<typeof ResourceDetailResponseSchema>
@@ -198,11 +194,9 @@ export const BulkOperationResultSchema = z.object({
 
 export type BulkOperationResult = z.infer<typeof BulkOperationResultSchema>
 
-export const LinkBnccSkillSchema = z.object({
-  bnccSkillId: z.string().min(1),
-})
 
-export type LinkBnccSkillInput = z.infer<typeof LinkBnccSkillSchema>
+
+
 
 export const GrantResourceAccessSchema = z.object({
   userId: z.string().min(1),

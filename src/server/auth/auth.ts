@@ -3,7 +3,7 @@ import { createAuthMiddleware } from 'better-auth/api'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { prisma } from '@/lib/db'
 import { emailOTP, admin, organization } from 'better-auth/plugins'
-import { emitEvent } from '@/lib/inngest'
+import { UserRoleType } from '@/types/users/user-role'
 
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET,
@@ -11,28 +11,13 @@ export const auth = betterAuth({
   basePath: '/api/v1/auth',
 
   database: prismaAdapter(prisma, { provider: 'postgresql' }),
-
-  databaseHooks: {
-    session: {
-      create: {
-        after: async (session) => {
-          // Busca o email do usuário
-          const user = await prisma.user.findUnique({
-            where: { id: session.userId },
-            select: { email: true }
-          });
-
-          if (user?.email) {
-            await emitEvent('user.login', {
-              userId: session.userId,
-              email: user.email,
-              method: session.userAgent || 'unknown',
-            });
-          }
-        },
-      },
+  advanced: {
+    database: {
+      generateId: false,
     },
   },
+
+
 
   emailAndPassword: {
     enabled: true
@@ -42,15 +27,21 @@ export const auth = betterAuth({
     admin(),
     organization(),
     emailOTP({
-      async sendVerificationOTP({ email, otp, type: _ }) {
-        // Emitir evento para o Inngest processar via templates
-        // O handler handleOtpRequested envia por Email e/ou WhatsApp
-        await emitEvent('auth.otp.requested', {
-          email,
-          otp,
-          expiresIn: 15, // minutos
-        });
+      async sendVerificationOTP({ email, otp }) {
+        try {
+          const { authDeliveryService } = await import('@/services/delivery/auth-delivery');
 
+          await authDeliveryService.send({
+            email,
+            type: 'otp',
+            data: {
+              otp,
+              expiresIn: 15
+            }
+          });
+        } catch (error) {
+          console.error('[Auth] Erro ao enviar código de verificação:', error);
+        }
       },
     })
   ],

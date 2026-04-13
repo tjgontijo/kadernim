@@ -1,6 +1,6 @@
 'use client'
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   createAdminResource,
   deleteAdminResource,
@@ -23,7 +23,6 @@ interface UseAdminResourcesOptions {
  */
 export function useAdminResources(options?: UseAdminResourcesOptions) {
   const filters = options?.filters || {}
-  const page = filters.page || 1
   const limit = filters.limit || 20
   const q = filters.q || ''
   const educationLevel = filters.educationLevel || ''
@@ -33,11 +32,11 @@ export function useAdminResources(options?: UseAdminResourcesOptions) {
   const sortBy = filters.sortBy || 'updatedAt'
   const order = filters.order || 'desc'
 
-  return useQuery<ResourceListResponse>({
-    queryKey: ['admin-resources', { page, limit, q, educationLevel, grade, subject, isFree, sortBy, order }],
-    queryFn: () =>
+  const query = useInfiniteQuery<ResourceListResponse>({
+    queryKey: ['admin-resources', { limit, q, educationLevel, grade, subject, isFree, sortBy, order }],
+    queryFn: ({ pageParam = 1 }) =>
       fetchAdminResources({
-        page,
+        page: pageParam as number,
         limit,
         q: q || undefined,
         educationLevel: educationLevel || undefined,
@@ -47,7 +46,17 @@ export function useAdminResources(options?: UseAdminResourcesOptions) {
         sortBy,
         order,
       }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      return lastPage.pagination.hasMore ? lastPage.pagination.page + 1 : undefined
+    },
   })
+
+  return {
+    ...query,
+    data: query.data?.pages.flatMap(page => page.data) || [],
+    pagination: query.data?.pages[query.data.pages.length - 1]?.pagination,
+  }
 }
 
 /**

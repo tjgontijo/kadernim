@@ -69,15 +69,7 @@ export async function getAdminResourceDetail(resourceId: string): Promise<Resour
     throw new Error('RESOURCE_NOT_FOUND')
   }
 
-  const [bnccLinks, totalUsers, accessGrants, subscriberAccess] = await Promise.all([
-    prisma.resourceBnccSkill.findMany({
-      where: { resourceId },
-      include: {
-        bnccSkill: {
-          select: { id: true, code: true, description: true },
-        },
-      },
-    }),
+  const [totalUsers, accessGrants, subscriberAccess] = await Promise.all([
     prisma.resourceUserAccess.count({
       where: { resourceId },
     }),
@@ -124,10 +116,6 @@ export async function getAdminResourceDetail(resourceId: string): Promise<Resour
       accessGrants,
       subscriberAccess,
     },
-    bnccSkills: bnccLinks.map((link) => ({
-      id: link.bnccSkill.id,
-      code: link.bnccSkill.code,
-      description: link.bnccSkill.description,
-    })),
+
   })
 }

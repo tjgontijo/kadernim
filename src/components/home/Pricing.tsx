@@ -67,11 +67,11 @@ export const Pricing: React.FC = () => {
             <ul className="space-y-4 flex-1" aria-label="Benefícios do Plano Pro">
               {[
                 "Acesso ilimitado à biblioteca de recursos",
-                "Gerador de Planos de Aula (IA/BNCC)",
                 "Download ilimitado de materiais pedagógicos",
-                "Participação na comunidade colaborativa",
-                "Votar e sugerir novos materiais mensalmente",
-                "Novos materiais exclusivos toda semana"
+                "Materiais organizados por série e disciplina",
+                "Novos materiais exclusivos toda semana",
+                "Suporte via WhatsApp",
+                "Formatos prontos para impressão"
               ].map((item, i) => (
                 <li key={i} className="flex items-start text-sm font-semibold text-foreground dark:text-slate-100">
                   <div className="bg-primary/10 dark:bg-blue-500/20 rounded-full p-1 mr-3 mt-0.5 flex-shrink-0">

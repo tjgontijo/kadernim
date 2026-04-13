@@ -4,13 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchEducationLevels, fetchGrades, fetchSubjects } from '@/lib/taxonomy/api-client';
 import type { EducationLevel, Grade, Subject } from '@/lib/taxonomy/types';
 
-export interface BnccSkill {
-    code: string;
-    description: string;
-    unitTheme?: string;
-    knowledgeObject?: string;
-    fieldOfExperience?: string;
-}
+
 
 interface TaxonomyResponse<T> {
     success: boolean;
@@ -37,14 +31,14 @@ export function useGrades(educationLevelSlug?: string) {
     });
 }
 
-export function useSubjects(educationLevelSlug?: string, gradeSlug?: string, bnccOnly?: boolean) {
+export function useSubjects(educationLevelSlug?: string, gradeSlug?: string) {
     return useQuery({
-        queryKey: ['taxonomy', 'subjects', educationLevelSlug, gradeSlug, bnccOnly],
+        queryKey: ['taxonomy', 'subjects', educationLevelSlug, gradeSlug],
         queryFn: async () => {
             const params = new URLSearchParams();
             if (educationLevelSlug && educationLevelSlug !== 'all') params.append('educationLevelSlug', educationLevelSlug);
             if (gradeSlug && gradeSlug !== 'all') params.append('gradeSlug', gradeSlug);
-            if (bnccOnly) params.append('bnccOnly', 'true');
+
 
             if (params.toString() === '') return [];
 
@@ -55,62 +49,4 @@ export function useSubjects(educationLevelSlug?: string, gradeSlug?: string, bnc
     });
 }
 
-export function useBnccSkills(params: {
-    educationLevelSlug: string;
-    gradeSlug?: string;
-    subjectSlug?: string;
-    theme?: string;
-    limit?: number;
-    searchMode?: 'hybrid' | 'text';
-}) {
-    return useQuery({
-        queryKey: ['bncc-skills', params],
-        queryFn: async () => {
-            const urlParams = new URLSearchParams({
-                educationLevelSlug: params.educationLevelSlug,
-                limit: params.limit?.toString() || '50',
-            });
 
-            if (params.gradeSlug && params.gradeSlug !== 'all') urlParams.append('gradeSlug', params.gradeSlug);
-            if (params.subjectSlug && params.subjectSlug !== 'all') urlParams.append('subjectSlug', params.subjectSlug);
-            if (params.theme) {
-                urlParams.append('q', params.theme);
-                urlParams.append('searchMode', params.searchMode || 'hybrid');
-            }
-
-            const response = await fetch(`/api/v1/bncc/skills?${urlParams.toString()}`);
-            if (!response.ok) throw new Error('Erro ao carregar habilidades BNCC');
-
-            const data: TaxonomyResponse<BnccSkill> = await response.json();
-            return data.data;
-        },
-        enabled: !!params.educationLevelSlug,
-        staleTime: 1000 * 60 * 30, // 30 minutos de cache
-    });
-}
-
-export function useBnccThemes(params: {
-    educationLevelSlug: string;
-    gradeSlug?: string;
-    subjectSlug?: string;
-}) {
-    return useQuery({
-        queryKey: ['bncc-themes', params],
-        queryFn: async () => {
-            const urlParams = new URLSearchParams({
-                educationLevelSlug: params.educationLevelSlug,
-            });
-
-            if (params.gradeSlug && params.gradeSlug !== 'all') urlParams.append('gradeSlug', params.gradeSlug);
-            if (params.subjectSlug && params.subjectSlug !== 'all') urlParams.append('subjectSlug', params.subjectSlug);
-
-            const response = await fetch(`/api/v1/bncc/themes?${urlParams.toString()}`);
-            if (!response.ok) throw new Error('Erro ao carregar temas BNCC');
-
-            const data = await response.json();
-            return data.data.themes as string[];
-        },
-        enabled: !!params.educationLevelSlug,
-        staleTime: 1000 * 60 * 60, // 1 hora de cache (são estáticos)
-    });
-}

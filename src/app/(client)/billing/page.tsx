@@ -6,7 +6,7 @@ import { prisma } from '@/lib/db'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { CheckCircle2, AlertCircle, CreditCard, RefreshCcw, History, FileText, XCircle } from 'lucide-react'
+import { CheckCircle2, AlertCircle, CreditCard, RefreshCcw, History, FileText, XCircle, Check } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import Link from 'next/link'
@@ -124,18 +124,24 @@ export default async function ClientBillingPage() {
                         <CardTitle>Benefícios Pro</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <ul className="space-y-3 text-sm">
-                            <li className="flex items-start gap-2">
-                                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                                <span>Acesso a todas habilidades da BNCC</span>
+                        <ul className="space-y-3">
+                            <li className="flex items-center gap-3 text-sm text-slate-300">
+                                <div className="h-5 w-5 rounded-full bg-success/15 border border-success/25 flex items-center justify-center shrink-0">
+                                    <Check className="h-3 w-3 text-success" />
+                                </div>
+                                <span>Acesso a todos os materiais pedagógicos</span>
                             </li>
-                            <li className="flex items-start gap-2">
-                                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                                <span>Planos de Aula gerados por IA Ilimitados</span>
+                            <li className="flex items-center gap-3 text-sm text-slate-300">
+                                <div className="h-5 w-5 rounded-full bg-success/15 border border-success/25 flex items-center justify-center shrink-0">
+                                    <Check className="h-3 w-3 text-success" />
+                                </div>
+                                <span>Download ilimitado de PDFs</span>
                             </li>
-                            <li className="flex items-start gap-2">
-                                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                                <span>Disparo automático via WhatsApp</span>
+                            <li className="flex items-center gap-3 text-sm text-slate-300">
+                                <div className="h-5 w-5 rounded-full bg-success/15 border border-success/25 flex items-center justify-center shrink-0">
+                                    <Check className="h-3 w-3 text-success" />
+                                </div>
+                                <span>Materiais organizados por série e tema</span>
                             </li>
                         </ul>
                     </CardContent>

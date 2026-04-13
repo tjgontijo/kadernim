@@ -46,7 +46,7 @@ import {
 import { useResourceMeta } from '@/hooks/resources/use-resources'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { cn } from '@/lib/utils/index'
-import { ResourceBnccManager } from '@/components/dashboard/resources/edit/resource-bncc-manager'
+
 
 interface ResourceCategorizationFormProps {
     resource: {
@@ -54,7 +54,7 @@ interface ResourceCategorizationFormProps {
         educationLevel: string
         subject: string
         grades: string[]
-        bnccSkills?: Array<{ id: string; code: string; description: string }>
+
     }
 }
 
@@ -71,7 +71,7 @@ export function ResourceCategorizationForm({ resource }: ResourceCategorizationF
         },
     })
 
-    // Watch fields for cascade logic and BNCC
+    // Watch fields for cascade logic
     const selectedEducationLevel = form.watch('educationLevel')
     const selectedGrades = form.watch('grades') || []
     const selectedSubject = form.watch('subject')
@@ -144,7 +144,7 @@ export function ResourceCategorizationForm({ resource }: ResourceCategorizationF
                     <CardHeader className="bg-muted/30 border-b py-3">
                         <CardTitle className="text-sm font-semibold flex items-center gap-2">
                             <Layout className="h-4 w-4 text-primary" />
-                            Categorização Escolar
+                            Categorização
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="p-4 md:p-6">
@@ -320,24 +320,7 @@ export function ResourceCategorizationForm({ resource }: ResourceCategorizationF
                     </CardContent>
                 </Card>
 
-                {/* BNCC Section */}
-                <Card className="overflow-hidden border shadow-sm">
-                    <CardHeader className="bg-muted/30 border-b py-3">
-                        <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                            <GraduationCap className="h-4 w-4 text-primary" />
-                            Habilidades BNCC
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-4 md:p-6">
-                        <ResourceBnccManager
-                            resourceId={resource.id}
-                            initialBnccSkills={resource.bnccSkills || []}
-                            educationLevelSlug={selectedEducationLevel}
-                            gradeSlugs={selectedGrades}
-                            subjectSlug={selectedSubject}
-                        />
-                    </CardContent>
-                </Card>
+
             </div>
         </Form>
     )

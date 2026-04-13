@@ -12,10 +12,10 @@ export {
   fetchResourceMeta,
   fetchResourcesSummary,
   grantResourceAccess,
-  linkResourceBnccSkill,
+
   reorderResourceImages,
   revokeResourceAccess,
-  unlinkResourceBnccSkill,
+
   updateAdminResource,
   updateResourceImage,
   updateResourceVideo,

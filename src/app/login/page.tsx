@@ -11,7 +11,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { authClient } from '@/lib/auth/auth-client'
 import { Spinner } from '@/components/shared/spinner'
-import { InstallPWA } from '@/components/pwa/InstallPWA'
+
 import { toast } from 'sonner'
 
 const otpSchema = z.object({
@@ -203,7 +203,7 @@ function RequestOtpContent() {
               {status === 'loading' ? <Spinner className="h-5 w-5 text-white" /> : 'Enviar código'}
             </button>
           </form>
-          <InstallPWA />
+
         </div>
       </div>
     </div>

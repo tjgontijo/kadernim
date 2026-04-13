@@ -168,29 +168,7 @@ export async function revokeResourceAccess(
   await parseJsonResponse<null>(response)
 }
 
-export async function linkResourceBnccSkill(
-  resourceId: string,
-  bnccSkillId: string
-): Promise<void> {
-  const response = await fetch(`/api/v1/admin/resources/${resourceId}/bncc-skills`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ bnccSkillId }),
-  })
 
-  await parseJsonResponse(response)
-}
-
-export async function unlinkResourceBnccSkill(
-  resourceId: string,
-  skillId: string
-): Promise<void> {
-  const response = await fetch(`/api/v1/admin/resources/${resourceId}/bncc-skills/${skillId}`, {
-    method: 'DELETE',
-  })
-
-  await parseJsonResponse<null>(response)
-}
 
 export async function uploadResourceFileWithProgress(input: {
   resourceId: string

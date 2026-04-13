@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { AB_TEST_CONFIG, MarketingVariant } from '@/config/ab-tests'
+
 function looksLikeSessionCookie(v?: string) {
   if (!v) return false
-  // Better-auth tokens in database mode don't necessarily have dots.
-  // Just check if it's a reasonably long string.
   if (v.length < 20) return false
   return true
 }
@@ -19,19 +19,12 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith('/images/') ||
     pathname.includes('favicon.ico')
 
-  const isPWAFile = pathname === '/sw.js' ||
-    pathname === '/manifest.json' ||
-    pathname === '/manifest.webmanifest' ||
-    pathname === '/icon.png' ||
-    pathname === '/apple-icon.png' ||
-    pathname.startsWith('/images/icons/')
-
-  if (isApiOrStaticRoute || isPWAFile) {
+  if (isApiOrStaticRoute) {
     return NextResponse.next()
   }
 
-  const AUTH_ROUTES = ['/']
-  const PUBLIC_ROUTES = ['/login', '/offline', '/plans', '/plans2', '/plans3', '/checkout']
+  const AUTH_ROUTES = ['/dashboard', '/account']
+  const PUBLIC_ROUTES = ['/', '/login', '/plans', '/lp', '/checkout']
 
   const matchesRoute = (route: string) =>
     pathname === route || pathname.startsWith(`${route}/`)
@@ -50,14 +43,51 @@ export async function proxy(request: NextRequest) {
     looksLikeSessionCookie(sessionToken) ||
     looksLikeSessionCookie(secureSessionToken)
 
-  // Se está na home (auth route)
-  if (isAuthRoute) {
+  // --- Lógica de Teste A/B/C ---
+  const url = request.nextUrl.clone()
+  const variantParam = url.searchParams.get('variant')
+  
+  // 1. Sobrescrita manual via Query Param (?variant=1) - Global para facilitar
+  if (variantParam && ['1', '2', '3'].includes(variantParam)) {
+    const selectedVariant = `v${variantParam}` as MarketingVariant
+    const response = NextResponse.redirect(new URL(pathname, request.url)) // Mantém na mesma página
+    response.cookies.set(AB_TEST_CONFIG.cookieName, selectedVariant, { maxAge: AB_TEST_CONFIG.cookieMaxAge })
+    return response
+  }
+
+  // 2. Determinar variante (apenas para persistência aqui, a lógica de sorteio é no /plans)
+  let variant = request.cookies.get(AB_TEST_CONFIG.cookieName)?.value as MarketingVariant
+  if (!variant || !AB_TEST_CONFIG.variants[variant]) {
+    const variants = Object.keys(AB_TEST_CONFIG.variants) as MarketingVariant[]
+    variant = variants[Math.floor(Math.random() * variants.length)]
+  }
+  // -----------------------------
+
+  // Se está na home (SaaS Homepage - Estática)
+  if (pathname === '/') {
     if (hasPlausibleCookie) {
       return NextResponse.redirect(new URL('/resources', request.url))
     }
-    // Se não tem cookie na home, deixa prosseguir para o login se for o caso ou redireciona
-    // Aqui a home '/' no seu projeto parece ser o login ou redirecionar para ele
-    return NextResponse.redirect(new URL('/login', request.url))
+    return NextResponse.next()
+  }
+
+  // Se está na landing page de campanha (Teste A/B/C)
+  if (pathname === '/lp') {
+    const response = NextResponse.next()
+    
+    // Se não tinha cookie de variante, define agora para persistir a experiência
+    if (!request.cookies.has(AB_TEST_CONFIG.cookieName)) {
+      response.cookies.set(AB_TEST_CONFIG.cookieName, variant, { maxAge: AB_TEST_CONFIG.cookieMaxAge })
+    }
+    return response
+  }
+
+  // Se for uma rota de autenticação (Dashboard/Conta) e não tem cookie, vai para o login
+  if (isAuthRoute) {
+    if (!hasPlausibleCookie) {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+    return NextResponse.next()
   }
 
   // Qualquer outra rota é protegida por padrão
@@ -71,6 +101,6 @@ export async function proxy(request: NextRequest) {
 // Configuração para o Proxy
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|images|sw.js|manifest|icon.png|apple-icon.png|.*.js|.*.css|.*.woff2).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|images|.*.js|.*.css|.*.woff2).*)',
   ],
 }

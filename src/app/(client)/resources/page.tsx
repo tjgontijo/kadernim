@@ -77,14 +77,7 @@ export default function ResourcesPage() {
       {/* LINHA 1: Identidade & Ação (Modelo: Título | Botão Discreto) */}
       <PageScaffold.Header
         title={<>Explorar <span className="text-primary italic">Materiais</span></>}
-        action={
-          <Button asChild variant="outline" className="h-10 sm:h-12 px-4 sm:px-6 rounded-2xl border-primary/20 text-primary hover:bg-primary/5 font-bold transition-all group shrink-0">
-            <Link href="/community">
-              <Sparkles className="h-4 w-4 mr-1 group-hover:rotate-12 transition-transform" />
-              Fazer Pedido
-            </Link>
-          </Button>
-        }
+        action={null}
       />
 
       {/* LINHA 2: Destaque Visual (Seletor de Recursos) */}

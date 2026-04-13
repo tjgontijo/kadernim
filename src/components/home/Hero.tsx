@@ -28,7 +28,7 @@ export const Hero: React.FC = () => {
           </h1>
 
           <p className="mt-6 text-xl text-muted-foreground dark:text-slate-300 leading-relaxed max-w-2xl mx-auto font-medium">
-            Uma biblioteca viva com atividades prontas, plano de aula alinhado à BNCC e uma comunidade de professores que decide o que entra na plataforma.
+            Uma biblioteca viva com centenas de atividades e materiais prontos, atualizada semanalmente para facilitar a sua rotina escolar.
           </p>
 
           <div className="mt-6 font-handwriting text-primary/80 dark:text-blue-300/80 motion-safe:rotate-1">

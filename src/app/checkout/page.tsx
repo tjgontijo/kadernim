@@ -10,7 +10,12 @@ export const metadata: Metadata = {
   description: 'Adquira agora o Kadernim Pro.',
 }
 
-export default async function CheckoutPage() {
+export default async function CheckoutPage(props: {
+  searchParams: Promise<{ plan?: string }>
+}) {
+  const searchParams = await props.searchParams
+  const planId = searchParams.plan as any
+  
   let prefilledUser: { id: string; name: string; email: string } | null = null
   const catalog = await getBillingCheckoutCatalog()
 
@@ -43,7 +48,7 @@ export default async function CheckoutPage() {
       </header>
 
       <main className="py-6 sm:py-8 px-4 sm:px-6 lg:px-8">
-        <GuestCheckoutForm prefilledUser={prefilledUser} catalog={catalog} />
+        <GuestCheckoutForm prefilledUser={prefilledUser} catalog={catalog} initialPlan={planId} />
       </main>
     </div>
   )

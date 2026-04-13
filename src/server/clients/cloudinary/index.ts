@@ -25,9 +25,4 @@ export {
   type FileUploadResult,
 } from './file-client'
 
-// Community operations
-export {
-  uploadCommunityReference,
-  deleteCommunityReference,
-  type CommunityReferenceUploadResult,
-} from './community-client'
+

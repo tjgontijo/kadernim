@@ -8,12 +8,10 @@ datasource db {
 }
 
 model EducationLevel {
-  id                String             @id @default(cuid())
+  id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name              String             @unique
   slug              String             @unique
   order             Int                @default(0)
-  bnccSkills        BnccSkill[]
-  communityRequests CommunityRequest[]
   grades            Grade[]
   resources         Resource[]
 
@@ -21,13 +19,11 @@ model EducationLevel {
 }
 
 model Grade {
-  id                String             @id @default(cuid())
+  id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name              String
   slug              String             @unique
   order             Int                @default(0)
-  educationLevelId  String
-  bnccSkills        BnccSkill[]
-  communityRequests CommunityRequest[]
+  educationLevelId  String             @db.Uuid
   educationLevel    EducationLevel     @relation(fields: [educationLevelId], references: [id])
   subjects          GradeSubject[]
   resources         ResourceGrade[]
@@ -37,12 +33,10 @@ model Grade {
 }
 
 model Subject {
-  id                String             @id @default(cuid())
+  id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name              String             @unique
   slug              String             @unique
-  isBncc            Boolean            @default(true)
-  bnccSkills        BnccSkill[]
-  communityRequests CommunityRequest[]
+
   grades            GradeSubject[]
   resources         Resource[]
 
@@ -50,9 +44,9 @@ model Subject {
 }
 
 model GradeSubject {
-  id        String  @id @default(cuid())
-  gradeId   String
-  subjectId String
+  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  gradeId   String  @db.Uuid
+  subjectId String  @db.Uuid
   grade     Grade   @relation(fields: [gradeId], references: [id], onDelete: Cascade)
   subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
 
@@ -63,7 +57,7 @@ model GradeSubject {
 }
 
 model User {
-  id                       String                    @id @default(cuid())
+  id                       String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                     String
   email                    String                    @unique
   phone                    String?
@@ -77,15 +71,7 @@ model User {
   asaasWalletId            String?
   accounts                 Account[]
   auditLogs                BillingAuditLog[]
-  communityRequests        CommunityRequest[]
-  communityRequestComments CommunityRequestComment[]
-  communityRequestUploads  CommunityRequestUpload[]
-  communityRequestVotes    CommunityRequestVote[]
   invoices                 Invoice[]
-  lessonPlans              LessonPlan[]
-  lessonPlanUsage          LessonPlanUsage[]
-  llmUsageLogs             LlmUsageLog[]
-  pushSubscriptions        PushSubscription[]
   resourceAccesses         ResourceUserAccess[]
   sessions                 Session[]
   subscription             Subscription?
@@ -94,10 +80,10 @@ model User {
 }
 
 model Account {
-  id                    String    @id @default(cuid())
+  id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   accountId             String
   providerId            String
-  userId                String
+  userId                String    @db.Uuid
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -115,14 +101,14 @@ model Account {
 }
 
 model Session {
-  id                   String   @id @default(cuid())
+  id                   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   expiresAt            DateTime
   token                String   @unique
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
   ipAddress            String?
   userAgent            String?
-  userId               String
+  userId               String   @db.Uuid
   impersonatedBy       String?
   activeOrganizationId String?
   user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -133,7 +119,7 @@ model Session {
 }
 
 model Verification {
-  id         String    @id @default(cuid())
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   identifier String
   value      String
   expiresAt  DateTime
@@ -145,7 +131,7 @@ model Verification {
 }
 
 model Organization {
-  id        String   @id @default(cuid())
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String
   slug      String?  @unique
   logo      String?
@@ -157,9 +143,9 @@ model Organization {
 }
 
 model Subscription {
-  id                 String             @id @default(cuid())
-  userId             String             @unique
-  offerId            String?
+  id                 String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId             String             @unique @db.Uuid
+  offerId            String?            @db.Uuid
   asaasId            String?            @unique
   status             SubscriptionStatus @default(INACTIVE)
   paymentMethod      PaymentMethod?
@@ -184,7 +170,7 @@ model Subscription {
 }
 
 model BillingPlan {
-  id         String          @id @default(cuid())
+  id         String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   code       BillingPlanCode @unique
   name       String
   cycle      BillingCycle
@@ -200,9 +186,9 @@ model BillingPlan {
 }
 
 model BillingOffer {
-  id              String         @id @default(cuid())
+  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   code            String         @unique
-  planId          String
+  planId          String         @db.Uuid
   paymentMethod   PaymentMethod
   amount          Decimal        @db.Decimal(10, 2)
   currency        String         @default("BRL")
@@ -223,10 +209,10 @@ model BillingOffer {
 }
 
 model Invoice {
-  id             String        @id @default(cuid())
-  userId         String
-  subscriptionId String?
-  offerId        String?
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String        @db.Uuid
+  subscriptionId String?       @db.Uuid
+  offerId        String?       @db.Uuid
   asaasId        String        @unique
   status         InvoiceStatus @default(PENDING)
   paymentMethod  PaymentMethod
@@ -255,7 +241,7 @@ model Invoice {
 }
 
 model SplitConfig {
-  id              String    @id @default(cuid())
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   companyName     String
   cnpj            String
   walletId        String    @unique
@@ -271,8 +257,8 @@ model SplitConfig {
 }
 
 model BillingAuditLog {
-  id             String     @id @default(cuid())
-  userId         String?
+  id             String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String?    @db.Uuid
   actor          AuditActor @default(SYSTEM)
   action         String
   entity         String
@@ -293,9 +279,9 @@ model BillingAuditLog {
 }
 
 model ResourceGrade {
-  id         String   @id @default(cuid())
-  resourceId String
-  gradeId    String
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  resourceId String   @db.Uuid
+  gradeId    String   @db.Uuid
   grade      Grade    @relation(fields: [gradeId], references: [id], onDelete: Cascade)
   resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
 
@@ -306,8 +292,8 @@ model ResourceGrade {
 }
 
 model ResourceImage {
-  id                 String   @id @default(cuid())
-  resourceId         String
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  resourceId         String   @db.Uuid
   cloudinaryPublicId String
   url                String?
   alt                String?
@@ -320,8 +306,8 @@ model ResourceImage {
 }
 
 model ResourceFile {
-  id                 String   @id @default(cuid())
-  resourceId         String
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  resourceId         String   @db.Uuid
   name               String
   cloudinaryPublicId String
   url                String?
@@ -335,8 +321,8 @@ model ResourceFile {
 }
 
 model ResourceVideo {
-  id                 String   @id @default(cuid())
-  resourceId         String
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  resourceId         String   @db.Uuid
   title              String
   cloudinaryPublicId String
   url                String?
@@ -351,9 +337,9 @@ model ResourceVideo {
 }
 
 model ResourceUserAccess {
-  id         String    @id @default(cuid())
-  userId     String
-  resourceId String
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String    @db.Uuid
+  resourceId String    @db.Uuid
   source     String?
   grantedAt  DateTime  @default(now())
   expiresAt  DateTime?
@@ -366,20 +352,18 @@ model ResourceUserAccess {
 }
 
 model Resource {
-  id               String               @id @default(cuid())
+  id               String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title            String
   description      String?
-  educationLevelId String
-  subjectId        String
+  educationLevelId String               @db.Uuid
+  subjectId        String               @db.Uuid
   externalId       Int?                 @unique
   isFree           Boolean              @default(false)
   createdAt        DateTime             @default(now())
   updatedAt        DateTime             @updatedAt
   originRequestId  String?              @unique
   educationLevel   EducationLevel       @relation(fields: [educationLevelId], references: [id])
-  originRequest    CommunityRequest?    @relation(fields: [originRequestId], references: [id])
   subject          Subject              @relation(fields: [subjectId], references: [id])
-  bnccSkills       ResourceBnccSkill[]
   files            ResourceFile[]
   grades           ResourceGrade[]
   images           ResourceImage[]
@@ -390,427 +374,6 @@ model Resource {
   @@index([subjectId])
   @@index([title, id])
   @@map("resource")
-}
-
-model BnccSkill {
-  id                    String                   @id @default(cuid())
-  code                  String
-  educationLevelId      String
-  gradeId               String?
-  subjectId             String?
-  unitTheme             String?
-  knowledgeObject       String?
-  description           String
-  comments              String?
-  curriculumSuggestions String?
-  searchVector          Unsupported("tsvector")?
-  embedding             Unsupported("vector(1536)")?
-  createdAt             DateTime                 @default(now())
-  updatedAt             DateTime                 @updatedAt
-  educationLevel        EducationLevel           @relation(fields: [educationLevelId], references: [id])
-  grade                 Grade?                   @relation(fields: [gradeId], references: [id])
-  subject               Subject?                 @relation(fields: [subjectId], references: [id])
-  resources             ResourceBnccSkill[]
-
-  @@unique([code, gradeId], name: "code_gradeId")
-  @@index([educationLevelId])
-  @@index([gradeId])
-  @@index([subjectId])
-  @@index([code])
-  @@index([searchVector], type: Gin)
-  @@index([searchVector], map: "bncc_skill_search_gin", type: Gin)
-  @@map("bncc_skill")
-}
-
-model ResourceBnccSkill {
-  id          String    @id @default(cuid())
-  resourceId  String
-  bnccSkillId String
-  bnccSkill   BnccSkill @relation(fields: [bnccSkillId], references: [id], onDelete: Cascade)
-  resource    Resource  @relation(fields: [resourceId], references: [id], onDelete: Cascade)
-
-  @@unique([resourceId, bnccSkillId])
-  @@index([resourceId])
-  @@index([bnccSkillId])
-  @@map("resource_bncc_skill")
-}
-
-model LessonPlan {
-  id                 String   @id @default(cuid())
-  userId             String
-  title              String
-  numberOfClasses    Int
-  duration           Int
-  educationLevelSlug String
-  gradeSlug          String?
-  subjectSlug        String?
-  ageRange           String?
-  fieldOfExperience  String?
-  bnccSkillCodes     String[]
-  content            Json
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([createdAt])
-  @@index([educationLevelSlug])
-  @@index([gradeSlug])
-  @@index([subjectSlug])
-  @@map("lesson_plan")
-}
-
-model LessonPlanUsage {
-  id        String   @id @default(cuid())
-  userId    String
-  yearMonth String
-  count     Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, yearMonth])
-  @@index([userId])
-  @@index([yearMonth])
-  @@map("lesson_plan_usage")
-}
-
-model CommunityRequest {
-  id               String                      @id @default(cuid())
-  title            String
-  description      String
-  votingMonth      String
-  educationLevelId String?
-  gradeId          String?
-  subjectId        String?
-  userId           String
-  status           CommunityRequestStatus      @default(draft)
-  hasBnccAlignment Boolean                     @default(false)
-  bnccSkillCodes   String[]                    @default([])
-  unfeasibleReason String?
-  unfeasibleById   String?
-  voteCount        Int                         @default(0)
-  survivedMonths   Int                         @default(0)
-  commentCount     Int                         @default(0)
-  createdAt        DateTime                    @default(now())
-  updatedAt        DateTime                    @updatedAt
-  selectedAt       DateTime?
-  completedAt      DateTime?
-  unfeasibleAt     DateTime?
-  educationLevel   EducationLevel?             @relation(fields: [educationLevelId], references: [id])
-  grade            Grade?                      @relation(fields: [gradeId], references: [id])
-  subject          Subject?                    @relation(fields: [subjectId], references: [id])
-  user             User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  comments         CommunityRequestComment[]
-  references       CommunityRequestReference[]
-  uploads          CommunityRequestUpload[]
-  votes            CommunityRequestVote[]
-  producedResource Resource?
-
-  @@index([userId])
-  @@index([gradeId])
-  @@index([educationLevelId])
-  @@index([subjectId])
-  @@index([status, votingMonth])
-  @@map("community_request")
-}
-
-model CommunityRequestVote {
-  id          String           @id @default(cuid())
-  requestId   String
-  userId      String
-  votingMonth String
-  createdAt   DateTime         @default(now())
-  request     CommunityRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
-  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([requestId, userId])
-  @@index([userId, votingMonth])
-  @@map("community_request_vote")
-}
-
-model CommunityRequestReference {
-  id                 String           @id @default(cuid())
-  requestId          String
-  cloudinaryPublicId String
-  url                String
-  createdAt          DateTime         @default(now())
-  request            CommunityRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
-
-  @@index([requestId])
-  @@map("community_request_reference")
-}
-
-model LlmUsageLog {
-  id           String   @id @default(cuid())
-  userId       String?
-  feature      String
-  operation    String
-  model        String
-  provider     String   @default("openai")
-  inputTokens  Int
-  outputTokens Int
-  totalTokens  Int
-  inputCost    Float
-  outputCost   Float
-  totalCost    Float
-  latencyMs    Int?
-  status       String
-  errorMessage String?
-  metadata     Json?
-  createdAt    DateTime @default(now())
-  user         User?    @relation(fields: [userId], references: [id])
-
-  @@index([userId])
-  @@index([feature])
-  @@index([createdAt])
-  @@index([status])
-  @@map("llm_usage_log")
-}
-
-model LlmUsageDaily {
-  id           String   @id @default(cuid())
-  date         DateTime @db.Date
-  feature      String
-  model        String
-  totalCalls   Int
-  successCalls Int
-  errorCalls   Int
-  totalTokens  BigInt
-  totalCost    Float
-  avgLatencyMs Float?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  @@unique([date, feature, model])
-  @@index([date])
-  @@index([feature])
-  @@map("llm_usage_daily")
-}
-
-model AutomationRule {
-  id          String             @id @default(cuid())
-  name        String
-  eventType   String
-  isActive    Boolean            @default(true)
-  conditions  Json?
-  description String?
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  actions     AutomationAction[]
-  logs        AutomationLog[]
-
-  @@index([eventType])
-  @@index([isActive])
-  @@map("automation_rule")
-}
-
-model AutomationAction {
-  id        String          @id @default(cuid())
-  ruleId    String
-  type      String
-  order     Int             @default(0)
-  config    Json
-  createdAt DateTime        @default(now())
-  rule      AutomationRule  @relation(fields: [ruleId], references: [id], onDelete: Cascade)
-  logs      AutomationLog[]
-
-  @@index([ruleId])
-  @@map("automation_action")
-}
-
-model AutomationLog {
-  id         String            @id @default(cuid())
-  ruleId     String
-  actionId   String?
-  status     String
-  payload    Json
-  error      String?
-  executedAt DateTime          @default(now())
-  action     AutomationAction? @relation(fields: [actionId], references: [id])
-  rule       AutomationRule    @relation(fields: [ruleId], references: [id])
-
-  @@index([ruleId])
-  @@index([actionId])
-  @@index([status])
-  @@index([executedAt])
-  @@map("automation_log")
-}
-
-model NotificationTemplate {
-  id          String   @id @default(cuid())
-  slug        String   @unique
-  name        String
-  type        String
-  eventType   String
-  subject     String?
-  body        String
-  description String?
-  variables   Json?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([type])
-  @@index([eventType])
-  @@index([isActive])
-  @@map("notification_template")
-}
-
-model PushSubscription {
-  id        String   @id @default(cuid())
-  endpoint  String   @unique
-  p256dh    String
-  auth      String
-  userId    String
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([active])
-  @@map("push_subscription")
-}
-
-model EmailTemplate {
-  id          String   @id @default(cuid())
-  slug        String   @unique
-  name        String
-  subject     String
-  preheader   String?
-  body        String
-  content     Json?
-  eventType   String
-  description String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@map("email_templates")
-}
-
-model PushCampaign {
-  id           String              @id @default(cuid())
-  title        String              @db.VarChar(100)
-  body         String              @db.VarChar(255)
-  url          String?
-  icon         String?
-  imageUrl     String?
-  audience     Json                @default("{}")
-  status       CampaignStatus      @default(DRAFT)
-  scheduledAt  DateTime?           @db.Timestamptz(6)
-  sentAt       DateTime?           @db.Timestamptz(6)
-  totalSent    Int                 @default(0)
-  totalClicked Int                 @default(0)
-  createdAt    DateTime            @default(now())
-  updatedAt    DateTime            @updatedAt
-  createdBy    String?
-  clicks       PushCampaignClick[]
-
-  @@map("push_campaigns")
-}
-
-model PushCampaignClick {
-  id         String       @id @default(cuid())
-  campaignId String
-  userId     String?
-  clickedAt  DateTime     @default(now())
-  userAgent  String?
-  campaign   PushCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-
-  @@index([campaignId])
-  @@index([clickedAt])
-  @@map("push_campaign_clicks")
-}
-
-model WhatsAppTemplate {
-  id          String   @id @default(cuid())
-  slug        String   @unique
-  name        String
-  body        String
-  eventType   String
-  description String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([eventType])
-  @@map("whatsapp_template")
-}
-
-model PushTemplate {
-  id          String   @id @default(cuid())
-  slug        String   @unique
-  name        String
-  title       String
-  body        String
-  icon        String?
-  badge       String?
-  image       String?
-  url         String?
-  tag         String?
-  eventType   String
-  description String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([eventType])
-  @@index([isActive])
-  @@map("push_template")
-}
-
-model SystemConfig {
-  id          String     @id @default(cuid())
-  key         String     @unique
-  value       String
-  type        ConfigType
-  label       String?
-  description String?
-  category    String?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-
-  @@index([category])
-  @@map("system_config")
-}
-
-model CommunityRequestUpload {
-  id                 String           @id @default(cuid())
-  requestId          String
-  userId             String
-  cloudinaryPublicId String
-  url                String
-  fileName           String
-  fileType           String
-  fileSize           Int
-  createdAt          DateTime         @default(now())
-  request            CommunityRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
-  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([requestId])
-  @@map("community_request_upload")
-}
-
-model CommunityRequestComment {
-  id        String                    @id @default(cuid())
-  requestId String
-  userId    String
-  parentId  String?
-  content   String
-  isEdited  Boolean                   @default(false)
-  createdAt DateTime                  @default(now())
-  updatedAt DateTime                  @updatedAt
-  parent    CommunityRequestComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies   CommunityRequestComment[] @relation("CommentReplies")
-  request   CommunityRequest          @relation(fields: [requestId], references: [id], onDelete: Cascade)
-  user      User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([requestId])
-  @@index([userId])
-  @@index([parentId])
-  @@map("community_request_comment")
 }
 
 enum UserRole {
@@ -870,24 +433,6 @@ enum AuditActor {
   USER
   ADMIN
   SYSTEM
-}
-
-enum CommunityRequestStatus {
-  draft
-  voting
-  selected
-  approved
-  in_production
-  completed
-  unfeasible
-}
-
-enum CampaignStatus {
-  DRAFT
-  SCHEDULED
-  SENDING
-  SENT
-  FAILED
 }
 
 enum ConfigType {

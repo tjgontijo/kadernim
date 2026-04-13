@@ -64,15 +64,6 @@ export function SystemHeader() {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-8">
           <Link
-            href="/lesson-plans"
-            className={cn(
-              "text-sm font-bold transition-colors hover:text-primary",
-              pathname.startsWith('/lesson-plans') ? "text-primary" : "text-muted-foreground"
-            )}
-          >
-            Planos
-          </Link>
-          <Link
             href="/resources"
             className={cn(
               "text-sm font-bold transition-colors hover:text-primary",
@@ -80,15 +71,6 @@ export function SystemHeader() {
             )}
           >
             Recursos
-          </Link>
-          <Link
-            href="/community"
-            className={cn(
-              "text-sm font-bold transition-colors hover:text-primary",
-              pathname.startsWith('/community') ? "text-primary" : "text-muted-foreground"
-            )}
-          >
-            Pedidos
           </Link>
         </nav>
 

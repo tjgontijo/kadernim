@@ -24,8 +24,8 @@ import { CrudPageShell } from '@/components/dashboard/crud/crud-page-shell'
 import { CrudDataView } from '@/components/dashboard/crud/crud-data-view'
 import { ViewType } from '@/components/dashboard/crud/types'
 import {
-  ResourcesCardView,
-  ResourcesTableView,
+  ResourcesGridVirtuoso,
+  ResourcesTableVirtuoso,
 } from '@/components/dashboard/resources'
 import { ResourceEditDrawer } from '@/components/dashboard/resources/resource-drawer'
 import { useResourceMeta } from '@/hooks/resources/use-resources'
@@ -40,7 +40,6 @@ export default function AdminResourcesPage() {
   const EDUCATION_LEVEL_OPTIONS = metaData?.educationLevels || []
   const SUBJECT_OPTIONS = metaData?.subjects || []
 
-  const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(15)
   const [visibleColumns, setVisibleColumns] = useState<string[]>(['subject', 'educationLevel', 'isFree', 'createdAt'])
   const [isFreeOnly, setIsFreeOnly] = useState(false)
@@ -59,9 +58,17 @@ export default function AdminResourcesPage() {
   const searchQuery = deferredSearchInput.trim().length >= 3 ? deferredSearchInput : ''
   const deleteResourceMutation = useDeleteAdminResource()
 
-  const { data: resourcesData, isLoading, error, refetch } = useAdminResources({
+  const { 
+    data: items, 
+    isLoading, 
+    error, 
+    refetch, 
+    fetchNextPage, 
+    hasNextPage, 
+    isFetchingNextPage,
+    pagination 
+  } = useAdminResources({
     filters: {
-      page,
       limit,
       q: searchQuery,
       educationLevel: educationLevel || undefined,
@@ -103,7 +110,6 @@ export default function AdminResourcesPage() {
     setSubject('')
     setGrade('')
     setIsFreeOnly(false)
-    setPage(1)
   }
 
   const getEducationLevelLabel = () => {
@@ -146,7 +152,6 @@ export default function AdminResourcesPage() {
               checked={educationLevel === opt.key}
               onCheckedChange={() => {
                 setEducationLevel(educationLevel === opt.key ? '' : opt.key)
-                setPage(1)
               }}
             >
               {opt.label}
@@ -172,7 +177,6 @@ export default function AdminResourcesPage() {
               checked={subject === opt.key}
               onCheckedChange={() => {
                 setSubject(subject === opt.key ? '' : opt.key)
-                setPage(1)
               }}
             >
               {opt.label}
@@ -198,7 +202,6 @@ export default function AdminResourcesPage() {
               checked={grade === opt.key}
               onCheckedChange={() => {
                 setGrade(grade === opt.key ? '' : opt.key)
-                setPage(1)
               }}
             >
               {opt.label}
@@ -214,7 +217,6 @@ export default function AdminResourcesPage() {
           checked={isFreeOnly}
           onCheckedChange={(checked) => {
             setIsFreeOnly(checked)
-            setPage(1)
           }}
         />
         <Label htmlFor="is-free-crud" className="text-xs font-medium cursor-pointer">
@@ -236,7 +238,7 @@ export default function AdminResourcesPage() {
     </div>
   )
 
-  const resources = (resourcesData?.data ?? []).map(r => ({
+  const resources = items.map(r => ({
     ...r,
     createdAt: new Date(r.createdAt),
     updatedAt: new Date(r.updatedAt),
@@ -253,13 +255,13 @@ export default function AdminResourcesPage() {
         searchInput={searchInput}
         onSearchChange={setSearchInput}
         searchPlaceholder="Buscar por título ou descrição..."
-        page={page}
+        page={pagination?.page ?? 1}
         limit={limit}
-        onPageChange={setPage}
+        onPageChange={() => {}}
         onLimitChange={setLimit}
-        totalItems={resourcesData?.pagination.total ?? 0}
-        totalPages={resourcesData?.pagination.totalPages ?? 0}
-        hasMore={resourcesData?.pagination.hasMore ?? false}
+        totalItems={pagination?.total ?? 0}
+        totalPages={pagination?.totalPages ?? 0}
+        hasMore={hasNextPage ?? false}
         isLoading={isLoading}
         filters={filtersComponent}
         onAdd={() => {
@@ -293,23 +295,31 @@ export default function AdminResourcesPage() {
             data={resources}
             view={view}
             tableView={
-              <ResourcesTableView
+              <ResourcesTableVirtuoso
                 resources={resources as any}
                 visibleColumns={visibleColumns}
                 onView={handleEditResource}
                 onEdit={handleEditResource}
                 onDelete={handleDeleteResource}
+                onEndReached={() => hasNextPage && fetchNextPage()}
               />
             }
             cardView={
-              <ResourcesCardView
+              <ResourcesGridVirtuoso
                 resources={resources as any}
                 onView={handleEditResource}
                 onEdit={handleEditResource}
                 onDelete={handleDeleteResource}
+                onEndReached={() => hasNextPage && fetchNextPage()}
               />
             }
           />
+          
+          {isFetchingNextPage && (
+            <div className="flex justify-center py-8">
+              <div className="h-6 w-6 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+            </div>
+          )}
         </div>
       </CrudPageShell>
 

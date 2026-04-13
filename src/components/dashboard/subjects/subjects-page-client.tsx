@@ -7,11 +7,11 @@ import { CrudPageShell } from '@/components/dashboard/crud/crud-page-shell'
 import { CrudDataView } from '@/components/dashboard/crud/crud-data-view'
 import { CrudEditDrawer } from '@/components/dashboard/crud/crud-edit-drawer'
 import { PermissionGuard } from '@/components/auth/permission-guard'
-import { useDataTable } from '@/hooks/utils/use-data-table'
+import { useInfiniteDataTable } from '@/hooks/utils/use-infinite-data-table'
+import { SubjectsTableVirtuoso } from './subjects-table-virtuoso'
+import { SubjectsGridVirtuoso } from './subjects-grid-virtuoso'
 import { createAdminSubject, deleteAdminSubject, updateAdminSubject } from '@/lib/taxonomy/api-client'
 import { SubjectForm } from '@/components/dashboard/subjects/subject-form'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { type SubjectInput, type Subject } from '@/lib/taxonomy/types'
 import { DeleteConfirmDialog } from '@/components/dashboard/crud/delete-confirm-dialog'
@@ -19,7 +19,7 @@ import { DeleteConfirmDialog } from '@/components/dashboard/crud/delete-confirm-
 export function SubjectsPageClient() {
     const [isDeletingId, setIsDeletingId] = useState<string | null>(null)
 
-    const crud = useDataTable<Subject>({
+    const crud = useInfiniteDataTable<Subject>({
         queryKey: ['admin-subjects'],
         endpoint: '/api/v1/admin/subjects'
     })
@@ -76,165 +76,43 @@ export function SubjectsPageClient() {
                 setView={crud.setView}
                 searchInput={crud.searchInput}
                 onSearchChange={crud.setSearchInput}
-                page={crud.page}
+                page={crud.pagination?.page ?? 1}
                 limit={crud.limit}
-                onPageChange={crud.handlePageChange}
+                onPageChange={() => {}}
                 onLimitChange={crud.handleLimitChange}
                 totalItems={crud.pagination?.total ?? 0}
                 totalPages={crud.pagination?.totalPages ?? 0}
-                hasMore={crud.pagination?.hasMore ?? false}
+                hasMore={crud.hasNextPage ?? false}
                 isLoading={crud.isLoading}
             >
-                <CrudDataView
-                    data={crud.data}
-                    view={crud.view}
-                    tableView={
-                        <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
-                            <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead>
-                                        <tr className="bg-muted/30 border-b border-border">
-                                            <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
-                                                Disciplina
-                                            </th>
-                                            <th className="px-4 py-2.5 text-center text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
-                                                Número de Recursos
-                                            </th>
-                                            <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
-                                                Código
-                                            </th>
-                                            <th className="w-24"></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {crud.data.map((subject) => (
-                                            <tr
-                                                key={subject.id}
-                                                className="group border-b border-border/50 last:border-0 hover:bg-muted/40 transition-colors cursor-pointer"
-                                                onClick={() => crud.openEdit(subject)}
-                                            >
-                                                <td className="px-4 py-3">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="h-8 w-8 rounded-lg bg-primary/5 flex items-center justify-center shrink-0 border border-primary/10">
-                                                            <BookOpen className="h-4 w-4 text-primary" />
-                                                        </div>
-                                                        <span className="font-semibold text-sm text-foreground truncate leading-tight">
-                                                            {subject.name}
-                                                        </span>
-                                                    </div>
-                                                </td>
-
-                                                <td className="px-4 py-3">
-                                                    <div className="flex items-center justify-center">
-                                                        <span className="inline-flex items-center justify-center h-7 min-w-[28px] px-2 rounded-full bg-primary/10 text-primary font-bold text-xs">
-                                                            {subject._count?.resources ?? 0}
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <code className="text-[10px] font-mono bg-muted/50 px-2 py-1 rounded text-muted-foreground border">
-                                                        {subject.slug}
-                                                    </code>
-                                                </td>
-                                                <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                                                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <PermissionGuard action="update" subject="Subject">
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
-                                                                onClick={() => crud.openEdit(subject)}
-                                                            >
-                                                                <Edit3 className="h-4 w-4" />
-                                                            </Button>
-                                                        </PermissionGuard>
-                                                        <PermissionGuard action="delete" subject="Subject">
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className="h-8 w-8 rounded-full text-destructive hover:bg-destructive/10 hover:text-destructive transition-colors"
-                                                                onClick={() => setIsDeletingId(subject.id)}
-                                                            >
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </Button>
-                                                        </PermissionGuard>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                <div className="p-4 md:p-6 pb-20 h-full flex flex-col">
+                    <CrudDataView
+                        data={crud.data}
+                        view={crud.view}
+                        tableView={
+                            <SubjectsTableVirtuoso 
+                                subjects={crud.data}
+                                onEdit={crud.openEdit}
+                                onDelete={(id) => setIsDeletingId(id)}
+                                onEndReached={() => crud.hasNextPage && crud.fetchNextPage()}
+                            />
+                        }
+                        cardView={
+                            <SubjectsGridVirtuoso 
+                                subjects={crud.data}
+                                onEdit={crud.openEdit}
+                                onDelete={(id) => setIsDeletingId(id)}
+                                onEndReached={() => crud.hasNextPage && crud.fetchNextPage()}
+                            />
+                        }
+                    />
+                    
+                    {crud.isFetchingNextPage && (
+                        <div className="flex justify-center py-8">
+                            <div className="h-6 w-6 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
                         </div>
-                    }
-                    cardView={
-                        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                            {crud.data.map((subject) => (
-                                <div
-                                    key={subject.id}
-                                    className="group relative rounded-xl border border-border bg-card overflow-hidden transition-all hover:border-primary/40 hover:shadow-md cursor-pointer"
-                                    onClick={() => crud.openEdit(subject)}
-                                >
-                                    <div className="flex p-3 gap-3">
-                                        <div className="relative w-16 shrink-0">
-                                            <div className="aspect-square w-full bg-primary/5 rounded-lg border border-primary/10 flex items-center justify-center">
-                                                <Hash className="h-6 w-6 text-primary/40" />
-                                            </div>
-                                        </div>
-
-                                        <div className="flex-1 min-w-0 pr-8">
-                                            <h3 className="font-semibold text-sm text-foreground truncate leading-tight mb-1">
-                                                {subject.name}
-                                            </h3>
-                                            <div className="flex items-center gap-2">
-                                                <code className="text-[10px] font-mono text-muted-foreground opacity-60">
-                                                    {subject.slug}
-                                                </code>
-                                                <span className="text-muted-foreground/30">•</span>
-                                                <span className="text-[10px] font-bold text-primary">
-                                                    {subject._count?.resources ?? 0} {(subject._count?.resources ?? 0) === 1 ? 'recurso' : 'recursos'}
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        <div
-                                            className="absolute right-2 top-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                            onClick={(e) => e.stopPropagation()}
-                                        >
-                                            <PermissionGuard action="update" subject="Subject">
-                                                <Button
-                                                    variant="secondary"
-                                                    size="icon"
-                                                    className="h-7 w-7 rounded-lg bg-background/80 backdrop-blur-sm shadow-sm"
-                                                    onClick={() => crud.openEdit(subject)}
-                                                >
-                                                    <Edit3 className="h-3.5 w-3.5" />
-                                                </Button>
-                                            </PermissionGuard>
-                                            <PermissionGuard action="delete" subject="Subject">
-                                                <Button
-                                                    variant="secondary"
-                                                    size="icon"
-                                                    className="h-7 w-7 rounded-lg bg-background/80 backdrop-blur-sm shadow-sm text-destructive hover:text-destructive"
-                                                    onClick={() => setIsDeletingId(subject.id)}
-                                                >
-                                                    <Trash2 className="h-3.5 w-3.5" />
-                                                </Button>
-                                            </PermissionGuard>
-                                        </div>
-                                    </div>
-
-                                    <div className="border-t border-border/50 px-3 py-2 bg-muted/5 flex items-center justify-between">
-                                        <Badge variant="outline" className="text-[9px] border-primary/10 text-muted-foreground/70 font-medium">
-                                            Disciplina
-                                        </Badge>
-                                        <span className="text-[9px] text-muted-foreground/40 font-mono italic">#{subject.id.slice(-4)}</span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    }
-                />
+                    )}
+                </div>
             </CrudPageShell>
 
             <CrudEditDrawer

@@ -4,7 +4,7 @@ export {
   BulkUpdateResourcesSchema,
   CreateResourceSchema,
   GrantResourceAccessSchema,
-  LinkBnccSkillSchema,
+
   ListResourcesFilterSchema,
   ReorderResourceImagesSchema,
   ResourceDetailResponseSchema,
@@ -19,7 +19,7 @@ export type {
   BulkUpdateResourcesInput,
   CreateResourceInput,
   GrantResourceAccessInput,
-  LinkBnccSkillInput,
+
   ListResourcesFilter,
   ResourceDetailResponse,
   ResourceListResponse as AdminResourceListResponse,

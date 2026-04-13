@@ -1,6 +1,6 @@
 export * from './access-service'
 export * from './bulk-service'
-export * from './bncc-skill-service'
+
 export * from './create-service'
 export * from './delete-service'
 export * from './detail-service'

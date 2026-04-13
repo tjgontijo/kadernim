@@ -1,23 +1,11 @@
-'use client'
+import { getBillingCheckoutCatalog } from '@/lib/billing/queries'
+import { PlansClient } from './plans-client'
 
-import { Hero } from '@/components/home/Hero'
-import { ProblemAgitation } from '@/components/home/ProblemAgitation'
-import { SolutionFeatures } from '@/components/home/SolutionFeatures'
-import { Community } from '@/components/home/Community'
-import { Pricing } from '@/components/home/Pricing'
-import { FAQ } from '@/components/home/FAQ'
-import { Footer } from '@/components/home/Footer'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
-export default function HomePage() {
-  return (
-    <main className="min-h-screen bg-background">
-      <Hero />
-      <ProblemAgitation />
-      <SolutionFeatures />
-      <Community />
-      <Pricing />
-      <FAQ />
-      <Footer />
-    </main>
-  )
+export default async function PlansPage() {
+  const catalog = await getBillingCheckoutCatalog(true) // force refresh to ensure DB parity
+
+  return <PlansClient catalog={catalog} />
 }

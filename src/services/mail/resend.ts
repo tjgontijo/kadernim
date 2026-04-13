@@ -13,13 +13,13 @@ class ResendProvider implements EmailProvider {
   }
   
   isConfigured(): boolean {
-    return !!this.client && !!process.env.EMAIL_FROM;
+    return !!this.client && (!!process.env.RESEND_FROM || !!process.env.EMAIL_FROM);
   }
   
   async send(payload: EmailPayload): Promise<EmailResponse> {
     try {
       if (!this.isConfigured()) {
-        throw new Error('Resend não está configurado. Verifique RESEND_API_KEY e EMAIL_FROM.');
+        throw new Error('Resend não está configurado. Verifique RESEND_API_KEY e RESEND_FROM.');
       }
       
       const { data, error } = await this.client!.emails.send({

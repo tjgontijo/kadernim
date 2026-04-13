@@ -3,14 +3,13 @@ import { ZodType } from 'zod'
 import {
   CreateResourceSchema,
   GrantResourceAccessSchema,
-  LinkBnccSkillSchema,
+
   ListResourcesFilterSchema,
   ResourceListResponseSchema,
   UpdateResourceSchema,
 } from '@/lib/resources/schemas'
 import { requirePermission } from '@/server/auth/middleware'
 import { checkRateLimit } from '@/server/utils/rate-limit'
-import { emitEvent } from '@/lib/inngest'
 
 type RateLimitConfig = {
   key: string
@@ -188,7 +187,7 @@ export function createAdminResourceCollectionHandlers(config: {
     isFree: boolean
     thumbUrl?: string | null
     grades: string[]
-    bnccSkillIds?: string[]
+
     adminId: string
   }) => Promise<unknown>
   buildCreatedResponse: (resource: unknown) => unknown
@@ -257,14 +256,6 @@ export function createAdminResourceCollectionHandlers(config: {
           subject: { slug: string }
         }
 
-        await emitEvent('resource.created', {
-          resourceId: createdResource.id,
-          title: createdResource.title,
-          educationLevel: createdResource.educationLevel.slug,
-          subject: createdResource.subject.slug,
-          createdBy: authResult.userId,
-        })
-
         return NextResponse.json(config.buildCreatedResponse(resource), { status: 201 })
       } catch (error) {
         if (error instanceof Error && error.message.includes('already exists')) {
@@ -289,7 +280,7 @@ export function createAdminResourceCrudHandlers(config: {
     isFree?: boolean
     thumbUrl?: string | null
     grades?: string[]
-    bnccSkillIds?: string[]
+
     adminId: string
   }) => Promise<unknown>
   deleteResource: (id: string, adminId: string) => Promise<unknown>
@@ -468,79 +459,7 @@ export function createAdminResourceAccessHandlers(config: {
   }
 }
 
-export function createAdminResourceBnccHandlers(config: {
-  listSkills: (resourceId: string) => Promise<unknown>
-  linkSkill: (resourceId: string, bnccSkillId: string) => Promise<{
-    id: string
-    bnccSkill: unknown
-  }>
-}) {
-  return {
-    GET: async function GET(
-      request: NextRequest,
-      { params }: { params: Promise<{ id: string }> }
-    ) {
-      try {
-        const authResult = await authorizeAdminResourceRequest(request, {
-          key: 'admin:resources:bncc:list',
-          limit: 60,
-        })
-        if (authResult instanceof NextResponse) {
-          return authResult
-        }
 
-        const { id } = await params
-        return NextResponse.json({ skills: await config.listSkills(id) })
-      } catch (error) {
-        return adminResourceServerError(
-          '[GET /api/v1/admin/resources/:id/bncc-skills]',
-          error
-        )
-      }
-    },
-    POST: async function POST(
-      request: NextRequest,
-      { params }: { params: Promise<{ id: string }> }
-    ) {
-      try {
-        const authResult = await authorizeAdminResourceRequest(request, {
-          key: 'admin:resources:bncc',
-          limit: 30,
-        })
-        if (authResult instanceof NextResponse) {
-          return authResult
-        }
-
-        const parsed = parseWithSchema(
-          LinkBnccSkillSchema,
-          await request.json(),
-          'Validation failed'
-        )
-        if (parsed instanceof NextResponse) {
-          return parsed
-        }
-
-        const { id } = await params
-        return NextResponse.json(
-          await config.linkSkill(id, parsed.bnccSkillId),
-          { status: 201 }
-        )
-      } catch (error) {
-        if (
-          error instanceof Error &&
-          (error.message === 'Resource not found' || error.message === 'BNCC skill not found')
-        ) {
-          return adminResourceNotFound(error.message)
-        }
-
-        return adminResourceServerError(
-          '[POST /api/v1/admin/resources/:id/bncc-skills]',
-          error
-        )
-      }
-    },
-  }
-}
 
 export function createAdminResourceFileUploadHandler(config: {
   uploadFile: (file: File, folder: string, resourceId: string) => Promise<{

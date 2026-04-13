@@ -27,23 +27,23 @@ export const SolutionFeatures: React.FC = () => {
 
           {/* Feature 2 */}
           <div className="bg-card rounded-3xl p-8 border border-border shadow-sm hover:shadow-md transition-shadow">
-            <div className="w-14 h-14 bg-secondary/10 rounded-2xl flex items-center justify-center mb-6">
-              <RefreshCw className="h-7 w-7 text-secondary" />
+            <div className="w-14 h-14 bg-success/10 rounded-2xl flex items-center justify-center mb-6">
+              <RefreshCw className="h-7 w-7 text-success" />
             </div>
-            <h3 className="text-xl font-bold text-foreground mb-3">Gerador de planos BNCC</h3>
+            <h3 className="text-xl font-bold text-foreground mb-3">Materiais em PDF</h3>
             <p className="text-muted-foreground leading-relaxed">
-              Transforme os materiais em planos de aula organizados em poucos minutos. Ideal para quem quer planejar melhor, economizar tempo e manter tudo alinhado à BNCC sem esforço.
+              Todos os materiais estão prontos para baixar e imprimir. Arquivos organizados, formatados e pensados para facilitar a sua aplicação imediata em sala de aula.
             </p>
           </div>
 
           {/* Feature 3 */}
           <div className="bg-card rounded-3xl p-8 border border-border shadow-sm hover:shadow-md transition-shadow">
             <div className="w-14 h-14 bg-accent/20 rounded-2xl flex items-center justify-center mb-6">
-              <Users className="h-7 w-7 text-foreground" />
+              <CheckCircle className="h-7 w-7 text-foreground" />
             </div>
-            <h3 className="text-xl font-bold text-foreground mb-3">Comunidade que decide</h3>
+            <h3 className="text-xl font-bold text-foreground mb-3">Novidades toda semana</h3>
             <p className="text-muted-foreground leading-relaxed">
-              Todo mês, os recursos mais votados pelos professores entram na plataforma. Você não só usa. Você ajuda a decidir o que será criado.
+              Toda semana novos recursos pedagógicos chegam à plataforma, garantindo que você sempre tenha materiais frescos e relevantes para suas turmas.
             </p>
           </div>
         </div>

@@ -229,11 +229,13 @@ function OrderSummary({
 export function GuestCheckoutForm({
   prefilledUser,
   catalog,
+  initialPlan,
 }: {
   prefilledUser?: PrefilledUser | null
   catalog: CheckoutPlanCatalog
+  initialPlan?: CheckoutPlanId
 }) {
-  const [plan, setPlan] = useState<CheckoutPlanId>(DEFAULT_CHECKOUT_PLAN_ID)
+  const [plan, setPlan] = useState<CheckoutPlanId>(initialPlan ?? DEFAULT_CHECKOUT_PLAN_ID)
   const [method, setMethod] = useState<Method>('PIX')
   const [annualInstallments, setAnnualInstallments] = useState(1)
   const [name, setName] = useState(prefilledUser?.name ?? '')
