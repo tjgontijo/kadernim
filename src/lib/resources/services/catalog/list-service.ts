@@ -55,7 +55,7 @@ export async function getResourceList({
   const joins: Prisma.Sql[] = []
 
   if (q) {
-    whereConditions.push(PrismaNamespace.sql`r."title" ILIKE ${`%${q}%`}`)
+    whereConditions.push(PrismaNamespace.sql`unaccent(r."title") ILIKE unaccent(${`%${q}%`})`)
   }
 
   if (educationLevel) {

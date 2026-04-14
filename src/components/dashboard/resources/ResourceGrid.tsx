@@ -1,6 +1,6 @@
 'use client'
 
-import { forwardRef } from 'react'
+import { forwardRef, useEffect, useState } from 'react'
 import { VirtuosoGrid } from 'react-virtuoso'
 import { ResourceCard } from './ResourceCard'
 
@@ -49,6 +49,13 @@ export function ResourceGrid({
   isLoading = false,
   isFetchingNextPage = false,
 }: ResourceGridProps) {
+  const [scrollParent, setScrollParent] = useState<HTMLElement | undefined>(undefined)
+
+  useEffect(() => {
+    const el = document.getElementById('dashboard-main-content')
+    if (el) setScrollParent(el)
+  }, [])
+
   return (
     <div className="w-full">
       {items.length === 0 && !isLoading ? (
@@ -59,7 +66,7 @@ export function ResourceGrid({
         </div>
       ) : (
         <VirtuosoGrid
-          useWindowScroll
+          customScrollParent={scrollParent || undefined}
           data={items}
           endReached={() => {
             if (hasNextPage && !isFetchingNextPage) {

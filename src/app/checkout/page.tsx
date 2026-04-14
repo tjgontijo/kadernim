@@ -3,7 +3,8 @@ import { headers } from 'next/headers'
 import { getBillingCheckoutCatalog } from '@/lib/billing/queries'
 import { auth } from '@/server/auth/auth'
 import { GuestCheckoutForm } from '@/components/dashboard/billing/checkout-form'
-import { BookOpen, Lock } from 'lucide-react'
+import Image from 'next/image'
+import { Lock } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Checkout | Kadernim Pro',
@@ -35,11 +36,15 @@ export default async function CheckoutPage(props: {
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
       <header className="bg-white border-b border-gray-200 h-14 flex items-center px-4 sm:px-8">
-        <div className="flex items-center gap-2">
-          <div className="h-7 w-7 bg-blue-600 rounded-lg flex items-center justify-center">
-            <BookOpen className="h-4 w-4 text-white" aria-hidden="true" />
-          </div>
-          <span className="font-bold text-gray-900 text-base">Kadernim</span>
+        <div className="flex items-center">
+          <Image
+            src="/images/logo_transparent_crop.png"
+            alt="Kadernim"
+            width={122}
+            height={28}
+            className="h-7 w-auto object-contain"
+            priority
+          />
         </div>
         <div className="ml-auto flex items-center gap-1.5 text-gray-400">
           <Lock className="h-3.5 w-3.5" aria-hidden="true" />

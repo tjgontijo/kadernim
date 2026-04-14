@@ -5,7 +5,7 @@ import { Suspense, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Mail } from 'lucide-react'
+import { Mail, ArrowRight } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -139,38 +139,44 @@ function RequestOtpContent() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="w-full max-w-md px-4">
-        <div className="py-8 px-4 sm:px-6">
-          <div className="mb-6 flex justify-center">
-            <Image
-              src="/images/system/logo_transparent.png"
-              alt="Kadernim Logo"
-              width={130}
-              height={87}
-              style={{ width: 'auto', height: 'auto' }}
-              priority
-            />
+    <div className="flex min-h-screen items-center justify-center bg-[#FDFCFB] relative overflow-hidden">
+      {/* Brand Glow Background */}
+      <div className="absolute top-0 right-0 -mr-20 -mt-20 h-96 w-96 rounded-full bg-brand-1/10 blur-3xl opacity-60"></div>
+      <div className="absolute bottom-0 left-0 -ml-20 -mb-20 h-80 w-80 rounded-full bg-brand-2/10 blur-3xl opacity-60"></div>
+
+      <div className="w-full max-w-md px-4 relative z-10">
+        <div className="bg-white rounded-[2.5rem] border border-stone-200 shadow-xl shadow-stone-200/50 p-8 sm:p-10">
+          <div className="mb-8 flex justify-center">
+            <Link href="/">
+              <Image
+                src="/images/logo_transparent_crop.png"
+                alt="Kadernim"
+                width={160}
+                height={37}
+                className="h-9 w-auto object-contain"
+                priority
+              />
+            </Link>
           </div>
 
-          <h1 className="mb-2 text-center text-xl font-semibold text-foreground">
+          <h1 className="mb-2 text-center text-2xl font-black text-stone-800 tracking-tight">
             Acesse sua conta
           </h1>
-          <p className="mb-6 text-center text-xs text-muted-foreground">
-            Enviaremos um código de verificação para o seu email.
+          <p className="mb-8 text-center text-sm font-medium text-stone-400">
+            Enviaremos um código de verificação para o seu e-mail.
           </p>
 
-          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+          <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-muted-foreground"
+                className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5 ml-1"
               >
-                Email
+                E-mail de acesso
               </label>
-              <div className="relative mt-1 rounded-md">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <Mail className="h-5 w-5 text-muted-foreground/50" />
+              <div className="relative rounded-xl">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                  <Mail className="h-5 w-5 text-stone-300" />
                 </div>
                 <input
                   id="email"
@@ -180,16 +186,16 @@ function RequestOtpContent() {
                   onBlur={(e) => {
                     setValue('email', e.target.value.trim(), { shouldValidate: true })
                   }}
-                  className={`block w-full rounded-md border py-3 pl-10 text-foreground placeholder-muted-foreground focus:ring-2 sm:text-sm ${errors.email
-                    ? 'border-destructive focus:border-destructive focus:ring-destructive/50'
-                    : 'border-input bg-background focus:border-primary focus:ring-ring'
+                  className={`block w-full rounded-xl border-stone-200 py-3.5 pl-11 text-stone-700 placeholder-stone-300 focus:ring-2 focus:ring-brand-1 focus:border-brand-1 sm:text-sm transition-all shadow-sm ${errors.email
+                    ? 'border-destructive focus:ring-destructive/20 focus:border-destructive'
+                    : 'bg-stone-50/30'
                     }`}
                   placeholder="seu@email.com"
                   aria-invalid={!!errors.email}
                 />
               </div>
               {errors.email && (
-                <p className="mt-1 text-xs text-destructive">
+                <p className="mt-1.5 ml-1 text-xs font-medium text-red-500">
                   {errors.email.message}
                 </p>
               )}
@@ -198,12 +204,25 @@ function RequestOtpContent() {
             <button
               type="submit"
               disabled={status === 'loading'}
-              className="flex w-full cursor-pointer justify-center rounded-md bg-primary px-4 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="group relative flex w-full cursor-pointer justify-center rounded-xl bg-brand-1 px-4 py-4 text-sm font-bold text-white shadow-lg shadow-brand-1/25 transition-all hover:bg-brand-2 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {status === 'loading' ? <Spinner className="h-5 w-5 text-white" /> : 'Enviar código'}
+              {status === 'loading' ? (
+                <Spinner className="h-5 w-5 text-white" />
+              ) : (
+                <div className="flex items-center gap-2">
+                  Enviar código de acesso
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              )}
             </button>
           </form>
 
+          <p className="mt-8 text-center text-xs text-stone-400 font-medium">
+            Não tem uma conta?{' '}
+            <Link href="/plans" className="text-brand-1 font-bold hover:underline">
+              Ver planos
+            </Link>
+          </p>
         </div>
       </div>
     </div>

@@ -19,7 +19,7 @@ interface Filters {
 export default function ResourcesPage() {
   const PAGE_SIZE = 20
 
-  const [tab, setTab] = useState<'all' | 'mine' | 'free'>('mine')
+  const [tab, setTab] = useState<'all' | 'mine' | 'free'>('all')
   const [filtersByTab, setFiltersByTab] = useState<Record<string, Filters>>({
     all: {},
     mine: {},

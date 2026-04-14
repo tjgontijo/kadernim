@@ -37,26 +37,22 @@ export const Pricing: React.FC = () => {
             </div>
 
             <div className="mb-8 min-h-[120px] flex flex-col justify-center">
-              <div className="flex flex-col motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-300">
+              <div className="flex flex-col motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-300 items-center">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-xl font-bold text-foreground">12x de</span>
-                  <span className="text-5xl font-extrabold text-foreground dark:text-primary tracking-tighter">R$ 20,37</span>
+                  <span className="text-xl font-bold text-stone-400 mr-1">R$</span>
+                  <span className="text-6xl font-black text-stone-900 tracking-tighter">197</span>
+                  <span className="text-sm font-bold text-stone-400">,00</span>
                 </div>
-                <div className="flex items-center gap-1 text-sm text-muted-foreground font-medium mt-1">
-                  <CreditCard className="w-3 h-3" aria-hidden="true" />
-                  <span>no cartão de crédito</span>
-                </div>
-                <div className="mt-4 pt-4 border-t border-border/50 dark:border-border">
-                  <p className="text-sm text-muted-foreground dark:text-slate-300">
-                    ou <span className="font-bold text-foreground dark:text-primary">R$ 197,00</span> à vista no PIX
-                  </p>
+                <div className="flex items-center gap-1 text-[11px] font-bold text-stone-500 uppercase tracking-widest mt-3 px-4 py-1.5 bg-stone-100/80 rounded-full border border-stone-200/50">
+                  <CreditCard className="w-3.5 h-3.5 mr-1" aria-hidden="true" />
+                  <span>ou 12x de R$ 20,37 no cartão</span>
                 </div>
               </div>
             </div>
 
             <Button
               size="lg"
-              className="w-full mb-8 h-14 text-lg font-bold shadow-primary/25 shadow-lg group focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+              className="w-full mb-8 h-14 text-lg font-bold bg-brand-1 hover:bg-brand-2 text-white shadow-lg shadow-brand-1/20 group"
               onClick={() => window.open("https://seguro.profdidatica.com.br/r/TMNDJH4WEN?utm_source=app&utm_medium=pricing_page&utm_campaign=launch", "_blank")}
               aria-label="Quero ser Assinante Pro - Clique para ir para checkout"
             >
@@ -73,9 +69,9 @@ export const Pricing: React.FC = () => {
                 "Suporte via WhatsApp",
                 "Formatos prontos para impressão"
               ].map((item, i) => (
-                <li key={i} className="flex items-start text-sm font-semibold text-foreground dark:text-slate-100">
-                  <div className="bg-primary/10 dark:bg-blue-500/20 rounded-full p-1 mr-3 mt-0.5 flex-shrink-0">
-                    <Check className="h-4 w-4 text-primary dark:text-blue-400 shrink-0" aria-hidden="true" />
+                <li key={i} className="flex items-start text-sm font-semibold text-stone-700">
+                  <div className="bg-green-50 rounded-full p-1 mr-3 mt-0.5 flex-shrink-0 border border-green-100">
+                    <Check className="h-3 w-3 text-green-600 shrink-0" strokeWidth={3} aria-hidden="true" />
                   </div>
                   {item}
                 </li>

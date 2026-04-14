@@ -2,6 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   ArrowRight,
   BookOpen,
@@ -36,15 +37,19 @@ function Navbar() {
   return (
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-stone-200/60">
       <W className="h-16 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 bg-violet-500 rounded-lg flex items-center justify-center">
-            <BookOpen className="h-4 w-4 text-white" />
-          </div>
-          <span className="text-stone-800 font-bold text-lg tracking-tight">Kadernim</span>
-        </div>
+        <Link href="/" className="flex items-center">
+          <Image
+            src="/images/logo_transparent_crop.png"
+            alt="Kadernim"
+            width={140}
+            height={32}
+            className="h-8 w-auto object-contain"
+            priority
+          />
+        </Link>
 
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-stone-500">
-          <a href="#biblioteca" className="hover:text-stone-800 transition-colors">A Biblioteca</a>
+          <a href="#biblioteca" className="hover:text-stone-800 transition-colors">O que você recebe</a>
           <a href="#como-funciona" className="hover:text-stone-800 transition-colors">Como Funciona</a>
           <Link href="/plans" className="hover:text-stone-800 transition-colors">Planos</Link>
         </div>
@@ -55,7 +60,7 @@ function Navbar() {
           </Link>
           <Link
             href="/plans"
-            className="bg-violet-500 hover:bg-violet-600 text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-colors"
+            className="bg-brand-1 hover:bg-brand-2 text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-colors"
           >
             Começar
           </Link>
@@ -80,7 +85,7 @@ function Hero() {
 
           <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold text-stone-800 leading-[1.1] tracking-tight mb-6">
             Materiais pedagógicos <br className="hidden sm:block" />
-            <span className="text-violet-600">prontos, validados e organizados.</span>
+            <span className="text-brand-1">prontos, validados e organizados.</span>
           </h1>
 
           <p className="text-stone-500 text-lg lg:text-xl leading-relaxed max-w-2xl mx-auto mb-10">
@@ -92,9 +97,9 @@ function Hero() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-12">
             <Link
               href="/plans"
-              className="group h-13 px-8 rounded-full bg-violet-500 hover:bg-violet-600 text-white font-semibold text-base transition-all flex items-center gap-2 shadow-lg shadow-violet-500/20"
+              className="group h-13 px-8 rounded-full bg-brand-1 hover:bg-brand-2 text-white font-semibold text-base transition-all flex items-center gap-2 shadow-lg shadow-brand-1/20"
             >
-              Conhecer a Biblioteca
+              Quero Acesso Agora
               <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
             </Link>
             <Link
@@ -124,7 +129,7 @@ function Hero() {
 }
 
 /* ─────────────────────────────────────────────
-   2. CONTRASTE — Não é mais um pack genérico
+   2. CONTRASTE: Não é mais um pack genérico
 ───────────────────────────────────────────── */
 function Contraste() {
   return (
@@ -204,7 +209,7 @@ function Biblioteca() {
       <W>
         <div className="text-center max-w-2xl mx-auto mb-14">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-stone-800 mb-4 leading-tight">
-            Uma biblioteca que faz sentido.
+            Tudo o que você precisa em um só lugar.
           </h2>
           <p className="text-stone-500 text-base lg:text-lg leading-relaxed">
             Tudo organizado por série, disciplina e tema. Você encontra o que precisa 
@@ -216,7 +221,7 @@ function Biblioteca() {
           {categorias.map(({ icon, label, qtd }) => (
             <div
               key={label}
-              className="group bg-white rounded-2xl border border-stone-200/60 p-5 hover:border-violet-200 hover:shadow-md hover:shadow-violet-100/50 transition-all cursor-default"
+              className="group bg-white rounded-2xl border border-stone-200/60 p-5 hover:border-brand-3 hover:shadow-md hover:shadow-brand-3/50 transition-all cursor-default"
             >
               <span className="text-2xl mb-3 block">{icon}</span>
               <p className="text-sm font-semibold text-stone-700 mb-1">{label}</p>
@@ -245,9 +250,9 @@ function FeitoPorProfessoras() {
       <W>
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-violet-50 border border-violet-100 px-4 py-1.5 mb-6">
-              <Heart className="h-3.5 w-3.5 text-violet-500" />
-              <span className="text-violet-700 text-xs font-semibold">Feito por quem vive a sala de aula</span>
+            <div className="inline-flex items-center gap-2 rounded-full bg-brand-3/10 border border-brand-3/20 px-4 py-1.5 mb-6">
+              <Heart className="h-3.5 w-3.5 text-brand-1" />
+              <span className="text-brand-1 text-xs font-semibold">Feito por quem vive a sala de aula</span>
             </div>
 
             <h2 className="text-3xl lg:text-4xl font-extrabold text-stone-800 mb-5 leading-tight">
@@ -256,7 +261,7 @@ function FeitoPorProfessoras() {
 
             <p className="text-stone-500 text-base lg:text-lg leading-relaxed mb-8">
               Todo material do Kadernim é criado e revisado por professoras que estão em sala 
-              de aula todos os dias. Não é conteúdo genérico gerado em massa — é experiência 
+              de aula todos os dias. Não é conteúdo genérico gerado em massa. É experiência 
               real transformada em recurso pedagógico.
             </p>
 
@@ -279,8 +284,8 @@ function FeitoPorProfessoras() {
                 },
               ].map(({ icon: Icon, title, desc }) => (
                 <div key={title} className="flex items-start gap-4">
-                  <div className="h-10 w-10 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center shrink-0">
-                    <Icon className="h-5 w-5 text-violet-500" />
+                  <div className="h-10 w-10 rounded-xl bg-brand-3/10 border border-brand-3/20 flex items-center justify-center shrink-0">
+                    <Icon className="h-5 w-5 text-brand-1" />
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-stone-700">{title}</p>
@@ -292,34 +297,43 @@ function FeitoPorProfessoras() {
           </div>
 
           {/* Ilustração / Card visual */}
-          <div className="bg-gradient-to-br from-violet-50 to-amber-50/50 rounded-3xl border border-stone-200/40 p-8 lg:p-10">
+          <div className="bg-gradient-to-br from-brand-3/10 to-brand-4/10 rounded-3xl border border-stone-200/40 p-8 lg:p-10">
             <div className="space-y-4">
               {[
                 {
-                  name: 'Profª Carla',
-                  role: 'Ed. Infantil · 12 anos de experiência',
-                  text: '"Eu crio os materiais pensando nas dificuldades reais que encontro com meus alunos. Cada atividade tem um propósito."',
+                  name: 'Profª Ana Paula',
+                  role: 'Ed. Infantil. 12 anos de experiência',
+                  text: '"Eu levava horas para montar uma sequência didática. Hoje, baixo o que preciso no Kadernim e adapto em minutos. Me sobrou tempo para focar nas crianças."',
+                  image: '/images/testimonials/ana.png',
                 },
                 {
-                  name: 'Profª Renata',
-                  role: 'Fundamental I · 8 anos de experiência',
+                  name: 'Profª Cláudia',
+                  role: 'Fundamental I. 8 anos de experiência',
                   text: '"Antes de publicar qualquer material, eu testo com a minha turma. Se não funciona na prática, não entra."',
+                  image: '/images/testimonials/claudia.png',
                 },
                 {
                   name: 'Profª Juliana',
-                  role: 'Alfabetização · 15 anos de experiência',
+                  role: 'Alfabetização. 15 anos de experiência',
                   text: '"O diferencial é que a gente sabe o que funciona porque vive isso todo dia. Não é teoria."',
+                  image: '/images/testimonials/juliana.png',
                 },
-              ].map(({ name, role, text }) => (
-                <div key={name} className="bg-white rounded-2xl border border-stone-100 p-5 shadow-sm">
-                  <p className="text-sm text-stone-500 italic leading-relaxed mb-3">{text}</p>
+              ].map((item) => (
+                <div key={item.name} className="bg-white rounded-2xl border border-stone-100 p-5 shadow-sm">
+                  <p className="text-sm text-stone-500 italic leading-relaxed mb-3">{item.text}</p>
                   <div className="flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-full bg-violet-100 flex items-center justify-center">
-                      <span className="text-violet-600 text-xs font-bold">{name.slice(-5, -1).toUpperCase()}</span>
+                    <div className="h-10 w-10 rounded-full bg-brand-3/20 overflow-hidden shrink-0 border border-brand-3/20">
+                      <Image
+                        src={item.image}
+                        alt={item.name}
+                        width={40}
+                        height={40}
+                        className="h-full w-full object-cover"
+                      />
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-stone-700">{name}</p>
-                      <p className="text-[11px] text-stone-400">{role}</p>
+                      <p className="text-xs font-semibold text-stone-700">{item.name}</p>
+                      <p className="text-[11px] text-stone-400">{item.role}</p>
                     </div>
                   </div>
                 </div>
@@ -358,7 +372,7 @@ function AtualizacaoSemanal() {
             {[
               {
                 icon: CalendarDays,
-                color: 'text-violet-500 bg-violet-50 border-violet-100',
+                color: 'text-brand-1 bg-brand-3/10 border-brand-3/20',
                 title: 'Calendário escolar',
                 desc: 'Materiais alinhados com o que você precisa para cada período do ano letivo.',
               },
@@ -430,9 +444,9 @@ function ComoFunciona() {
         <div className="grid sm:grid-cols-3 gap-8 max-w-4xl mx-auto">
           {steps.map(({ num, icon: Icon, title, desc }) => (
             <div key={num} className="text-center">
-              <div className="relative inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-violet-50 border border-violet-100 mb-5">
-                <Icon className="h-7 w-7 text-violet-500" />
-                <span className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-violet-500 text-white text-xs font-bold flex items-center justify-center">
+              <div className="relative inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-brand-3/10 border border-brand-3/20 mb-5">
+                <Icon className="h-7 w-7 text-brand-1" />
+                <span className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-brand-1 text-white text-xs font-bold flex items-center justify-center">
                   {num}
                 </span>
               </div>
@@ -451,12 +465,12 @@ function ComoFunciona() {
 ───────────────────────────────────────────── */
 function CTAFinal() {
   return (
-    <section className="py-20 lg:py-28 bg-gradient-to-b from-violet-50 to-white">
+    <section className="py-20 lg:py-28 bg-gradient-to-b from-brand-3/10 to-white">
       <W>
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-stone-800 mb-5 leading-tight">
-            Pronta para ter uma biblioteca <br className="hidden sm:block" />
-            que realmente funciona?
+            Pronta para ter acesso <br className="hidden sm:block" />
+            a tudo o que você precisa?
           </h2>
           <p className="text-stone-500 text-base lg:text-lg mb-10 leading-relaxed">
             Materiais validados, organizados e prontos para usar. 
@@ -464,13 +478,13 @@ function CTAFinal() {
           </p>
           <Link
             href="/plans"
-            className="group inline-flex items-center gap-2 h-14 px-10 rounded-full bg-violet-500 hover:bg-violet-600 text-white font-semibold text-lg transition-all shadow-lg shadow-violet-500/20"
+            className="group inline-flex items-center gap-2 h-14 px-10 rounded-full bg-brand-1 hover:bg-brand-2 text-white font-semibold text-lg transition-all shadow-lg shadow-brand-1/20"
           >
             Ver Planos e Preços
             <ArrowRight className="h-5 w-5 group-hover:translate-x-0.5 transition-transform" />
           </Link>
           <p className="mt-5 text-sm text-stone-400">
-            Garantia de 7 dias · Cancele quando quiser
+            Garantia de 7 dias. Cancele quando quiser
           </p>
         </div>
       </W>
@@ -485,16 +499,19 @@ function Footer() {
   return (
     <footer className="py-10 border-t border-stone-100 bg-white">
       <W className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <div className="h-6 w-6 bg-violet-500 rounded-md flex items-center justify-center">
-            <BookOpen className="h-3.5 w-3.5 text-white" />
-          </div>
-          <span className="text-stone-700 font-bold text-sm">Kadernim</span>
-        </div>
+        <Link href="/" className="flex items-center">
+          <Image
+            src="/images/logo_transparent_crop.png"
+            alt="Kadernim"
+            width={105}
+            height={24}
+            className="h-6 w-auto object-contain"
+          />
+        </Link>
         <p className="text-xs text-stone-400 text-center">
           Materiais pedagógicos feitos por quem vive a sala de aula.
         </p>
-        <p className="text-xs text-stone-300">© {new Date().getFullYear()} Kadernim</p>
+        <p className="text-[10px] font-black text-stone-300 uppercase tracking-[0.2em]">© {new Date().getFullYear()} Kadernim. Todos os direitos reservados</p>
       </W>
     </footer>
   )

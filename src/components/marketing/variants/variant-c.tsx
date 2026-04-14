@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import Image from 'next/image'
 import {
   BookOpen, Check, ChevronDown, ArrowRight, Sparkles,
   Shield, Download, GraduationCap, Clock, FileText,
@@ -32,7 +33,7 @@ function Hero() {
         aria-hidden="true"
       />
       {/* Glow */}
-      <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[700px] h-[700px] bg-violet-600/15 rounded-full blur-[130px] pointer-events-none" aria-hidden="true" />
+      <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[700px] h-[700px] bg-brand-1/15 rounded-full blur-[130px] pointer-events-none" aria-hidden="true" />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-amber-500/8 rounded-full blur-[100px] pointer-events-none" aria-hidden="true" />
 
       <W className="py-20 lg:py-0 lg:min-h-screen flex items-center">
@@ -40,14 +41,14 @@ function Hero() {
 
           {/* Copy */}
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-violet-500/30 bg-violet-500/10 px-3 py-1 mb-8">
-              <Timer className="h-3.5 w-3.5 text-violet-400" aria-hidden="true" />
-              <span className="text-violet-400 text-xs font-semibold">Quanto do seu tempo vai para buscar material?</span>
+            <div className="inline-flex items-center gap-2 rounded-full border border-brand-1/30 bg-brand-1/10 px-3 py-1 mb-8">
+              <Timer className="h-3.5 w-3.5 text-brand-2" aria-hidden="true" />
+              <span className="text-brand-2 text-xs font-semibold">Quanto do seu tempo vai para buscar material?</span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-5xl 2xl:text-6xl font-black text-white leading-[1.05] tracking-tight mb-6">
               Você virou professora{' '}
-              <span className="bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-brand-2 to-brand-3 bg-clip-text text-transparent">
                 para ensinar.
               </span>{' '}
               Não para garimpar material.
@@ -61,7 +62,7 @@ function Hero() {
             <div className="flex flex-col sm:flex-row gap-3 mb-10">
               <button
                 onClick={go}
-                className="group flex items-center justify-center gap-2 h-14 2xl:h-16 px-8 2xl:px-10 rounded-2xl bg-violet-500 hover:bg-violet-400 text-white font-bold text-base 2xl:text-lg transition-all shadow-[0_0_40px_rgba(139,92,246,0.4)] hover:shadow-[0_0_60px_rgba(139,92,246,0.6)]"
+                className="group flex items-center justify-center gap-2 h-14 2xl:h-16 px-8 2xl:px-10 rounded-2xl bg-brand-1 hover:bg-brand-2 text-white font-bold text-base 2xl:text-lg transition-all shadow-[0_0_40px_rgba(26,109,217,0.4)] hover:shadow-[0_0_60px_rgba(26,109,217,0.6)]"
                 aria-label="Recuperar meu tempo livre com o Kadernim"
               >
                 Recuperar meu tempo
@@ -114,8 +115,8 @@ function Hero() {
                   { day: 'Domingo', task: 'Preparando materiais e atividades', time: '1h 30min', icon: FileText },
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-3 py-2.5 border-b border-white/5 last:border-0">
-                    <div className="h-7 w-7 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center shrink-0">
-                      <item.icon className="h-3.5 w-3.5 text-violet-400" />
+                    <div className="h-7 w-7 rounded-lg bg-brand-1/10 border border-brand-1/20 flex items-center justify-center shrink-0">
+                      <item.icon className="h-3.5 w-3.5 text-brand-2" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs text-slate-300 truncate">{item.task}</p>
@@ -125,7 +126,7 @@ function Hero() {
                   </div>
                 ))}
 
-                <div className="flex items-center justify-between pt-2 border-t-2 border-violet-500/20">
+                <div className="flex items-center justify-between pt-2 border-t-2 border-brand-1/20">
                   <span className="text-sm font-bold text-white">Total na semana</span>
                   <span className="text-xl font-black text-amber-400">8h 05min</span>
                 </div>
@@ -137,13 +138,13 @@ function Hero() {
             </div>
 
             {/* badge de semanas */}
-            <div className="absolute -bottom-4 -left-4 flex items-center gap-3 bg-[#0A0A1C] border border-violet-500/20 rounded-2xl px-4 py-3 shadow-xl">
-              <div className="h-9 w-9 rounded-xl bg-violet-500/15 flex items-center justify-center">
-                <Calendar className="h-4 w-4 text-violet-400" />
+            <div className="absolute -bottom-4 -left-4 flex items-center gap-3 bg-[#0A0A1C] border border-brand-1/20 rounded-2xl px-4 py-3 shadow-xl">
+              <div className="h-9 w-9 rounded-xl bg-brand-1/15 flex items-center justify-center">
+                <Calendar className="h-4 w-4 text-brand-2" />
               </div>
               <div>
-                <p className="text-[10px] text-slate-500">Em um semestre</p>
-                <p className="text-sm font-bold text-violet-400">170h perdidas</p>
+                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Acumulado anual</p>
+                <p className="text-sm font-bold text-brand-2">170h perdidas</p>
               </div>
             </div>
 
@@ -193,7 +194,7 @@ function HowItWorks() {
           {/* Bloco 1: O ciclo que não para */}
           <div className="grid lg:grid-cols-2 gap-12 2xl:gap-20 items-center">
             <div>
-              <span className="inline-block text-xs font-bold uppercase tracking-widest text-violet-400 mb-4 border border-violet-500/30 bg-violet-500/10 rounded-full px-3 py-1">
+              <span className="inline-block text-xs font-bold uppercase tracking-widest text-brand-2 mb-4 border border-brand-1/30 bg-brand-1/10 rounded-full px-3 py-1">
                 O ciclo semanal
               </span>
               <h2 className="text-3xl 2xl:text-4xl font-black text-white leading-tight mb-5">
@@ -203,8 +204,8 @@ function HowItWorks() {
                 Segunda: buscar atividade. Quarta: montar apresentação. Sexta: formatar para impressão. Domingo: planejar a semana inteira do zero. É um ciclo que se repete há anos, <span className="text-slate-200 font-medium">e cada ciclo custa em média 8 horas da sua vida.</span>
               </p>
             </div>
-            <div className="p-6 2xl:p-8 rounded-2xl border border-violet-500/15 bg-violet-500/5">
-              <p className="text-xs font-bold text-violet-400 uppercase tracking-widest mb-4">Onde as horas vão toda semana</p>
+            <div className="p-6 2xl:p-8 rounded-2xl border border-brand-1/15 bg-brand-1/5">
+              <p className="text-xs font-bold text-brand-2 uppercase tracking-widest mb-4">Onde as horas vão toda semana</p>
               <div className="space-y-3">
                 {[
                   { task: 'Buscando material no Instagram e Pinterest', time: '2h 30min' },
@@ -219,8 +220,8 @@ function HowItWorks() {
                   </div>
                 ))}
               </div>
-              <div className="mt-4 pt-4 border-t border-violet-500/20">
-                <p className="text-sm text-violet-300 font-medium">
+              <div className="mt-4 pt-4 border-t border-brand-1/20">
+                <p className="text-sm text-brand-3 font-medium">
                   Total: <span className="font-black text-lg text-amber-400">~8h por semana</span> em preparação
                 </p>
               </div>
@@ -272,16 +273,16 @@ function HowItWorks() {
               </p>
               <button
                 onClick={go}
-                className="group mt-8 flex items-center gap-2 h-12 2xl:h-14 px-7 rounded-xl bg-violet-500 hover:bg-violet-400 text-white font-bold text-sm 2xl:text-base transition-all"
+                className="group mt-8 flex items-center gap-2 h-12 2xl:h-14 px-7 rounded-xl bg-brand-1 hover:bg-brand-2 text-white font-bold text-sm 2xl:text-base transition-all"
                 aria-label="Recuperar meu tempo com o Kadernim"
               >
                 Quero meu tempo de volta
                 <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
               </button>
             </div>
-            <div className="p-6 2xl:p-8 rounded-2xl border border-violet-500/20 bg-violet-500/5 space-y-3">
+            <div className="p-6 2xl:p-8 rounded-2xl border border-brand-1/20 bg-brand-1/5 space-y-3">
               {[
-                { label: 'Biblioteca com +248 materiais prontos em PDF', color: 'violet' },
+                { label: 'Biblioteca com +248 materiais prontos em PDF', color: 'brand-1' },
                 { label: 'Acesso imediato aos novos recursos', color: 'green' },
                 { label: 'Tudo organizado, sem pendrive ou link expirado', color: 'blue' },
                 { label: 'Novos materiais adicionados regularmente', color: 'amber' },
@@ -308,13 +309,13 @@ function HowItWorks() {
 ───────────────────────────────────────────── */
 function Features() {
   const feats = [
-    { Icon: BookOpen, color: 'violet', title: 'Biblioteca viva', body: 'Centenas de atividades para Ed. Infantil e Fundamental I. Novos materiais toda semana. Sempre tem o que você precisa.', badge: '+20/mês' },
+    { Icon: BookOpen, color: 'brand-1', title: 'Biblioteca viva', body: 'Centenas de atividades para Ed. Infantil e Fundamental I. Novos materiais toda semana. Sempre tem o que você precisa.', badge: '+20/mês' },
     { Icon: Download, color: 'blue', title: 'PDF pronto para imprimir', body: 'Tudo formatado, sem editar. Abriu, baixou, imprimiu. Sem depender de editor ou plataforma online.', badge: 'Pronto já' },
     { Icon: RefreshCw, color: 'teal', title: 'Sempre atualizado', body: 'Calendário escolar, datas comemorativas, novas temáticas. A plataforma acompanha seu ano letivo.', badge: 'Toda semana' },
   ]
 
   const colorMap: Record<string, string> = {
-    violet: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
+    'brand-1': 'bg-brand-1/10 text-brand-1 border-brand-1/20',
     green: 'bg-green-500/10 text-green-400 border-green-500/20',
     blue: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
     amber: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
@@ -372,13 +373,13 @@ function Pricing() {
 
         <div className="max-w-md 2xl:max-w-lg mx-auto">
           <div className="relative">
-            <div className="absolute inset-0 bg-violet-500/15 blur-3xl rounded-3xl pointer-events-none" aria-hidden="true" />
-            <div className="relative rounded-3xl border border-violet-500/30 bg-[#08081A] overflow-hidden">
+            <div className="absolute inset-0 bg-brand-1/15 blur-3xl rounded-3xl pointer-events-none" aria-hidden="true" />
+            <div className="relative rounded-3xl border border-brand-1/30 bg-[#08081A] overflow-hidden">
 
               <div className="px-8 2xl:px-10 pt-8 2xl:pt-10 pb-6 border-b border-white/6">
                 <div className="flex items-start justify-between mb-6">
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-widest text-violet-400 mb-1">Plano Pro</p>
+                    <p className="text-xs font-bold uppercase tracking-widest text-brand-2 mb-1">Plano Pro</p>
                     <h3 className="text-2xl 2xl:text-3xl font-black text-white">Acesso ilimitado</h3>
                   </div>
                   <span className="mt-1 text-xs font-bold bg-green-500/15 text-green-400 border border-green-500/25 rounded-full px-2.5 py-1">
@@ -419,8 +420,8 @@ function Pricing() {
                     'Novos recursos toda semana',
                   ].map((item) => (
                     <li key={item} className="flex items-center gap-3 text-sm 2xl:text-base text-slate-300">
-                      <div className="h-5 w-5 rounded-full bg-violet-500/15 border border-violet-500/25 flex items-center justify-center shrink-0">
-                        <Check className="h-3 w-3 text-violet-400" aria-hidden="true" />
+                      <div className="h-5 w-5 rounded-full bg-brand-1/15 border border-brand-1/25 flex items-center justify-center shrink-0">
+                        <Check className="h-3 w-3 text-brand-2" aria-hidden="true" />
                       </div>
                       {item}
                     </li>
@@ -431,7 +432,7 @@ function Pricing() {
               <div className="px-8 2xl:px-10 py-6 2xl:py-8 space-y-4">
                 <button
                   onClick={go}
-                  className="group w-full h-14 2xl:h-16 rounded-2xl bg-violet-500 hover:bg-violet-400 text-white font-bold text-base 2xl:text-lg flex items-center justify-center gap-2 transition-all shadow-[0_0_40px_rgba(139,92,246,0.3)] hover:shadow-[0_0_60px_rgba(139,92,246,0.5)]"
+                  className="group w-full h-14 2xl:h-16 rounded-2xl bg-brand-1 hover:bg-brand-2 text-white font-semibold text-lg transition-all shadow-lg shadow-brand-1/20"
                   aria-label="Assinar o Plano Pro e recuperar meu tempo"
                 >
                   Recuperar meu tempo agora
@@ -490,11 +491,11 @@ function FAQ() {
                   aria-expanded={open === i}
                   aria-controls={`faqc-variantc-faq-p-${i}`}
                   onClick={() => setOpen(open === i ? null : i)}
-                  className="w-full flex items-center justify-between px-5 py-4 2xl:px-6 2xl:py-5 text-left text-sm 2xl:text-base font-semibold text-slate-200 hover:text-white hover:bg-white/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-violet-500 transition-colors"
+                  className="w-full flex items-center justify-between px-5 py-4 2xl:px-6 2xl:py-5 text-left text-sm 2xl:text-base font-semibold text-slate-200 hover:text-white hover:bg-white/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-1 transition-colors"
                 >
                   {faq.q}
                   <ChevronDown
-                    className={`h-4 w-4 2xl:h-5 2xl:w-5 text-slate-600 shrink-0 ml-4 transition-transform duration-200 ${open === i ? 'rotate-180 text-violet-400' : ''}`}
+                    className={`h-4 w-4 2xl:h-5 2xl:w-5 text-slate-600 shrink-0 ml-4 transition-transform duration-200 ${open === i ? 'rotate-180 text-brand-1' : ''}`}
                     aria-hidden="true"
                   />
                 </button>
@@ -524,21 +525,21 @@ function FinalCTA() {
   return (
     <section className="py-24 2xl:py-32 bg-[#040410] relative overflow-hidden">
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none" aria-hidden="true">
-        <div className="w-[600px] h-[600px] 2xl:w-[800px] 2xl:h-[800px] bg-violet-600/10 rounded-full blur-[120px]" />
+        <div className="w-[600px] h-[600px] 2xl:w-[800px] 2xl:h-[800px] bg-brand-1/10 rounded-full blur-[120px]" />
       </div>
       <W className="relative text-center">
         <div className="max-w-2xl 2xl:max-w-3xl mx-auto">
           <p className="text-slate-500 text-sm 2xl:text-base mb-4">Faça a conta</p>
           <h2 className="text-4xl 2xl:text-5xl font-black text-white mb-5 leading-tight">
             8 horas por semana procurando material<br />
-            <span className="text-violet-400">ou 30 minutos com tudo pronto?</span>
+            <span className="text-brand-2">ou 30 minutos com tudo pronto?</span>
           </h2>
           <p className="text-slate-400 text-lg 2xl:text-xl mb-10">
             Você virou professora para ensinar. O Kadernim cuida do resto.
           </p>
           <button
             onClick={go}
-            className="group inline-flex items-center gap-2 h-14 2xl:h-16 px-10 2xl:px-14 rounded-2xl bg-violet-500 hover:bg-violet-400 text-white font-bold text-base 2xl:text-lg transition-all shadow-[0_0_60px_rgba(139,92,246,0.4)] hover:shadow-[0_0_80px_rgba(139,92,246,0.6)]"
+            className="group inline-flex items-center gap-2 h-14 2xl:h-16 px-10 2xl:px-14 rounded-2xl bg-brand-1 hover:bg-brand-2 text-white font-bold text-base 2xl:text-lg transition-all shadow-[0_0_60px_rgba(26,109,217,0.4)] hover:shadow-[0_0_80px_rgba(26,109,217,0.6)]"
             aria-label="Assinar o Plano Pro e recuperar meu tempo"
           >
             Quero meu tempo de volta
@@ -560,11 +561,14 @@ function Footer() {
   return (
     <footer className="border-t border-white/6 bg-[#040410] py-8 2xl:py-10">
       <W className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <div className="h-6 w-6 bg-violet-500 rounded-md flex items-center justify-center">
-            <BookOpen className="h-3.5 w-3.5 text-white" aria-hidden="true" />
-          </div>
-          <span className="text-white font-bold text-sm">Kadernim</span>
+        <div className="flex items-center">
+          <Image
+            src="/images/logo_transparent_crop.png"
+            alt="Kadernim"
+            width={105}
+            height={24}
+            className="h-6 w-auto object-contain"
+          />
         </div>
         <p className="text-xs 2xl:text-sm text-slate-700 text-center">
           Devolvendo o tempo que o professor merece.

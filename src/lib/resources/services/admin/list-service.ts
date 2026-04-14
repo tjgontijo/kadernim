@@ -48,10 +48,14 @@ export async function listResourcesService(
   const whereConditions: Prisma.ResourceWhereInput = {}
 
   if (q) {
-    whereConditions.OR = [
-      { title: { contains: q, mode: 'insensitive' } },
-      { description: { contains: q, mode: 'insensitive' } },
-    ]
+    // Busca por IDs usando unaccent para suportar busca sem acento (ex: historia -> história)
+    const matches = await prisma.$queryRaw<{ id: string }[]>(Prisma.sql`
+      SELECT id FROM "resource"
+      WHERE unaccent("title") ILIKE unaccent(${`%${q}%`})
+         OR unaccent("description") ILIKE unaccent(${`%${q}%`})
+    `)
+    
+    whereConditions.id = { in: matches.map(m => m.id) }
   }
 
   if (educationLevel) {

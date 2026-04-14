@@ -167,6 +167,13 @@
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
 
+  /* Brand Colors from Logo */
+  --color-brand-1: #1A6DD9;
+  --color-brand-2: #2793F2;
+  --color-brand-3: #41C0F2;
+  --color-brand-4: #16DCF2;
+  --color-brand-5: #0D0D0D;
+
   /* Custom Semantic Colors */
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
@@ -199,15 +206,13 @@
   --popover-foreground: oklch(0.30 0.02 250);
   /* #374151 */
 
-  /* Primary: #2563EB (azul vibrante) */
-  --primary: oklch(0.55 0.22 264);
-  --primary-foreground: oklch(1 0 0);
-  /* Branco */
+  /* Primary: #1A6DD9 (Main blue) */
+  --primary: #1A6DD9;
+  --primary-foreground: #FFFFFF;
 
-  /* Secondary: #22C1C3 (turquesa/ciano) */
-  --secondary: oklch(0.75 0.12 195);
-  --secondary-foreground: oklch(0.15 0.03 250);
-  /* Azul profundo */
+  /* Secondary: #41C0F2 (Light blue) */
+  --secondary: #41C0F2;
+  --secondary-foreground: #1A6DD9;
 
   /* Muted: AJUSTADO para melhor contraste */
   --muted: oklch(0.96 0.005 250);
@@ -225,10 +230,9 @@
   --destructive-foreground: oklch(1 0 0);
 
   /* Borders & Input */
-  --border: oklch(0.90 0.01 250);
-  --input: oklch(0.90 0.01 250);
-  --ring: oklch(0.55 0.22 264);
-  /* Match primary */
+  --border: #E5E7EB;
+  --input: #E5E7EB;
+  --ring: #1A6DD9;
 
   /* Charts - usando variações do brand */
   --chart-1: oklch(0.75 0.12 195);
@@ -244,15 +248,15 @@
 
   --radius: 0.45rem;
 
-  /* Sidebar - Ajustado para contraste "moldura" */
-  --sidebar: oklch(0.95 0.01 250);
-  --sidebar-foreground: oklch(0.35 0.02 250);
-  --sidebar-primary: oklch(0.55 0.22 264);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.92 0.01 250);
-  --sidebar-accent-foreground: oklch(0.25 0.05 250);
-  --sidebar-border: oklch(0.90 0.01 250);
-  --sidebar-ring: oklch(0.55 0.22 264);
+  /* Sidebar */
+  --sidebar: #F9FAFB;
+  --sidebar-foreground: #374151;
+  --sidebar-primary: #1A6DD9;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F3F4F6;
+  --sidebar-accent-foreground: #1A6DD9;
+  --sidebar-border: #E5E7EB;
+  --sidebar-ring: #1A6DD9;
 
   /* Custom Semantic Colors (Light) */
   --success: oklch(0.72 0.19 145);

@@ -82,10 +82,7 @@ export const viewport: Viewport = {
   width: "device-width",
   maximumScale: 1,
   userScalable: false,
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#09090b" }
-  ],
+  themeColor: "#ffffff",
 };
 
 
@@ -99,12 +96,17 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
-        <meta name="color-scheme" content="light dark" />
+        <meta name="color-scheme" content="light" />
       </head>
       <body
         className={`${inter.variable} ${poppins.variable} ${openSans.variable} ${nunitoSans.variable} antialiased`} suppressHydrationWarning>
 
-        <ThemeProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
           <ReactQueryProvider>
             {children}
             <Toaster />

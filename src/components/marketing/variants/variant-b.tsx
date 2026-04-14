@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import Image from 'next/image'
 import {
   BookOpen, Check, ChevronDown, ArrowRight, Sparkles,
   Shield, Download, GraduationCap, Star, Users, Zap,
@@ -319,8 +320,8 @@ function Features() {
   ]
 
   const colorMap: Record<string, string> = {
+    'brand-1': 'bg-brand-1/10 text-brand-1 border-brand-1/20',
     blue: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-    violet: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
     green: 'bg-green-500/10 text-green-400 border-green-500/20',
     amber: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
     pink: 'bg-pink-500/10 text-pink-400 border-pink-500/20',
@@ -567,11 +568,14 @@ function Footer() {
   return (
     <footer className="border-t border-white/6 bg-[#05050A] py-8 2xl:py-10">
       <W className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <div className="h-6 w-6 bg-blue-500 rounded-md flex items-center justify-center">
-            <BookOpen className="h-3.5 w-3.5 text-white" aria-hidden="true" />
-          </div>
-          <span className="text-white font-bold text-sm">Kadernim</span>
+        <div className="flex items-center">
+          <Image
+            src="/images/logo_transparent_crop.png"
+            alt="Kadernim"
+            width={105}
+            height={24}
+            className="h-6 w-auto object-contain"
+          />
         </div>
         <p className="text-xs 2xl:text-sm text-slate-700 text-center">
           Devolvendo o tempo e o dinheiro que o professor merece.
