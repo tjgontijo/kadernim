@@ -2,6 +2,7 @@ import { Prisma as PrismaNamespace } from '@/server/db'
 import type { Prisma } from '@/server/db'
 import { prisma } from '@/server/db'
 import type { ResourceFilter } from '@/lib/resources/schemas/resource-schemas'
+import { buildAccentRegex } from '@/lib/utils'
 
 import {
   buildHasAccessConditionSql,
@@ -27,9 +28,9 @@ function buildBaseWhereSql(filters: Pick<ResourceFilter, 'q' | 'educationLevel' 
   const whereConditions: Prisma.Sql[] = []
 
   if (q) {
-    const searchPattern = `%${q}%`
+    const regexPattern = buildAccentRegex(q)
     whereConditions.push(
-      PrismaNamespace.sql`unaccent(r."title" || ' ' || COALESCE(r."description", '') || ' ' || s."name") ILIKE unaccent(${searchPattern})`
+      PrismaNamespace.sql`(r."title" ~* ${regexPattern} OR COALESCE(r."description", '') ~* ${regexPattern} OR s."name" ~* ${regexPattern})`
     )
   }
 

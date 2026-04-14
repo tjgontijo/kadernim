@@ -2,6 +2,7 @@ import { Prisma as PrismaNamespace } from '@/server/db'
 import type { Prisma } from '@/server/db'
 import { prisma } from '@/server/db'
 import { ResourceFilter, ResourceSchema, type Resource } from '@/lib/resources/schemas/resource-schemas'
+import { buildAccentRegex } from '@/lib/utils'
 
 import {
   buildHasAccessConditionSql,
@@ -55,9 +56,9 @@ export async function getResourceList({
   const joins: Prisma.Sql[] = []
 
   if (q) {
-    const searchPattern = `%${q}%`
+    const regexPattern = buildAccentRegex(q)
     whereConditions.push(
-      PrismaNamespace.sql`unaccent(r."title" || ' ' || COALESCE(r."description", '') || ' ' || s."name") ILIKE unaccent(${searchPattern})`
+      PrismaNamespace.sql`(r."title" ~* ${regexPattern} OR COALESCE(r."description", '') ~* ${regexPattern} OR s."name" ~* ${regexPattern})`
     )
   }
 

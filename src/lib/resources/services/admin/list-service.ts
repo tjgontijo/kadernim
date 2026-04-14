@@ -1,6 +1,7 @@
 import { prisma } from '@/server/db'
 import { Prisma } from '@/server/db'
 import { ListResourcesFilter } from '@/lib/resources/schemas/admin-resource-schemas'
+import { buildAccentRegex } from '@/lib/utils'
 
 interface ListResourcesResponse {
   data: Array<{
@@ -48,12 +49,14 @@ export async function listResourcesService(
   const whereConditions: Prisma.ResourceWhereInput = {}
 
   if (q) {
-    // Busca por IDs usando unaccent para suportar busca sem acento (ex: historia -> história)
-    const searchPattern = `%${q}%`
+    // Busca por IDs usando RegExp nativo do Postgres (~*) para suportar busca sem acento
+    const regexPattern = buildAccentRegex(q)
     const matches = await prisma.$queryRaw<{ id: string }[]>(Prisma.sql`
       SELECT r.id FROM "resource" r
       LEFT JOIN "subject" s ON r."subjectId" = s.id
-      WHERE unaccent(r."title" || ' ' || COALESCE(r."description", '') || ' ' || COALESCE(s."name", '')) ILIKE unaccent(${searchPattern})
+      WHERE r."title" ~* ${regexPattern}
+         OR COALESCE(r."description", '') ~* ${regexPattern}
+         OR COALESCE(s."name", '') ~* ${regexPattern}
     `)
     
     whereConditions.id = { in: matches.map(m => m.id) }
