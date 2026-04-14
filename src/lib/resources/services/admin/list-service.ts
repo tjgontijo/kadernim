@@ -50,9 +50,11 @@ export async function listResourcesService(
   if (q) {
     // Busca por IDs usando unaccent para suportar busca sem acento (ex: historia -> história)
     const matches = await prisma.$queryRaw<{ id: string }[]>(Prisma.sql`
-      SELECT id FROM "resource"
-      WHERE unaccent("title") ILIKE unaccent(${`%${q}%`})
-         OR unaccent("description") ILIKE unaccent(${`%${q}%`})
+      SELECT r.id FROM "resource" r
+      LEFT JOIN "subject" s ON r."subjectId" = s.id
+      WHERE unaccent(r."title") ILIKE unaccent(${`%${q}%`})
+         OR unaccent(r."description") ILIKE unaccent(${`%${q}%`})
+         OR unaccent(s."name") ILIKE unaccent(${`%${q}%`})
     `)
     
     whereConditions.id = { in: matches.map(m => m.id) }

@@ -27,7 +27,9 @@ function buildBaseWhereSql(filters: Pick<ResourceFilter, 'q' | 'educationLevel' 
   const whereConditions: Prisma.Sql[] = []
 
   if (q) {
-    whereConditions.push(PrismaNamespace.sql`unaccent(r."title") ILIKE unaccent(${`%${q}%`})`)
+    whereConditions.push(
+      PrismaNamespace.sql`(unaccent(r."title") ILIKE unaccent(${`%${q}%`}) OR EXISTS (SELECT 1 FROM subject s WHERE s.id = r."subjectId" AND unaccent(s."name") ILIKE unaccent(${`%${q}%`})))`
+    )
   }
 
   if (educationLevel) {
