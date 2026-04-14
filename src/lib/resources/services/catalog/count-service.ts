@@ -27,8 +27,9 @@ function buildBaseWhereSql(filters: Pick<ResourceFilter, 'q' | 'educationLevel' 
   const whereConditions: Prisma.Sql[] = []
 
   if (q) {
+    const searchPattern = `%${q}%`
     whereConditions.push(
-      PrismaNamespace.sql`(unaccent(r."title") ILIKE unaccent(${`%${q}%`}) OR EXISTS (SELECT 1 FROM subject s WHERE s.id = r."subjectId" AND unaccent(s."name") ILIKE unaccent(${`%${q}%`})))`
+      PrismaNamespace.sql`unaccent(r."title" || ' ' || COALESCE(r."description", '') || ' ' || s."name") ILIKE unaccent(${searchPattern})`
     )
   }
 
@@ -74,6 +75,7 @@ export async function getResourceCounts({
     prisma.$queryRaw<{ count: bigint }[]>(PrismaNamespace.sql`
       SELECT COUNT(*)::bigint AS count
       FROM "resource" r
+      JOIN "subject" s ON r."subjectId" = s.id
       WHERE ${baseWhere}
     `),
 
@@ -81,6 +83,7 @@ export async function getResourceCounts({
     prisma.$queryRaw<{ count: bigint }[]>(PrismaNamespace.sql`
       SELECT COUNT(*)::bigint AS count
       FROM "resource" r
+      JOIN "subject" s ON r."subjectId" = s.id
       WHERE ${baseWhere}
         AND ${hasAccessCondition}
         AND r."isFree" = false
@@ -90,6 +93,7 @@ export async function getResourceCounts({
     prisma.$queryRaw<{ count: bigint }[]>(PrismaNamespace.sql`
       SELECT COUNT(*)::bigint AS count
       FROM "resource" r
+      JOIN "subject" s ON r."subjectId" = s.id
       WHERE ${baseWhere}
         AND r."isFree" = true
     `),
