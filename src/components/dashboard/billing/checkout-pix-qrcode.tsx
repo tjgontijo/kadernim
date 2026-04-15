@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { CheckCircle2, Copy, Send } from 'lucide-react'
+import { CheckCircle2, Copy, MessageCircle, Mail, QrCode } from 'lucide-react'
 import Image from 'next/image'
 import { InvoiceStatus } from '@db'
 import { toast } from 'sonner'
 import { fetchBillingPixStatus } from '@/lib/billing/api-client'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 
 interface PixQrCodeProps {
   payload: string
@@ -34,7 +33,8 @@ export function PixQrCode({
   onSuccess,
 }: PixQrCodeProps) {
   const [copied, setCopied] = useState(false)
-  const [resending, setResending] = useState(false)
+  const [resending, setResending] = useState<'email' | 'whatsapp' | null>(null)
+  const [showQr, setShowQr] = useState(false)
   const [timeLeft, setTimeLeft] = useState<{ m: number; s: number }>({ m: 15, s: 0 })
 
   useEffect(() => {
@@ -44,7 +44,6 @@ export function PixQrCode({
     const updateCountdown = () => {
       const now = new Date().getTime()
       const diff = expire - now
-
       if (diff <= 0) {
         setTimeLeft({ m: 0, s: 0 })
       } else {
@@ -57,23 +56,14 @@ export function PixQrCode({
     }
 
     updateCountdown()
-
-    return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId)
-      }
-    }
+    return () => { if (timeoutId) clearTimeout(timeoutId) }
   }, [expirationDate])
 
   const { data: paymentStatus } = useQuery<string | null>({
     queryKey: ['billing-pix-status', statusId, isAutomatic, statusToken],
     queryFn: async () => {
       try {
-        const data = await fetchBillingPixStatus({
-          statusId,
-          isAutomatic,
-          statusToken,
-        })
+        const data = await fetchBillingPixStatus({ statusId, isAutomatic, statusToken })
         return data.status ?? null
       } catch {
         return null
@@ -97,13 +87,13 @@ export function PixQrCode({
   const handleCopy = () => {
     navigator.clipboard.writeText(payload)
     setCopied(true)
-    toast.success('Codigo Pix copiado!')
+    toast.success('Código PIX copiado!')
     setTimeout(() => setCopied(false), 2000)
   }
 
   const handleResend = async (channel: 'email' | 'whatsapp') => {
     if (!invoiceId) return
-    setResending(true)
+    setResending(channel)
     try {
       const res = await fetch(`/api/v1/billing/pix-checkout/${invoiceId}/resend`, {
         method: 'POST',
@@ -125,103 +115,140 @@ export function PixQrCode({
       }
 
       const label = channel === 'email' ? 'e-mail' : 'WhatsApp'
-      toast.success(`QR Code reenviado para seu ${label}!`)
+      toast.success(`Código PIX reenviado para seu ${label}!`)
     } catch {
       toast.error('Erro de conexão.')
     } finally {
-      setResending(false)
+      setResending(null)
     }
   }
 
   return (
-    <div className="flex flex-col items-center space-y-6 text-center animate-in fade-in zoom-in duration-500">
-      <div className="space-y-2">
+    <div className="flex flex-col space-y-5 animate-in fade-in zoom-in duration-500">
+
+      {/* Cabeçalho */}
+      <div className="text-center space-y-1">
         <h3 className="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-teal-400 bg-clip-text text-transparent">
-          Quase la!
+          Quase lá!
         </h3>
-        <p className="text-muted-foreground">
-          Escaneie o QR Code abaixo com o app do seu banco para ativar sua conta Kadernim Pro.
+        <p className="text-sm text-muted-foreground">
+          Cole o código abaixo no app do seu banco para pagar.
         </p>
-        <div className="inline-flex items-baseline gap-1 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2 mt-1">
-          <span className="text-emerald-700 text-sm font-semibold">Valor a pagar:</span>
+        <div className="inline-flex items-baseline gap-1 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2">
+          <span className="text-emerald-700 text-sm font-semibold">Valor:</span>
           <span className="text-emerald-800 text-xl font-black">{amountLabel}</span>
         </div>
       </div>
 
-      <Card className="border-2 border-primary/20 bg-background overflow-hidden relative shadow-lg shadow-primary/5">
-        <CardContent className="p-6">
-          {image ? (
-            <div className="relative w-48 h-48 mx-auto">
-              <Image
-                src={`data:image/png;base64,${image}`}
-                alt="PIX QR Code"
-                fill
-                className="object-contain"
-              />
-            </div>
-          ) : (
-            <div className="w-48 h-48 mx-auto rounded-lg bg-muted flex items-center justify-center animate-pulse">
-              Carregando...
-            </div>
-          )}
-        </CardContent>
-        <div className="bg-primary/5 px-6 py-3 border-t border-primary/10 flex items-center justify-center gap-2 text-sm font-medium">
-          <span>
-            Expira em: <strong className="text-primary">{timeLeft.m}m {timeLeft.s}s</strong>
-          </span>
-        </div>
-      </Card>
-
-      <div className="w-full max-w-sm space-y-3">
-        <p className="text-sm font-medium mb-1">Ou copie o codigo PIX (Copia e Cola):</p>
-        <div className="relative flex items-center">
-          <input
-            readOnly
-            value={payload}
-            className="w-full bg-muted border border-border/50 text-muted-foreground rounded-l-md px-3 py-2 text-xs font-mono outline-none truncate"
-          />
-          <Button
-            variant="default"
-            className="rounded-l-none"
-            onClick={handleCopy}
-          >
-            {copied ? <CheckCircle2 className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-          </Button>
-        </div>
+      {/* Copia e Cola — destaque principal */}
+      <div className="space-y-2">
+        <p className="text-sm font-semibold text-center">1. Copie o código PIX</p>
+        <button
+          onClick={handleCopy}
+          className="w-full flex items-center gap-3 bg-muted hover:bg-muted/80 active:scale-95 border border-border/60 rounded-xl px-4 py-4 transition-all cursor-pointer group"
+        >
+          <div className="flex-1 text-left">
+            <p className="text-xs text-muted-foreground mb-1">Código Copia e Cola</p>
+            <p className="text-xs font-mono text-foreground/80 truncate">{payload.slice(0, 40)}...</p>
+          </div>
+          <div className={`shrink-0 rounded-lg px-3 py-2 text-sm font-semibold flex items-center gap-1.5 transition-colors ${
+            copied
+              ? 'bg-emerald-500 text-white'
+              : 'bg-primary text-primary-foreground group-hover:bg-primary/90'
+          }`}>
+            {copied
+              ? <><CheckCircle2 className="h-4 w-4" /> Copiado!</>
+              : <><Copy className="h-4 w-4" /> Copiar</>
+            }
+          </div>
+        </button>
       </div>
 
-      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-4">
-        <div className="h-2 w-2 rounded-full bg-orange-400 animate-pulse" />
-        Aguardando confirmacao do pagamento...
+      {/* Instruções rápidas */}
+      <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-xl px-4 py-3">
+        <p className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-2">2. Abra o app do banco e pague</p>
+        <ol className="space-y-1">
+          <li className="text-xs text-blue-700 dark:text-blue-400">→ Escolha <strong>PIX → Copia e Cola</strong></li>
+          <li className="text-xs text-blue-700 dark:text-blue-400">→ Cole o código copiado</li>
+          <li className="text-xs text-blue-700 dark:text-blue-400">→ Confirme o pagamento ✅</li>
+        </ol>
       </div>
 
+      {/* Temporizador */}
+      <div className="flex items-center justify-between px-1">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="h-2 w-2 rounded-full bg-orange-400 animate-pulse" />
+          Aguardando pagamento...
+        </div>
+        <span className="text-xs font-medium text-muted-foreground">
+          Expira em <strong className="text-orange-500">{timeLeft.m}m {timeLeft.s}s</strong>
+        </span>
+      </div>
+
+      {/* Reenvio */}
       {invoiceId && (
-        <div className="flex flex-col items-center gap-2 mt-2">
-          <p className="text-xs text-muted-foreground">Fechou o QR? Reenvie para:</p>
-          <div className="flex gap-2">
+        <div className="border-t border-border/50 pt-4 space-y-2">
+          <p className="text-xs text-center text-muted-foreground">Vai pagar depois? Salve o código:</p>
+          <div className="grid grid-cols-2 gap-2">
             <Button
               variant="outline"
               size="sm"
-              disabled={resending}
-              onClick={() => handleResend('email')}
-              className="text-xs"
+              disabled={resending !== null}
+              onClick={() => handleResend('whatsapp')}
+              className="text-xs gap-1.5 text-emerald-700 border-emerald-300 hover:bg-emerald-50 dark:text-emerald-400 dark:border-emerald-800 dark:hover:bg-emerald-950/40"
             >
-              <Send className="h-3 w-3 mr-1.5" />
-              E-mail
+              <MessageCircle className="h-3.5 w-3.5" />
+              {resending === 'whatsapp' ? 'Enviando...' : 'Enviar WhatsApp'}
             </Button>
             <Button
               variant="outline"
               size="sm"
-              disabled={resending}
-              onClick={() => handleResend('whatsapp')}
-              className="text-xs"
+              disabled={resending !== null}
+              onClick={() => handleResend('email')}
+              className="text-xs gap-1.5"
             >
-              <Send className="h-3 w-3 mr-1.5" />
-              WhatsApp
+              <Mail className="h-3.5 w-3.5" />
+              {resending === 'email' ? 'Enviando...' : 'Enviar E-mail'}
             </Button>
           </div>
         </div>
       )}
+
+      {/* QR Code colapsável — para quem está no PC */}
+      <div className="border-t border-border/50 pt-4">
+        <button
+          onClick={() => setShowQr(v => !v)}
+          className="w-full flex items-center justify-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <QrCode className="h-3.5 w-3.5" />
+          {showQr ? 'Ocultar QR Code' : 'Estou no computador — mostrar QR Code'}
+        </button>
+
+        {showQr && (
+          <div className="mt-4 flex flex-col items-center gap-3 animate-in fade-in duration-300">
+            <div className="border-2 border-primary/20 rounded-xl p-4 bg-white shadow-sm">
+              {image ? (
+                <div className="relative w-44 h-44">
+                  <Image
+                    src={`data:image/png;base64,${image}`}
+                    alt="PIX QR Code"
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+              ) : (
+                <div className="w-44 h-44 rounded-lg bg-muted flex items-center justify-center animate-pulse text-xs text-muted-foreground">
+                  Carregando...
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground text-center">
+              Escaneie com a câmera do celular ou pelo app do banco
+            </p>
+          </div>
+        )}
+      </div>
+
     </div>
   )
 }
