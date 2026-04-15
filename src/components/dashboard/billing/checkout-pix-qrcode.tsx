@@ -36,15 +36,12 @@ export function PixQrCode({
   const [copied, setCopied] = useState(false)
   const [resending, setResending] = useState<'email' | 'whatsapp' | null>(null)
   const { isMobile } = useMobile()
-  const [showQr, setShowQr] = useState(false)
   const [timeLeft, setTimeLeft] = useState<{ m: number; s: number }>({ m: 15, s: 0 })
+  const [showQrOverride, setShowQrOverride] = useState<boolean | null>(null)
 
-  // Inicializa a visibilidade do QR Code baseado no dispositivo
-  useEffect(() => {
-    // No desktop (notebook/PC), mostramos por padrão para facilitar o scan
-    // No mobile, escondemos por padrão priorizando o Copia e Cola
-    setShowQr(!isMobile)
-  }, [isMobile])
+  // Visibilidade do QR Code: se o usuário já clicou, segue o clique.
+  // Caso contrário, mostra no Desktop e esconde no Mobile.
+  const showQr = showQrOverride !== null ? showQrOverride : !isMobile
 
   useEffect(() => {
     const expire = new Date(expirationDate).getTime()
@@ -226,7 +223,7 @@ export function PixQrCode({
       {/* QR Code colapsável — para quem está no PC */}
       <div className="border-t border-border/50 pt-4">
         <button
-          onClick={() => setShowQr(v => !v)}
+          onClick={() => setShowQrOverride(!showQr)}
           className="w-full flex items-center justify-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
         >
           <QrCode className="h-3.5 w-3.5" />
