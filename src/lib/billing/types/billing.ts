@@ -32,4 +32,5 @@ export interface BillingCheckoutResponse {
   amountLabel?: string
   statusToken?: string
   status?: string
+  checkoutAuthToken?: string
 }

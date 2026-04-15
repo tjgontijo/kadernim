@@ -62,6 +62,7 @@ interface PixData {
   amountLabel: string
   statusToken?: string
   isAutomatic?: boolean
+  checkoutAuthToken?: string
 }
 
 function Field({
@@ -255,11 +256,15 @@ export function GuestCheckoutForm({
   const selectedPricing = getCheckoutPricing(plan, method, catalog, annualInstallments)
   const annualInstallmentOptions = getAnnualCardInstallmentOptions(plan, catalog)
   const selectedPaymentMethod = resolveCheckoutPaymentMethod(plan, method, catalog)
-  const checkoutSuccessUrl = '/dashboard?checkout=success'
+  const checkoutSuccessUrl = '/resources?checkout=success'
 
-  function getPostCheckoutUrl() {
+  function getPostCheckoutUrl(token?: string) {
     if (isLoggedIn) {
       return checkoutSuccessUrl
+    }
+
+    if (token) {
+      return `${checkoutSuccessUrl}&token=${encodeURIComponent(token)}`
     }
 
     const checkoutEmail = (prefilledUser?.email ?? email).trim().toLowerCase()
@@ -345,6 +350,7 @@ export function GuestCheckoutForm({
           amountLabel: data.amountLabel ?? selectedPricing.priceLabel,
           statusToken: data.statusToken,
           isAutomatic: paymentMethod === 'PIX_AUTOMATIC',
+          checkoutAuthToken: data.checkoutAuthToken,
         })
         return
       }
@@ -353,7 +359,7 @@ export function GuestCheckoutForm({
         toast.success('Pagamento aprovado!')
       }
 
-      window.location.href = getPostCheckoutUrl()
+      window.location.href = getPostCheckoutUrl(data.checkoutAuthToken)
     },
     onError: (error: Error) => {
       if (error.message === '_validation') {
@@ -377,7 +383,7 @@ export function GuestCheckoutForm({
             statusToken={pixData.statusToken}
             isAutomatic={pixData.isAutomatic}
             onSuccess={() => {
-              window.location.href = getPostCheckoutUrl()
+              window.location.href = getPostCheckoutUrl(pixData.checkoutAuthToken)
             }}
           />
         </div>

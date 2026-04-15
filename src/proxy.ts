@@ -90,6 +90,12 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // Allow access to protected routes with checkout token
+  const hasCheckoutToken = url.searchParams.has('token')
+  if (hasCheckoutToken && (pathname === '/resources' || pathname.startsWith('/resources/'))) {
+    return NextResponse.next()
+  }
+
   // Qualquer outra rota é protegida por padrão
   if (!hasPlausibleCookie) {
     return NextResponse.redirect(new URL('/login', request.url))

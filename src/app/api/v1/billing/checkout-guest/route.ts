@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { GuestCheckoutRequestSchema } from '@/lib/billing/schemas'
 import { CheckoutCustomerService } from '@/lib/billing/services/checkout-customer.service'
 import { CheckoutService } from '@/lib/billing/services/checkout.service'
+import { CheckoutAuthTokenService } from '@/lib/billing/services/checkout-auth-token.service'
 import { billingLog } from '@/lib/billing/services/logger'
 
 function getRequestIp(request: NextRequest) {
@@ -22,7 +23,12 @@ export async function POST(request: NextRequest) {
       remoteIp: getRequestIp(request),
     })
 
-    return NextResponse.json(result)
+    const checkoutAuthToken = CheckoutAuthTokenService.create(user.id, user.email)
+
+    return NextResponse.json({
+      ...result,
+      checkoutAuthToken,
+    })
   } catch (error: any) {
     const status = error.message === 'Nome obrigatório para novo cadastro' ? 400 : 500
 
