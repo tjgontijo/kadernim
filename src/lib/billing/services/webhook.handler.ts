@@ -76,14 +76,21 @@ export class WebhookHandler {
                     break
 
                 // Pix Automatic Events
-                // Pix Automatic Events
+                case 'PIX_AUTOMATIC_RECURRING_AUTHORIZATION_CREATED':
+                    await this.handlePixAutomaticCreated(payload)
+                    break
                 case 'PIX_AUTOMATIC_AUTHORIZATION_AUTHORIZED':
                 case 'PIX_AUTOMATIC_AUTHORIZATION_AUTHORIZED_AND_CONFIRMED':
+                case 'PIX_AUTOMATIC_RECURRING_AUTHORIZATION_ACTIVATED':
                     await this.handlePixAutomaticAuthorized(payload)
                     break
                 case 'PIX_AUTOMATIC_AUTHORIZATION_DENIED':
                 case 'PIX_AUTOMATIC_AUTHORIZATION_CANCELED':
+                case 'PIX_AUTOMATIC_AUTHORIZATION_CANCELLED':
                 case 'PIX_AUTOMATIC_AUTHORIZATION_EXPIRED':
+                case 'PIX_AUTOMATIC_RECURRING_AUTHORIZATION_CANCELLED':
+                case 'PIX_AUTOMATIC_RECURRING_AUTHORIZATION_EXPIRED':
+                case 'PIX_AUTOMATIC_RECURRING_AUTHORIZATION_REFUSED':
                     await this.handlePixAutomaticFailed(payload)
                     break
 
@@ -228,12 +235,36 @@ export class WebhookHandler {
         // ... logic for subscriptions
     }
 
+    private static getPixAutomaticAuthorization(payload: any) {
+        return payload.authorization ?? payload.pixAutomaticAuthorization ?? null
+    }
+
+    private static async handlePixAutomaticCreated(payload: any) {
+        const authorization = this.getPixAutomaticAuthorization(payload)
+        if (!authorization?.id) {
+            throw new Error('Invalid Pix Automático authorization payload')
+        }
+
+        await BillingAuditService.log({
+            actor: AuditActor.SYSTEM,
+            action: payload.event,
+            entity: 'Subscription',
+            entityId: authorization.id,
+            asaasEventId: payload.id,
+            newState: authorization,
+        })
+    }
+
     private static async handlePixAutomaticAuthorized(payload: any) {
-        const authorization = payload.pixAutomaticAuthorization
+        const authorization = this.getPixAutomaticAuthorization(payload)
+        if (!authorization?.id) {
+            throw new Error('Invalid Pix Automático authorization payload')
+        }
+
         billingLog('info', 'Handling Pix Automático Authorized', { authorizationId: authorization.id })
 
         // 1. Atualizar Subscription que aguardava essa autorização
-        const subscription = await prisma.subscription.updateMany({
+        await prisma.subscription.updateMany({
             where: {
                 asaasId: authorization.id,
                 paymentMethod: 'PIX_AUTOMATIC'
@@ -260,13 +291,17 @@ export class WebhookHandler {
     }
 
     private static async handlePixAutomaticFailed(payload: any) {
-        const authorization = payload.pixAutomaticAuthorization
+        const authorization = this.getPixAutomaticAuthorization(payload)
+        if (!authorization?.id) {
+            throw new Error('Invalid Pix Automático authorization payload')
+        }
+
         billingLog('warn', 'Pix Automático Authorization Failed', {
             authorizationId: authorization.id, type: payload.event
         })
 
         // Marks subscription as CANCELED or keeps INACTIVE
-        const subscription = await prisma.subscription.updateMany({
+        await prisma.subscription.updateMany({
             where: { asaasId: authorization.id },
             data: { status: 'CANCELED', isActive: false }
         })

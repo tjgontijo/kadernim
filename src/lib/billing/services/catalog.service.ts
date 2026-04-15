@@ -47,9 +47,11 @@ function buildPlan(input: {
   }>
 }): CheckoutPlan {
   const creditCardOffer = input.offers.find((offer) => offer.paymentMethod === PaymentMethod.CREDIT_CARD)
-  const pixOffer = input.offers.find((offer) => (
-    offer.paymentMethod === PaymentMethod.PIX || offer.paymentMethod === PaymentMethod.PIX_AUTOMATIC
-  ))
+  const pixOffer = input.id === 'monthly'
+    ? input.offers.find((offer) => offer.paymentMethod === PaymentMethod.PIX_AUTOMATIC)
+      ?? input.offers.find((offer) => offer.paymentMethod === PaymentMethod.PIX)
+    : input.offers.find((offer) => offer.paymentMethod === PaymentMethod.PIX)
+      ?? input.offers.find((offer) => offer.paymentMethod === PaymentMethod.PIX_AUTOMATIC)
 
   if (!creditCardOffer || !pixOffer) {
     throw new Error(`Plano ${input.id} sem ofertas ativas suficientes para checkout`)

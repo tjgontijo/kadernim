@@ -20,11 +20,11 @@ const catalog: CheckoutPlanCatalog = {
     cycle: 'MONTHLY',
     accessDays: 30,
     pixOfferId: 'offer_monthly_pix_default',
-    pixPaymentMethod: PaymentMethod.PIX,
+    pixPaymentMethod: PaymentMethod.PIX_AUTOMATIC,
     pixAmount: 27,
     pixPriceLabel: 'R$ 27,00/mês',
     pixSubmitLabel: 'R$ 27,00/mês',
-    pixDescription: 'Pagamento mensal no PIX com renovação manual.',
+    pixDescription: 'PIX Automático com renovação mensal.',
     creditCardOfferId: 'offer_monthly_credit_card_default',
     creditCardAmount: 27,
     creditCardPriceLabel: 'R$ 27,00/mês',
@@ -90,6 +90,6 @@ test('annual 12x applies the configured monthly rate to the customer', () => {
 })
 
 test('monthly PIX selection resolves to the configured pix method', () => {
-  assert.equal(resolveCheckoutPaymentMethod('monthly', 'PIX', catalog), PaymentMethod.PIX)
+  assert.equal(resolveCheckoutPaymentMethod('monthly', 'PIX', catalog), PaymentMethod.PIX_AUTOMATIC)
   assert.equal(resolveCheckoutPaymentMethod('annual', 'PIX', catalog), PaymentMethod.PIX)
 })
