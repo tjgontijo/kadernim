@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/db'
 import { AuditActor, PaymentMethod } from '@db'
-import { buildCheckoutDescription, formatCheckoutCurrency, type CheckoutPlanId } from '@/lib/billing/checkout-offer'
+import { formatCheckoutCurrency, type CheckoutPlanId } from '@/lib/billing/checkout-offer'
 import { AsaasClient } from './asaas-client'
 import { BillingAuditService } from './audit.service'
 import { BillingCatalogService } from './catalog.service'
@@ -57,7 +57,7 @@ export class PixAutomaticService {
       contractId,
       startDate: nextMonth.toISOString().split('T')[0],
       value: plan.pixAmount,
-      description: buildCheckoutDescription(plan.id, 'pix-automatic'),
+      description: 'Kadernim Pro Mensal',
       immediateQrCode: {
         expirationSeconds: 3600,
         originalValue: plan.pixAmount,
