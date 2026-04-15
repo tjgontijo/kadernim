@@ -6,7 +6,8 @@ Documentação de requisitos técnicos e de produto para features em desenvolvim
 
 ### 1. **PIX Automatic Failure Handling**
 Status: **Draft**  
-Prioridade: **Alta**
+Prioridade: **Alta**  
+Timeline: **30h em 3 fases**
 
 Tratamento completo de falhas em pagamentos PIX automático, incluindo notificações via Email + WhatsApp, retry automático, e visibilidade no dashboard.
 
@@ -15,18 +16,54 @@ Tratamento completo de falhas em pagamentos PIX automático, incluindo notifica�
 - [`pix-failure-implementation-guide.md`](./pix-failure-implementation-guide.md) - Guia técnico detalhado para desenvolvimento
 
 **Resumo:**
-- ❌ **Problema Atual:** Usuário não sabe que perdeu acesso quando PIX falha
-- ✅ **Solução:** Notificar + oferec reativação + exibir status no dashboard
-- ⏱️ **Timeline:** 30 horas em 3 fases
+- ❌ **Problema:** Usuário não sabe que perdeu acesso quando PIX falha
+- ✅ **Solução:** Notificar + oferecer reativação + exibir status no dashboard
 - 📧 **Delivery:** Email (Resend) + WhatsApp (UAZAPI)
 - 🎯 **Resultado Esperado:** Churn -40%, Reativação +60%
 
-**Próximos Passos:**
-1. [ ] Revisar e aprovar PRD
-2. [ ] Implementar Fase 1 (MVP: Email + WhatsApp + Retry Manual)
-3. [ ] Deploy + Testes
-4. [ ] Implementar Fase 2 (Retry Automático com Jobs)
-5. [ ] Implementar Fase 3 (Dashboard UX)
+---
+
+### 2. **PIX Checkout UX Improvements**
+Status: **Draft**  
+Prioridade: **Média**  
+Timeline: **20h em 4 fases**
+
+Melhoria na experiência de checkout PIX permitindo que o usuário receba o QR Code por email e WhatsApp, com opção de reenvio.
+
+**Arquivos:**
+- [`pix-checkout-ux-improvements.md`](./pix-checkout-ux-improvements.md) - PRD com fluxo, templates e implementação
+
+**Resumo:**
+- ❌ **Problema:** QR Code só existe no navegador; se fechar a aba, precisa voltar ao checkout
+- ✅ **Solução:** Enviar QR Code por Email + WhatsApp + permitir reenvio
+- 👥 **Cenários:** PC → email, Smartphone → WhatsApp, Perdeu → reenviar
+- 🎯 **Resultado Esperado:** Conversão +15%, Suporte -20%, Email delivery 99%+
+
+---
+
+## 🎯 Roadmap de Implementação
+
+```
+SEMANA 1-2:
+├─ PIX Automatic Failure (Fase 1 - MVP)
+│  └─ Email + WhatsApp + Retry Manual (8h)
+└─ PIX Checkout UX (Fase 1 - Email)
+   └─ Email com QR Code (5h)
+
+SEMANA 3:
+├─ PIX Automatic Failure (Fase 2)
+│  └─ Retry Automático (12h)
+└─ PIX Checkout UX (Fase 2-3)
+   └─ WhatsApp + Reenvio (11h)
+
+SEMANA 4:
+├─ PIX Automatic Failure (Fase 3)
+│  └─ Dashboard UX (10h)
+└─ PIX Checkout UX (Fase 4)
+   └─ Persistência BD (4h)
+```
+
+Total estimado: **50 horas em 4 semanas**
 
 ---
 
