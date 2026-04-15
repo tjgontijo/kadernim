@@ -7,6 +7,9 @@ import { billingLog } from './logger'
 import { AuditActor, InvoiceStatus } from '@db'
 import { BillingAsaasConfigService } from './asaas-config.service'
 import { PaymentService } from './payment.service'
+import { mapPixAutomaticFailureReason } from './pix-failure.helper'
+import { authDeliveryService } from '@/services/delivery/auth-delivery'
+import { isValidBrazilianPhone } from '@/lib/utils/phone'
 
 function mapInvoiceStatus(status: string): InvoiceStatus {
     switch (status) {
@@ -300,19 +303,76 @@ export class WebhookHandler {
             authorizationId: authorization.id, type: payload.event
         })
 
-        // Marks subscription as CANCELED or keeps INACTIVE
-        await prisma.subscription.updateMany({
+        // Mapear tipo de falha
+        const failureReason = mapPixAutomaticFailureReason(payload.event, authorization.failureReason)
+        const nextRetry = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) // 3 dias
+
+        // Atualizar subscription para FAILED
+        const subscription = await prisma.subscription.findFirst({
             where: { asaasId: authorization.id },
-            data: { status: 'CANCELED', isActive: false }
+            include: { user: true }
         })
 
+        if (!subscription) {
+            billingLog('warn', 'Subscription not found for failed PIX', { authorizationId: authorization.id })
+            return
+        }
+
+        await prisma.subscription.update({
+            where: { id: subscription.id },
+            data: {
+                status: 'FAILED',
+                failureReason,
+                failureCount: { increment: 1 },
+                lastFailureAt: new Date(),
+                nextRetryAt: nextRetry,
+            }
+        })
+
+        // Enviar notificação ao usuário
+        if (subscription.user) {
+            try {
+                const channels: Array<'email' | 'whatsapp'> = ['email']
+                if (isValidBrazilianPhone(subscription.user.phone)) {
+                    channels.push('whatsapp')
+                }
+
+                await authDeliveryService.send({
+                    email: subscription.user.email,
+                    type: 'pix-failure',
+                    channels,
+                    data: {
+                        failureReason,
+                        retryUrl: `${process.env.NEXT_PUBLIC_APP_URL}/account/subscription/retry?id=${subscription.id}`,
+                        subscriptionId: subscription.id,
+                    },
+                })
+
+                // Registrar que enviou notificação
+                await prisma.subscription.update({
+                    where: { id: subscription.id },
+                    data: { failureNotificationSentAt: new Date() }
+                })
+            } catch (error: any) {
+                billingLog('error', 'Failed to send failure notification', {
+                    subscriptionId: subscription.id,
+                    error: error.message
+                })
+            }
+        }
+
+        // Log audit
         await BillingAuditService.log({
             actor: AuditActor.SYSTEM,
             action: payload.event,
             entity: 'Subscription',
-            entityId: authorization.id,
+            entityId: subscription.id,
             asaasEventId: payload.id,
-            newState: authorization,
+            metadata: {
+                failureReason,
+                userNotified: !!subscription.user,
+                nextRetryAt: nextRetry.toISOString(),
+            }
         })
     }
 }
