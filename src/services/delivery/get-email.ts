@@ -1,5 +1,6 @@
 import { generateMagicLinkEmail } from '@/services/mail/templates/magic-link-email'
 import { generateOtpEmail } from '@/services/mail/templates/otp-email'
+import { generatePixCheckoutEmail } from '@/services/mail/templates/pix-checkout-email'
 import { generatePixFailureEmail } from '@/services/mail/templates/pix-failure-email'
 
 import { DeliveryData, DeliveryType, EmailTemplate } from './types'
@@ -35,6 +36,23 @@ export async function getEmailTemplate({
       failureReason,
       retryUrl,
       nextRetryDate: '3 dias',
+    })
+  }
+
+  if (type === 'pix-checkout') {
+    const pixPayload = data.pixPayload || ''
+    const pixImage = data.pixImage
+    const expirationDate = data.pixExpirationDate || ''
+    const paymentUrl = data.paymentUrl || ''
+    const amount = data.amount || ''
+
+    return generatePixCheckoutEmail({
+      name,
+      amount,
+      pixPayload,
+      pixImage,
+      expirationDate,
+      paymentUrl,
     })
   }
 

@@ -60,6 +60,7 @@ interface PixData {
   expirationDate: string
   statusId: string
   amountLabel: string
+  invoiceId?: string
   statusToken?: string
   isAutomatic?: boolean
   checkoutAuthToken?: string
@@ -348,6 +349,7 @@ export function GuestCheckoutForm({
           expirationDate: data.expirationDate,
           statusId,
           amountLabel: data.amountLabel ?? selectedPricing.priceLabel,
+          invoiceId: data.invoiceId,
           statusToken: data.statusToken,
           isAutomatic: paymentMethod === 'PIX_AUTOMATIC',
           checkoutAuthToken: data.checkoutAuthToken,
@@ -380,6 +382,7 @@ export function GuestCheckoutForm({
             expirationDate={pixData.expirationDate}
             statusId={pixData.statusId}
             amountLabel={pixData.amountLabel}
+            invoiceId={pixData.invoiceId}
             statusToken={pixData.statusToken}
             isAutomatic={pixData.isAutomatic}
             onSuccess={() => {

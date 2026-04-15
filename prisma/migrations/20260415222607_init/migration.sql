@@ -214,6 +214,13 @@ CREATE TABLE "invoice" (
     "invoiceUrl" TEXT,
     "bankSlipUrl" TEXT,
     "pixQrCode" TEXT,
+    "pixQrCodePayload" TEXT,
+    "pixQrCodeImage" TEXT,
+    "pixExpirationDate" TIMESTAMP(3),
+    "pixEmailSentAt" TIMESTAMP(3),
+    "pixWhatsappSentAt" TIMESTAMP(3),
+    "pixResendCount" INTEGER NOT NULL DEFAULT 0,
+    "pixLastResendAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 

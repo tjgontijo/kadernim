@@ -143,22 +143,29 @@ model Organization {
 }
 
 model Subscription {
-  id                 String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId             String             @unique @db.Uuid
-  offerId            String?            @db.Uuid
-  asaasId            String?            @unique
-  status             SubscriptionStatus @default(INACTIVE)
-  paymentMethod      PaymentMethod?
-  pixAutomaticAuthId String?            @unique
-  isActive           Boolean            @default(false)
-  purchaseDate       DateTime           @default(now())
-  expiresAt          DateTime?
-  canceledAt         DateTime?
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
-  invoices           Invoice[]
-  offer              BillingOffer?      @relation(fields: [offerId], references: [id])
-  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                          String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId                      String                      @unique @db.Uuid
+  offerId                     String?                     @db.Uuid
+  asaasId                     String?                     @unique
+  status                      SubscriptionStatus          @default(INACTIVE)
+  paymentMethod               PaymentMethod?
+  pixAutomaticAuthId          String?                     @unique
+  isActive                    Boolean                     @default(false)
+  purchaseDate                DateTime                    @default(now())
+  expiresAt                   DateTime?
+  canceledAt                  DateTime?
+  failureReason               SubscriptionFailureReason?
+  failureCount                Int                         @default(0)
+  lastFailureAt               DateTime?
+  lastFailureMessage          String?
+  nextRetryAt                 DateTime?
+  lastRetryAt                 DateTime?
+  failureNotificationSentAt   DateTime?
+  createdAt                   DateTime                    @default(now())
+  updatedAt                   DateTime                    @updatedAt
+  invoices                    Invoice[]
+  offer                       BillingOffer?               @relation(fields: [offerId], references: [id])
+  user                        User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([offerId])
@@ -225,9 +232,16 @@ model Invoice {
   refundedAt     DateTime?
   invoiceUrl     String?
   bankSlipUrl    String?
-  pixQrCode      String?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  pixQrCode           String?
+  pixQrCodePayload    String?
+  pixQrCodeImage      String?
+  pixExpirationDate   DateTime?
+  pixEmailSentAt      DateTime?
+  pixWhatsappSentAt   DateTime?
+  pixResendCount      Int       @default(0)
+  pixLastResendAt     DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
   offer          BillingOffer? @relation(fields: [offerId], references: [id])
   subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
   user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -390,6 +404,15 @@ enum SubscriptionStatus {
   OVERDUE
   CANCELED
   EXPIRED
+  FAILED
+}
+
+enum SubscriptionFailureReason {
+  EXPIRED
+  DENIED
+  CANCELED_BY_USER
+  FAILED_DEBIT
+  OTHER
 }
 
 enum InvoiceStatus {

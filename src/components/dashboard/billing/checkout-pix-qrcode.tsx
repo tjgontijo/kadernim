@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { CheckCircle2, Copy } from 'lucide-react'
+import { CheckCircle2, Copy, Send } from 'lucide-react'
 import Image from 'next/image'
 import { InvoiceStatus } from '@db'
 import { toast } from 'sonner'
@@ -16,6 +16,7 @@ interface PixQrCodeProps {
   expirationDate: string
   statusId: string
   amountLabel: string
+  invoiceId?: string
   statusToken?: string
   isAutomatic?: boolean
   onSuccess: () => void
@@ -27,11 +28,13 @@ export function PixQrCode({
   expirationDate,
   statusId,
   amountLabel,
+  invoiceId,
   statusToken,
   isAutomatic,
   onSuccess,
 }: PixQrCodeProps) {
   const [copied, setCopied] = useState(false)
+  const [resending, setResending] = useState(false)
   const [timeLeft, setTimeLeft] = useState<{ m: number; s: number }>({ m: 15, s: 0 })
 
   useEffect(() => {
@@ -98,6 +101,38 @@ export function PixQrCode({
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const handleResend = async (channel: 'email' | 'whatsapp') => {
+    if (!invoiceId) return
+    setResending(true)
+    try {
+      const res = await fetch(`/api/v1/billing/pix-checkout/${invoiceId}/resend`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ channel }),
+      })
+      const data = await res.json()
+
+      if (res.status === 429) {
+        const seconds = data.retryAfterSeconds ?? 300
+        const minutes = Math.ceil(seconds / 60)
+        toast.warning(`Aguarde ${minutes} min antes de reenviar novamente.`)
+        return
+      }
+
+      if (!res.ok) {
+        toast.error(data.error ?? 'Erro ao reenviar.')
+        return
+      }
+
+      const label = channel === 'email' ? 'e-mail' : 'WhatsApp'
+      toast.success(`QR Code reenviado para seu ${label}!`)
+    } catch {
+      toast.error('Erro de conexão.')
+    } finally {
+      setResending(false)
+    }
+  }
+
   return (
     <div className="flex flex-col items-center space-y-6 text-center animate-in fade-in zoom-in duration-500">
       <div className="space-y-2">
@@ -159,6 +194,34 @@ export function PixQrCode({
         <div className="h-2 w-2 rounded-full bg-orange-400 animate-pulse" />
         Aguardando confirmacao do pagamento...
       </div>
+
+      {invoiceId && (
+        <div className="flex flex-col items-center gap-2 mt-2">
+          <p className="text-xs text-muted-foreground">Fechou o QR? Reenvie para:</p>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={resending}
+              onClick={() => handleResend('email')}
+              className="text-xs"
+            >
+              <Send className="h-3 w-3 mr-1.5" />
+              E-mail
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={resending}
+              onClick={() => handleResend('whatsapp')}
+              className="text-xs"
+            >
+              <Send className="h-3 w-3 mr-1.5" />
+              WhatsApp
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

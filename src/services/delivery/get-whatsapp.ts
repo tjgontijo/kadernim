@@ -1,4 +1,5 @@
 import { buildMagicLinkWhatsappMessage, buildOtpWhatsappMessage } from '@/services/whatsapp/template/auth-otp'
+import { buildPixCheckoutWhatsappMessage } from '@/services/whatsapp/template/pix-checkout'
 import { buildPixFailureWhatsappMessage } from '@/services/whatsapp/template/pix-failure'
 
 import { DeliveryData, DeliveryType } from './types'
@@ -26,6 +27,14 @@ export function getWhatsappMessage({
         name,
         failureReason: data.failureReason || 'OTHER',
         retryUrl: data.retryUrl || '',
+      })
+    case 'pix-checkout':
+      return buildPixCheckoutWhatsappMessage({
+        name,
+        amount: data.amount || '',
+        pixPayload: data.pixPayload || '',
+        expirationDate: data.pixExpirationDate || '',
+        paymentUrl: data.paymentUrl || '',
       })
     case 'otp':
     case 'email-verification':

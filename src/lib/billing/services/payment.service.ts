@@ -9,7 +9,9 @@ import {
   type CheckoutBillingMode,
   type CheckoutPlanId,
 } from '@/lib/billing/checkout-offer'
+import { isValidBrazilianPhone } from '@/lib/utils/phone'
 import { normalizeCpfCnpj } from '@/lib/utils/cpf-cnpj'
+import { authDeliveryService } from '@/services/delivery'
 import { AsaasClient } from './asaas-client'
 import { BillingAuditService } from './audit.service'
 import { BillingCatalogService } from './catalog.service'
@@ -216,6 +218,11 @@ async function upsertInvoice(params: {
       paidAt,
       invoiceUrl: params.payment.invoiceUrl,
       pixQrCode: params.pixQrCode ? JSON.stringify(params.pixQrCode) : null,
+      pixQrCodePayload: params.pixQrCode?.payload ?? null,
+      pixQrCodeImage: params.pixQrCode?.encodedImage ?? null,
+      pixExpirationDate: params.pixQrCode?.expirationDate
+        ? new Date(params.pixQrCode.expirationDate)
+        : null,
     },
     update: {
       subscriptionId: params.subscriptionId,
@@ -230,6 +237,11 @@ async function upsertInvoice(params: {
       paidAt,
       invoiceUrl: params.payment.invoiceUrl,
       pixQrCode: params.pixQrCode ? JSON.stringify(params.pixQrCode) : undefined,
+      pixQrCodePayload: params.pixQrCode?.payload ?? undefined,
+      pixQrCodeImage: params.pixQrCode?.encodedImage ?? undefined,
+      pixExpirationDate: params.pixQrCode?.expirationDate
+        ? new Date(params.pixQrCode.expirationDate)
+        : undefined,
     },
   })
 }
@@ -356,6 +368,42 @@ export class PaymentService {
       const paidAt = new Date(payment.paymentDate ?? payment.confirmedDate ?? Date.now())
       await activateSubscription(subscription.id, plan.id, paidAt, { billingMode: 'single' })
     }
+
+    const checkoutUrl = `${process.env.NEXT_PUBLIC_APP_URL}/checkout/pix?invoiceId=${invoice.id}`
+    const amountLabel = formatCheckoutCurrency(plan.pixAmount)
+    const expirationLabel = qrCode.expirationDate
+      ? new Date(qrCode.expirationDate).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+      : '30 minutos'
+
+    const channels: Array<'email' | 'whatsapp'> = ['email']
+    if (isValidBrazilianPhone(user.phone)) {
+      channels.push('whatsapp')
+    }
+
+    void authDeliveryService.send({
+      email: user.email,
+      type: 'pix-checkout',
+      data: {
+        name: user.name,
+        pixPayload: qrCode.payload,
+        pixImage: qrCode.encodedImage,
+        pixExpirationDate: expirationLabel,
+        invoiceId: invoice.id,
+        amount: amountLabel,
+        paymentUrl: checkoutUrl,
+      },
+      channels,
+    }).then(async () => {
+      await prisma.invoice.update({
+        where: { id: invoice.id },
+        data: { pixEmailSentAt: new Date() },
+      })
+    }).catch((err: Error) => {
+      billingLog('warn', 'Failed to send PIX checkout notification', {
+        invoiceId: invoice.id,
+        error: err.message,
+      })
+    })
 
     await BillingAuditService.log({
       userId: params.userId,

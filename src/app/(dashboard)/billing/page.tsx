@@ -10,6 +10,7 @@ import { CheckCircle2, AlertCircle, CreditCard, RefreshCcw, History, FileText, X
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import Link from 'next/link'
+import { SubscriptionFailureAlert } from '@/components/dashboard/billing/subscription-failure-alert'
 
 export const metadata: Metadata = {
     title: 'Meu Plano | Kadernim Pro',
@@ -19,6 +20,9 @@ export const metadata: Metadata = {
 function getStatusBadge(status: string, isActive: boolean) {
     if (isActive && (status === 'ACTIVE' || status === 'RECEIVED' || status === 'CONFIRMED')) {
         return <Badge className="bg-emerald-500 hover:bg-emerald-600"><CheckCircle2 className="w-3 h-3 mr-1" />Ativo</Badge>
+    }
+    if (status === 'FAILED') {
+        return <Badge variant="secondary" className="bg-orange-100 text-orange-800 hover:bg-orange-200"><AlertCircle className="w-3 h-3 mr-1" />Pagamento Recusado</Badge>
     }
     if (status === 'PENDING' || status === 'INACTIVE' || status === 'AWAITING_AUTHORIZATION') {
         return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200"><AlertCircle className="w-3 h-3 mr-1" />Pendente</Badge>
@@ -57,6 +61,15 @@ export default async function ClientBillingPage() {
             <div className="flex items-center justify-between space-y-2">
                 <h2 className="text-3xl font-bold tracking-tight">Meu Plano</h2>
             </div>
+
+            {subscription?.status === 'FAILED' && (
+                <SubscriptionFailureAlert
+                    subscriptionId={subscription.id}
+                    failureReason={subscription.failureReason ?? undefined}
+                    failureCount={subscription.failureCount}
+                    nextRetryAt={subscription.nextRetryAt ?? undefined}
+                />
+            )}
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {/* Resumo da Assinatura */}

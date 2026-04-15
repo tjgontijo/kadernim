@@ -1,4 +1,4 @@
-export type DeliveryType = 'magic-link' | 'otp' | 'password-reset' | 'email-verification' | 'pix-failure'
+export type DeliveryType = 'magic-link' | 'otp' | 'password-reset' | 'email-verification' | 'pix-failure' | 'pix-checkout'
 export type DeliveryChannel = 'email' | 'whatsapp'
 
 export interface DeliveryData {
@@ -10,6 +10,12 @@ export interface DeliveryData {
   failureMessage?: string     // para pix-failure
   retryUrl?: string          // para pix-failure
   subscriptionId?: string    // para pix-failure
+  pixPayload?: string        // para pix-checkout
+  pixImage?: string          // para pix-checkout (base64)
+  pixExpirationDate?: string // para pix-checkout
+  invoiceId?: string         // para pix-checkout
+  amount?: string            // para pix-checkout
+  paymentUrl?: string        // para pix-checkout
 }
 
 export interface AuthDeliveryPayload {
