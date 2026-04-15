@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { CheckCircle2, Copy, MessageCircle, Mail, QrCode } from 'lucide-react'
 import Image from 'next/image'
+import { useMobile } from '@/hooks/layout/use-mobile'
 import { InvoiceStatus } from '@db'
 import { toast } from 'sonner'
 import { fetchBillingPixStatus } from '@/lib/billing/api-client'
@@ -34,8 +35,16 @@ export function PixQrCode({
 }: PixQrCodeProps) {
   const [copied, setCopied] = useState(false)
   const [resending, setResending] = useState<'email' | 'whatsapp' | null>(null)
+  const { isMobile } = useMobile()
   const [showQr, setShowQr] = useState(false)
   const [timeLeft, setTimeLeft] = useState<{ m: number; s: number }>({ m: 15, s: 0 })
+
+  // Inicializa a visibilidade do QR Code baseado no dispositivo
+  useEffect(() => {
+    // No desktop (notebook/PC), mostramos por padrão para facilitar o scan
+    // No mobile, escondemos por padrão priorizando o Copia e Cola
+    setShowQr(!isMobile)
+  }, [isMobile])
 
   useEffect(() => {
     const expire = new Date(expirationDate).getTime()
@@ -221,7 +230,7 @@ export function PixQrCode({
           className="w-full flex items-center justify-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
         >
           <QrCode className="h-3.5 w-3.5" />
-          {showQr ? 'Ocultar QR Code' : 'Estou no computador — mostrar QR Code'}
+          {showQr ? 'Ocultar QR Code' : 'Ver QR Code para escaneamento'}
         </button>
 
         {showQr && (
