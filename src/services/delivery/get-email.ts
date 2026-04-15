@@ -1,5 +1,6 @@
 import { generateMagicLinkEmail } from '@/services/mail/templates/magic-link-email'
 import { generateOtpEmail } from '@/services/mail/templates/otp-email'
+import { generatePixFailureEmail } from '@/services/mail/templates/pix-failure-email'
 
 import { DeliveryData, DeliveryType, EmailTemplate } from './types'
 
@@ -7,12 +8,6 @@ export type GetEmailTemplateParams = {
   type: DeliveryType
   name: string
   data: DeliveryData
-}
-
-const otpSubjectMap: Record<Exclude<DeliveryType, 'magic-link'>, string> = {
-  otp: '🔐 Seu código de acesso - Kadernim',
-  'email-verification': '🔐 Código de verificação - Kadernim',
-  'password-reset': '🔐 Código para redefinir senha - Kadernim',
 }
 
 export async function getEmailTemplate({
@@ -31,6 +26,18 @@ export async function getEmailTemplate({
     return generateMagicLinkEmail({ name, magicLink: url, expiresIn })
   }
 
+  if (type === 'pix-failure') {
+    const failureReason = data.failureReason || 'OTHER'
+    const retryUrl = data.retryUrl || ''
+
+    return generatePixFailureEmail({
+      name,
+      failureReason,
+      retryUrl,
+      nextRetryDate: '3 dias',
+    })
+  }
+
   const otp = data.otp
   const expiresIn = data.expiresIn ?? 5
 
@@ -38,7 +45,13 @@ export async function getEmailTemplate({
     throw new Error('OTP é obrigatório para envio deste tipo de mensagem')
   }
 
-  const subject = otpSubjectMap[type] ?? '🔐 Código de verificação - Kadernim'
+  const otpSubjectMap: Record<Exclude<DeliveryType, 'magic-link' | 'pix-failure'>, string> = {
+    otp: '🔐 Seu código de acesso - Kadernim',
+    'email-verification': '🔐 Código de verificação - Kadernim',
+    'password-reset': '🔐 Código para redefinir senha - Kadernim',
+  }
+
+  const subject = otpSubjectMap[type as any] ?? '🔐 Código de verificação - Kadernim'
 
   const template = await generateOtpEmail({ name, otp, expiresIn })
 
