@@ -135,13 +135,13 @@ export function getCountryFlag(value: string): string {
  */
 export function formatWhatsAppWithFlag(value: string): string {
   if (!value || value === 'Não informado') return value;
-  
+
   const numbers = value.replace(/\D/g, '');
-  
+
   // Detectar DDI
   let ddi = '';
   let localNumber = '';
-  
+
   if (numbers.startsWith('55') && numbers.length === 12) {
     ddi = '55';
     localNumber = numbers.slice(2); // Remove DDI
@@ -159,16 +159,34 @@ export function formatWhatsAppWithFlag(value: string): string {
       }
     }
   }
-  
+
   const flag = getCountryFlag(ddi);
-  
+
   // Formatar número local baseado no país
   if (ddi === '55') {
     // Brasil: (DD) DDDD-DDDD
     const formatted = applyWhatsAppMask(localNumber);
     return `${flag} +${ddi} ${formatted}`;
   }
-  
+
   // Outros países: formato genérico
   return `${flag} +${ddi} ${localNumber}`;
+}
+
+/**
+ * Validates if a phone number is a valid Brazilian phone number
+ * @param phone - The phone number to validate
+ * @returns true if valid Brazilian phone, false otherwise
+ */
+export function isValidBrazilianPhone(phone?: string | null): boolean {
+  if (!phone) return false
+  const digits = phone.replace(/\D/g, '')
+  // Valid: +55 + 11 digits (DDD + 9 + 8 digits) OR just 11 digits
+  if (digits.length === 13 && digits.startsWith('55')) {
+    return true
+  }
+  if (digits.length === 11 && digits[2] === '9') {
+    return true
+  }
+  return false
 }

@@ -45,13 +45,13 @@ export async function getEmailTemplate({
     throw new Error('OTP é obrigatório para envio deste tipo de mensagem')
   }
 
-  const otpSubjectMap: Record<Exclude<DeliveryType, 'magic-link' | 'pix-failure'>, string> = {
+  const otpSubjectMap: Record<string, string> = {
     otp: '🔐 Seu código de acesso - Kadernim',
     'email-verification': '🔐 Código de verificação - Kadernim',
     'password-reset': '🔐 Código para redefinir senha - Kadernim',
   }
 
-  const subject = otpSubjectMap[type as any] ?? '🔐 Código de verificação - Kadernim'
+  const subject = otpSubjectMap[type] ?? '🔐 Código de verificação - Kadernim'
 
   const template = await generateOtpEmail({ name, otp, expiresIn })
 
