@@ -1,8 +1,8 @@
-'use client'
-
 import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { getFeaturedResources } from '@/lib/marketing/product-data'
+import { ProductCarousel } from '@/components/marketing/sections/product-carousel'
 import {
   ArrowRight,
   BookOpen,
@@ -520,7 +520,9 @@ function Footer() {
 /* ─────────────────────────────────────────────
    PAGE
 ───────────────────────────────────────────── */
-export default function HomePage() {
+export default async function HomePage() {
+  const products = await getFeaturedResources()
+
   return (
     <div className="min-h-screen bg-white antialiased">
       <Navbar />
@@ -528,6 +530,7 @@ export default function HomePage() {
         <Hero />
         <Contraste />
         <Biblioteca />
+        <ProductCarousel products={products} dark={false} />
         <FeitoPorProfessoras />
         <AtualizacaoSemanal />
         <ComoFunciona />

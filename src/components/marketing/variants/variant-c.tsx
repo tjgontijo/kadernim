@@ -8,6 +8,8 @@ import {
   Vote, Users, RefreshCw, Zap, Star, AlertTriangle,
   Timer, Calendar, Search,
 } from 'lucide-react'
+import { ProductCarousel } from '../sections/product-carousel'
+import type { MarketingProduct } from '@/lib/marketing/types'
 
 const go = () => { window.location.href = '/checkout' }
 
@@ -579,12 +581,13 @@ function Footer() {
   )
 }
 
-export function VariantC() {
+export function VariantC({ products }: { products: MarketingProduct[] }) {
   return (
     <div className="min-h-screen bg-[#040410] antialiased">
       <main>
         <Hero />
         <Stats />
+        <ProductCarousel products={products} />
         <HowItWorks />
         <Features />
         <Pricing />
