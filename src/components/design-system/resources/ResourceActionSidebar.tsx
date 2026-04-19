@@ -1,4 +1,5 @@
-import { Download, RefreshCw, ArrowDownToLine, Calendar, Layers, Clock, Users, FileText } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Download, RefreshCw, ArrowDownToLine, Calendar, Layers, Clock, Users, FileText, Bookmark, BookmarkCheck } from 'lucide-react'
 import type { ResourceDetail } from '@/lib/resources/types'
 
 interface ResourceActionSidebarProps {
@@ -25,13 +26,65 @@ const RESOURCE_TYPE_LABELS: Record<string, string> = {
 }
 
 export function ResourceActionSidebar({ resource, onDownload, downloadingFileId }: ResourceActionSidebarProps) {
+  const [isSaved, setIsSaved] = useState(false)
+  const [isPlanned, setIsPlanned] = useState(false)
+  const [loadingAction, setLoadingAction] = useState<string | null>(null)
+
   const author = resource.author
   const updatedDate = resource.curatedAt 
     ? new Date(resource.curatedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
     : 'Recentemente'
 
+  useEffect(() => {
+    async function loadInteraction() {
+      try {
+        const res = await fetch(`/api/v1/resources/${resource.id}/interact`)
+        const json = await res.json()
+        if (json.data) {
+          setIsSaved(json.data.isSaved)
+          setIsPlanned(json.data.isPlanned)
+        }
+      } catch (err) {
+        console.error('Failed to load interaction', err)
+      }
+    }
+    loadInteraction()
+  }, [resource.id])
+
+  const handleToggleSave = async () => {
+    setLoadingAction('save')
+    try {
+      const res = await fetch(`/api/v1/resources/${resource.id}/interact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'save' }),
+      })
+      const json = await res.json()
+      if (json.data) setIsSaved(json.data.isSaved)
+    } finally {
+      setLoadingAction(null)
+    }
+  }
+
+  const handleTogglePlan = async () => {
+    // Simple toggle for now, in a real app might open a date picker
+    setLoadingAction('plan')
+    try {
+      const res = await fetch(`/api/v1/resources/${resource.id}/interact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'plan', plannedFor: !isPlanned ? new Date() : null }),
+      })
+      const json = await res.json()
+      if (json.data) setIsPlanned(json.data.isPlanned)
+    } finally {
+      setLoadingAction(null)
+    }
+  }
+
   return (
       <div className="bg-card border border-line rounded-4 p-[24px] shadow-2 mb-[20px]">
+        {/* ... existing header ... */}
         <div className="flex flex-wrap gap-[6px] mb-[14px]">
           <span className="inline-flex items-center gap-[6px] px-[10px] py-[3px] text-[12px] font-semibold rounded-full leading-[1.5] whitespace-nowrap bg-[oklch(0.94_0.045_260)] text-[oklch(0.38_0.10_260)]">
             {resource.subject}
@@ -91,13 +144,35 @@ export function ResourceActionSidebar({ resource, onDownload, downloadingFileId 
           )}
           
           <div className="grid grid-cols-2 gap-[8px]">
-            <button className="w-full inline-flex items-center justify-center gap-[8px] px-[20px] py-[12px] font-body text-[15px] font-semibold rounded-full bg-card border border-line text-ink hover:bg-paper-2 transition-colors shadow-1">
-              <ArrowDownToLine className="h-[16px] w-[16px]" strokeWidth={1.8} />
-              Salvar
+            <button 
+              onClick={handleToggleSave}
+              disabled={loadingAction === 'save'}
+              className={`w-full inline-flex items-center justify-center gap-[8px] px-[20px] py-[12px] font-body text-[15px] font-semibold rounded-full border transition-all shadow-1 ${
+                isSaved 
+                  ? 'bg-sage-2 border-sage text-sage' 
+                  : 'bg-card border-line text-ink hover:bg-paper-2'
+              }`}
+            >
+              {loadingAction === 'save' ? (
+                <RefreshCw className="h-[16px] w-[16px] animate-spin" />
+              ) : isSaved ? (
+                <BookmarkCheck className="h-[16px] w-[16px]" strokeWidth={2} />
+              ) : (
+                <Bookmark className="h-[16px] w-[16px]" strokeWidth={1.8} />
+              )}
+              {isSaved ? 'Salvo' : 'Salvar'}
             </button>
-            <button className="w-full inline-flex items-center justify-center gap-[8px] px-[20px] py-[12px] font-body text-[15px] font-semibold rounded-full bg-card border border-line text-ink hover:bg-paper-2 transition-colors shadow-1">
+            <button 
+              onClick={handleTogglePlan}
+              disabled={loadingAction === 'plan'}
+              className={`w-full inline-flex items-center justify-center gap-[8px] px-[20px] py-[12px] font-body text-[15px] font-semibold rounded-full border transition-all shadow-1 ${
+                isPlanned 
+                  ? 'bg-terracotta-2 border-terracotta text-terracotta' 
+                  : 'bg-card border-line text-ink hover:bg-paper-2'
+              }`}
+            >
               <Calendar className="h-[16px] w-[16px]" strokeWidth={1.8} />
-              Planejar
+              {isPlanned ? 'Planejado' : 'Planejar'}
             </button>
           </div>
         </div>
@@ -105,6 +180,7 @@ export function ResourceActionSidebar({ resource, onDownload, downloadingFileId 
         <hr className="border-0 border-t border-dashed border-line my-[20px]" />
 
         <div className="grid grid-cols-2 gap-y-[16px] gap-x-[20px]">
+          {/* ... existing footer metrics ... */}
           <div className="flex flex-col gap-[2px]">
             <div className="flex items-center gap-[5px] text-[11px] text-ink-mute uppercase tracking-[0.1em] font-semibold">
               <Layers className="h-[12px] w-[12px]" strokeWidth={2} />

@@ -5,6 +5,7 @@ import {
   createDownloadToken,
   DOWNLOAD_TOKEN_DEFAULT_TTL_MS,
 } from '@/services/auth/token-service'
+import { logResourceDownload } from '@/lib/resources/services/catalog/interaction-service'
 import { authorizeResourceListRequest } from '../../../route-support'
 
 export async function createResourceFileDownloadPayload(
@@ -43,6 +44,9 @@ export async function createResourceFileDownloadPayload(
     resourceId,
     fileId,
   })
+
+  // Log the download interaction
+  await logResourceDownload(authResult.userId, resourceId)
 
   const { token, expiresAt } = createDownloadToken({
     userId: authResult.userId,
