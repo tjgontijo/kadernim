@@ -46,8 +46,8 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
   useEffect(() => {
     if (resource) {
       setResourceTitle(resource.title || null)
-      setResourceSubject(resource.subject?.name || null)
-      setResourceEducationLevel(resource.educationLevel?.name || null)
+      setResourceSubject(resource.subject || null)
+      setResourceEducationLevel(resource.educationLevel || null)
       setActiveImageIndex(0)
     }
     return () => {

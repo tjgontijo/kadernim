@@ -3,16 +3,15 @@ import { prisma } from '@/server/db'
 export async function getRelatedResources(resourceId: string, limit: number = 4) {
   // 1. Get explicit relations
   const explicit = await prisma.relatedResource.findMany({
-    where: { resourceId },
+    where: { sourceResourceId: resourceId },
     include: {
-      relatedResource: {
+      target: {
         select: {
           id: true,
           title: true,
-          thumbUrl: true,
           isFree: true,
-          subject: { select: { slug: true, name: true } },
-          educationLevel: { select: { slug: true, name: true } },
+          subject: { select: { name: true } },
+          educationLevel: { select: { name: true } },
           images: {
             select: { url: true, order: true },
             orderBy: { order: 'asc' },
@@ -25,7 +24,7 @@ export async function getRelatedResources(resourceId: string, limit: number = 4)
   })
 
   if (explicit.length >= limit) {
-    return explicit.map((e) => e.relatedResource)
+    return explicit.map((e) => e.target)
   }
 
   // 2. If not enough explicit, get implicit (same subject)
@@ -45,7 +44,6 @@ export async function getRelatedResources(resourceId: string, limit: number = 4)
     select: {
       id: true,
       title: true,
-      thumbUrl: true,
       isFree: true,
       subject: { select: { slug: true, name: true } },
       educationLevel: { select: { slug: true, name: true } },
@@ -59,7 +57,7 @@ export async function getRelatedResources(resourceId: string, limit: number = 4)
   })
 
   return [
-    ...explicit.map((e) => e.relatedResource),
+    ...explicit.map((e) => e.target),
     ...implicit,
   ]
 }

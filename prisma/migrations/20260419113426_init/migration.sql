@@ -28,6 +28,15 @@ CREATE TYPE "AuditActor" AS ENUM ('USER', 'ADMIN', 'SYSTEM');
 -- CreateEnum
 CREATE TYPE "ConfigType" AS ENUM ('string', 'number', 'boolean', 'json');
 
+-- CreateEnum
+CREATE TYPE "ResourceType" AS ENUM ('PRINTABLE_ACTIVITY', 'LESSON_PLAN', 'GAME', 'ASSESSMENT', 'OTHER');
+
+-- CreateEnum
+CREATE TYPE "ReviewStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED', 'FLAGGED');
+
+-- CreateEnum
+CREATE TYPE "RelatedResourceType" AS ENUM ('COMPLEMENTS', 'PREREQUISITE', 'ADVANCED', 'RELATED_TOPIC');
+
 -- CreateTable
 CREATE TABLE "education_level" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
@@ -81,6 +90,8 @@ CREATE TABLE "user" (
     "banned" BOOLEAN NOT NULL DEFAULT false,
     "asaasCustomerId" TEXT,
     "asaasWalletId" TEXT,
+    "roleTitle" TEXT,
+    "location" TEXT,
 
     CONSTRAINT "user_pkey" PRIMARY KEY ("id")
 );
@@ -347,8 +358,114 @@ CREATE TABLE "resource" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "originRequestId" TEXT,
+    "authorId" UUID,
+    "isCurated" BOOLEAN NOT NULL DEFAULT false,
+    "curatedAt" TIMESTAMP(3),
+    "curatorId" UUID,
+    "resourceType" "ResourceType" NOT NULL DEFAULT 'OTHER',
+    "pagesCount" INTEGER,
+    "estimatedDurationMinutes" INTEGER,
+    "slug" TEXT,
+    "reviewCount" INTEGER NOT NULL DEFAULT 0,
+    "averageRating" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "downloadCount" INTEGER NOT NULL DEFAULT 0,
+    "pedagogicalContent" JSONB,
+    "archivedAt" TIMESTAMP(3),
 
     CONSTRAINT "resource_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "bncc_skill" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "code" TEXT NOT NULL,
+    "educationLevelId" UUID NOT NULL,
+    "gradeId" UUID,
+    "subjectId" UUID,
+    "unitTheme" TEXT,
+    "knowledgeObject" TEXT,
+    "description" TEXT NOT NULL,
+    "comments" TEXT,
+    "curriculumSuggestions" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "bncc_skill_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "resource_bncc_skill" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "resourceId" UUID NOT NULL,
+    "bnccSkillId" UUID NOT NULL,
+
+    CONSTRAINT "resource_bncc_skill_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "author" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "userId" UUID,
+    "displayName" TEXT NOT NULL,
+    "displayRole" TEXT,
+    "location" TEXT,
+    "verified" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "author_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "review" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "resourceId" UUID NOT NULL,
+    "userId" UUID NOT NULL,
+    "rating" SMALLINT NOT NULL,
+    "comment" TEXT,
+    "status" "ReviewStatus" NOT NULL DEFAULT 'PENDING',
+    "moderatedAt" TIMESTAMP(3),
+    "moderatedBy" UUID,
+    "helpfulCount" INTEGER NOT NULL DEFAULT 0,
+    "unhelpfulCount" INTEGER NOT NULL DEFAULT 0,
+    "flagCount" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "review_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "user_resource_interaction" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "userId" UUID NOT NULL,
+    "resourceId" UUID NOT NULL,
+    "isSaved" BOOLEAN NOT NULL DEFAULT false,
+    "savedAt" TIMESTAMP(3),
+    "isPlanned" BOOLEAN NOT NULL DEFAULT false,
+    "plannedFor" TIMESTAMP(3),
+    "hasDownloaded" BOOLEAN NOT NULL DEFAULT false,
+    "downloadedAt" TIMESTAMP(3),
+    "downloadCount" INTEGER NOT NULL DEFAULT 0,
+    "hasReviewed" BOOLEAN NOT NULL DEFAULT false,
+    "reviewId" UUID,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "user_resource_interaction_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "related_resource" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "sourceResourceId" UUID NOT NULL,
+    "targetResourceId" UUID NOT NULL,
+    "relationType" "RelatedResourceType" NOT NULL DEFAULT 'COMPLEMENTS',
+    "relevanceScore" SMALLINT NOT NULL DEFAULT 3,
+    "createdBy" UUID NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "related_resource_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -514,13 +631,97 @@ CREATE UNIQUE INDEX "resource_externalId_key" ON "resource"("externalId");
 CREATE UNIQUE INDEX "resource_originRequestId_key" ON "resource"("originRequestId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "resource_slug_key" ON "resource"("slug");
+
+-- CreateIndex
 CREATE INDEX "resource_educationLevelId_idx" ON "resource"("educationLevelId");
 
 -- CreateIndex
 CREATE INDEX "resource_subjectId_idx" ON "resource"("subjectId");
 
 -- CreateIndex
+CREATE INDEX "resource_authorId_idx" ON "resource"("authorId");
+
+-- CreateIndex
+CREATE INDEX "resource_curatorId_idx" ON "resource"("curatorId");
+
+-- CreateIndex
 CREATE INDEX "resource_title_id_idx" ON "resource"("title", "id");
+
+-- CreateIndex
+CREATE INDEX "resource_slug_idx" ON "resource"("slug");
+
+-- CreateIndex
+CREATE INDEX "resource_archivedAt_idx" ON "resource"("archivedAt");
+
+-- CreateIndex
+CREATE INDEX "bncc_skill_educationLevelId_idx" ON "bncc_skill"("educationLevelId");
+
+-- CreateIndex
+CREATE INDEX "bncc_skill_gradeId_idx" ON "bncc_skill"("gradeId");
+
+-- CreateIndex
+CREATE INDEX "bncc_skill_subjectId_idx" ON "bncc_skill"("subjectId");
+
+-- CreateIndex
+CREATE INDEX "bncc_skill_code_idx" ON "bncc_skill"("code");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "bncc_skill_code_gradeId_key" ON "bncc_skill"("code", "gradeId");
+
+-- CreateIndex
+CREATE INDEX "resource_bncc_skill_resourceId_idx" ON "resource_bncc_skill"("resourceId");
+
+-- CreateIndex
+CREATE INDEX "resource_bncc_skill_bnccSkillId_idx" ON "resource_bncc_skill"("bnccSkillId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "resource_bncc_skill_resourceId_bnccSkillId_key" ON "resource_bncc_skill"("resourceId", "bnccSkillId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "author_userId_key" ON "author"("userId");
+
+-- CreateIndex
+CREATE INDEX "author_displayName_idx" ON "author"("displayName");
+
+-- CreateIndex
+CREATE INDEX "review_resourceId_status_idx" ON "review"("resourceId", "status");
+
+-- CreateIndex
+CREATE INDEX "review_userId_status_idx" ON "review"("userId", "status");
+
+-- CreateIndex
+CREATE INDEX "review_createdAt_idx" ON "review"("createdAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "review_resourceId_userId_key" ON "review"("resourceId", "userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "user_resource_interaction_reviewId_key" ON "user_resource_interaction"("reviewId");
+
+-- CreateIndex
+CREATE INDEX "user_resource_interaction_userId_isSaved_idx" ON "user_resource_interaction"("userId", "isSaved");
+
+-- CreateIndex
+CREATE INDEX "user_resource_interaction_userId_isPlanned_plannedFor_idx" ON "user_resource_interaction"("userId", "isPlanned", "plannedFor");
+
+-- CreateIndex
+CREATE INDEX "user_resource_interaction_userId_hasDownloaded_idx" ON "user_resource_interaction"("userId", "hasDownloaded");
+
+-- CreateIndex
+CREATE INDEX "user_resource_interaction_resourceId_idx" ON "user_resource_interaction"("resourceId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "user_resource_interaction_userId_resourceId_key" ON "user_resource_interaction"("userId", "resourceId");
+
+-- CreateIndex
+CREATE INDEX "related_resource_sourceResourceId_idx" ON "related_resource"("sourceResourceId");
+
+-- CreateIndex
+CREATE INDEX "related_resource_targetResourceId_relationType_idx" ON "related_resource"("targetResourceId", "relationType");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "related_resource_sourceResourceId_targetResourceId_key" ON "related_resource"("sourceResourceId", "targetResourceId");
 
 -- AddForeignKey
 ALTER TABLE "grade" ADD CONSTRAINT "grade_educationLevelId_fkey" FOREIGN KEY ("educationLevelId") REFERENCES "education_level"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -580,7 +781,55 @@ ALTER TABLE "resource_user_access" ADD CONSTRAINT "resource_user_access_resource
 ALTER TABLE "resource_user_access" ADD CONSTRAINT "resource_user_access_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "resource" ADD CONSTRAINT "resource_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "author"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "resource" ADD CONSTRAINT "resource_curatorId_fkey" FOREIGN KEY ("curatorId") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "resource" ADD CONSTRAINT "resource_educationLevelId_fkey" FOREIGN KEY ("educationLevelId") REFERENCES "education_level"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "resource" ADD CONSTRAINT "resource_subjectId_fkey" FOREIGN KEY ("subjectId") REFERENCES "subject"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "bncc_skill" ADD CONSTRAINT "bncc_skill_educationLevelId_fkey" FOREIGN KEY ("educationLevelId") REFERENCES "education_level"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "bncc_skill" ADD CONSTRAINT "bncc_skill_gradeId_fkey" FOREIGN KEY ("gradeId") REFERENCES "grade"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "bncc_skill" ADD CONSTRAINT "bncc_skill_subjectId_fkey" FOREIGN KEY ("subjectId") REFERENCES "subject"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "resource_bncc_skill" ADD CONSTRAINT "resource_bncc_skill_resourceId_fkey" FOREIGN KEY ("resourceId") REFERENCES "resource"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "resource_bncc_skill" ADD CONSTRAINT "resource_bncc_skill_bnccSkillId_fkey" FOREIGN KEY ("bnccSkillId") REFERENCES "bncc_skill"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "author" ADD CONSTRAINT "author_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "review" ADD CONSTRAINT "review_resourceId_fkey" FOREIGN KEY ("resourceId") REFERENCES "resource"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "review" ADD CONSTRAINT "review_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "review" ADD CONSTRAINT "review_moderatedBy_fkey" FOREIGN KEY ("moderatedBy") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "user_resource_interaction" ADD CONSTRAINT "user_resource_interaction_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "user_resource_interaction" ADD CONSTRAINT "user_resource_interaction_resourceId_fkey" FOREIGN KEY ("resourceId") REFERENCES "resource"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "related_resource" ADD CONSTRAINT "related_resource_sourceResourceId_fkey" FOREIGN KEY ("sourceResourceId") REFERENCES "resource"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "related_resource" ADD CONSTRAINT "related_resource_targetResourceId_fkey" FOREIGN KEY ("targetResourceId") REFERENCES "resource"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "related_resource" ADD CONSTRAINT "related_resource_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

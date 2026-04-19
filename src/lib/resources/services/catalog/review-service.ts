@@ -1,5 +1,4 @@
 import { prisma } from '@/server/db'
-import { ReviewStatus } from '@prisma/client'
 
 export async function getApprovedReviewsForResource(resourceId: string) {
   return prisma.review.findMany({

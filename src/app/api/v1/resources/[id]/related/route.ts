@@ -13,7 +13,7 @@ export async function GET(
     
     const formatted = related.map((r) => ({
       ...r,
-      thumbUrl: r.images?.[0]?.url || r.thumbUrl || null,
+      thumbUrl: r.images?.[0]?.url || null,
       subject: r.subject.name,
       educationLevel: r.educationLevel.name,
     }))
