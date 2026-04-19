@@ -181,7 +181,7 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
           />
           
           <ResourceReviews 
-            reviews={[]} // Will be implemented in Phase 2
+            resourceId={resource.id}
             averageRating={resource.averageRating}
             reviewCount={resource.reviewCount}
           />
@@ -221,8 +221,10 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
         </aside>
       </div>
 
-      <ResourceRelatedStrip />
+      <ResourceRelatedStrip 
+        resourceId={resource.id} 
+        subject={resource.subject} 
+      />
     </div>
   )
 }
-
