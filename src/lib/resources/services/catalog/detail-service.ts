@@ -43,8 +43,8 @@ export async function getResourceDetailForUser(params: {
       id: true,
       title: true,
       description: true,
-      educationLevel: { select: { slug: true } },
-      subject: { select: { slug: true } },
+      educationLevel: { select: { name: true } },
+      subject: { select: { name: true } },
       isFree: true,
       slug: true,
       isCurated: true,
@@ -118,8 +118,8 @@ export async function getResourceDetailForUser(params: {
 
   return ResourceDetailSchema.parse({
     ...resource,
-    educationLevel: resource.educationLevel.slug,
-    subject: resource.subject.slug,
+    educationLevel: resource.educationLevel.name,
+    subject: resource.subject.name,
     hasAccess,
     thumbUrl: resource.images?.[0]?.url || null,
     curatedAt: resource.curatedAt?.toISOString() || null,
