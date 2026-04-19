@@ -8,37 +8,40 @@ datasource db {
 }
 
 model EducationLevel {
-  id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name              String             @unique
-  slug              String             @unique
-  order             Int                @default(0)
-  grades            Grade[]
-  resources         Resource[]
+  id         String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String      @unique
+  slug       String      @unique
+  order      Int         @default(0)
+  grades     Grade[]
+  resources  Resource[]
+  bnccSkills BnccSkill[]
 
   @@map("education_level")
 }
 
 model Grade {
-  id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name              String
-  slug              String             @unique
-  order             Int                @default(0)
-  educationLevelId  String             @db.Uuid
-  educationLevel    EducationLevel     @relation(fields: [educationLevelId], references: [id])
-  subjects          GradeSubject[]
-  resources         ResourceGrade[]
+  id               String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name             String
+  slug             String          @unique
+  order            Int             @default(0)
+  educationLevelId String          @db.Uuid
+  educationLevel   EducationLevel  @relation(fields: [educationLevelId], references: [id])
+  subjects         GradeSubject[]
+  resources        ResourceGrade[]
+  bnccSkills       BnccSkill[]
 
   @@index([educationLevelId])
   @@map("grade")
 }
 
 model Subject {
-  id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name              String             @unique
-  slug              String             @unique
+  id   String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name String @unique
+  slug String @unique
 
-  grades            GradeSubject[]
-  resources         Resource[]
+  grades     GradeSubject[]
+  resources  Resource[]
+  bnccSkills BnccSkill[]
 
   @@map("subject")
 }
@@ -57,24 +60,32 @@ model GradeSubject {
 }
 
 model User {
-  id                       String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                     String
-  email                    String                    @unique
-  phone                    String?
-  emailVerified            Boolean                   @default(false)
-  image                    String?
-  createdAt                DateTime                  @default(now())
-  updatedAt                DateTime                  @updatedAt
-  role                     UserRole                  @default(user)
-  banned                   Boolean                   @default(false)
-  asaasCustomerId          String?                   @unique
-  asaasWalletId            String?
-  accounts                 Account[]
-  auditLogs                BillingAuditLog[]
-  invoices                 Invoice[]
-  resourceAccesses         ResourceUserAccess[]
-  sessions                 Session[]
-  subscription             Subscription?
+  id                  String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                String
+  email               String                    @unique
+  phone               String?
+  emailVerified       Boolean                   @default(false)
+  image               String?
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+  role                UserRole                  @default(user)
+  banned              Boolean                   @default(false)
+  asaasCustomerId     String?                   @unique
+  asaasWalletId       String?
+  accounts            Account[]
+  auditLogs           BillingAuditLog[]
+  invoices            Invoice[]
+  resourceAccesses    ResourceUserAccess[]
+  sessions            Session[]
+  subscription        Subscription?
+  roleTitle           String?
+  location            String?
+  author              Author?
+  curatedResources    Resource[]                @relation("ResourceCurator")
+  reviews             Review[]
+  reviewsAsModeration Review[]                  @relation("ReviewModerator")
+  userInteractions    UserResourceInteraction[]
+  relationsCreated    RelatedResource[]
 
   @@map("user")
 }
@@ -143,29 +154,29 @@ model Organization {
 }
 
 model Subscription {
-  id                          String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId                      String                      @unique @db.Uuid
-  offerId                     String?                     @db.Uuid
-  asaasId                     String?                     @unique
-  status                      SubscriptionStatus          @default(INACTIVE)
-  paymentMethod               PaymentMethod?
-  pixAutomaticAuthId          String?                     @unique
-  isActive                    Boolean                     @default(false)
-  purchaseDate                DateTime                    @default(now())
-  expiresAt                   DateTime?
-  canceledAt                  DateTime?
-  failureReason               SubscriptionFailureReason?
-  failureCount                Int                         @default(0)
-  lastFailureAt               DateTime?
-  lastFailureMessage          String?
-  nextRetryAt                 DateTime?
-  lastRetryAt                 DateTime?
-  failureNotificationSentAt   DateTime?
-  createdAt                   DateTime                    @default(now())
-  updatedAt                   DateTime                    @updatedAt
-  invoices                    Invoice[]
-  offer                       BillingOffer?               @relation(fields: [offerId], references: [id])
-  user                        User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                        String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId                    String                     @unique @db.Uuid
+  offerId                   String?                    @db.Uuid
+  asaasId                   String?                    @unique
+  status                    SubscriptionStatus         @default(INACTIVE)
+  paymentMethod             PaymentMethod?
+  pixAutomaticAuthId        String?                    @unique
+  isActive                  Boolean                    @default(false)
+  purchaseDate              DateTime                   @default(now())
+  expiresAt                 DateTime?
+  canceledAt                DateTime?
+  failureReason             SubscriptionFailureReason?
+  failureCount              Int                        @default(0)
+  lastFailureAt             DateTime?
+  lastFailureMessage        String?
+  nextRetryAt               DateTime?
+  lastRetryAt               DateTime?
+  failureNotificationSentAt DateTime?
+  createdAt                 DateTime                   @default(now())
+  updatedAt                 DateTime                   @updatedAt
+  invoices                  Invoice[]
+  offer                     BillingOffer?              @relation(fields: [offerId], references: [id])
+  user                      User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([offerId])
@@ -216,35 +227,35 @@ model BillingOffer {
 }
 
 model Invoice {
-  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId         String        @db.Uuid
-  subscriptionId String?       @db.Uuid
-  offerId        String?       @db.Uuid
-  asaasId        String        @unique
-  status         InvoiceStatus @default(PENDING)
-  paymentMethod  PaymentMethod
-  value          Float
-  netValue       Float?
-  description    String?
-  billingType    String
-  dueDate        DateTime
-  paidAt         DateTime?
-  refundedAt     DateTime?
-  invoiceUrl     String?
-  bankSlipUrl    String?
-  pixQrCode           String?
-  pixQrCodePayload    String?
-  pixQrCodeImage      String?
-  pixExpirationDate   DateTime?
-  pixEmailSentAt      DateTime?
-  pixWhatsappSentAt   DateTime?
-  pixResendCount      Int       @default(0)
-  pixLastResendAt     DateTime?
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-  offer          BillingOffer? @relation(fields: [offerId], references: [id])
-  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
-  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String        @db.Uuid
+  subscriptionId    String?       @db.Uuid
+  offerId           String?       @db.Uuid
+  asaasId           String        @unique
+  status            InvoiceStatus @default(PENDING)
+  paymentMethod     PaymentMethod
+  value             Float
+  netValue          Float?
+  description       String?
+  billingType       String
+  dueDate           DateTime
+  paidAt            DateTime?
+  refundedAt        DateTime?
+  invoiceUrl        String?
+  bankSlipUrl       String?
+  pixQrCode         String?
+  pixQrCodePayload  String?
+  pixQrCodeImage    String?
+  pixExpirationDate DateTime?
+  pixEmailSentAt    DateTime?
+  pixWhatsappSentAt DateTime?
+  pixResendCount    Int           @default(0)
+  pixLastResendAt   DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  offer             BillingOffer? @relation(fields: [offerId], references: [id])
+  subscription      Subscription? @relation(fields: [subscriptionId], references: [id])
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([subscriptionId])
@@ -366,28 +377,103 @@ model ResourceUserAccess {
 }
 
 model Resource {
-  id               String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title            String
   description      String?
-  educationLevelId String               @db.Uuid
-  subjectId        String               @db.Uuid
-  externalId       Int?                 @unique
-  isFree           Boolean              @default(false)
-  createdAt        DateTime             @default(now())
-  updatedAt        DateTime             @updatedAt
-  originRequestId  String?              @unique
-  educationLevel   EducationLevel       @relation(fields: [educationLevelId], references: [id])
-  subject          Subject              @relation(fields: [subjectId], references: [id])
-  files            ResourceFile[]
-  grades           ResourceGrade[]
-  images           ResourceImage[]
-  accessEntries    ResourceUserAccess[]
-  videos           ResourceVideo[]
+  educationLevelId String    @db.Uuid
+  subjectId        String    @db.Uuid
+  externalId       Int?      @unique
+  isFree           Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  originRequestId  String?   @unique
+  authorId         String?   @db.Uuid
+  author           Author?   @relation("authorCreated", fields: [authorId], references: [id], onDelete: SetNull)
+  isCurated        Boolean   @default(false)
+  curatedAt        DateTime?
+  curatorId        String?   @db.Uuid
+  curator          User?     @relation("ResourceCurator", fields: [curatorId], references: [id], onDelete: SetNull)
+
+  resourceType             ResourceType @default(OTHER)
+  pagesCount               Int?
+  estimatedDurationMinutes Int?
+  slug                     String?      @unique
+
+  reviewCount   Int   @default(0)
+  averageRating Float @default(0)
+  downloadCount Int   @default(0)
+
+  pedagogicalContent Json?
+
+  archivedAt DateTime?
+
+  reviews          Review[]
+  userInteractions UserResourceInteraction[]
+  sourceRelations  RelatedResource[]         @relation("source")
+  targetRelations  RelatedResource[]         @relation("target")
+
+  educationLevel EducationLevel       @relation(fields: [educationLevelId], references: [id])
+  subject        Subject              @relation(fields: [subjectId], references: [id])
+  files          ResourceFile[]
+  grades         ResourceGrade[]
+  images         ResourceImage[]
+  accessEntries  ResourceUserAccess[]
+  videos         ResourceVideo[]
+  bnccSkills     ResourceBnccSkill[]
 
   @@index([educationLevelId])
   @@index([subjectId])
+  @@index([authorId])
+  @@index([curatorId])
   @@index([title, id])
+  @@index([slug])
+  @@index([archivedAt])
   @@map("resource")
+}
+
+model BnccSkill {
+  id   String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code String
+
+  educationLevelId String         @db.Uuid
+  educationLevel   EducationLevel @relation(fields: [educationLevelId], references: [id])
+
+  gradeId String? @db.Uuid
+  grade   Grade?  @relation(fields: [gradeId], references: [id])
+
+  subjectId String?  @db.Uuid
+  subject   Subject? @relation(fields: [subjectId], references: [id])
+
+  unitTheme             String?
+  knowledgeObject       String?
+  description           String  @db.Text
+  comments              String? @db.Text
+  curriculumSuggestions String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  resources ResourceBnccSkill[]
+
+  @@unique([code, gradeId], name: "code_gradeId")
+  @@index([educationLevelId])
+  @@index([gradeId])
+  @@index([subjectId])
+  @@index([code])
+  @@map("bncc_skill")
+}
+
+model ResourceBnccSkill {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  resourceId  String    @db.Uuid
+  resource    Resource  @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  bnccSkillId String    @db.Uuid
+  bnccSkill   BnccSkill @relation(fields: [bnccSkillId], references: [id], onDelete: Cascade)
+
+  @@unique([resourceId, bnccSkillId])
+  @@index([resourceId])
+  @@index([bnccSkillId])
+  @@map("resource_bncc_skill")
 }
 
 enum UserRole {
@@ -463,4 +549,130 @@ enum ConfigType {
   number
   boolean
   json
+}
+
+model Author {
+  id     String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId String? @unique @db.Uuid
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  displayName String
+  displayRole String?
+  location    String?
+  verified    Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  resources Resource[] @relation("authorCreated")
+
+  @@index([displayName])
+  @@map("author")
+}
+
+model Review {
+  id         String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  resourceId String @db.Uuid
+  userId     String @db.Uuid
+
+  rating  Int     @db.SmallInt
+  comment String? @db.Text
+
+  status      ReviewStatus @default(PENDING)
+  moderatedAt DateTime?
+  moderatedBy String?      @db.Uuid
+
+  helpfulCount   Int @default(0)
+  unhelpfulCount Int @default(0)
+  flagCount      Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  resource  Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  moderator User?    @relation("ReviewModerator", fields: [moderatedBy], references: [id], onDelete: SetNull)
+
+  @@unique([resourceId, userId])
+  @@index([resourceId, status])
+  @@index([userId, status])
+  @@index([createdAt])
+  @@map("review")
+}
+
+model UserResourceInteraction {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  userId     String @db.Uuid
+  resourceId String @db.Uuid
+
+  isSaved Boolean   @default(false)
+  savedAt DateTime?
+
+  isPlanned  Boolean   @default(false)
+  plannedFor DateTime?
+
+  hasDownloaded Boolean   @default(false)
+  downloadedAt  DateTime?
+  downloadCount Int       @default(0)
+
+  hasReviewed Boolean @default(false)
+  reviewId    String? @unique @db.Uuid
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, resourceId])
+  @@index([userId, isSaved])
+  @@index([userId, isPlanned, plannedFor])
+  @@index([userId, hasDownloaded])
+  @@index([resourceId])
+  @@map("user_resource_interaction")
+}
+
+model RelatedResource {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  sourceResourceId String @db.Uuid
+  targetResourceId String @db.Uuid
+
+  relationType   RelatedResourceType @default(COMPLEMENTS)
+  relevanceScore Int                 @default(3) @db.SmallInt
+
+  createdBy String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  source  Resource @relation("source", fields: [sourceResourceId], references: [id], onDelete: Cascade)
+  target  Resource @relation("target", fields: [targetResourceId], references: [id], onDelete: Cascade)
+  creator User     @relation(fields: [createdBy], references: [id], onDelete: Restrict)
+
+  @@unique([sourceResourceId, targetResourceId])
+  @@index([sourceResourceId])
+  @@index([targetResourceId, relationType])
+  @@map("related_resource")
+}
+
+enum ResourceType {
+  PRINTABLE_ACTIVITY
+  LESSON_PLAN
+  GAME
+  ASSESSMENT
+  OTHER
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  FLAGGED
+}
+
+enum RelatedResourceType {
+  COMPLEMENTS
+  PREREQUISITE
+  ADVANCED
+  RELATED_TOPIC
 }

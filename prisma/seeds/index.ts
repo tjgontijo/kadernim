@@ -7,6 +7,8 @@ import { seedTaxonomy } from './seed-taxonomy';
 import { seedResources } from './seed-resources';
 import { seedResourceFiles } from './seed-resource-files';
 import { seedBilling } from './seed-billing';
+import { seedBnccSkillsFundamental } from './seed-bncc-fundamental';
+import { seedBnccSkillsInfantil } from './seed-bncc-infantil';
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg(createPrismaPgPoolConfig(process.env.DATABASE_URL)),
@@ -17,6 +19,8 @@ async function cleanDatabase() {
   // Respeita as FK e não falha se tabelas não existem
   try {
     await prisma.resourceFile.deleteMany()
+    await prisma.resourceBnccSkill.deleteMany()
+    await prisma.bnccSkill.deleteMany()
     await prisma.resource.deleteMany()
     await prisma.billingAuditLog.deleteMany()
     await prisma.invoice.deleteMany()
@@ -51,6 +55,8 @@ async function createInitialData() {
     await seedTaxonomy(prisma);
     await seedResources(prisma);
     await seedResourceFiles(prisma);
+    await seedBnccSkillsFundamental(prisma);
+    await seedBnccSkillsInfantil(prisma);
     await seedBilling(prisma);
 
     console.log('✅ População do banco de dados concluída com sucesso!');

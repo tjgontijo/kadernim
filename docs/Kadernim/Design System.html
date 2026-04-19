@@ -1,0 +1,2032 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kadernim · Design System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Caveat:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   KADERNIM — DESIGN SYSTEM TOKENS
+   "Caderno da Professora" — acolhedor, editorial, humano
+   ============================================================ */
+:root {
+  /* Paper & Ink */
+  --paper:       oklch(0.975 0.012 85);    /* #FBF6EC  */
+  --paper-2:     oklch(0.955 0.018 85);    /* cream sombreado */
+  --paper-3:     oklch(0.925 0.022 83);    /* cream mais forte */
+  --ink:         oklch(0.25 0.012 60);     /* #2B2620  grafite */
+  --ink-soft:    oklch(0.40 0.012 60);
+  --ink-mute:    oklch(0.55 0.010 60);
+  --ink-faint:   oklch(0.72 0.008 60);
+  --line:        oklch(0.88 0.015 75);     /* linhas do caderno */
+  --line-soft:   oklch(0.92 0.012 75);
+
+  /* Accents — chroma 0.11, mesma família terrosa */
+  --terracotta:   oklch(0.64 0.12 42);     /* #D97757 */
+  --terracotta-2: oklch(0.94 0.035 42);
+  --sage:         oklch(0.62 0.09 135);    /* #6B8E5A */
+  --sage-2:       oklch(0.94 0.030 135);
+  --mustard:      oklch(0.78 0.12 82);     /* #E8B14E */
+  --mustard-2:    oklch(0.95 0.040 82);
+  --berry:        oklch(0.55 0.13 20);     /* destructive quente */
+  --berry-2:      oklch(0.94 0.035 20);
+  --ink-accent:   oklch(0.35 0.04 240);    /* azul tinta */
+
+  /* Surfaces */
+  --surface:      var(--paper);
+  --surface-card: oklch(1 0 0);
+  --surface-sink: oklch(0.945 0.015 85);
+
+  /* Brand / semantic */
+  --primary:      var(--terracotta);
+  --primary-fg:   #FFFFFF;
+  --primary-tint: var(--terracotta-2);
+
+  --success:      var(--sage);
+  --success-tint: var(--sage-2);
+  --warning:      var(--mustard);
+  --warning-tint: var(--mustard-2);
+  --danger:       var(--berry);
+  --danger-tint:  var(--berry-2);
+
+  /* Radius */
+  --r-1: 4px;
+  --r-2: 8px;
+  --r-3: 12px;
+  --r-4: 16px;
+  --r-5: 24px;
+  --r-full: 999px;
+
+  /* Shadows — suaves, como papel sobre papel */
+  --shadow-1: 0 1px 0 oklch(0.88 0.02 75 / .6), 0 1px 2px oklch(0.3 0.02 60 / .06);
+  --shadow-2: 0 2px 0 oklch(0.88 0.02 75 / .5), 0 4px 12px oklch(0.3 0.02 60 / .08);
+  --shadow-3: 0 6px 20px oklch(0.3 0.02 60 / .10), 0 2px 4px oklch(0.3 0.02 60 / .06);
+  --shadow-tape: 0 2px 6px oklch(0.3 0.02 60 / .15);
+
+  /* Type */
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body:    "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-hand:    "Caveat", cursive;
+  --font-mono:    "JetBrains Mono", ui-monospace, monospace;
+
+  /* Spacing scale */
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
+  --s-5: 24px; --s-6: 32px; --s-7: 48px; --s-8: 64px; --s-9: 96px;
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--paper);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "ss01", "ss02";
+  background-image:
+    radial-gradient(circle at 1px 1px, oklch(0.88 0.02 75 / .35) 1px, transparent 0);
+  background-size: 24px 24px;
+  background-attachment: fixed;
+}
+
+/* Texture wrapper for paper sections */
+.paper-grain {
+  position: relative;
+  isolation: isolate;
+}
+.paper-grain::before {
+  content: "";
+  position: absolute; inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 31px,
+      oklch(0.88 0.02 75 / .35) 31px,
+      oklch(0.88 0.02 75 / .35) 32px
+    );
+  pointer-events: none;
+  z-index: 0;
+  opacity: .55;
+  border-radius: inherit;
+}
+.paper-grain > * { position: relative; z-index: 1; }
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 0;
+  text-wrap: balance;
+}
+
+.hand { font-family: var(--font-hand); font-weight: 600; color: var(--terracotta); }
+.mono { font-family: var(--font-mono); font-size: 0.82em; color: var(--ink-soft); }
+
+/* ============================================================
+   PAGE LAYOUT
+   ============================================================ */
+.page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 72px 48px 120px;
+}
+
+.masthead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  align-items: start;
+  gap: 48px;
+  padding-bottom: 56px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 64px;
+}
+.masthead__left { min-width: 0; }
+.masthead__title {
+  font-size: 68px;
+  line-height: 1.02;
+  font-weight: 400;
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 144, "SOFT" 100;
+  text-wrap: balance;
+}
+.masthead__title em {
+  font-style: italic;
+  color: var(--terracotta);
+  font-weight: 500;
+}
+.masthead__meta {
+  text-align: right;
+  font-size: 13px;
+  color: var(--ink-mute);
+  line-height: 1.6;
+  min-width: 240px;
+}
+.masthead__kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ink-mute);
+  margin-bottom: 24px;
+}
+.masthead__kicker::before {
+  content: "";
+  width: 24px; height: 1px;
+  background: var(--ink-mute);
+}
+.masthead__note {
+  font-family: var(--font-hand);
+  font-size: 22px;
+  color: var(--terracotta);
+  transform: rotate(-2deg);
+  margin-top: 12px;
+  line-height: 1.2;
+}
+
+/* Section */
+section.section {
+  margin-bottom: 96px;
+  scroll-margin-top: 24px;
+}
+.section__head {
+  display: flex;
+  align-items: baseline;
+  gap: 24px;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 1px dashed var(--line);
+}
+.section__num {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 40px;
+  color: var(--terracotta);
+  font-weight: 400;
+  line-height: 1;
+}
+.section__title {
+  font-size: 32px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+}
+.section__sub {
+  margin-left: auto;
+  color: var(--ink-mute);
+  font-size: 14px;
+  max-width: 360px;
+  text-align: right;
+}
+
+/* Grid helpers */
+.grid { display: grid; gap: 24px; }
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+.grid-5 { grid-template-columns: repeat(5, 1fr); }
+.grid-6 { grid-template-columns: repeat(6, 1fr); }
+
+/* Card container base */
+.card {
+  background: var(--surface-card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-4);
+  padding: 24px;
+  box-shadow: var(--shadow-1);
+}
+
+/* ============================================================
+   1. COLORS
+   ============================================================ */
+.swatch {
+  border-radius: var(--r-3);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--surface-card);
+  display: flex;
+  flex-direction: column;
+}
+.swatch__color {
+  height: 140px;
+  position: relative;
+}
+.swatch__body {
+  padding: 14px 16px 18px;
+  border-top: 1px solid var(--line-soft);
+}
+.swatch__name {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+.swatch__role {
+  font-size: 12px;
+  color: var(--ink-mute);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 10px;
+}
+.swatch__hex {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-soft);
+  display: flex;
+  justify-content: space-between;
+}
+.swatch--ink { color: #fff; }
+.swatch--ink .swatch__body { background: var(--ink); color: #fff; border-top-color: oklch(1 0 0 / .1); }
+.swatch--ink .swatch__role, .swatch--ink .swatch__hex { color: oklch(1 0 0 / .65); }
+
+.palette-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-3);
+  overflow: hidden;
+}
+.palette-row > div {
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: flex-end;
+  padding: 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+/* ============================================================
+   2. TYPOGRAPHY
+   ============================================================ */
+.type-sample {
+  padding: 28px 32px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-4);
+  background: var(--surface-card);
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 24px;
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+.type-sample__meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-mute);
+  line-height: 1.5;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.type-sample__meta strong {
+  display: block;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 18px;
+  color: var(--ink);
+  text-transform: none;
+  letter-spacing: 0;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+.display-xl { font-family: var(--font-display); font-size: 72px; line-height: 1.02; font-weight: 400; letter-spacing: -0.02em; }
+.display-l  { font-family: var(--font-display); font-size: 56px; line-height: 1.05; font-weight: 500; letter-spacing: -0.015em; }
+.display-m  { font-family: var(--font-display); font-size: 40px; line-height: 1.1;  font-weight: 500; letter-spacing: -0.01em; }
+.heading-l  { font-family: var(--font-display); font-size: 28px; line-height: 1.2;  font-weight: 600; }
+.heading-m  { font-family: var(--font-display); font-size: 22px; line-height: 1.3;  font-weight: 600; }
+.body-l     { font-family: var(--font-body); font-size: 18px; line-height: 1.55; }
+.body       { font-family: var(--font-body); font-size: 16px; line-height: 1.55; }
+.body-s     { font-family: var(--font-body); font-size: 14px; line-height: 1.5; color: var(--ink-soft); }
+.caption    { font-family: var(--font-body); font-size: 12px; line-height: 1.4; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.12em; }
+.hand-sample{ font-family: var(--font-hand); font-size: 32px; color: var(--terracotta); line-height: 1.1; }
+
+/* ============================================================
+   3. BUTTONS
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: var(--r-full);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  line-height: 1;
+  transition: transform .08s ease, box-shadow .15s ease, background .15s;
+}
+.btn:active { transform: translateY(1px); }
+.btn svg { width: 16px; height: 16px; }
+
+.btn--primary {
+  background: var(--terracotta);
+  color: #fff;
+  box-shadow: 0 1px 0 oklch(0.45 0.10 42), var(--shadow-1);
+}
+.btn--primary:hover { background: oklch(0.60 0.12 42); }
+
+.btn--secondary {
+  background: var(--surface-card);
+  color: var(--ink);
+  border-color: var(--line);
+  box-shadow: var(--shadow-1);
+}
+.btn--secondary:hover { background: var(--paper-2); }
+
+.btn--ghost { color: var(--ink-soft); padding: 10px 14px; }
+.btn--ghost:hover { background: var(--paper-2); color: var(--ink); }
+
+.btn--accent {
+  background: var(--sage);
+  color: #fff;
+  box-shadow: 0 1px 0 oklch(0.42 0.08 135), var(--shadow-1);
+}
+
+.btn--danger {
+  background: var(--surface-card);
+  color: var(--berry);
+  border-color: var(--danger-tint);
+}
+
+.btn--sm { padding: 7px 14px; font-size: 13px; }
+.btn--lg { padding: 14px 24px; font-size: 16px; }
+
+.btn--icon {
+  width: 40px; height: 40px;
+  padding: 0; justify-content: center;
+  border-radius: var(--r-full);
+}
+
+/* ============================================================
+   4. INPUTS
+   ============================================================ */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  font-family: var(--font-body);
+}
+.field__hint { font-size: 12px; color: var(--ink-mute); }
+
+.input, .select, .textarea {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--ink);
+  background: var(--surface-card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-3);
+  padding: 11px 14px;
+  line-height: 1.3;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+  width: 100%;
+}
+.input:focus, .select:focus, .textarea:focus {
+  border-color: var(--terracotta);
+  box-shadow: 0 0 0 4px var(--terracotta-2);
+}
+.input::placeholder, .textarea::placeholder { color: var(--ink-faint); }
+
+.input-group {
+  display: flex;
+  align-items: center;
+  background: var(--surface-card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-3);
+  padding: 0 12px 0 14px;
+  gap: 8px;
+  transition: border-color .15s, box-shadow .15s;
+}
+.input-group:focus-within {
+  border-color: var(--terracotta);
+  box-shadow: 0 0 0 4px var(--terracotta-2);
+}
+.input-group svg { width: 16px; height: 16px; color: var(--ink-mute); flex-shrink: 0; }
+.input-group .input { border: none; padding: 11px 0; background: transparent; box-shadow: none; }
+.input-group .input:focus { box-shadow: none; }
+
+.select {
+  appearance: none;
+  padding-right: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b5f52' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+}
+
+.checkbox, .radio {
+  appearance: none;
+  width: 18px; height: 18px;
+  border: 1.5px solid var(--line);
+  background: var(--surface-card);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .15s;
+  flex-shrink: 0;
+}
+.checkbox { border-radius: 5px; }
+.radio { border-radius: 999px; }
+.checkbox:hover, .radio:hover { border-color: var(--terracotta); }
+.checkbox:checked, .radio:checked { background: var(--terracotta); border-color: var(--terracotta); }
+.checkbox:checked::after {
+  content: "";
+  width: 10px; height: 10px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") no-repeat center / contain;
+}
+.radio:checked::after { content: ""; width: 7px; height: 7px; border-radius: 999px; background: #fff; }
+
+.switch {
+  appearance: none;
+  width: 40px; height: 22px;
+  background: var(--paper-3);
+  border-radius: 999px;
+  position: relative;
+  cursor: pointer;
+  transition: background .15s;
+  border: 1px solid var(--line);
+}
+.switch::after {
+  content: "";
+  position: absolute; top: 2px; left: 2px;
+  width: 16px; height: 16px;
+  background: #fff;
+  border-radius: 999px;
+  box-shadow: var(--shadow-1);
+  transition: transform .15s;
+}
+.switch:checked { background: var(--sage); border-color: var(--sage); }
+.switch:checked::after { transform: translateX(18px); }
+
+/* ============================================================
+   5. BADGES
+   ============================================================ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: var(--r-full);
+  border: 1px solid transparent;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.badge svg { width: 12px; height: 12px; }
+.badge--dot::before {
+  content: "";
+  width: 6px; height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+/* Subject badges — each gets a warm, humanistic tone */
+.badge--port      { background: oklch(0.94 0.045 42);  color: oklch(0.38 0.12 42); }
+.badge--mat       { background: oklch(0.94 0.045 260); color: oklch(0.38 0.10 260); }
+.badge--cien      { background: oklch(0.94 0.045 160); color: oklch(0.38 0.10 160); }
+.badge--hist      { background: oklch(0.94 0.045 80);  color: oklch(0.40 0.10 80); }
+.badge--geo       { background: oklch(0.94 0.045 200); color: oklch(0.38 0.10 200); }
+.badge--arte      { background: oklch(0.94 0.050 340); color: oklch(0.40 0.13 340); }
+.badge--ingles    { background: oklch(0.94 0.045 25);  color: oklch(0.40 0.13 25); }
+.badge--edfis     { background: oklch(0.94 0.045 130); color: oklch(0.38 0.10 130); }
+
+/* Level badges — use strip pattern */
+.badge--level {
+  background: var(--paper-2);
+  color: var(--ink-soft);
+  border-color: var(--line);
+}
+.badge--level .tag-stripe {
+  display: inline-block;
+  width: 10px; height: 10px;
+  border-radius: 2px;
+}
+
+.badge--status-new     { background: var(--sage-2);   color: var(--sage); }
+.badge--status-warn    { background: var(--mustard-2);color: oklch(0.50 0.12 80); }
+.badge--status-danger  { background: var(--berry-2); color: var(--berry); }
+.badge--status-neutral { background: var(--paper-2);  color: var(--ink-soft); border-color: var(--line); }
+
+/* ============================================================
+   6. CARDS
+   ============================================================ */
+.resource-card {
+  background: var(--surface-card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-4);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-1);
+  position: relative;
+  transition: transform .2s, box-shadow .2s;
+}
+.resource-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-3);
+}
+.resource-card__cover {
+  aspect-ratio: 4 / 3;
+  background: var(--paper-2);
+  position: relative;
+  overflow: hidden;
+}
+.resource-card__cover::before {
+  content: "";
+  position: absolute; inset: 0;
+  background-image: repeating-linear-gradient(-45deg,
+    transparent 0, transparent 10px,
+    oklch(0.88 0.02 75 / .5) 10px, oklch(0.88 0.02 75 / .5) 11px);
+}
+.resource-card__cover-label {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-mute);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.resource-card__tape {
+  position: absolute;
+  top: -10px; left: 50%;
+  transform: translateX(-50%) rotate(-2deg);
+  width: 80px; height: 22px;
+  background: oklch(0.88 0.05 82 / .85);
+  box-shadow: var(--shadow-tape);
+  border-left: 1px dashed oklch(0.75 0.06 82 / .5);
+  border-right: 1px dashed oklch(0.75 0.06 82 / .5);
+}
+.resource-card__body {
+  padding: 18px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.resource-card__badges { display: flex; gap: 6px; flex-wrap: wrap; }
+.resource-card__title {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+.resource-card__meta {
+  display: flex;
+  gap: 14px;
+  font-size: 12px;
+  color: var(--ink-mute);
+  align-items: center;
+  border-top: 1px dashed var(--line);
+  padding-top: 12px;
+  margin-top: auto;
+}
+.resource-card__meta span { display: inline-flex; align-items: center; gap: 5px; }
+.resource-card__meta svg { width: 13px; height: 13px; }
+
+/* Plan card */
+.plan-card {
+  background: var(--surface-card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-5);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+}
+.plan-card--featured {
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+}
+.plan-card--featured .plan-card__name,
+.plan-card--featured .plan-card__price-num { color: #fff; }
+.plan-card--featured .plan-card__desc { color: oklch(1 0 0 / .75); }
+.plan-card--featured .plan-card__feature { color: oklch(1 0 0 / .9); }
+.plan-card--featured .plan-card__feature svg { color: var(--mustard); }
+.plan-card--featured .plan-card__divider { border-color: oklch(1 0 0 / .15); }
+
+.plan-card__ribbon {
+  position: absolute;
+  top: -14px; right: 24px;
+  background: var(--mustard);
+  color: var(--ink);
+  font-family: var(--font-hand);
+  font-weight: 700;
+  font-size: 18px;
+  padding: 6px 14px 4px;
+  border-radius: var(--r-2);
+  transform: rotate(3deg);
+  box-shadow: var(--shadow-tape);
+}
+.plan-card__name { font-family: var(--font-display); font-size: 22px; font-weight: 600; }
+.plan-card__desc { color: var(--ink-mute); font-size: 14px; }
+.plan-card__price { display: flex; align-items: baseline; gap: 6px; }
+.plan-card__price-num { font-family: var(--font-display); font-size: 44px; font-weight: 500; letter-spacing: -0.02em; line-height: 1; }
+.plan-card__price-unit { font-size: 14px; color: var(--ink-mute); }
+.plan-card__divider { border: 0; border-top: 1px dashed var(--line); margin: 4px 0; }
+.plan-card__feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--ink-soft);
+  line-height: 1.4;
+}
+.plan-card__feature svg { width: 14px; height: 14px; color: var(--sage); flex-shrink: 0; margin-top: 4px; }
+
+/* Profile card */
+.profile-card {
+  background: var(--surface-card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-4);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  position: relative;
+}
+.avatar {
+  width: 72px; height: 72px;
+  border-radius: 999px;
+  background: var(--sage-2);
+  color: var(--sage);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 600;
+  border: 3px solid var(--surface-card);
+  box-shadow: var(--shadow-2);
+}
+.avatar--lg { width: 96px; height: 96px; font-size: 36px; }
+.avatar--sm { width: 36px; height: 36px; font-size: 14px; border-width: 2px; }
+.avatar--mustard { background: var(--mustard-2); color: oklch(0.50 0.13 82); }
+.avatar--terra   { background: var(--terracotta-2); color: var(--terracotta); }
+.avatar--ink     { background: var(--ink); color: #fff; }
+
+.profile-card__name { font-family: var(--font-display); font-size: 19px; font-weight: 600; }
+.profile-card__role { color: var(--ink-mute); font-size: 13px; }
+.profile-card__stats {
+  display: flex;
+  width: 100%;
+  justify-content: space-around;
+  padding-top: 16px;
+  margin-top: 8px;
+  border-top: 1px dashed var(--line);
+}
+.profile-card__stat { text-align: center; }
+.profile-card__stat-num { font-family: var(--font-display); font-size: 20px; font-weight: 600; }
+.profile-card__stat-label { font-size: 11px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* ============================================================
+   7. NAVIGATION
+   ============================================================ */
+.app-shell {
+  border: 1px solid var(--line);
+  border-radius: var(--r-5);
+  overflow: hidden;
+  background: var(--paper);
+  display: grid;
+  grid-template-columns: 248px 1fr;
+  min-height: 640px;
+  box-shadow: var(--shadow-3);
+}
+
+.sidebar {
+  background: oklch(0.97 0.012 85);
+  border-right: 1px solid var(--line);
+  padding: 20px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 10px 20px;
+  border-bottom: 1px dashed var(--line);
+  margin-bottom: 12px;
+}
+.sidebar__logo {
+  width: 34px; height: 34px;
+  border-radius: 10px;
+  background: var(--ink);
+  color: var(--paper);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 18px;
+  position: relative;
+}
+.sidebar__logo::after {
+  content: "";
+  position: absolute;
+  top: -3px; right: -3px;
+  width: 8px; height: 8px;
+  border-radius: 999px;
+  background: var(--mustard);
+}
+.sidebar__brandname { font-family: var(--font-display); font-weight: 600; font-size: 20px; letter-spacing: -0.01em; }
+.sidebar__brandtag { font-family: var(--font-hand); font-size: 14px; color: var(--terracotta); line-height: 1; margin-top: -2px; }
+
+.sidebar__section {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-mute);
+  padding: 16px 12px 6px;
+  font-weight: 600;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: var(--r-3);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  cursor: pointer;
+  position: relative;
+  line-height: 1.2;
+}
+.nav-item svg { width: 17px; height: 17px; flex-shrink: 0; }
+.nav-item:hover { background: var(--paper-2); color: var(--ink); }
+.nav-item--active {
+  background: var(--surface-card);
+  color: var(--ink);
+  box-shadow: var(--shadow-1);
+  border: 1px solid var(--line);
+}
+.nav-item--active::before {
+  content: "";
+  position: absolute;
+  left: -2px; top: 50%;
+  transform: translateY(-50%);
+  width: 3px; height: 20px;
+  background: var(--terracotta);
+  border-radius: 2px;
+}
+.nav-item .count {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-mute);
+  background: var(--paper-2);
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+}
+.header__title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+}
+.header__search {
+  flex: 1;
+  max-width: 420px;
+}
+.header__actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+
+/* ============================================================
+   8. EMPTY STATES & ICONS
+   ============================================================ */
+.empty-state {
+  text-align: center;
+  padding: 48px 32px;
+  border: 1.5px dashed var(--line);
+  border-radius: var(--r-4);
+  background: var(--surface-card);
+}
+.empty-state__illo {
+  width: 120px; height: 120px;
+  margin: 0 auto 16px;
+  background: var(--paper-2);
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-mute);
+  position: relative;
+}
+.empty-state__illo svg { width: 48px; height: 48px; }
+.empty-state__illo::after {
+  content: "";
+  position: absolute;
+  width: 140%; height: 1px;
+  bottom: -4px; left: -20%;
+  background: var(--line);
+  opacity: .5;
+  transform: rotate(-4deg);
+}
+.empty-state__title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.empty-state__desc {
+  color: var(--ink-mute);
+  font-size: 14px;
+  max-width: 320px;
+  margin: 0 auto 16px;
+  line-height: 1.5;
+}
+
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 10px;
+}
+.icon-cell {
+  aspect-ratio: 1;
+  border: 1px solid var(--line);
+  border-radius: var(--r-3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--surface-card);
+  color: var(--ink-soft);
+  font-size: 10px;
+  font-family: var(--font-mono);
+  text-align: center;
+  padding: 8px;
+}
+.icon-cell svg { width: 22px; height: 22px; stroke-width: 1.5; }
+
+/* ============================================================
+   9. APPLICATION SCREEN
+   ============================================================ */
+.screen-caption {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-hand);
+  font-size: 22px;
+  color: var(--terracotta);
+  margin-bottom: 16px;
+}
+.screen-caption::before {
+  content: "";
+  display: inline-block;
+  width: 40px; height: 1px;
+  background: var(--terracotta);
+}
+
+.dashboard-body {
+  padding: 28px;
+  background: var(--paper);
+  min-height: 560px;
+}
+
+.welcome-card {
+  background: var(--ink);
+  color: #fff;
+  border-radius: var(--r-4);
+  padding: 24px 28px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.welcome-card::after {
+  content: "";
+  position: absolute;
+  right: -40px; top: -40px;
+  width: 180px; height: 180px;
+  border-radius: 999px;
+  background: var(--mustard);
+  opacity: .22;
+  filter: blur(1px);
+}
+.welcome-card__text { flex: 1; position: relative; z-index: 1; }
+.welcome-card__hello {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+.welcome-card__hello em { font-style: italic; color: var(--mustard); }
+.welcome-card__sub { color: oklch(1 0 0 / .7); font-size: 14px; }
+
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+.stat-card {
+  background: var(--surface-card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-3);
+  padding: 18px 20px;
+}
+.stat-card__label {
+  font-size: 12px;
+  color: var(--ink-mute);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.stat-card__label svg { width: 13px; height: 13px; }
+.stat-card__num {
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  margin-top: 6px;
+  line-height: 1;
+}
+.stat-card__delta {
+  font-size: 12px;
+  color: var(--sage);
+  margin-top: 6px;
+  font-weight: 600;
+}
+
+.filters-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--surface-card);
+  border: 1px solid var(--line);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.chip--active {
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+}
+.chip svg { width: 13px; height: 13px; }
+
+.section-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.section-title-row h3 { font-family: var(--font-display); font-size: 20px; font-weight: 600; }
+
+/* Utility */
+.row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.col { display: flex; flex-direction: column; gap: 12px; }
+.stack-sm { display: flex; flex-direction: column; gap: 8px; }
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 48px 0 0;
+  border-top: 1px dashed var(--line);
+  margin-top: 96px;
+  color: var(--ink-mute);
+  font-size: 13px;
+}
+.footer .hand { font-size: 20px; display: block; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ====================== MASTHEAD ====================== -->
+  <header class="masthead">
+    <div class="masthead__left">
+      <div class="masthead__kicker">Design System · v1.0 · Abril 2026</div>
+      <h1 class="masthead__title">
+        Kadernim<em>.</em><br>
+        Um sistema para quem <em>ensina</em>.
+      </h1>
+      <div class="masthead__note">~ tecnologia que cabe num caderno de professora</div>
+    </div>
+    <div class="masthead__meta">
+      <strong style="display:block;color:var(--ink);font-weight:600;margin-bottom:4px;">Sobre esta direção</strong>
+      Abandonamos o visual SaaS genérico e construímos uma identidade editorial-educativa: papel creme, tipografia humanista, acentos terrosos. Profissional para a professora, com ecos suaves do universo escolar.
+    </div>
+  </header>
+
+  <!-- ============ 1. FOUNDATIONS / COLORS ============ -->
+  <section class="section" id="colors">
+    <div class="section__head">
+      <span class="section__num">01</span>
+      <h2 class="section__title">Cores</h2>
+      <div class="section__sub">Creme de papel, grafite e três acentos terrosos que dialogam entre si.</div>
+    </div>
+
+    <h3 class="heading-m" style="margin-bottom:12px;">Cores de marca</h3>
+    <div class="grid grid-5" style="margin-bottom:32px;">
+      <div class="swatch">
+        <div class="swatch__color" style="background:var(--paper);border-bottom:1px solid var(--line);"></div>
+        <div class="swatch__body">
+          <div class="swatch__name">Papel</div>
+          <div class="swatch__role">Background</div>
+          <div class="swatch__hex"><span>#FBF6EC</span><span class="mono">paper</span></div>
+        </div>
+      </div>
+      <div class="swatch swatch--ink">
+        <div class="swatch__color" style="background:var(--ink);"></div>
+        <div class="swatch__body">
+          <div class="swatch__name">Grafite</div>
+          <div class="swatch__role">Texto · marca</div>
+          <div class="swatch__hex"><span>#2B2620</span><span class="mono">ink</span></div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch__color" style="background:var(--terracotta);"></div>
+        <div class="swatch__body">
+          <div class="swatch__name">Terracota</div>
+          <div class="swatch__role">Primary · ação</div>
+          <div class="swatch__hex"><span>#D97757</span><span class="mono">primary</span></div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch__color" style="background:var(--sage);"></div>
+        <div class="swatch__body">
+          <div class="swatch__name">Salvia</div>
+          <div class="swatch__role">Success · apoio</div>
+          <div class="swatch__hex"><span>#6B8E5A</span><span class="mono">sage</span></div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch__color" style="background:var(--mustard);"></div>
+        <div class="swatch__body">
+          <div class="swatch__name">Mostarda</div>
+          <div class="swatch__role">Warning · destaque</div>
+          <div class="swatch__hex"><span>#E8B14E</span><span class="mono">mustard</span></div>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="heading-m" style="margin-bottom:12px;">Tons neutros — do papel à tinta</h3>
+    <div class="palette-row" style="margin-bottom:32px;">
+      <div style="background:var(--paper);color:var(--ink-mute);">#FBF6EC</div>
+      <div style="background:var(--paper-2);color:var(--ink-mute);">#F2EDE2</div>
+      <div style="background:var(--paper-3);color:var(--ink-mute);">#E7E0D1</div>
+      <div style="background:var(--line);color:var(--ink-soft);">#DCD4C3</div>
+      <div style="background:var(--ink-mute);color:#fff;">#7E7468</div>
+      <div style="background:var(--ink);color:#fff;">#2B2620</div>
+    </div>
+
+    <h3 class="heading-m" style="margin-bottom:12px;">Matérias — cada disciplina tem seu tom</h3>
+    <div class="row">
+      <span class="badge badge--port">Português</span>
+      <span class="badge badge--mat">Matemática</span>
+      <span class="badge badge--cien">Ciências</span>
+      <span class="badge badge--hist">História</span>
+      <span class="badge badge--geo">Geografia</span>
+      <span class="badge badge--arte">Arte</span>
+      <span class="badge badge--ingles">Inglês</span>
+      <span class="badge badge--edfis">Ed. Física</span>
+    </div>
+  </section>
+
+  <!-- ============ 2. TYPOGRAPHY ============ -->
+  <section class="section" id="type">
+    <div class="section__head">
+      <span class="section__num">02</span>
+      <h2 class="section__title">Tipografia</h2>
+      <div class="section__sub">Fraunces para voz editorial, Instrument Sans para clareza, Caveat como toque humano.</div>
+    </div>
+
+    <div class="type-sample">
+      <div class="type-sample__meta">
+        <strong>Display</strong>
+        Fraunces · 72/1.02<br>
+        Títulos de seção, hero
+      </div>
+      <div class="display-xl">Planejar com leveza.</div>
+    </div>
+
+    <div class="type-sample">
+      <div class="type-sample__meta">
+        <strong>Display L</strong>
+        Fraunces · 56/1.05
+      </div>
+      <div class="display-l">Cadernos, atividades<br>e um respiro.</div>
+    </div>
+
+    <div class="type-sample">
+      <div class="type-sample__meta">
+        <strong>Heading L</strong>
+        Fraunces · 28/1.2
+      </div>
+      <div class="heading-l">Recursos pedagógicos para toda a semana</div>
+    </div>
+
+    <div class="type-sample">
+      <div class="type-sample__meta">
+        <strong>Body L</strong>
+        Instrument Sans · 18/1.55
+      </div>
+      <div class="body-l">Uma biblioteca viva com centenas de atividades e materiais prontos, atualizada semanalmente para facilitar a sua rotina escolar.</div>
+    </div>
+
+    <div class="type-sample">
+      <div class="type-sample__meta">
+        <strong>Body</strong>
+        Instrument Sans · 16/1.55
+      </div>
+      <div class="body">Sequências didáticas, planos de aula, atividades imprimíveis e projetos interdisciplinares — organizados por ano escolar e BNCC, prontos para você adaptar à sua turma.</div>
+    </div>
+
+    <div class="type-sample">
+      <div class="type-sample__meta">
+        <strong>Caption</strong>
+        Instrument Sans · 12/1.4 · track +0.12
+      </div>
+      <div class="caption">Atualizado há 3 dias · 2º ano fundamental</div>
+    </div>
+
+    <div class="type-sample">
+      <div class="type-sample__meta">
+        <strong>Manuscrita</strong>
+        Caveat · 32 · para anotações, carimbos, destaques especiais
+      </div>
+      <div class="hand-sample">~ feito com carinho para a sua sala</div>
+    </div>
+  </section>
+
+  <!-- ============ 3. BUTTONS ============ -->
+  <section class="section" id="buttons">
+    <div class="section__head">
+      <span class="section__num">03</span>
+      <h2 class="section__title">Botões</h2>
+      <div class="section__sub">Arredondados e generosos. Primário em terracota para ações de criação e download.</div>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="caption" style="margin-bottom:16px;">Variantes</div>
+        <div class="row">
+          <button class="btn btn--primary">Baixar material</button>
+          <button class="btn btn--secondary">Ver detalhes</button>
+          <button class="btn btn--ghost">Cancelar</button>
+          <button class="btn btn--accent">Aprovar</button>
+          <button class="btn btn--danger">Remover</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="caption" style="margin-bottom:16px;">Tamanhos</div>
+        <div class="row">
+          <button class="btn btn--primary btn--sm">Baixar</button>
+          <button class="btn btn--primary">Baixar material</button>
+          <button class="btn btn--primary btn--lg">Baixar material completo</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="caption" style="margin-bottom:16px;">Com ícone</div>
+        <div class="row">
+          <button class="btn btn--primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>
+            Baixar PDF
+          </button>
+          <button class="btn btn--secondary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+            Salvar
+          </button>
+          <button class="btn btn--icon btn--secondary" aria-label="Mais">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="caption" style="margin-bottom:16px;">Estados</div>
+        <div class="row">
+          <button class="btn btn--primary">Padrão</button>
+          <button class="btn btn--primary" style="background:oklch(0.60 0.12 42);">Hover</button>
+          <button class="btn btn--primary" style="opacity:.5;cursor:not-allowed;">Desabilitado</button>
+          <button class="btn btn--secondary" style="border-color:var(--terracotta);box-shadow:0 0 0 3px var(--terracotta-2);">Foco</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4. INPUTS ============ -->
+  <section class="section" id="inputs">
+    <div class="section__head">
+      <span class="section__num">04</span>
+      <h2 class="section__title">Campos de formulário</h2>
+      <div class="section__sub">Superfície branca sobre creme. Foco em terracota — discreto, mas inequívoco.</div>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card stack-sm" style="gap:18px;">
+        <div class="field">
+          <label class="field__label">Nome da professora</label>
+          <input class="input" value="Clarice Meirelles" />
+        </div>
+        <div class="field">
+          <label class="field__label">E-mail</label>
+          <div class="input-group">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+            <input class="input" placeholder="seu@email.com.br" />
+          </div>
+        </div>
+        <div class="field">
+          <label class="field__label">Ano escolar</label>
+          <select class="select">
+            <option>Selecione um ano...</option>
+            <option>Educação Infantil</option>
+            <option>1º ano · Fundamental I</option>
+            <option selected>2º ano · Fundamental I</option>
+            <option>6º ano · Fundamental II</option>
+          </select>
+          <span class="field__hint">Você pode escolher múltiplos anos depois.</span>
+        </div>
+      </div>
+
+      <div class="card stack-sm" style="gap:18px;">
+        <div class="field">
+          <label class="field__label">Observações para a turma</label>
+          <textarea class="textarea" rows="4" placeholder="Anote aqui um recado, um lembrete, uma ideia...">Adaptar a atividade de frações usando as cartelas de bingo.</textarea>
+        </div>
+
+        <div class="field">
+          <label class="field__label">Áreas de interesse</label>
+          <div class="col" style="gap:8px;">
+            <label class="row" style="gap:10px;cursor:pointer;"><input type="checkbox" class="checkbox" checked> Alfabetização</label>
+            <label class="row" style="gap:10px;cursor:pointer;"><input type="checkbox" class="checkbox" checked> Matemática concreta</label>
+            <label class="row" style="gap:10px;cursor:pointer;"><input type="checkbox" class="checkbox"> Projetos interdisciplinares</label>
+            <label class="row" style="gap:10px;cursor:pointer;"><input type="checkbox" class="checkbox"> Socioemocional</label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field__label">Preferências</label>
+          <div class="col" style="gap:8px;">
+            <label class="row" style="gap:10px;cursor:pointer;">
+              <input type="checkbox" class="switch" checked> Receber novidades semanais por e-mail
+            </label>
+            <label class="row" style="gap:10px;cursor:pointer;">
+              <input type="checkbox" class="switch"> Modo compacto na biblioteca
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 5. BADGES ============ -->
+  <section class="section" id="badges">
+    <div class="section__head">
+      <span class="section__num">05</span>
+      <h2 class="section__title">Badges</h2>
+      <div class="section__sub">Um tom por matéria. Níveis de ensino em cinza com listra colorida.</div>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="caption" style="margin-bottom:14px;">Matérias · disciplinas</div>
+        <div class="row" style="margin-bottom:20px;">
+          <span class="badge badge--port">Português</span>
+          <span class="badge badge--mat">Matemática</span>
+          <span class="badge badge--cien">Ciências</span>
+          <span class="badge badge--hist">História</span>
+          <span class="badge badge--geo">Geografia</span>
+          <span class="badge badge--arte">Arte</span>
+          <span class="badge badge--ingles">Inglês</span>
+          <span class="badge badge--edfis">Ed. Física</span>
+        </div>
+        <div class="caption" style="margin-bottom:14px;">Níveis de ensino</div>
+        <div class="row">
+          <span class="badge badge--level"><span class="tag-stripe" style="background:var(--mustard);"></span>Educação Infantil</span>
+          <span class="badge badge--level"><span class="tag-stripe" style="background:var(--terracotta);"></span>Fundamental I</span>
+          <span class="badge badge--level"><span class="tag-stripe" style="background:var(--sage);"></span>Fundamental II</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="caption" style="margin-bottom:14px;">Status</div>
+        <div class="row" style="margin-bottom:20px;">
+          <span class="badge badge--status-new badge--dot">Novo esta semana</span>
+          <span class="badge badge--status-warn badge--dot">Em revisão</span>
+          <span class="badge badge--status-danger badge--dot">Expirado</span>
+          <span class="badge badge--status-neutral badge--dot">Rascunho</span>
+        </div>
+        <div class="caption" style="margin-bottom:14px;">Atributos do material</div>
+        <div class="row">
+          <span class="badge badge--status-neutral">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            PDF
+          </span>
+          <span class="badge badge--status-neutral">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+            Editável
+          </span>
+          <span class="badge badge--status-neutral">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+            Com vídeo
+          </span>
+          <span class="badge badge--status-neutral">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15c2.21 0 4-1.79 4-4V5a4 4 0 00-8 0v6c0 2.21 1.79 4 4 4zM19 10v1a7 7 0 01-14 0v-1M12 19v4"/></svg>
+            Áudio narrado
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 6. CARDS ============ -->
+  <section class="section" id="cards">
+    <div class="section__head">
+      <span class="section__num">06</span>
+      <h2 class="section__title">Cards</h2>
+      <div class="section__sub">Recursos pedagógicos, planos de assinatura e perfil.</div>
+    </div>
+
+    <h3 class="heading-m" style="margin-bottom:14px;">Recurso pedagógico</h3>
+    <div class="grid grid-4" style="margin-bottom:40px;">
+      <article class="resource-card">
+        <div class="resource-card__cover" style="background:var(--terracotta-2);">
+          <div class="resource-card__tape"></div>
+          <div class="resource-card__cover-label">capa · sequência didática</div>
+        </div>
+        <div class="resource-card__body">
+          <div class="resource-card__badges">
+            <span class="badge badge--port">Português</span>
+            <span class="badge badge--status-new badge--dot">Novo</span>
+          </div>
+          <h4 class="resource-card__title">Sequência didática: produção de bilhetes no 2º ano</h4>
+          <div class="resource-card__meta">
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              12 páginas
+            </span>
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 00-3-3.87M4 21v-2a4 4 0 013-3.87"/><circle cx="12" cy="7" r="4"/></svg>
+              2º ano
+            </span>
+          </div>
+        </div>
+      </article>
+
+      <article class="resource-card">
+        <div class="resource-card__cover" style="background:var(--sage-2);">
+          <div class="resource-card__cover-label">capa · atividade imprimível</div>
+        </div>
+        <div class="resource-card__body">
+          <div class="resource-card__badges">
+            <span class="badge badge--mat">Matemática</span>
+          </div>
+          <h4 class="resource-card__title">Bingo das frações com pizzas ilustradas</h4>
+          <div class="resource-card__meta">
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              6 páginas
+            </span>
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              50 min
+            </span>
+          </div>
+        </div>
+      </article>
+
+      <article class="resource-card">
+        <div class="resource-card__cover" style="background:var(--mustard-2);">
+          <div class="resource-card__tape" style="background:oklch(0.85 0.06 340 / .7);"></div>
+          <div class="resource-card__cover-label">capa · projeto interdisc.</div>
+        </div>
+        <div class="resource-card__body">
+          <div class="resource-card__badges">
+            <span class="badge badge--cien">Ciências</span>
+            <span class="badge badge--arte">Arte</span>
+          </div>
+          <h4 class="resource-card__title">Projeto horta escolar: do plantio ao relatório</h4>
+          <div class="resource-card__meta">
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              28 páginas
+            </span>
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              3 semanas
+            </span>
+          </div>
+        </div>
+      </article>
+
+      <article class="resource-card">
+        <div class="resource-card__cover" style="background:oklch(0.94 0.045 200);">
+          <div class="resource-card__cover-label">capa · plano de aula</div>
+        </div>
+        <div class="resource-card__body">
+          <div class="resource-card__badges">
+            <span class="badge badge--geo">Geografia</span>
+          </div>
+          <h4 class="resource-card__title">Mapa afetivo do bairro: onde eu moro, onde eu brinco</h4>
+          <div class="resource-card__meta">
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              8 páginas
+            </span>
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 00-3-3.87M4 21v-2a4 4 0 013-3.87"/><circle cx="12" cy="7" r="4"/></svg>
+              4º ano
+            </span>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <h3 class="heading-m" style="margin-bottom:14px;">Planos de assinatura</h3>
+    <div class="grid grid-3" style="margin-bottom:40px;gap:20px;">
+      <div class="plan-card">
+        <div class="plan-card__name">Explorar</div>
+        <div class="plan-card__desc">Para conhecer a biblioteca no seu ritmo.</div>
+        <div class="plan-card__price">
+          <span class="plan-card__price-num">R$0</span>
+          <span class="plan-card__price-unit">/ para sempre</span>
+        </div>
+        <hr class="plan-card__divider">
+        <div class="plan-card__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>10 materiais por mês</div>
+        <div class="plan-card__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Acesso à biblioteca pública</div>
+        <div class="plan-card__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Newsletter semanal</div>
+        <div style="margin-top:8px;">
+          <button class="btn btn--secondary" style="width:100%;justify-content:center;">Começar grátis</button>
+        </div>
+      </div>
+
+      <div class="plan-card plan-card--featured">
+        <div class="plan-card__ribbon">Mais usado</div>
+        <div class="plan-card__name">Planejar</div>
+        <div class="plan-card__desc">A rotina inteira da professora numa assinatura.</div>
+        <div class="plan-card__price">
+          <span class="plan-card__price-num">R$29</span>
+          <span class="plan-card__price-unit">/ mês</span>
+        </div>
+        <hr class="plan-card__divider">
+        <div class="plan-card__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Downloads ilimitados</div>
+        <div class="plan-card__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Novidades toda semana</div>
+        <div class="plan-card__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Materiais editáveis em Word</div>
+        <div class="plan-card__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Grupo privado no WhatsApp</div>
+        <div style="margin-top:8px;">
+          <button class="btn btn--primary" style="width:100%;justify-content:center;">Assinar Planejar</button>
+        </div>
+      </div>
+
+      <div class="plan-card">
+        <div class="plan-card__name">Escola</div>
+        <div class="plan-card__desc">Para a coordenação pedagógica e toda equipe.</div>
+        <div class="plan-card__price">
+          <span class="plan-card__price-num">R$19</span>
+          <span class="plan-card__price-unit">/ professora · mês</span>
+        </div>
+        <hr class="plan-card__divider">
+        <div class="plan-card__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Tudo do Planejar</div>
+        <div class="plan-card__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Painel da coordenação</div>
+        <div class="plan-card__feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Formações ao vivo mensais</div>
+        <div style="margin-top:8px;">
+          <button class="btn btn--secondary" style="width:100%;justify-content:center;">Falar com consultora</button>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="heading-m" style="margin-bottom:14px;">Perfil</h3>
+    <div class="grid grid-3">
+      <div class="profile-card">
+        <div class="avatar avatar--lg avatar--terra">CM</div>
+        <div>
+          <div class="profile-card__name">Clarice Meirelles</div>
+          <div class="profile-card__role">Professora · 2º ano fund. I</div>
+        </div>
+        <div class="row" style="gap:6px;justify-content:center;">
+          <span class="badge badge--port">Português</span>
+          <span class="badge badge--mat">Matemática</span>
+        </div>
+        <div class="profile-card__stats">
+          <div class="profile-card__stat">
+            <div class="profile-card__stat-num">142</div>
+            <div class="profile-card__stat-label">baixados</div>
+          </div>
+          <div class="profile-card__stat">
+            <div class="profile-card__stat-num">38</div>
+            <div class="profile-card__stat-label">favoritos</div>
+          </div>
+          <div class="profile-card__stat">
+            <div class="profile-card__stat-num">7</div>
+            <div class="profile-card__stat-label">coleções</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-card">
+        <div class="avatar avatar--lg avatar--mustard">RS</div>
+        <div>
+          <div class="profile-card__name">Renata Salgado</div>
+          <div class="profile-card__role">Coordenadora pedagógica</div>
+        </div>
+        <div class="row" style="gap:6px;justify-content:center;">
+          <span class="badge badge--level"><span class="tag-stripe" style="background:var(--terracotta);"></span>Fund. I</span>
+          <span class="badge badge--level"><span class="tag-stripe" style="background:var(--sage);"></span>Fund. II</span>
+        </div>
+        <div class="profile-card__stats">
+          <div class="profile-card__stat">
+            <div class="profile-card__stat-num">24</div>
+            <div class="profile-card__stat-label">professoras</div>
+          </div>
+          <div class="profile-card__stat">
+            <div class="profile-card__stat-num">12</div>
+            <div class="profile-card__stat-label">turmas</div>
+          </div>
+          <div class="profile-card__stat">
+            <div class="profile-card__stat-num">3</div>
+            <div class="profile-card__stat-label">escolas</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-card" style="background:var(--ink);color:#fff;border-color:var(--ink);">
+        <div class="avatar avatar--lg avatar--mustard" style="border-color:var(--ink);">BL</div>
+        <div>
+          <div class="profile-card__name" style="color:#fff;">Beatriz Lisboa</div>
+          <div class="profile-card__role" style="color:oklch(1 0 0 / .7);">Editora · curadoria</div>
+        </div>
+        <div class="row" style="gap:6px;justify-content:center;">
+          <span class="badge" style="background:oklch(1 0 0 / .12);color:#fff;">Editora</span>
+          <span class="badge" style="background:var(--mustard);color:var(--ink);">⭐ Destaque</span>
+        </div>
+        <div class="profile-card__stats" style="border-color:oklch(1 0 0 / .15);">
+          <div class="profile-card__stat">
+            <div class="profile-card__stat-num" style="color:#fff;">89</div>
+            <div class="profile-card__stat-label" style="color:oklch(1 0 0 / .6);">publicados</div>
+          </div>
+          <div class="profile-card__stat">
+            <div class="profile-card__stat-num" style="color:#fff;">12k</div>
+            <div class="profile-card__stat-label" style="color:oklch(1 0 0 / .6);">downloads</div>
+          </div>
+          <div class="profile-card__stat">
+            <div class="profile-card__stat-num" style="color:#fff;">4.9</div>
+            <div class="profile-card__stat-label" style="color:oklch(1 0 0 / .6);">nota</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 7. NAVIGATION ============ -->
+  <section class="section" id="nav">
+    <div class="section__head">
+      <span class="section__num">07</span>
+      <h2 class="section__title">Navegação</h2>
+      <div class="section__sub">Sidebar sobre papel creme claro. Logo com "pontinho" mostarda como carimbo.</div>
+    </div>
+
+    <div class="app-shell">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar__brand">
+          <div class="sidebar__logo">K</div>
+          <div>
+            <div class="sidebar__brandname">Kadernim</div>
+            <div class="sidebar__brandtag">de professora p/ professora</div>
+          </div>
+        </div>
+
+        <div class="nav-item nav-item--active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2.5"/><path d="M9 9h6M9 13h6M9 17h3"/></svg>
+          Biblioteca
+          <span class="count">842</span>
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+          Meus favoritos
+          <span class="count">38</span>
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 4h16v4H4zM4 12h10v8H4zM18 12h2v8h-2z"/></svg>
+          Coleções
+          <span class="count">7</span>
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          Planejador
+        </div>
+
+        <div class="sidebar__section">Descobrir</div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 2l2.5 7.5H22l-6 4.5 2 7.5-6-4.5-6 4.5 2-7.5-6-4.5h7.5z"/></svg>
+          Novidades
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          Esta semana
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 3v1M12 20v1M3 12h1M20 12h1M5.6 5.6l.7.7M17.7 17.7l.7.7M5.6 18.4l.7-.7M17.7 6.3l.7-.7"/><circle cx="12" cy="12" r="4"/></svg>
+          Mais baixados
+        </div>
+
+        <div class="sidebar__section">Conta</div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 016-6h4a6 6 0 016 6v1"/></svg>
+          Meu perfil
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+          Assinatura
+        </div>
+      </aside>
+
+      <!-- Main -->
+      <div style="display:flex;flex-direction:column;">
+        <header class="header">
+          <h3 class="header__title">Biblioteca</h3>
+          <div class="header__search">
+            <div class="input-group">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+              <input class="input" placeholder="Procurar por matéria, tema ou ano escolar..." />
+            </div>
+          </div>
+          <div class="header__actions">
+            <button class="btn btn--ghost btn--sm">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0"/></svg>
+            </button>
+            <div class="avatar avatar--sm avatar--terra">CM</div>
+          </div>
+        </header>
+        <div style="flex:1;background:var(--paper);padding:32px;display:flex;align-items:center;justify-content:center;color:var(--ink-mute);font-family:var(--font-mono);font-size:12px;">
+          área principal · veja a tela completa na seção 09
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 8. EMPTY STATES & ICONS ============ -->
+  <section class="section" id="empty">
+    <div class="section__head">
+      <span class="section__num">08</span>
+      <h2 class="section__title">Estados vazios &amp; ícones</h2>
+      <div class="section__sub">Linguagem calma, nunca culpabilizadora. Ícones em stroke 1.5, Lucide como base.</div>
+    </div>
+
+    <div class="grid grid-2" style="margin-bottom:40px;">
+      <div class="empty-state">
+        <div class="empty-state__illo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/><path d="M9 7h7M9 11h5"/></svg>
+        </div>
+        <h4 class="empty-state__title">Sua biblioteca começa aqui</h4>
+        <p class="empty-state__desc">Favorite materiais enquanto navega — eles aparecem nesta prateleira para a próxima aula.</p>
+        <div class="row" style="justify-content:center;">
+          <button class="btn btn--primary btn--sm">Explorar a biblioteca</button>
+        </div>
+        <div class="hand" style="margin-top:16px;font-size:16px;">~ dica: organize em coleções por trimestre</div>
+      </div>
+
+      <div class="empty-state">
+        <div class="empty-state__illo" style="background:var(--mustard-2);color:oklch(0.50 0.13 82);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/><path d="M8 11h6"/></svg>
+        </div>
+        <h4 class="empty-state__title">Nada encontrado por aqui</h4>
+        <p class="empty-state__desc">Tente outras palavras, ou remova um dos filtros. Às vezes "adição" funciona melhor do que "soma".</p>
+        <div class="row" style="justify-content:center;">
+          <button class="btn btn--secondary btn--sm">Limpar filtros</button>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="heading-m" style="margin-bottom:14px;">Direção de ícones</h3>
+    <div class="icon-grid">
+      <div class="icon-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 13h6M9 17h3"/></svg>biblioteca</div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>favorito</div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>download</div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>planejador</div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 016-6h4a6 6 0 016 6v1"/></svg>professora</div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v4H4zM4 12h10v8H4zM18 12h2v8h-2z"/></svg>coleções</div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.5 7.5H22l-6 4.5 2 7.5-6-4.5-6 4.5 2-7.5-6-4.5h7.5z"/></svg>novidades</div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>buscar</div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M6 12h12M10 18h4"/></svg>filtrar</div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>PDF</div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>assinatura</div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>comentários</div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>tempo</div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-3-3.87M4 21v-2a4 4 0 013-3.87"/><circle cx="12" cy="7" r="4"/></svg>turma</div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20l9-12H3z"/></svg>bncc</div>
+      <div class="icon-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>adicionar</div>
+    </div>
+  </section>
+
+  <!-- ============ 9. APPLICATION SCREEN ============ -->
+  <section class="section" id="screen">
+    <div class="section__head">
+      <span class="section__num">09</span>
+      <h2 class="section__title">Aplicação · Dashboard da professora</h2>
+      <div class="section__sub">Tudo junto. Uma tela que faz sentido como produto.</div>
+    </div>
+
+    <div class="screen-caption">assim o Kadernim ganha voz de caderno de verdade</div>
+
+    <div class="app-shell">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar__brand">
+          <div class="sidebar__logo">K</div>
+          <div>
+            <div class="sidebar__brandname">Kadernim</div>
+            <div class="sidebar__brandtag">de professora p/ professora</div>
+          </div>
+        </div>
+
+        <div class="nav-item nav-item--active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2.5"/><path d="M9 9h6M9 13h6M9 17h3"/></svg>
+          Biblioteca
+          <span class="count">842</span>
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+          Meus favoritos
+          <span class="count">38</span>
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 4h16v4H4zM4 12h10v8H4zM18 12h2v8h-2z"/></svg>
+          Coleções
+          <span class="count">7</span>
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          Planejador
+        </div>
+
+        <div class="sidebar__section">Descobrir</div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 2l2.5 7.5H22l-6 4.5 2 7.5-6-4.5-6 4.5 2-7.5-6-4.5h7.5z"/></svg>
+          Novidades
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          Esta semana
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 3v1M12 20v1M3 12h1M20 12h1"/><circle cx="12" cy="12" r="4"/></svg>
+          Mais baixados
+        </div>
+
+        <div class="sidebar__section">Conta</div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 016-6h4a6 6 0 016 6v1"/></svg>
+          Meu perfil
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+          Assinatura
+        </div>
+      </aside>
+
+      <!-- Main -->
+      <div style="display:flex;flex-direction:column;">
+        <header class="header">
+          <h3 class="header__title">Olá, Clarice</h3>
+          <div class="header__search">
+            <div class="input-group">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+              <input class="input" placeholder="Procurar por matéria, tema ou ano escolar..." />
+            </div>
+          </div>
+          <div class="header__actions">
+            <button class="btn btn--ghost btn--icon" aria-label="Notificações">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0"/></svg>
+            </button>
+            <div class="avatar avatar--sm avatar--terra">CM</div>
+          </div>
+        </header>
+
+        <div class="dashboard-body">
+
+          <div class="welcome-card">
+            <div class="welcome-card__text">
+              <div class="welcome-card__hello">Bom dia, Clarice. <em>Terça, 21 de abril.</em></div>
+              <div class="welcome-card__sub">Esta semana chegaram 18 materiais novos para o 2º ano. A sequência de bilhetes combina com o que você planejou para quarta.</div>
+            </div>
+            <button class="btn btn--primary">
+              Ver novidades
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+
+          <div class="stats-row">
+            <div class="stat-card">
+              <div class="stat-card__label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>
+                baixados no mês
+              </div>
+              <div class="stat-card__num">23</div>
+              <div class="stat-card__delta">+6 vs. março</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card__label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+                favoritos
+              </div>
+              <div class="stat-card__num">38</div>
+              <div class="stat-card__delta">~ prateleira pronta</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card__label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4"/></svg>
+                aulas planejadas
+              </div>
+              <div class="stat-card__num">9</div>
+              <div class="stat-card__delta" style="color:var(--mustard);font-weight:600;">2 para revisar</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card__label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l2.5 7.5H22l-6 4.5 2 7.5-6-4.5-6 4.5 2-7.5-6-4.5h7.5z"/></svg>
+                novidades p/ você
+              </div>
+              <div class="stat-card__num">18</div>
+              <div class="stat-card__delta">atualizado há 3 dias</div>
+            </div>
+          </div>
+
+          <div class="section-title-row">
+            <h3>Para o seu 2º ano</h3>
+            <button class="btn btn--ghost btn--sm">Ver todos
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+
+          <div class="filters-row">
+            <span class="chip chip--active">Todas matérias</span>
+            <span class="chip">Português</span>
+            <span class="chip">Matemática</span>
+            <span class="chip">Ciências</span>
+            <span class="chip">Projetos</span>
+            <span style="margin-left:auto;" class="chip">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M6 12h12M10 18h4"/></svg>
+              Filtros
+            </span>
+          </div>
+
+          <div class="grid grid-3">
+            <article class="resource-card">
+              <div class="resource-card__cover" style="background:var(--terracotta-2);">
+                <div class="resource-card__tape"></div>
+                <div class="resource-card__cover-label">capa · sequência didática</div>
+              </div>
+              <div class="resource-card__body">
+                <div class="resource-card__badges">
+                  <span class="badge badge--port">Português</span>
+                  <span class="badge badge--status-new badge--dot">Novo</span>
+                </div>
+                <h4 class="resource-card__title">Sequência didática: produção de bilhetes no 2º ano</h4>
+                <div class="resource-card__meta">
+                  <span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    12 páginas
+                  </span>
+                  <span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    3 aulas
+                  </span>
+                </div>
+              </div>
+            </article>
+
+            <article class="resource-card">
+              <div class="resource-card__cover" style="background:var(--sage-2);">
+                <div class="resource-card__cover-label">capa · atividade imprimível</div>
+              </div>
+              <div class="resource-card__body">
+                <div class="resource-card__badges">
+                  <span class="badge badge--mat">Matemática</span>
+                </div>
+                <h4 class="resource-card__title">Bingo das frações com pizzas ilustradas</h4>
+                <div class="resource-card__meta">
+                  <span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    6 páginas
+                  </span>
+                  <span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    50 min
+                  </span>
+                </div>
+              </div>
+            </article>
+
+            <article class="resource-card">
+              <div class="resource-card__cover" style="background:var(--mustard-2);">
+                <div class="resource-card__tape" style="background:oklch(0.85 0.06 340 / .7);"></div>
+                <div class="resource-card__cover-label">capa · projeto interdisc.</div>
+              </div>
+              <div class="resource-card__body">
+                <div class="resource-card__badges">
+                  <span class="badge badge--cien">Ciências</span>
+                  <span class="badge badge--arte">Arte</span>
+                </div>
+                <h4 class="resource-card__title">Projeto horta escolar: do plantio ao relatório</h4>
+                <div class="resource-card__meta">
+                  <span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    28 páginas
+                  </span>
+                  <span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    3 semanas
+                  </span>
+                </div>
+              </div>
+            </article>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <span class="hand">~ fim por aqui</span>
+    Kadernim Design System · v1.0 · feito com café e papel pautado
+  </footer>
+
+</div>
+
+</body>
+</html>

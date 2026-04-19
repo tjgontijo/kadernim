@@ -11,6 +11,12 @@ import {
   User,
   LogOut,
   ShieldCheck,
+  Heart,
+  FolderHeart,
+  Calendar,
+  Sparkles,
+  Clock,
+  Settings
 } from 'lucide-react'
 import {
   Sidebar,
@@ -21,11 +27,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarRail,
-  SidebarFooter,
   useSidebar,
 } from '@/components/ui/sidebar'
-import { UserDropdownMenuGlobal } from '@/components/dashboard/users/user-dropdown-menu-global'
 import { defineAbilitiesFor, PermissionAction, PermissionSubject } from '@/lib/auth/permissions'
 import { UserRoleType } from '@/types/users/user-role'
 import { authClient } from '@/lib/auth/auth-client'
@@ -46,11 +49,13 @@ type NavItem = {
   title: string
   href: string
   icon: any
+  count?: string
   permission?: { action: PermissionAction; subject: PermissionSubject }
+  onClick?: () => void
 }
 
 type NavGroup = {
-  label: string
+  label?: string
   items: NavItem[]
 }
 
@@ -81,10 +86,26 @@ export function AppSidebar({ user }: AppSidebarProps) {
 
   const navGroups: NavGroup[] = [
     {
-      label: 'Navegação',
       items: [
-        { title: 'Recursos', href: '/resources', icon: BookOpen },
-        { title: 'Minha Conta', href: '/account', icon: User },
+        { title: 'Biblioteca', href: '/resources', icon: BookOpen, count: '842' },
+        { title: 'Meus favoritos', href: '/favorites', icon: Heart, count: '38' },
+        { title: 'Coleções', href: '/collections', icon: FolderHeart, count: '7' },
+        { title: 'Planejador', href: '/planner', icon: Calendar },
+      ],
+    },
+    {
+      label: 'Descobrir',
+      items: [
+        { title: 'Novidades', href: '/discover/new', icon: Sparkles },
+        { title: 'Esta semana', href: '/discover/weekly', icon: Clock },
+      ],
+    },
+    {
+      label: 'Conta',
+      items: [
+        { title: 'Meu perfil', href: '/account', icon: User },
+        { title: 'Assinatura', href: '/billing', icon: CreditCard },
+        { title: 'Sair', href: '#', icon: LogOut, onClick: handleLogout },
       ],
     },
   ]
@@ -97,7 +118,6 @@ export function AppSidebar({ user }: AppSidebarProps) {
         { title: 'Gestão de Recursos', href: '/admin/resources', icon: ShieldCheck, permission: { action: 'read', subject: 'Resource' } },
         { title: 'Disciplinas', href: '/admin/subjects', icon: Hash, permission: { action: 'read', subject: 'Subject' } },
         { title: 'Usuários', href: '/admin/users', icon: Users, permission: { action: 'read', subject: 'User' } },
-        { title: 'Financeiro', href: '/admin/billing', icon: CreditCard, permission: { action: 'manage', subject: 'all' } },
       ],
     })
   }
@@ -107,65 +127,88 @@ export function AppSidebar({ user }: AppSidebarProps) {
       return null
     }
 
-    const isActive = pathname === item.href || (pathname.startsWith(`${item.href}/`) && item.href !== '/admin')
+    const isActive = pathname === item.href || (pathname.startsWith(`${item.href}/`) && item.href !== '/admin' && item.href !== '#')
     const Icon = item.icon
 
     return (
-      <SidebarMenuItem key={item.href}>
-        <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
-          <Link href={item.href} onClick={handleNavClick}>
-            <Icon className="h-4 w-4 shrink-0" />
-            <span>{item.title}</span>
-          </Link>
+      <SidebarMenuItem key={item.title}>
+        <SidebarMenuButton 
+          asChild 
+          tooltip={item.title}
+          className={cn(
+            "flex items-center gap-[10px] px-[12px] py-[9px] rounded-3 font-medium text-[14px] transition-all relative border outline-none ring-0",
+            isActive 
+              ? "bg-card text-ink shadow-1 border-line before:absolute before:left-[-2px] before:top-1/2 before:-translate-y-1/2 before:w-[3px] before:h-[20px] before:bg-terracotta before:rounded-sm hover:bg-card hover:text-ink" 
+              : "border-transparent text-ink-soft hover:bg-paper-2 hover:text-ink hover:border-transparent active:bg-paper-2"
+          )}
+        >
+          {item.onClick ? (
+            <button onClick={item.onClick} className="w-full flex items-center gap-2.5">
+              <Icon className="w-[17px] h-[17px] shrink-0" strokeWidth={1.8} />
+              <span className="flex-1 text-left">{item.title}</span>
+              {item.count && <span className="font-mono text-[11px] text-ink-mute bg-paper-2 px-[7px] py-[2px] rounded-full ml-auto">{item.count}</span>}
+            </button>
+          ) : (
+            <Link href={item.href} onClick={handleNavClick} className="w-full flex items-center gap-[10px]">
+              <Icon className="w-[17px] h-[17px] shrink-0" strokeWidth={1.8} />
+              <span className="flex-1">{item.title}</span>
+              {item.count && <span className="font-mono text-[11px] text-ink-mute bg-paper-2 px-[7px] py-[2px] rounded-full ml-auto">{item.count}</span>}
+            </Link>
+          )}
         </SidebarMenuButton>
       </SidebarMenuItem>
     )
   }
 
   const SidebarContentInternal = (
-    <>
-      <SidebarContent className="gap-0 py-2 scrollbar-hide">
-        {navGroups.map((group) => (
-          <SidebarGroup key={group.label}>
-            {!collapsed && (
-              <SidebarGroupLabel className="px-3 text-[10px] font-bold uppercase tracking-wider text-sidebar-foreground/40">
+    <div className="flex flex-col h-full w-full px-[14px] py-[20px]">
+      <div className="pb-[24px] mb-[24px] border-b border-dashed border-line shrink-0">
+        <Link href="/resources" className="flex items-center gap-[12px] w-full">
+          <div className="relative w-[34px] h-[34px] rounded-[10px] bg-ink text-white flex items-center justify-center font-display font-semibold text-[18px] after:absolute after:-top-[2px] after:-right-[2px] after:w-[8px] after:h-[8px] after:rounded-full after:bg-mustard shrink-0 shadow-1 border border-transparent">
+            K
+          </div>
+          {!collapsed && (
+            <div className="overflow-hidden">
+              <div className="font-display font-semibold text-[20px] tracking-[-0.02em] leading-none whitespace-nowrap text-ink">Kadernim</div>
+              <div className="font-hand text-[15px] text-terracotta leading-none mt-1 whitespace-nowrap">de professora p/ professora</div>
+            </div>
+          )}
+        </Link>
+      </div>
+      <SidebarContent className="gap-0 py-0 scrollbar-hide px-0 pb-8">
+        {navGroups.map((group, i) => (
+          <SidebarGroup key={group.label || i} className="px-0 pb-0 pt-2">
+            {!collapsed && group.label && (
+              <SidebarGroupLabel className="font-semibold text-[11px] uppercase tracking-[0.12em] text-ink-mute px-0 pb-[6px] pt-[12px] h-auto">
                 {group.label}
               </SidebarGroupLabel>
             )}
             <SidebarGroupContent>
-              <SidebarMenu>
+              <SidebarMenu className="gap-[3px]">
                 {group.items.map(renderMenuItem)}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
         ))}
       </SidebarContent>
-
-      <SidebarFooter className="p-2 md:p-4 border-t border-sidebar-border/50">
-        <UserDropdownMenuGlobal
-          userName={user.name || 'Usuário'}
-          userEmail={user.email || ''}
-          userImage={user.image}
-        />
-      </SidebarFooter>
-    </>
+    </div>
   )
 
-  // MOBILE: Usa o componente Sidebar padrão que se comporta como Sheet
+  // MOBILE
   if (isMobile) {
     return (
-      <Sidebar collapsible="icon" variant="inset">
+      <Sidebar collapsible="icon" variant="inset" className="bg-[oklch(0.97_0.012_85)] border-r border-line">
         {SidebarContentInternal}
       </Sidebar>
     )
   }
 
-  // DESKTOP: Usa um aside customizado para respeitar o fluxo vertical (abaixo da Topbar)
+  // DESKTOP: aside with oklch(0.97 0.012 85) background
   return (
     <aside
       className={cn(
-        "bg-sidebar flex flex-col h-full transition-[width] duration-200 ease-linear shrink-0 overflow-hidden border-r border-sidebar-border/50",
-        collapsed ? "w-[var(--sidebar-width-icon)]" : "w-[var(--sidebar-width)]"
+        "bg-[oklch(0.97_0.012_85)] flex flex-col h-full transition-[width] duration-200 ease-linear shrink-0 overflow-y-auto border-r border-line",
+        collapsed ? "w-[var(--sidebar-width-icon)]" : "w-[260px]"
       )}
     >
       {SidebarContentInternal}

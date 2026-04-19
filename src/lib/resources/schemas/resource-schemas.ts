@@ -60,10 +60,62 @@ export const ResourceVideoSchema = z.object({
 
 export type ResourceVideo = z.infer<typeof ResourceVideoSchema>
 
+export const AuthorSchema = z.object({
+  id: z.string(),
+  displayName: z.string(),
+  displayRole: z.string().nullable().optional(),
+  location: z.string().nullable().optional(),
+  verified: z.boolean(),
+})
+
+export type Author = z.infer<typeof AuthorSchema>
+
+export const BnccSkillSchema = z.object({
+  id: z.string(),
+  code: z.string(),
+  description: z.string(),
+})
+
+export type BnccSkill = z.infer<typeof BnccSkillSchema>
+
+export const PedagogicalContentSchema = z.object({
+  objectives: z.array(z.object({
+    id: z.string(),
+    text: z.string(),
+    order: z.number(),
+  })),
+  steps: z.array(z.object({
+    id: z.string(),
+    type: z.string(),
+    title: z.string(),
+    duration: z.string().nullable(),
+    content: z.string(),
+    order: z.number(),
+  })),
+}).nullable()
+
+export type PedagogicalContent = z.infer<typeof PedagogicalContentSchema>
+
 export const ResourceDetailSchema = ResourceSchema.extend({
   files: z.array(ResourceFileMetadataSchema),
   images: z.array(ResourceImageSchema),
   videos: z.array(ResourceVideoSchema),
+  
+  // NOVOS CAMPOS
+  slug: z.string().nullable(),
+  isCurated: z.boolean(),
+  curatedAt: z.string().nullable(),
+  resourceType: z.string(),
+  pagesCount: z.number().nullable(),
+  estimatedDurationMinutes: z.number().nullable(),
+  
+  reviewCount: z.number(),
+  averageRating: z.number(),
+  downloadCount: z.number(),
+  
+  author: AuthorSchema.nullable(),
+  bnccSkills: z.array(BnccSkillSchema),
+  pedagogicalContent: PedagogicalContentSchema,
 })
 
 export type ResourceDetail = z.infer<typeof ResourceDetailSchema>

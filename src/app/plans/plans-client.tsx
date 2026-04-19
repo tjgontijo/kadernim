@@ -141,34 +141,32 @@ function PricingCard({ period, catalog }: { period: Period; catalog: CheckoutPla
 
   return (
     <div className="max-w-md mx-auto w-full group">
-      <div className="relative rounded-[2.5rem] bg-white border border-stone-200 shadow-2xl shadow-stone-200/50 p-1.5 transition-all duration-300 group-hover:shadow-brand-2/50">
-        <div className="absolute -top-px left-10 right-10 h-1 bg-gradient-to-r from-transparent via-brand-1 to-transparent" />
-
-        <div className="bg-stone-50/40 rounded-[2rem] border border-stone-100/50 overflow-hidden">
+      <div className="relative rounded-r-5 bg-surface-card border-2 border-terracotta shadow-3 p-1.5 transition-all duration-300 hover:shadow-terracotta/20 paper-grain">
+        <div className="bg-paper-2 rounded-[22px] border border-line-soft overflow-hidden">
           {/* Header */}
           <div className="px-5 sm:px-8 pt-10 pb-8 text-center">
-            <div className="inline-flex items-center justify-center gap-2 px-3 py-1 bg-green-50 rounded-full border border-green-100 mb-6 font-semibold">
-              <Sparkles className="h-3 w-3 text-green-600" />
-              <span className="text-[10px] sm:text-xs font-black text-green-700 uppercase tracking-widest">
+            <div className="inline-flex items-center justify-center gap-2 px-3 py-1 bg-sage-2 rounded-full border border-sage/20 mb-6 font-semibold">
+              <Sparkles className="h-3 w-3 text-sage" />
+              <span className="text-[10px] sm:text-xs font-black text-sage uppercase tracking-[0.15em]">
                 Acesso Ilimitado
               </span>
             </div>
 
-            <h3 className="text-2xl font-black text-stone-800 mb-2 leading-none tracking-tight">
+            <h3 className="text-display-m text-ink mb-2">
               Kadernim Pro
             </h3>
 
             <div className="flex flex-col items-center mt-6">
               <div className="flex items-baseline gap-1">
-                <span className="text-xl font-bold text-stone-400 mr-0.5">R$</span>
-                <span className="text-6xl font-black text-stone-800 tracking-tighter">
+                <span className="text-xl font-bold text-ink-mute mr-0.5">R$</span>
+                <span className="text-6xl font-black text-ink tracking-tighter">
                   {fmtAmount(displayPrice)}
                 </span>
                 {period === 'monthly' && (
-                  <span className="text-stone-400 text-sm font-medium tracking-tight">/mês</span>
+                  <span className="text-ink-mute text-sm font-medium tracking-tight">/mês</span>
                 )}
               </div>
-              <p className="text-[11px] font-bold text-stone-500 uppercase tracking-widest mt-3 px-4 py-1.5 bg-stone-100/80 rounded-full border border-stone-200/50">
+              <p className="text-caption mt-3 px-4 py-1.5 bg-paper-3 rounded-full border border-line">
                 {detailLabel}
               </p>
             </div>
@@ -176,13 +174,13 @@ function PricingCard({ period, catalog }: { period: Period; catalog: CheckoutPla
 
           {/* Benefits */}
           <div className="px-8 py-2">
-            <div className="h-px bg-stone-200/60" />
+            <div className="h-px bg-line" />
             <div className="py-8">
               <ul className="space-y-4">
                 {includes.map((item) => (
-                  <li key={item} className="flex items-center gap-3.5 text-sm font-medium text-stone-600">
-                    <div className="h-5 w-5 rounded-full bg-brand-3/20 flex items-center justify-center shrink-0 border border-brand-3/30">
-                      <Check className="h-3 w-3 text-brand-1" strokeWidth={3} />
+                  <li key={item} className="flex items-center gap-3.5 text-sm font-medium text-ink-soft">
+                    <div className="h-5 w-5 rounded-full bg-sage-2 flex items-center justify-center shrink-0 border border-sage/20">
+                      <Check className="h-3 w-3 text-sage" strokeWidth={3} />
                     </div>
                     {item}
                   </li>
@@ -195,7 +193,7 @@ function PricingCard({ period, catalog }: { period: Period; catalog: CheckoutPla
           <div className="px-8 pb-10 pt-4">
             <Link
               href={`/checkout?plan=${plan.id}`}
-              className="group relative flex items-center justify-center h-14 w-full rounded-2xl bg-brand-1 text-white font-bold text-base transition-all hover:bg-brand-2 overflow-hidden shadow-lg shadow-brand-1/20"
+              className="group relative flex items-center justify-center h-14 w-full rounded-full bg-terracotta text-white font-bold text-base transition-all hover:bg-terracotta-hover overflow-hidden shadow-lg shadow-terracotta/20"
             >
               <span className="relative flex items-center gap-2">
                 Começar Agora
@@ -204,11 +202,11 @@ function PricingCard({ period, catalog }: { period: Period; catalog: CheckoutPla
             </Link>
 
             <div className="mt-6 flex flex-col items-center gap-3">
-              <div className="flex items-center gap-2 bg-green-50/80 border border-green-100 px-4 py-2 rounded-xl">
-                <ShieldCheck className="h-4 w-4 text-green-600" />
-                <span className="text-xs font-bold text-stone-700">7 dias de garantia total</span>
+              <div className="flex items-center gap-2 bg-sage-2 border border-sage/20 px-4 py-2 rounded-xl">
+                <ShieldCheck className="h-4 w-4 text-sage" />
+                <span className="text-xs font-bold text-ink-soft">7 dias de garantia total</span>
               </div>
-              <p className="text-[10px] text-stone-400 font-medium uppercase tracking-widest">Cancele quando quiser. Sem multa</p>
+              <p className="text-[10px] text-ink-faint font-medium uppercase tracking-widest">Cancele quando quiser. Sem multa</p>
             </div>
           </div>
         </div>
@@ -340,24 +338,24 @@ export function PlansClient({ catalog }: { catalog: CheckoutPlanCatalog }) {
       <main>
         {/* Header Section */}
         <section className="pt-20 pb-12 text-center overflow-hidden relative">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-brand-1/10 blur-[120px] rounded-full -z-10" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-terracotta/5 blur-[120px] rounded-full -z-10" />
 
           <W>
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white rounded-full border border-stone-200 shadow-sm mb-8 animate-in fade-in slide-in-from-bottom-2">
-              <TrendingUp className="h-3.5 w-3.5 text-brand-1" />
-              <span className="text-[11px] font-bold text-stone-600 uppercase tracking-wider">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-surface-card rounded-full border border-line shadow-1 mb-8">
+              <TrendingUp className="h-3.5 w-3.5 text-terracotta" />
+              <span className="text-[11px] font-bold text-ink-soft uppercase tracking-widest">
                 Utilizado por +1.200 Professoras
               </span>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-stone-900 mb-6 tracking-tight leading-[0.9]">
+            <h1 className="text-display-l text-ink mb-6 tracking-tight">
               Invista na sua <br className="hidden sm:block" />
-              <span className="text-brand-1">Tranquilidade</span> Pedagógica.
+              <span className="text-terracotta">Tranquilidade</span> Pedagógica.
             </h1>
 
-            <p className="text-lg text-stone-500 font-medium max-w-2xl mx-auto mb-12">
+            <p className="text-body-l text-ink-soft max-w-2xl mx-auto mb-12">
               Chega de perder noites procurando material genérico. Tenha uma biblioteca
-              valida e organizada sempre à mão.
+              validada e organizada sempre à mão.
             </p>
 
             <BillingToggle period={period} onChange={setPeriod} />

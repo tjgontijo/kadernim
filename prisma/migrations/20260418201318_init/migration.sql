@@ -2,7 +2,10 @@
 CREATE TYPE "UserRole" AS ENUM ('user', 'subscriber', 'editor', 'manager', 'admin');
 
 -- CreateEnum
-CREATE TYPE "SubscriptionStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'OVERDUE', 'CANCELED', 'EXPIRED');
+CREATE TYPE "SubscriptionStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'OVERDUE', 'CANCELED', 'EXPIRED', 'FAILED');
+
+-- CreateEnum
+CREATE TYPE "SubscriptionFailureReason" AS ENUM ('EXPIRED', 'DENIED', 'CANCELED_BY_USER', 'FAILED_DEBIT', 'OTHER');
 
 -- CreateEnum
 CREATE TYPE "InvoiceStatus" AS ENUM ('PENDING', 'CONFIRMED', 'RECEIVED', 'OVERDUE', 'REFUNDED', 'REFUND_REQUESTED', 'CHARGEBACK_REQUESTED', 'CHARGEBACK_DISPUTE', 'AWAITING_CHARGEBACK_REVERSAL', 'DUNNING_REQUESTED', 'DUNNING_RECEIVED', 'AWAITING_RISK_ANALYSIS');
@@ -155,6 +158,13 @@ CREATE TABLE "subscription" (
     "purchaseDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "expiresAt" TIMESTAMP(3),
     "canceledAt" TIMESTAMP(3),
+    "failureReason" "SubscriptionFailureReason",
+    "failureCount" INTEGER NOT NULL DEFAULT 0,
+    "lastFailureAt" TIMESTAMP(3),
+    "lastFailureMessage" TEXT,
+    "nextRetryAt" TIMESTAMP(3),
+    "lastRetryAt" TIMESTAMP(3),
+    "failureNotificationSentAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 

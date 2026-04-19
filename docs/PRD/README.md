@@ -41,6 +41,44 @@ Melhoria na experiência de checkout PIX permitindo que o usuário receba o QR C
 
 ---
 
+### 3. **Resource Details - Sistema Completo** ⭐
+Status: **Pronto para Implementação**  
+Prioridade: **Alta**  
+Timeline: **40-50h em 7 fases (5-6 semanas)**
+
+Sistema completo de detalhes de recurso com Autoria, Reviews, Interações de Usuário, Relacionamentos e Métricas.
+
+**Arquivos:**
+- [`Resource_Details_Implementation_Plan.md`](./Resource_Details_Implementation_Plan.md) ⭐ **LEITURA OBRIGATÓRIA** - Plano arquitetral detalhado com schema completo
+- [`IMPLEMENTATION_CHECKLIST.md`](./IMPLEMENTATION_CHECKLIST.md) - Checklist executável por fase
+- [`Resource_Details_Models.md`](./Resource_Details_Models.md) - PRD original (referência)
+
+**Resumo Arquitetural:**
+- 👤 **Autoria:** Modelo Author desacoplado de User + curadoria editorial
+- ⭐ **Reviews:** Sistema com moderação (PENDING → APPROVED/REJECTED/FLAGGED)
+- 💾 **Interações:** UserResourceInteraction unificado (Salvar, Planejar, Download)
+- 🔗 **Relacionamentos:** RelatedResource unidirecional com scoring (1-5)
+- 🎓 **Conteúdo Pedagógico:** JSON com Objectives + Steps (flexível, sem migrations)
+- 📈 **Métricas:** Lazy aggregate (Fase 1) → Materialized View (Fase 2)
+
+**Decisões Arquitetais Aplicadas:**
+- UUID Postgres padrão (conforme projeto)
+- Soft delete com `archivedAt`
+- Índices otimizados para cada use case
+- Validação JSON em aplicação (Zod)
+- Performance < 100ms com query lazy
+
+**Fases:**
+1. Autoria + Metadados (5-6h)
+2. Reviews + Moderação (5-6h)
+3. Interações do Usuário (6-8h)
+4. Recursos Relacionados (5-6h)
+5. Conteúdo Pedagógico (6-8h)
+6. Métricas + Cache (8-10h)
+7. Integração E2E + Testes (8-10h)
+
+---
+
 ## 🎯 Roadmap de Implementação
 
 ```

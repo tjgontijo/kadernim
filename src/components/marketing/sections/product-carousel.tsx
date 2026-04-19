@@ -16,11 +16,11 @@ export function ProductCarousel({ products, dark = true, className = '' }: Produ
   // Multiply products to ensure smooth infinite loop
   const displayProducts = [...products, ...products, ...products]
 
-  const bgClass = dark ? 'bg-[#05050A]' : 'bg-white'
-  const titleClass = dark ? 'text-white' : 'text-stone-800'
-  const subClass = dark ? 'text-slate-400' : 'text-stone-500'
-  const overlayClass = dark ? 'from-[#05050A]' : 'from-white'
-  const borderClass = dark ? 'border-white/5' : 'border-stone-200'
+  const bgClass = dark ? 'bg-ink' : 'bg-paper'
+  const titleClass = dark ? 'text-paper' : 'text-ink'
+  const subClass = dark ? 'text-paper-3' : 'text-ink-soft'
+  const overlayClass = dark ? 'from-ink' : 'from-paper'
+  const borderClass = dark ? 'border-line/20' : 'border-line'
 
   return (
     <section className={`py-24 overflow-hidden border-y ${bgClass} ${borderClass} ${className}`}>
@@ -28,7 +28,7 @@ export function ProductCarousel({ products, dark = true, className = '' }: Produ
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <h2 className={`text-3xl md:text-4xl font-black mb-4 ${titleClass}`}>
-              Materiais Reais, <span className="text-blue-500">Resultados Reais</span>
+              Materiais Reais, <span className="text-terracotta">Resultados Reais</span>
             </h2>
             <p className={`text-lg max-w-2xl ${subClass}`}>
               Dê uma olhada em alguns dos materiais que já estão disponíveis na nossa plataforma. 
@@ -63,7 +63,7 @@ export function ProductCarousel({ products, dark = true, className = '' }: Produ
           {displayProducts.map((product, idx) => (
             <div 
               key={`${product.id}-${idx}`}
-              className="group relative flex-shrink-0 w-72 h-[420px] rounded-2xl overflow-hidden border border-white/10 bg-white/[0.03] transition-all hover:border-blue-500/50 hover:bg-white/[0.06]"
+              className="group relative flex-shrink-0 w-72 h-[420px] rounded-2xl overflow-hidden border border-line/10 bg-surface-card/5 transition-all hover:border-terracotta/50 hover:bg-surface-card/10"
             >
               {product.thumbUrl ? (
                 <div className="relative w-full h-full">
@@ -74,26 +74,26 @@ export function ProductCarousel({ products, dark = true, className = '' }: Produ
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                     sizes="288px"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-6">
+                  <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/20 to-transparent flex flex-col justify-end p-6">
                     <div className="mb-2">
-                       <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/80 text-white uppercase tracking-wider mb-2">
-                         {product.educationLevel}
-                       </span>
-                    </div>
-                    <h3 className="text-white font-bold text-lg leading-tight mb-1 group-hover:text-blue-400 transition-colors">
+                        <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-terracotta text-white uppercase tracking-wider mb-2">
+                          {product.educationLevel}
+                        </span>
+                     </div>
+                     <h3 className="text-white font-display font-bold text-lg leading-tight mb-1 group-hover:text-terracotta-2 transition-colors">
                       {product.title}
                     </h3>
-                    <p className="text-slate-400 text-sm flex items-center gap-1.5">
+                     <p className="text-paper-3 text-sm flex items-center gap-1.5 font-medium">
                       <BookOpen className="h-3 w-3" />
                       {product.subject}
                     </p>
                   </div>
                 </div>
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-slate-900 flex flex-col p-6 text-center">
-                   <BookOpen className="h-12 w-12 text-slate-700 mb-4" />
-                   <h3 className="text-slate-300 font-bold text-lg mb-1">{product.title}</h3>
-                   <p className="text-slate-500 text-sm">{product.subject}</p>
+                <div className="w-full h-full flex items-center justify-center bg-ink flex flex-col p-6 text-center">
+                   <BookOpen className="h-12 w-12 text-ink-mute mb-4" />
+                   <h3 className="text-paper font-display font-bold text-lg mb-1">{product.title}</h3>
+                   <p className="text-ink-faint text-sm">{product.subject}</p>
                 </div>
               )}
             </div>

@@ -139,44 +139,44 @@ function RequestOtpContent() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#FDFCFB] relative overflow-hidden">
-      {/* Brand Glow Background */}
-      <div className="absolute top-0 right-0 -mr-20 -mt-20 h-96 w-96 rounded-full bg-brand-1/10 blur-3xl opacity-60"></div>
-      <div className="absolute bottom-0 left-0 -ml-20 -mb-20 h-80 w-80 rounded-full bg-brand-2/10 blur-3xl opacity-60"></div>
-
+    <div className="flex min-h-screen items-center justify-center bg-paper relative overflow-hidden paper-grain">
       <div className="w-full max-w-md px-4 relative z-10">
-        <div className="bg-white rounded-[2.5rem] border border-stone-200 shadow-xl shadow-stone-200/50 p-8 sm:p-10">
-          <div className="mb-8 flex justify-center">
+        <div className="bg-surface-card rounded-r-5 border border-line shadow-3 p-8 sm:p-10 relative">
+          {/* Subtle notebook lines decoration */}
+          <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-20 bg-[repeating-linear-gradient(transparent,transparent_31px,var(--line)_31px,var(--line)_32px)]" />
+          
+          <div className="mb-10 flex justify-center relative">
             <Link href="/">
-              <Image
-                src="/images/logo_transparent_crop.png"
-                alt="Kadernim"
-                width={160}
-                height={37}
-                className="h-9 w-auto object-contain"
-                priority
-              />
+              <div className="flex items-center gap-3">
+                <div className="relative size-[40px] rounded-[12px] bg-ink text-paper flex items-center justify-center font-display font-semibold text-xl after:absolute after:-top-[4px] after:-right-[4px] after:size-2.5 after:rounded-full after:bg-mustard">
+                  K
+                </div>
+                <div className="text-left">
+                  <div className="font-display font-semibold text-2xl tracking-tight leading-none text-ink">Kadernim</div>
+                  <div className="font-hand text-base text-terracotta leading-none mt-0.5">da Professora</div>
+                </div>
+              </div>
             </Link>
           </div>
 
-          <h1 className="mb-2 text-center text-2xl font-black text-stone-800 tracking-tight">
+          <h1 className="mb-2 text-center text-display-m font-medium text-ink tracking-tight relative">
             Acesse sua conta
           </h1>
-          <p className="mb-8 text-center text-sm font-medium text-stone-400">
+          <p className="mb-8 text-center text-body-s text-ink-mute relative">
             Enviaremos um código de verificação para o seu e-mail.
           </p>
 
-          <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+          <form className="space-y-6 relative" onSubmit={handleSubmit(onSubmit)}>
             <div>
               <label
                 htmlFor="email"
-                className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5 ml-1"
+                className="block text-caption mb-2 ml-1"
               >
                 E-mail de acesso
               </label>
-              <div className="relative rounded-xl">
+              <div className="relative">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                  <Mail className="h-5 w-5 text-stone-300" />
+                  <Mail className="h-5 w-5 text-ink-faint" />
                 </div>
                 <input
                   id="email"
@@ -186,16 +186,16 @@ function RequestOtpContent() {
                   onBlur={(e) => {
                     setValue('email', e.target.value.trim(), { shouldValidate: true })
                   }}
-                  className={`block w-full rounded-xl border-stone-200 py-3.5 pl-11 text-stone-700 placeholder-stone-300 focus:ring-2 focus:ring-brand-1 focus:border-brand-1 sm:text-sm transition-all shadow-sm ${errors.email
+                  className={`block w-full rounded-r-3 border-line py-3.5 pl-11 text-ink placeholder:text-ink-faint focus:border-terracotta focus:ring-4 focus:ring-terracotta-2 sm:text-sm transition-all shadow-sm ${errors.email
                     ? 'border-destructive focus:ring-destructive/20 focus:border-destructive'
-                    : 'bg-stone-50/30'
+                    : 'bg-surface-card'
                     }`}
                   placeholder="seu@email.com"
                   aria-invalid={!!errors.email}
                 />
               </div>
               {errors.email && (
-                <p className="mt-1.5 ml-1 text-xs font-medium text-red-500">
+                <p className="mt-2 ml-1 text-xs font-semibold text-berry">
                   {errors.email.message}
                 </p>
               )}
@@ -204,22 +204,22 @@ function RequestOtpContent() {
             <button
               type="submit"
               disabled={status === 'loading'}
-              className="group relative flex w-full cursor-pointer justify-center rounded-xl bg-brand-1 px-4 py-4 text-sm font-bold text-white shadow-lg shadow-brand-1/25 transition-all hover:bg-brand-2 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+              className="group relative flex w-full cursor-pointer justify-center items-center gap-2 rounded-full bg-terracotta px-4 py-4 text-base font-semibold text-paper shadow-1 shadow-[0_1px_0_var(--terracotta-2)] transition-all hover:bg-terracotta-2 active:translate-y-[1px] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {status === 'loading' ? (
-                <Spinner className="h-5 w-5 text-white" />
+                <Spinner className="h-5 w-5 text-paper" />
               ) : (
-                <div className="flex items-center gap-2">
+                <>
                   Enviar código de acesso
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </div>
+                </>
               )}
             </button>
           </form>
 
-          <p className="mt-8 text-center text-xs text-stone-400 font-medium">
+          <p className="mt-10 text-center text-body-s relative">
             Não tem uma conta?{' '}
-            <Link href="/plans" className="text-brand-1 font-bold hover:underline">
+            <Link href="/plans" className="text-terracotta font-bold hover:underline">
               Ver planos
             </Link>
           </p>

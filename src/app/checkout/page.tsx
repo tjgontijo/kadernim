@@ -34,25 +34,24 @@ export default async function CheckoutPage(props: {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
-      <header className="bg-white border-b border-gray-200 h-14 flex items-center px-4 sm:px-8">
-        <div className="flex items-center">
-          <Image
-            src="/images/logo_transparent_crop.png"
-            alt="Kadernim"
-            width={122}
-            height={28}
-            className="h-7 w-auto object-contain"
-            priority
-          />
+    <div className="min-h-screen bg-paper font-body paper-grain">
+      <header className="bg-surface-card border-b border-line h-16 flex items-center px-4 sm:px-8 shadow-1">
+        <div className="flex items-center gap-3">
+          <div className="relative size-[34px] rounded-[10px] bg-ink text-paper flex items-center justify-center font-display font-semibold text-lg after:absolute after:-top-[3px] after:-right-[3px] after:size-2 after:rounded-full after:bg-mustard shrink-0">
+            K
+          </div>
+          <div className="hidden sm:block">
+            <div className="font-display font-semibold text-xl tracking-tight leading-none text-ink">Kadernim</div>
+            <div className="font-hand text-sm text-terracotta leading-none mt-0.5">da Professora</div>
+          </div>
         </div>
-        <div className="ml-auto flex items-center gap-1.5 text-gray-400">
-          <Lock className="h-3.5 w-3.5" aria-hidden="true" />
-          <span className="text-xs font-medium">Compra segura</span>
+        <div className="ml-auto flex items-center gap-2 text-ink-mute">
+          <Lock className="h-4 w-4 text-terracotta" aria-hidden="true" />
+          <span className="text-xs font-semibold uppercase tracking-wider">Compra segura</span>
         </div>
       </header>
 
-      <main className="py-6 sm:py-8 px-4 sm:px-6 lg:px-8">
+      <main className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
         <GuestCheckoutForm prefilledUser={prefilledUser} catalog={catalog} initialPlan={planId} />
       </main>
     </div>

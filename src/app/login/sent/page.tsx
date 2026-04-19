@@ -118,98 +118,97 @@ function OTPSentContent() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#FDFCFB] relative overflow-hidden">
-      {/* Brand Glow Background */}
-      <div className="absolute top-0 right-0 -mr-20 -mt-20 h-96 w-96 rounded-full bg-brand-1/10 blur-3xl opacity-60"></div>
-      <div className="absolute bottom-0 left-0 -ml-20 -mb-20 h-80 w-80 rounded-full bg-brand-2/10 blur-3xl opacity-60"></div>
-
+    <div className="flex min-h-screen items-center justify-center bg-paper relative overflow-hidden paper-grain">
       <div className="w-full max-w-md px-4 relative z-10">
-        <div className="bg-white rounded-[2.5rem] border border-stone-200 shadow-xl shadow-stone-200/50 p-8 sm:p-10">
-          <div className="mb-8 flex justify-center">
+        <div className="bg-surface-card rounded-r-5 border border-line shadow-3 p-8 sm:p-10 relative">
+          {/* Subtle notebook lines decoration */}
+          <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-20 bg-[repeating-linear-gradient(transparent,transparent_31px,var(--line)_31px,var(--line)_32px)]" />
+          
+          <div className="mb-10 flex justify-center relative">
             <Link href="/">
-              <Image
-                src="/images/logo_transparent_crop.png"
-                alt="Kadernim"
-                width={160}
-                height={37}
-                className="h-9 w-auto object-contain"
-                priority
-              />
+              <div className="flex items-center gap-3">
+                <div className="relative size-[40px] rounded-[12px] bg-ink text-paper flex items-center justify-center font-display font-semibold text-xl after:absolute after:-top-[4px] after:-right-[4px] after:size-2.5 after:rounded-full after:bg-mustard">
+                  K
+                </div>
+                <div className="text-left">
+                  <div className="font-display font-semibold text-2xl tracking-tight leading-none text-ink">Kadernim</div>
+                  <div className="font-hand text-base text-terracotta leading-none mt-0.5">da Professora</div>
+                </div>
+              </div>
             </Link>
           </div>
 
-        <div className="text-center">
-          <h1 className="mb-2 text-2xl font-black text-stone-800 tracking-tight">Verifique seu e-mail</h1>
-          <p className="text-sm font-medium text-stone-400">
-            Enviamos um código de 6 dígitos para:<br />
-            <strong className="text-stone-600 leading-relaxed break-all">{form.email || 'seu email'}</strong>
-          </p>
-        </div>
-
-        <form className="mt-8 space-y-6" onSubmit={handleVerify}>
-          <div>
-            <label
-              htmlFor="otp"
-              className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5 ml-1"
-            >
-              Código de Verificação
-            </label>
-            <input
-              id="otp"
-              name="otp"
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              autoComplete="one-time-code"
-              maxLength={6}
-              required
-              value={form.otp}
-              onChange={handleOtpChange}
-              ref={otpInputRef}
-              className="block w-full rounded-xl border border-stone-200 bg-stone-50/50 py-4 text-center text-3xl font-black tracking-[0.4em] text-stone-800 placeholder-stone-200 focus:border-brand-1 focus:ring-2 focus:ring-brand-1/20 transition-all"
-              placeholder="000000"
-              aria-label="Código de verificação"
-            />
+          <div className="text-center relative">
+            <h1 className="mb-2 text-display-m font-medium text-ink tracking-tight">Verifique seu e-mail</h1>
+            <p className="text-body-s text-ink-mute">
+              Enviamos um código de 6 dígitos para:<br />
+              <strong className="text-ink font-bold leading-relaxed break-all">{form.email || 'seu email'}</strong>
+            </p>
           </div>
 
-          <button
-            type="submit"
-            disabled={verifyStatus === 'verifying'}
-            className="flex w-full cursor-pointer justify-center rounded-xl bg-brand-1 px-4 py-4 text-sm font-bold text-white shadow-lg shadow-brand-1/25 transition-all hover:bg-brand-2 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {verifyStatus === 'verifying' ? <Spinner className="h-5 w-5 text-white" /> : 'Entrar na plataforma'}
-          </button>
-        </form>
+          <form className="mt-8 space-y-6 relative" onSubmit={handleVerify}>
+            <div>
+              <label
+                htmlFor="otp"
+                className="block text-caption mb-2 ml-1"
+              >
+                Código de Verificação
+              </label>
+              <input
+                id="otp"
+                name="otp"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                autoComplete="one-time-code"
+                maxLength={6}
+                required
+                value={form.otp}
+                onChange={handleOtpChange}
+                ref={otpInputRef}
+                className="block w-full rounded-r-3 border border-line bg-surface-card py-4 text-center text-4xl font-display font-black tracking-[0.3em] text-ink placeholder:text-ink-faint focus:border-terracotta focus:ring-4 focus:ring-terracotta-2 transition-all shadow-sm"
+                placeholder="000000"
+                aria-label="Código de verificação"
+              />
+            </div>
 
-        <div className="mt-8 space-y-3">
-          <button
-            type="button"
-            onClick={handleResend}
-            disabled={resendStatus === 'sending' || countdown > 0}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-stone-200 bg-white px-4 py-3 text-xs font-bold text-stone-600 transition-all hover:bg-stone-50 hover:border-stone-300 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {resendStatus === 'sending' ? (
-              <Spinner className="h-4 w-4 text-brand-1" />
-            ) : countdown > 0 ? (
-              <span className="tabular-nums">Reenviar código em {countdown}s</span>
-            ) : (
-              <>
-                <Clock className="h-4 w-4 text-brand-1" />
-                Reenviar código agora
-              </>
-            )}
-          </button>
+            <button
+              type="submit"
+              disabled={verifyStatus === 'verifying'}
+              className="flex w-full cursor-pointer justify-center rounded-full bg-terracotta px-4 py-4 text-base font-semibold text-paper shadow-1 shadow-[0_1px_0_var(--terracotta-2)] transition-all hover:bg-terracotta-2 active:translate-y-[1px] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {verifyStatus === 'verifying' ? <Spinner className="h-5 w-5 text-paper" /> : 'Entrar na plataforma'}
+            </button>
+          </form>
 
-          <button
-            type="button"
-            onClick={() => router.push('/login')}
-            className="flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2 text-xs font-bold text-stone-400 hover:text-stone-600 transition-colors"
-          >
-            <Edit3 className="h-4 w-4" />
-            Usar outro e-mail
-          </button>
-        </div>
+          <div className="mt-8 space-y-3 relative">
+            <button
+              type="button"
+              onClick={handleResend}
+              disabled={resendStatus === 'sending' || countdown > 0}
+              className="flex w-full items-center justify-center gap-2 rounded-full border border-line bg-surface-card px-4 py-3 text-xs font-bold text-ink-soft transition-all hover:bg-paper-2 hover:border-line-soft hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {resendStatus === 'sending' ? (
+                <Spinner className="h-4 w-4 text-terracotta" />
+              ) : countdown > 0 ? (
+                <span className="tabular-nums">Reenviar código em {countdown}s</span>
+              ) : (
+                <>
+                  <Clock className="h-4 w-4 text-terracotta" />
+                  Reenviar código agora
+                </>
+              )}
+            </button>
 
+            <button
+              type="button"
+              onClick={() => router.push('/login')}
+              className="flex w-full items-center justify-center gap-2 rounded-full px-4 py-2 text-xs font-bold text-ink-faint hover:text-terracotta transition-colors"
+            >
+              <Edit3 className="h-4 w-4" />
+              Usar outro e-mail
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -218,11 +217,11 @@ function OTPSentContent() {
 
 export default function OTPSentPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#FDFCFB]">
+    <div className="flex min-h-screen items-center justify-center bg-paper">
       <Suspense
         fallback={
           <div className="w-full max-w-md px-4 text-center">
-            <Spinner className="h-8 w-8 text-brand-1 mx-auto" />
+            <Spinner className="h-8 w-8 text-terracotta mx-auto" />
           </div>
         }
       >

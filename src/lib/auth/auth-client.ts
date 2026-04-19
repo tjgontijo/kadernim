@@ -7,10 +7,7 @@ import {
 } from "better-auth/client/plugins"
 
 export const authClient = createAuthClient({
-  baseURL:
-    process.env.NEXT_PUBLIC_APP_URL ??
-    (typeof window !== "undefined" ? window.location.origin : undefined),
-
+  baseURL: typeof window !== "undefined" ? undefined : process.env.NEXT_PUBLIC_APP_URL,
   basePath: "/api/v1/auth",
 
   plugins: [

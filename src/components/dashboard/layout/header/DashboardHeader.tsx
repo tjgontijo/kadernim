@@ -1,10 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
-import { SidebarTrigger } from '@/components/ui/sidebar'
+import { usePathname, useRouter } from 'next/navigation'
+import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar'
 import { UserDropdownMenuGlobal } from '@/components/dashboard/users/user-dropdown-menu-global'
-import { Separator } from '@/components/ui/separator'
+import { useResource } from '@/hooks/resources/use-resource-context'
 
 interface DashboardHeaderProps {
   user: {
@@ -17,31 +17,72 @@ interface DashboardHeaderProps {
 }
 
 export function DashboardHeader({ user }: DashboardHeaderProps) {
-  const userName = user.name || 'Usuário'
-  const userEmail = user.email || ''
-  const userImage = user.image
+  const pathname = usePathname()
+  const router = useRouter()
+  const { isMobile } = useSidebar()
+  const { resourceTitle, resourceSubject, resourceEducationLevel } = useResource()
+  
+  const initials = user.name
+    ? user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
+    : 'U'
 
+  const pathSegments = pathname.split('/').filter(Boolean)
+  let isResourceDetail = pathSegments[0] === 'resources' && pathSegments.length > 1
+  let isRootResources = pathSegments[0] === 'resources' && pathSegments.length === 1
+  
   return (
-    <header className="bg-sidebar sticky top-0 z-50 flex h-14 w-full shrink-0 items-center justify-between px-4 md:px-6 border-b border-sidebar-border/50">
-      <div className="flex items-center gap-4">
-        <SidebarTrigger className="-ml-1" />
-        <Separator orientation="vertical" className="mr-2 h-4" />
-        
-        {/* Logo Horizontal */}
-        <Link href="/resources" className="flex items-center hover:opacity-80 transition-opacity">
-          <Image
-            src="/images/system/logo_transparent.webp"
-            alt="Kadernim"
-            width={120}
-            height={32}
-            className="h-8 w-auto object-contain"
-            priority
-          />
-        </Link>
-      </div>
+    <header className="sticky top-0 z-10 flex items-center gap-4 px-4 sm:px-[32px] py-[16px] border-b border-line bg-[oklch(0.975_0.012_85_/_0.92)] backdrop-blur-md">
+      {isMobile && <SidebarTrigger className="-ml-2 mr-2 shrink-0" />}
+      
+      <nav className="flex items-center gap-[8px] text-[13px] text-ink-mute flex-1 min-w-0">
+        <Link href="/resources" className="hover:text-ink truncate transition-colors text-ink-mute">Biblioteca</Link>
+        {isResourceDetail && (
+          <>
+            {resourceSubject && (
+              <>
+                <span className="text-line">/</span>
+                <Link href="#" className="hover:text-ink truncate transition-colors text-ink-mute">{resourceSubject}</Link>
+              </>
+            )}
+            {resourceEducationLevel && (
+              <>
+                <span className="text-line">/</span>
+                <Link href="#" className="hover:text-ink truncate transition-colors text-ink-mute">{resourceEducationLevel}</Link>
+              </>
+            )}
+            <span className="text-line">/</span>
+            <span className="text-ink font-medium truncate">{resourceTitle || 'Detalhe do Recurso'}</span>
+          </>
+        )}
+        {!isResourceDetail && pathSegments.length > 1 && pathSegments[0] !== 'resources' && (
+           <>
+              <span className="text-line">/</span>
+              <span className="text-ink font-medium truncate">{pathSegments[0] === 'admin' ? 'Painel Admin' : pathSegments[0]}</span>
+           </>
+        )}
+      </nav>
 
-      <div className="flex items-center gap-4">
-        {/* Espaço reservado para ações futuras se necessário */}
+      <div className="shrink-0 flex items-center gap-[16px]">
+        {isResourceDetail && (
+          <button 
+            onClick={() => router.back()} 
+            className="hidden sm:inline-flex items-center justify-center gap-[8px] px-[14px] py-[8px] font-body text-[13px] font-semibold text-ink-soft bg-transparent border-none hover:bg-paper-2 hover:text-ink rounded-full transition-colors shrink-0"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className="w-[16px] h-[16px]"><path d="M15 6l-6 6 6 6"/></svg>
+            Voltar
+          </button>
+        )}
+
+        <UserDropdownMenuGlobal 
+          userName={user.name || 'Usuário'} 
+          userEmail={user.email || ''} 
+          userImage={user.image}
+          customTrigger={
+            <button className="w-[36px] h-[36px] rounded-full bg-terracotta-2 text-terracotta flex items-center justify-center font-display font-semibold text-[14px] border-2 border-card shadow-1 cursor-pointer hover:-translate-y-px transition-transform hover:shadow-2 shrink-0">
+              {initials}
+            </button>
+          }
+        />
       </div>
     </header>
   )

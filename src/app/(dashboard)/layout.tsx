@@ -28,11 +28,14 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     <ResourceProvider>
       <SidebarProvider defaultOpen={true}>
         <CheckoutAuthHandler />
-        <div className="flex h-screen w-full flex-col overflow-hidden bg-sidebar">
-          <DashboardHeader user={user} />
-          <DashboardShell sidebar={<AppSidebar user={user} />}>
-            {children}
-          </DashboardShell>
+        <div className="flex h-screen w-full overflow-hidden bg-paper">
+          <AppSidebar user={user} />
+          <div className="flex flex-col flex-1 min-w-0 overflow-hidden relative">
+            <DashboardHeader user={user} />
+            <DashboardShell>
+              {children}
+            </DashboardShell>
+          </div>
         </div>
       </SidebarProvider>
     </ResourceProvider>

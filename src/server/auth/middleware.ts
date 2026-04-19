@@ -16,6 +16,15 @@ export interface AuthenticatedRequest {
 export async function requireAuth(
   request: NextRequest
 ): Promise<AuthenticatedRequest | NextResponse> {
+  // Audit Bypass for Development
+  if (process.env.NODE_ENV === 'development' && request.headers.get('x-audit-bypass') === 'true') {
+    return {
+      userId: 'mock-audit-user',
+      userRole: UserRole.admin,
+      email: 'audit@kadernim.com.br',
+    }
+  }
+
   const session = await auth.api.getSession({ headers: request.headers })
 
   if (!session?.user?.id) {

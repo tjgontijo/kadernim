@@ -1,36 +1,26 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Poppins, Open_Sans, Nunito_Sans } from "next/font/google";
+import { Fraunces, Instrument_Sans, Caveat } from "next/font/google";
 import "./globals.css";
 
 import { ReactQueryProvider } from "@/providers/react-query-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 
-// Fonte Principal: Inter (para títulos e logos)
-const inter = Inter({
-  variable: "--font-inter",
+const fraunces = Fraunces({
+  variable: "--font-display-custom",
   subsets: ["latin"],
   display: "swap",
 });
 
-// Fonte Principal alternativa: Poppins
-const poppins = Poppins({
-  variable: "--font-poppins",
+const instrumentSans = Instrument_Sans({
+  variable: "--font-body",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const caveat = Caveat({
+  variable: "--font-hand-custom",
   weight: ["400", "500", "600", "700"],
-  subsets: ["latin"],
-  display: "swap",
-});
-
-// Fonte Secundária: Open Sans (para textos de corpo)
-const openSans = Open_Sans({
-  variable: "--font-open-sans",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-// Fonte Secundária alternativa: Nunito Sans
-const nunitoSans = Nunito_Sans({
-  variable: "--font-nunito-sans",
   subsets: ["latin"],
   display: "swap",
 });
@@ -99,7 +89,7 @@ export default function RootLayout({
         <meta name="color-scheme" content="light" />
       </head>
       <body
-        className={`${inter.variable} ${poppins.variable} ${openSans.variable} ${nunitoSans.variable} antialiased`} suppressHydrationWarning>
+        className={`${fraunces.variable} ${instrumentSans.variable} ${caveat.variable} antialiased`} suppressHydrationWarning>
 
         <ThemeProvider
           attribute="class"

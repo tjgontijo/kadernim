@@ -38,15 +38,15 @@ export function GlobalHeader({ user }: GlobalHeaderProps) {
   const userImage = user.image
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-14 bg-background border-b border-border z-50 flex items-center px-4 md:px-6">
+    <header className="fixed top-0 left-0 right-0 h-14 bg-paper-2 border-b border-line z-50 flex items-center px-4 md:px-6 shadow-1 paper-grain">
       <div className="flex items-center gap-3 flex-1">
         {/* Menu Hamburger (Mobile/Tablet) */}
         {isMobileOrTablet && (
           <Button
             variant="ghost"
-            size="icon"
+            size="icon-sm"
             onClick={toggleSidebar}
-            className="h-9 w-9 shrink-0"
+            className="h-9 w-9 shrink-0 text-ink-soft hover:text-ink"
           >
             <Menu className="h-5 w-5" />
           </Button>
@@ -62,10 +62,10 @@ export function GlobalHeader({ user }: GlobalHeaderProps) {
             className="h-8 w-auto object-contain"
             priority
           />
-          <div className="hidden sm:flex flex-col border-l border-border pl-3">
-            <span className="text-xs font-bold tracking-tight text-primary uppercase">Admin</span>
+          <div className="hidden sm:flex flex-col border-l border-line pl-3">
+            <span className="text-[11px] font-bold tracking-widest text-terracotta uppercase">Admin</span>
             {version && (
-              <span className="text-[10px] leading-none text-muted-foreground font-medium">
+              <span className="text-[10px] leading-none text-ink-mute font-medium">
                 v{version}
               </span>
             )}

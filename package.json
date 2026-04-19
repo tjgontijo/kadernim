@@ -11,7 +11,10 @@
     "guardrails:check": "node ./scripts/guardrails/audit.mjs --check",
     "guardrails:baseline:update": "node ./scripts/guardrails/audit.mjs --write-baseline",
     "lint": "eslint",
-    "start": "next start"
+    "start": "next start",
+    "audit:colors": "playwright test tests/color-audit",
+    "audit:colors:ui": "playwright test tests/color-audit --ui",
+    "design-audit": "node ./scripts/design-audit.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.2",
@@ -47,6 +50,7 @@
     "docx": "^9.5.1",
     "dotenv": "^17.2.3",
     "embla-carousel-react": "^8.6.0",
+    "enhanced-resolve": "^5.17.1",
     "framer-motion": "^12.23.26",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.548.0",
@@ -75,7 +79,9 @@
     "zod": "^4.1.11"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.2",
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.59.1",
     "@types/bcrypt": "^5.0.2",
     "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^24.9.2",

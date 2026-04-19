@@ -21,19 +21,21 @@ export function DashPageShell({
   padded = true,
 }: DashPageShellProps) {
   return (
-    <section className="flex-1 overflow-y-auto bg-background">
-      <div className={cn('flex flex-col gap-6', padded ? 'p-6 md:p-8' : 'p-0')}>
+    <section className="flex-1 overflow-y-auto bg-background paper-grain pb-20">
+      <div className={cn('flex flex-col gap-8', padded ? 'p-6 md:p-10' : 'p-0')}>
         {(title || subtitle || actions) && (
-          <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div className="space-y-1">
-              <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
-              {subtitle && <p className="text-muted-foreground">{subtitle}</p>}
+          <header className="flex flex-col gap-4 border-b border-dashed border-line pb-6">
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+              <div className="space-y-1.5">
+                <h1 className="text-display-m font-medium tracking-tight">{title}</h1>
+                {subtitle && <p className="text-body text-ink-mute max-w-2xl">{subtitle}</p>}
+              </div>
+              {actions && <div className="flex flex-wrap items-center gap-3 shrink-0">{actions}</div>}
             </div>
-            {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
           </header>
         )}
 
-        <div className="space-y-6">{children}</div>
+        <div className="space-y-8">{children}</div>
       </div>
     </section>
   )

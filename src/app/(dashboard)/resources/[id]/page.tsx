@@ -1,25 +1,34 @@
 'use client'
 
-import { use, useCallback, useState } from 'react'
+import Link from 'next/link'
+import { use, useCallback, useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, ArrowDownToLine, Clock, Layers, Calendar, ChevronLeft, Download, RefreshCw, AlertTriangle, Info, Share2, Link as LinkIcon, Flag, File, FileText, Presentation, Users } from 'lucide-react'
 import {
   createResourceDownloadLink,
   fetchResourceDetail,
 } from '@/lib/resources/api-client'
 import type { ResourceDetail } from '@/lib/resources/types'
-import { AspectRatio } from '@/components/ui/aspect-ratio'
-import { DownloadList } from '@/components/shared/download-list'
-import { BadgeEducationLevel } from '@/components/dashboard/resources/BadgeEducationLevel'
 import { BadgeSubject } from '@/components/dashboard/resources/BadgeSubject'
-import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ResourceImageCarousel } from '@/components/dashboard/resources/ResourceImageCarousel'
 import { LazyImage } from '@/components/shared/lazy-image'
+import { useResource } from '@/hooks/resources/use-resource-context'
+import { ResourceGallery } from '@/components/design-system/resources/ResourceGallery'
+import { ResourceOverview } from '@/components/design-system/resources/ResourceOverview'
+import { ResourceObjectives } from '@/components/design-system/resources/ResourceObjectives'
+import { ResourceTimeline } from '@/components/design-system/resources/ResourceTimeline'
+import { ResourceBNCC } from '@/components/design-system/resources/ResourceBNCC'
+import { ResourceReviews } from '@/components/design-system/resources/ResourceReviews'
+import { ResourceActionSidebar } from '@/components/design-system/resources/ResourceActionSidebar'
+import { ResourceFilesList } from '@/components/design-system/resources/ResourceFilesList'
+import { ResourceRelatedStrip } from '@/components/design-system/resources/ResourceRelatedStrip'
+import { ResourceShareCard } from '@/components/design-system/resources/ResourceShareCard'
 
 export default function ResourceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
+  const { setResourceTitle, setResourceSubject, setResourceEducationLevel } = useResource()
   const [downloadingFileId, setDownloadingFileId] = useState<string | null>(null)
+  const [activeImageIndex, setActiveImageIndex] = useState(0)
   const [downloadFeedback, setDownloadFeedback] = useState<
     { type: 'error' | 'info'; text: string } | null
   >(null)
@@ -33,9 +42,29 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
     queryFn: () => fetchResourceDetail(id),
   })
 
+  // Provide the loaded resource title and sub-entities to the navigation globally
+  useEffect(() => {
+    if (resource) {
+      setResourceTitle(resource.title || null)
+      setResourceSubject(resource.subject?.name || null)
+      setResourceEducationLevel(resource.educationLevel?.name || null)
+      setActiveImageIndex(0)
+    }
+    return () => {
+      setResourceTitle(null)
+      setResourceSubject(null)
+      setResourceEducationLevel(null)
+    }
+  }, [resource, setResourceTitle, setResourceSubject, setResourceEducationLevel])
+
   const handleDownload = useCallback(
-    async (file: { id: string; name: string }) => {
+    async (e: React.MouseEvent, file: { id: string; name: string }) => {
+      e.preventDefault()
       if (!resource) return
+      if (!resource.hasAccess) {
+        window.open('https://seguro.profdidatica.com.br/r/TMNDJH4WEN', '_blank', 'noopener,noreferrer')
+        return
+      }
 
       try {
         setDownloadFeedback(null)
@@ -96,7 +125,7 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
     return (
       <div className="flex h-96 items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <RefreshCw className="h-8 w-8 animate-spin text-terracotta" />
           <p className="text-sm font-medium text-muted-foreground animate-pulse">Carregando material...</p>
         </div>
       </div>
@@ -114,12 +143,12 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
         </Link>
         <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-8 text-center space-y-4">
           <div className="mx-auto w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
-            <span className="text-2xl">⚠️</span>
+            <AlertTriangle className="h-6 w-6 text-destructive" />
           </div>
           <p className="text-destructive font-bold text-lg">
             {error instanceof Error ? error.message : 'Recurso não encontrado'}
           </p>
-          <Button asChild variant="outline" className="rounded-xl border-destructive/20 text-destructive hover:bg-destructive/5">
+          <Button asChild variant="outline" className="rounded-full border-destructive/20 text-destructive hover:bg-destructive/5">
             <Link href="/resources">Explorar outros materiais</Link>
           </Button>
         </div>
@@ -128,94 +157,72 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8 px-4 py-6 sm:py-10">
-      {/* Voltar */}
-      <Link href="/resources" className="inline-flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-primary transition-colors group">
-        <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" /> Voltar para Galeria
-      </Link>
-
-      {/* Imagens do Recurso */}
-      <div className="space-y-4">
-        {resource.images && resource.images.length > 0 ? (
-          <ResourceImageCarousel
-            images={resource.images}
-            title={resource.title}
-            autoplay={true}
-            loop={true}
+    <div className="mx-auto max-w-[1280px] w-full px-4 sm:px-8 py-8 sm:py-16">
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px] gap-[48px] items-start tracking-tight">
+        {/* LEFT COLUMN */}
+        <div>
+          <ResourceGallery 
+             images={resource.images} 
+             thumbUrl={resource.thumbUrl} 
+             title={resource.title || ''} 
           />
-        ) : resource.thumbUrl ? (
-          <div className="overflow-hidden rounded-2xl bg-muted border border-border/50">
-            <AspectRatio ratio={1 / 1}>
-              <LazyImage
-                src={resource.thumbUrl}
-                alt={resource.title}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 60vw"
-                priority
-              />
-            </AspectRatio>
-          </div>
-        ) : (
-          <div className="flex aspect-square w-full items-center justify-center rounded-2xl bg-muted border border-dashed border-border/50">
-            <div className="text-center space-y-2">
-              <span className="text-3xl">🖼️</span>
-              <p className="text-sm font-medium text-muted-foreground/60">Sem imagem disponível</p>
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="space-y-6">
-        {/* Título e Tags */}
-        <div className="space-y-4">
-          <h1 className="text-2xl sm:text-4xl font-black text-foreground leading-tight tracking-tight italic">
-            {resource.title}
-          </h1>
-
-          <div className="flex flex-wrap gap-2">
-            <BadgeEducationLevel level={resource.educationLevel} />
-            <BadgeSubject subject={resource.subject} />
-          </div>
+          <ResourceOverview description={resource.description || ''} />
+          
+          <ResourceObjectives 
+            objectives={resource.pedagogicalContent?.objectives} 
+          />
+          
+          <ResourceTimeline 
+            steps={resource.pedagogicalContent?.steps} 
+          />
+          
+          <ResourceBNCC 
+            skills={resource.bnccSkills} 
+          />
+          
+          <ResourceReviews 
+            reviews={[]} // Will be implemented in Phase 2
+            averageRating={resource.averageRating}
+            reviewCount={resource.reviewCount}
+          />
         </div>
 
-        {/* Descrição */}
-        {resource.description && (
-          <div className="prose dark:prose-invert max-w-none">
-            <p className="whitespace-pre-wrap text-sm sm:text-base font-medium text-foreground/80 leading-relaxed italic border-l-4 border-primary/20 pl-4 py-1">
-              {resource.description}
-            </p>
-          </div>
-        )}
-
-        {/* Downloads */}
-        {resource.files && resource.files.length > 0 && (
-          <div className="space-y-4 pt-4">
-            <h2 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Arquivos para Download</h2>
-            <DownloadList
-              items={resource.files}
-              onDownload={handleDownload}
-              loadingItemId={downloadingFileId}
-              canDownload={resource.hasAccess}
-              onUnlock={() => {
-                window.open('https://seguro.profdidatica.com.br/r/TMNDJH4WEN', '_blank', 'noopener,noreferrer')
-              }}
-            />
-          </div>
-        )}
-
-        {downloadFeedback && (
-          <div
-            className={`rounded-2xl border p-4 text-sm font-bold flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300 ${downloadFeedback.type === 'error'
-              ? 'border-destructive/20 bg-destructive/5 text-destructive'
-              : 'border-primary/20 bg-primary/5 text-primary'
+        {/* RIGHT: sticky sidebar */}
+        <aside className="sticky top-[84px] flex flex-col gap-[20px]">
+          <ResourceActionSidebar 
+             resource={resource}
+             onDownload={handleDownload}
+             downloadingFileId={downloadingFileId}
+          />
+          <ResourceFilesList 
+             files={resource.files}
+             onDownload={handleDownload}
+             downloadingFileId={downloadingFileId}
+          />
+          
+          {downloadFeedback && (
+            <div
+              className={`rounded-4 border p-[16px] text-[14px] font-semibold flex items-center gap-[12px] animate-in fade-in slide-in-from-top-2 duration-300 ${
+                downloadFeedback.type === 'error'
+                  ? 'border-destructive/20 bg-destructive/5 text-destructive'
+                  : 'border-sage/20 bg-sage/5 text-sage'
               }`}
-          >
-            <span className="text-lg">{downloadFeedback.type === 'error' ? '❌' : 'ℹ️'}</span>
-            {downloadFeedback.text}
-          </div>
-        )}
+            >
+              {downloadFeedback.type === 'error' ? (
+                <AlertTriangle className="h-5 w-5 shrink-0" />
+              ) : (
+                <Info className="h-5 w-5 shrink-0" />
+              )}
+              {downloadFeedback.text}
+            </div>
+          )}
+
+          <ResourceShareCard />
+        </aside>
       </div>
+
+      <ResourceRelatedStrip />
     </div>
   )
 }
+

@@ -46,6 +46,36 @@ export async function getResourceDetailForUser(params: {
       educationLevel: { select: { slug: true } },
       subject: { select: { slug: true } },
       isFree: true,
+      slug: true,
+      isCurated: true,
+      curatedAt: true,
+      resourceType: true,
+      pagesCount: true,
+      estimatedDurationMinutes: true,
+      reviewCount: true,
+      averageRating: true,
+      downloadCount: true,
+      pedagogicalContent: true,
+      author: {
+        select: {
+          id: true,
+          displayName: true,
+          displayRole: true,
+          location: true,
+          verified: true,
+        },
+      },
+      bnccSkills: {
+        select: {
+          bnccSkill: {
+            select: {
+              id: true,
+              code: true,
+              description: true,
+            },
+          },
+        },
+      },
       files: {
         select: {
           id: true,
@@ -92,6 +122,9 @@ export async function getResourceDetailForUser(params: {
     subject: resource.subject.slug,
     hasAccess,
     thumbUrl: resource.images?.[0]?.url || null,
+    curatedAt: resource.curatedAt?.toISOString() || null,
+    bnccSkills: resource.bnccSkills.map((bs) => bs.bnccSkill),
+    pedagogicalContent: resource.pedagogicalContent as any, // Cast to any as Prisma JsonValue doesn't match Zod output exactly but structure does
     files: resource.files.map((file) => ({
       id: file.id,
       name: file.name,

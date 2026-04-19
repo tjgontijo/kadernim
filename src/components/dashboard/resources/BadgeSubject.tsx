@@ -28,11 +28,23 @@ const subjectLabels: Record<string, string> = {
   'espacos-tempos-quantidades-relacoes-transformacoes': 'Espaços, tempos, quantidades, relações e transformações',
 }
 
+const subjectVariants: Record<string, any> = {
+  'lingua-portuguesa': 'port',
+  'matematica': 'mat',
+  'ciencias': 'cien',
+  'historia': 'hist',
+  'geografia': 'geo',
+  'lingua-inglesa': 'ingles',
+  'arte': 'arte',
+  'educacao-fisica': 'edfis',
+}
+
 export function BadgeSubject({ subject }: BadgeSubjectProps) {
   const label = subjectLabels[subject] ?? subject
+  const variant = subjectVariants[subject] || 'outline'
 
   return (
-    <Badge variant="outline" className="text-xs font-normal">
+    <Badge variant={variant}>
       {label}
     </Badge>
   )

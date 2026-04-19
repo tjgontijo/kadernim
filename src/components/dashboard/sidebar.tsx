@@ -205,7 +205,18 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
 
   return (
     <Sidebar collapsible="icon" variant="inset">
-      <SidebarContent className="pt-12">
+      <div className="p-4 border-b border-dashed border-line">
+        <div className="flex items-center gap-3">
+          <div className="relative size-[34px] rounded-[10px] bg-ink text-paper flex items-center justify-center font-display font-semibold text-lg after:absolute after:-top-[3px] after:-right-[3px] after:size-2 after:rounded-full after:bg-mustard">
+            K
+          </div>
+          <div className="group-data-[collapsible=icon]:hidden">
+            <div className="font-display font-semibold text-xl tracking-tight leading-none">Kadernim</div>
+            <div className="font-hand text-sm text-terracotta leading-none mt-0.5">da Professora</div>
+          </div>
+        </div>
+      </div>
+      <SidebarContent>
         {/* Dashboards */}
         <SidebarGroup className="mt-2">
           <SidebarGroupLabel>Dashboards</SidebarGroupLabel>

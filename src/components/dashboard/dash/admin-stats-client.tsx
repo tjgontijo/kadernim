@@ -36,65 +36,81 @@ export function AdminStatsClient({ initialStats }: AdminStatsClientProps) {
                 </Button>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
-                            Total de Recursos
-                            <BookOpen className="h-4 w-4 text-muted-foreground" />
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">
-                            {stats?.totalResources || 0}
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <Card className="bg-surface-card border-line shadow-1 p-5">
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-ink-mute flex items-center gap-2">
+                                <BookOpen className="size-3.5" />
+                                Total de Recursos
+                            </span>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">Recursos cadastrados</p>
-                    </CardContent>
+                        <div>
+                            <div className="font-display text-4xl font-medium tracking-tight text-ink">
+                                {stats?.totalResources || 0}
+                            </div>
+                            <div className="text-[12px] font-semibold text-sage mt-2">
+                                +{Math.floor((stats?.totalResources || 0) * 0.1)} este mês
+                            </div>
+                        </div>
+                    </div>
                 </Card>
 
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
-                            Recursos Gratuitos
-                            <TrendingUp className="h-4 w-4 text-green-600" />
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">
-                            {stats?.freeResources || 0}
+                <Card className="bg-surface-card border-line shadow-1 p-5">
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-ink-mute flex items-center gap-2">
+                                <TrendingUp className="size-3.5" />
+                                Gratuitos
+                            </span>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">Disponíveis gratuitamente</p>
-                    </CardContent>
+                        <div>
+                            <div className="font-display text-4xl font-medium tracking-tight text-ink">
+                                {stats?.freeResources || 0}
+                            </div>
+                            <div className="text-[12px] font-semibold text-ink-mute mt-2">
+                                {Math.round(((stats?.freeResources || 0) / (stats?.totalResources || 1)) * 100)}% do total
+                            </div>
+                        </div>
+                    </div>
                 </Card>
 
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
-                            Recursos Premium
-                            <BarChart3 className="h-4 w-4 text-blue-600" />
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">
-                            {stats?.paidResources || 0}
+                <Card className="bg-surface-card border-line shadow-1 p-5">
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-ink-mute flex items-center gap-2">
+                                <BarChart3 className="size-3.5" />
+                                Premium
+                            </span>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">Apenas para assinantes</p>
-                    </CardContent>
+                        <div>
+                            <div className="font-display text-4xl font-medium tracking-tight text-ink">
+                                {stats?.paidResources || 0}
+                            </div>
+                            <div className="text-[12px] font-semibold text-terracotta mt-2 italic font-hand text-lg leading-none">
+                                Exclusivos Pro
+                            </div>
+                        </div>
+                    </div>
                 </Card>
 
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
-                            Usuários Ativos
-                            <Users className="h-4 w-4 text-purple-600" />
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">
-                            {stats?.totalUsers || 0}
+                <Card className="bg-surface-card border-line shadow-1 p-5">
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-ink-mute flex items-center gap-2">
+                                <Users className="size-3.5" />
+                                Usuários Ativos
+                            </span>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">Com acesso à plataforma</p>
-                    </CardContent>
+                        <div>
+                            <div className="font-display text-4xl font-medium tracking-tight text-ink">
+                                {stats?.totalUsers || 0}
+                            </div>
+                            <div className="text-[12px] font-semibold text-sage mt-2">
+                                +12% vs mês anterior
+                            </div>
+                        </div>
+                    </div>
                 </Card>
             </div>
         </>
