@@ -37,7 +37,6 @@ interface ResourceDetailsFormProps {
     description: string | null
     educationLevel: string
     subject: string
-    isFree: boolean
     grades: string[]
     externalId?: number | null
   }
@@ -53,7 +52,6 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
     defaultValues: {
       title: resource.title,
       description: resource.description,
-      isFree: resource.isFree,
       externalId: resource.externalId || null
     },
   })
@@ -158,29 +156,6 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
                 )}
               />
 
-              <div className="pt-6 border-t border-muted/30">
-                <FormField
-                  control={form.control}
-                  name="isFree"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center justify-between rounded-xl p-4 bg-muted/5 border border-dashed">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-sm font-bold">Conteúdo Gratuito</FormLabel>
-                        <FormDescription className="text-xs">
-                          Ao ativar, qualquer usuário poderá baixar este recurso sem assinar.
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                          className="scale-90"
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </div>
             </CardContent>
           </Card>
 

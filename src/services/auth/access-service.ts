@@ -13,17 +13,14 @@ export type SubscriptionContext = {
 
 export type ResourceAccessInput = {
   resourceId: string
-  isFree: boolean
 }
 
 /**
  * Condição SQL para calcular `hasAccess` em listagens de recursos.
  *
  * Regra do PRD:
- * - isFree = true
- * - OU usuário é admin
+ * - Usuário é admin
  * - OU usuário possui assinatura ativa
- * - OU existe registro em resource_user_access não expirado
  */
 export function buildHasAccessConditionSql(
   ctx: UserAccessContext,
@@ -36,17 +33,7 @@ export function buildHasAccessConditionSql(
 
   const hasFullAccess = subscription.hasActiveSubscription
 
-  return PrismaNamespace.sql`(
-    r."isFree"
-    OR ${hasFullAccess}
-    OR EXISTS(
-      SELECT 1
-      FROM "resource_user_access" ura
-      WHERE ura."resourceId" = r.id
-        AND ura."userId" = ${ctx.userId}
-        AND (ura."expiresAt" IS NULL OR ura."expiresAt" > NOW())
-    )
-  )`
+  return PrismaNamespace.sql`${hasFullAccess}`
 }
 
 /**
@@ -58,13 +45,9 @@ export function buildHasAccessConditionSql(
 export async function computeHasAccessForResource(
   ctx: UserAccessContext,
   subscription: SubscriptionContext,
-  resource: ResourceAccessInput
+  _resource: ResourceAccessInput
 ): Promise<boolean> {
   if (ctx.isAdmin) {
-    return true
-  }
-
-  if (resource.isFree) {
     return true
   }
 
@@ -72,14 +55,5 @@ export async function computeHasAccessForResource(
     return true
   }
 
-  const accessEntry = await prisma.resourceUserAccess.findFirst({
-    where: {
-      userId: ctx.userId,
-      resourceId: resource.resourceId,
-      OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-    },
-    select: { id: true },
-  })
-
-  return Boolean(accessEntry)
+  return false
 }

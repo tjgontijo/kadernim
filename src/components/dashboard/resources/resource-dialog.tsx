@@ -40,7 +40,6 @@ export function ResourceDialog({ open, onOpenChange, resourceId, onSuccess }: Re
       educationLevel: '',
       subject: '',
       externalId: undefined,
-      isFree: false,
       thumbUrl: '',
     },
   })
@@ -182,19 +181,6 @@ export function ResourceDialog({ open, onOpenChange, resourceId, onSuccess }: Re
             </div>
           )}
 
-          {/* Is Free */}
-          <div className="space-y-2">
-            <Label htmlFor="isFree" className="flex items-center gap-2">
-              <input
-                id="isFree"
-                type="checkbox"
-                {...form.register('isFree')}
-                disabled={isSubmitting}
-                className="rounded"
-              />
-              Recurso Gratuito
-            </Label>
-          </div>
 
           {/* Thumb URL */}
           <div className="space-y-2">

@@ -19,7 +19,6 @@ export interface ResourceCountsParams {
 export interface ResourceCountsResult {
   all: number
   mine: number
-  free: number
 }
 
 function buildBaseWhereSql(filters: Pick<ResourceFilter, 'q' | 'educationLevel' | 'grade' | 'subject'>): Prisma.Sql {
@@ -71,7 +70,7 @@ export async function getResourceCounts({
   const baseWhere = buildBaseWhereSql(filters)
   const hasAccessCondition = buildHasAccessConditionSql(user, subscription)
 
-  const [allRows, mineRows, freeRows] = await Promise.all([
+  const [allRows, mineRows] = await Promise.all([
     // Aba ALL: todo o catálogo filtrado (independente de acesso)
     prisma.$queryRaw<{ count: bigint }[]>(PrismaNamespace.sql`
       SELECT COUNT(*)::bigint AS count
@@ -80,33 +79,21 @@ export async function getResourceCounts({
       WHERE ${baseWhere}
     `),
 
-    // Aba MINE: apenas recursos nao gratuitos aos quais o usuário tem hasAccess = true
+    // Aba MINE: apenas recursos aos quais o usuário tem hasAccess = true
     prisma.$queryRaw<{ count: bigint }[]>(PrismaNamespace.sql`
       SELECT COUNT(*)::bigint AS count
       FROM "resource" r
       JOIN "subject" s ON r."subjectId" = s.id
       WHERE ${baseWhere}
         AND ${hasAccessCondition}
-        AND r."isFree" = false
-    `),
-
-    // Aba FREE: apenas recursos gratuitos
-    prisma.$queryRaw<{ count: bigint }[]>(PrismaNamespace.sql`
-      SELECT COUNT(*)::bigint AS count
-      FROM "resource" r
-      JOIN "subject" s ON r."subjectId" = s.id
-      WHERE ${baseWhere}
-        AND r."isFree" = true
     `),
   ])
 
   const all = Number(allRows[0]?.count ?? 0)
   const mine = Number(mineRows[0]?.count ?? 0)
-  const free = Number(freeRows[0]?.count ?? 0)
 
   return {
     all,
     mine,
-    free,
   }
 }

@@ -22,10 +22,6 @@ export async function deleteResourceService(
     where: { resourceId },
   })
 
-  // Delete all access records
-  await prisma.resourceUserAccess.deleteMany({
-    where: { resourceId },
-  })
 
   // Delete the resource itself
   await prisma.resource.delete({

@@ -7,7 +7,6 @@ export interface ResourceSeedItem {
   imageUrl: string
   educationLevel: string
   subject: string
-  isFree?: boolean
   externalId: number
 }
 
@@ -34,7 +33,6 @@ const RESOURCES: ResourceSeedItem[] = [
       'https://images.yampi.me/assets/stores/prof-paper-recursos-pedagogicos/uploads/images/50-frases-e-expressoes-para-relatorios-descritivos-66129585751ea-medium.png',
     educationLevel: 'ensino-fundamental-1',
     subject: 'planejamento',
-    isFree: true,
     externalId: 30201120,
   },
   {
@@ -1081,7 +1079,6 @@ export async function seedResources(prisma: PrismaClient) {
           description: `Recurso pedagógico: ${res.title}`,
           educationLevelId: level.id,
           subjectId: sub.id,
-          isFree: res.isFree ?? false,
         },
         create: {
           title: res.title,
@@ -1089,7 +1086,6 @@ export async function seedResources(prisma: PrismaClient) {
           educationLevelId: level.id,
           subjectId: sub.id,
           externalId: res.externalId,
-          isFree: res.isFree ?? false,
         },
       })
     } catch (error) {

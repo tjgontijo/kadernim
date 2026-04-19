@@ -1,7 +1,7 @@
 'use client'
 
-import { useQuery, useInfiniteQuery, type InfiniteData } from '@tanstack/react-query'
-import { fetchResourceMeta, fetchResourcesSummary } from '@/lib/resources/api-client'
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient, type InfiniteData } from '@tanstack/react-query'
+import { fetchResourceMeta, fetchResourcesSummary, toggleResourceFavorite } from '@/lib/resources/api-client'
 import type {
     Resource,
     ResourceMetaResponse,
@@ -16,7 +16,7 @@ interface Filters {
     subject?: string
 }
 
-export type SummaryTab = 'all' | 'mine' | 'free'
+export type SummaryTab = 'all' | 'mine'
 
 export interface UseResourcesSummaryQueryParams {
     tab: SummaryTab
@@ -91,4 +91,48 @@ export function useResourcesSummaryQuery({
         isLoading: query.isLoading,
         isFetchingNextPage: query.isFetchingNextPage,
     }
+}
+
+/**
+ * Hook to toggle a resource as favorite
+ */
+export function useToggleFavorite() {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+        mutationFn: (resourceId: string) => toggleResourceFavorite(resourceId),
+        onMutate: async (resourceId) => {
+            await queryClient.cancelQueries({ queryKey: ['resources-summary'] })
+            const previousSummary = queryClient.getQueryData(['resources-summary'])
+
+            queryClient.setQueriesData<InfiniteData<ResourcesSummaryResponse>>(
+                { queryKey: ['resources-summary'] },
+                (old) => {
+                    if (!old) return old
+                    return {
+                        ...old,
+                        pages: old.pages.map(page => ({
+                            ...page,
+                            items: page.items.map(item => 
+                                item.id === resourceId 
+                                    ? { ...item, isFavorite: !item.isFavorite } 
+                                    : item
+                            )
+                        }))
+                    }
+                }
+            )
+
+            return { previousSummary }
+        },
+        onError: (err, resourceId, context) => {
+            if (context?.previousSummary) {
+                queryClient.setQueryData(['resources-summary'], context.previousSummary)
+            }
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ['resources-summary'] })
+            queryClient.invalidateQueries({ queryKey: ['resource-detail'] })
+        },
+    })
 }

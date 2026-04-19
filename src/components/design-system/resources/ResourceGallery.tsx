@@ -20,7 +20,7 @@ export function ResourceGallery({ images, thumbUrl, title = 'Material' }: Resour
     return (
       <div className="bg-card border border-line rounded-5 p-[16px] relative shadow-2">
         <div className="absolute -top-[12px] left-1/2 -translate-x-1/2 -rotate-2 w-[120px] h-[28px] bg-[#dfd6cd] shadow-tape border-x border-dashed border-x-[#c2b6ab] z-10 opacity-90" />
-        <div className="aspect-[4/3] bg-paper-2 rounded-3 border border-line-soft overflow-hidden mb-[12px] relative w-full">
+        <div className="aspect-[4/5] bg-paper-2 rounded-1 border border-line-soft overflow-hidden mb-[12px] relative w-full">
           <LazyImage
             src={images[activeImageIndex].url || ''}
             alt={`${title} - view ${activeImageIndex + 1}`}
@@ -59,7 +59,7 @@ export function ResourceGallery({ images, thumbUrl, title = 'Material' }: Resour
     return (
       <div className="bg-card border border-line rounded-5 p-[16px] relative shadow-2">
         <div className="absolute -top-[12px] left-1/2 -translate-x-1/2 -rotate-2 w-[120px] h-[28px] bg-[#dfd6cd] shadow-tape border-x border-dashed border-x-[#c2b6ab] z-10 opacity-90" />
-        <div className="relative aspect-[4/3] rounded-3 overflow-hidden border border-line-soft bg-paper-2">
+        <div className="relative aspect-[4/5] rounded-1 overflow-hidden border border-line-soft bg-paper-2">
           <LazyImage
             src={thumbUrl}
             alt={title}
@@ -76,7 +76,7 @@ export function ResourceGallery({ images, thumbUrl, title = 'Material' }: Resour
   return (
     <div className="bg-card border border-line rounded-5 p-[16px] relative shadow-2">
       <div className="absolute -top-[12px] left-1/2 -translate-x-1/2 -rotate-2 w-[120px] h-[28px] bg-[#dfd6cd] shadow-tape border-x border-dashed border-x-[#c2b6ab] z-10 opacity-90" />
-      <div className="flex aspect-[4/3] items-center justify-center rounded-3 bg-paper-2 border border-line-soft">
+      <div className="flex aspect-[4/5] items-center justify-center rounded-1 bg-paper-2 border border-line-soft">
         <div className="text-center space-y-[8px]">
           <span className="text-[32px]">🖼️</span>
           <p className="text-[13px] font-medium text-ink-mute">Sem preview disponível</p>

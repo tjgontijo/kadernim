@@ -1,0 +1,7 @@
+import { useSessionQuery } from '@/hooks/auth/use-session'
+import { InlineEditWrapper } from '@/components/dashboard/resources/edit/inline-edit-wrapper'
+import { ResourceDetailsForm } from '@/components/dashboard/resources/edit/resource-details-form'
+import { ResourcePedagogyEditor } from '@/components/dashboard/resources/edit/resource-pedagogy-editor'
+import { ResourceCategorizationForm } from '@/components/dashboard/resources/edit/resource-categorization-form'
+import { ResourceImagesManager } from '@/components/dashboard/resources/edit/resource-images-manager'
+import { ResourceFilesManager } from '@/components/dashboard/resources/edit/resource-files-manager'

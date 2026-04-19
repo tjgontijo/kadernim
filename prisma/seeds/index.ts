@@ -9,6 +9,11 @@ import { seedResourceFiles } from './seed-resource-files';
 import { seedBilling } from './seed-billing';
 import { seedBnccSkillsFundamental } from './seed-bncc-fundamental';
 import { seedBnccSkillsInfantil } from './seed-bncc-infantil';
+import { seedSmartEnrich } from './smart-bulk-enrich';
+import { seedEnrichResources } from './enrich-resources';
+import { seedReviews } from './generate-reviews';
+import { seedUserInteractions } from './seed-user-interactions';
+import { seedRelatedResources } from './seed-related-resources';
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg(createPrismaPgPoolConfig(process.env.DATABASE_URL)),
@@ -17,11 +22,16 @@ const prisma = new PrismaClient({
 async function cleanDatabase() {
   // Usar deleteMany para limpar cada tabela (mais seguro que TRUNCATE)
   // Respeita as FK e não falha se tabelas não existem
+  // Ordem importa: FKs primeiro!
   try {
+    await prisma.relatedResource.deleteMany()
+    await prisma.userResourceInteraction.deleteMany()
+    await prisma.review.deleteMany()
     await prisma.resourceFile.deleteMany()
     await prisma.resourceBnccSkill.deleteMany()
     await prisma.bnccSkill.deleteMany()
     await prisma.resource.deleteMany()
+    await prisma.author.deleteMany()
     await prisma.billingAuditLog.deleteMany()
     await prisma.invoice.deleteMany()
     await prisma.splitConfig.deleteMany()
@@ -58,6 +68,14 @@ async function createInitialData() {
     await seedBnccSkillsFundamental(prisma);
     await seedBnccSkillsInfantil(prisma);
     await seedBilling(prisma);
+
+    // Novas sementes de enriquecimento inteligentes
+    console.log('✨ Iniciando sementes de enriquecimento...');
+    await seedSmartEnrich(prisma);
+    await seedEnrichResources(prisma);
+    await seedReviews(prisma);
+    await seedUserInteractions(prisma);
+    await seedRelatedResources(prisma);
 
     console.log('✅ População do banco de dados concluída com sucesso!');
   } catch (error) {

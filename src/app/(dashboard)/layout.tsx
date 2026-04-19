@@ -1,4 +1,5 @@
 import { ReactNode } from 'react'
+export const dynamic = 'force-dynamic'
 import { redirect } from 'next/navigation'
 import { getServerSession } from '@/services/auth/session-service'
 import { SidebarProvider } from '@/components/ui/sidebar'

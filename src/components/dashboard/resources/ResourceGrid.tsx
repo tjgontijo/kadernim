@@ -11,8 +11,8 @@ interface Resource {
   thumbUrl?: string | null
   educationLevel: string
   subject: string
-  isFree: boolean
   hasAccess: boolean
+  isFavorite?: boolean
 }
 
 const ListContainer = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
@@ -83,7 +83,7 @@ export function ResourceGrid({
               educationLevel={resource.educationLevel}
               subject={resource.subject}
               hasAccess={resource.hasAccess}
-              isFree={resource.isFree}
+              isFavorite={resource.isFavorite}
             />
           )}
           components={{

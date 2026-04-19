@@ -3,7 +3,7 @@
 import { Library, Target, Gift, Sparkles, LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils/index'
 
-export type ResourceTab = 'mine' | 'free' | 'all' | 'new' | 'featured'
+export type ResourceTab = 'mine' | 'all' | 'new' | 'featured'
 
 interface TabConfig<T extends ResourceTab = ResourceTab> {
   value: T
@@ -13,7 +13,7 @@ interface TabConfig<T extends ResourceTab = ResourceTab> {
   color?: string // Cor de destaque (opcional)
 }
 
-const DEFAULT_TABS = ['all', 'mine', 'free'] as const
+const DEFAULT_TABS = ['all', 'mine'] as const
 type DefaultTab = (typeof DEFAULT_TABS)[number]
 
 interface ResourceTabsProps<T extends ResourceTab = DefaultTab> {
@@ -36,13 +36,6 @@ const TABS_CONFIG: TabConfig[] = [
     mobileLabel: 'Meus',
     icon: Target,
     color: 'text-blue-600 dark:text-blue-400',
-  },
-  {
-    value: 'free',
-    label: 'Gratuitos',
-    mobileLabel: 'Grátis',
-    icon: Gift,
-    color: 'text-green-600 dark:text-green-400',
   },
   {
     value: 'new',

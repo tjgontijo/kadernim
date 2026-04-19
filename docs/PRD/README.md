@@ -136,6 +136,8 @@ Cada PRD é um documento independente que pode ser:
 | Feature | Status | Prioridade | Fase |
 |---------|--------|-----------|------|
 | PIX Automatic Failure Handling | Draft | Alta | Design |
+| PIX Checkout UX | Draft | Média | Design |
+| **Resource Details** | **Pronto para Implementação** | **Alta** | **Fase 1** |
 
 ---
 

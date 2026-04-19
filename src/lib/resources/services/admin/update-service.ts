@@ -20,7 +20,6 @@ export async function updateResourceService(
     description,
     educationLevel,
     subject,
-    isFree,
     thumbUrl,
     externalId, // Added externalId to destructuring
   } = input
@@ -56,7 +55,6 @@ export async function updateResourceService(
     updateData.subjectId = sub.id
   }
 
-  if (isFree !== undefined) updateData.isFree = isFree
 
   if (externalId !== undefined) {
     if (externalId !== null) {

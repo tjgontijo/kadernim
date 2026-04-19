@@ -1,8 +1,6 @@
 export interface DashboardStats {
     totalResources: number
     totalUsers: number
-    totalAccessGrants: number
-    freeResources: number
-    paidResources: number
+    activeSubscriptions: number
     subscribers: number
 }

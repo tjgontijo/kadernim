@@ -29,6 +29,9 @@ CREATE TYPE "AuditActor" AS ENUM ('USER', 'ADMIN', 'SYSTEM');
 CREATE TYPE "ConfigType" AS ENUM ('string', 'number', 'boolean', 'json');
 
 -- CreateEnum
+CREATE TYPE "ResourceStepType" AS ENUM ('WARMUP', 'DISTRIBUTION', 'PRACTICE', 'CONCLUSION', 'DISCUSSION', 'ACTIVITY', 'REFLECTION');
+
+-- CreateEnum
 CREATE TYPE "ResourceType" AS ENUM ('PRINTABLE_ACTIVITY', 'LESSON_PLAN', 'GAME', 'ASSESSMENT', 'OTHER');
 
 -- CreateEnum

@@ -16,7 +16,6 @@ interface ListUsersResponse {
       isActive: boolean
       expiresAt: Date | null
     } | null
-    resourceAccessCount: number
     createdAt: Date
     updatedAt: Date
   }>
@@ -93,11 +92,6 @@ export async function listUsersService(filters: ListUsersFilter): Promise<ListUs
           expiresAt: true,
         },
       },
-      _count: {
-        select: {
-          resourceAccesses: true,
-        },
-      },
     },
   })
 
@@ -111,7 +105,6 @@ export async function listUsersService(filters: ListUsersFilter): Promise<ListUs
     emailVerified: user.emailVerified,
     banned: user.banned,
     subscription: user.subscription,
-    resourceAccessCount: user._count.resourceAccesses,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   }))

@@ -20,11 +20,6 @@ export async function updateUserService(userId: string, data: UpdateUserInput) {
           expiresAt: true,
         },
       },
-      _count: {
-        select: {
-          resourceAccesses: true,
-        },
-      },
     },
   })
 
@@ -38,7 +33,6 @@ export async function updateUserService(userId: string, data: UpdateUserInput) {
     emailVerified: user.emailVerified,
     banned: user.banned,
     subscription: user.subscription,
-    resourceAccessCount: user._count.resourceAccesses,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   }

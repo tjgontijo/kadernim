@@ -20,7 +20,6 @@ type Resource = {
   description?: string | null
   subject?: string | null
   educationLevel?: string | null
-  isFree?: boolean
   thumbUrl?: string | null
   grades: string[]
   createdAt: Date
@@ -89,11 +88,6 @@ export function ResourcesTableVirtuoso({
                   Etapa
                 </th>
               )}
-              {isColumnVisible('isFree') && (
-                <th className="px-4 py-3 text-center text-[11px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/80">
-                  Tipo
-                </th>
-              )}
               {isColumnVisible('createdAt') && (
                 <th className="px-4 py-3 text-right text-[11px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/80">
                   Criado em
@@ -150,17 +144,6 @@ export function ResourcesTableVirtuoso({
                 </td>
               )}
 
-              {/* Is Free */}
-              {isColumnVisible('isFree') && (
-                <td className="px-4 py-3 text-center">
-                  <Badge variant={resource.isFree ? "secondary" : "outline"} className={cn(
-                    "text-[9px] uppercase tracking-widest px-1.5 h-5",
-                    resource.isFree ? "bg-green-500/10 text-green-600 border-green-500/20" : "text-muted-foreground"
-                  )}>
-                    {resource.isFree ? 'Grátis' : 'Pago'}
-                  </Badge>
-                </td>
-              )}
 
               {/* Created At */}
               {isColumnVisible('createdAt') && (

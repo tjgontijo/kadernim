@@ -45,7 +45,6 @@ export async function getResourceDetailForUser(params: {
       description: true,
       educationLevel: { select: { name: true } },
       subject: { select: { name: true } },
-      isFree: true,
       slug: true,
       isCurated: true,
       curatedAt: true,
@@ -113,7 +112,6 @@ export async function getResourceDetailForUser(params: {
   const access = await getResourceAccessContext(params.userId, params.role)
   const hasAccess = await computeHasAccessForResource(access.user, access.subscription, {
     resourceId: resource.id,
-    isFree: resource.isFree,
   })
 
   return ResourceDetailSchema.parse({
@@ -165,7 +163,6 @@ export async function getResourceDownloadGrant(params: {
       resource: {
         select: {
           id: true,
-          isFree: true,
         },
       },
     },
@@ -178,7 +175,6 @@ export async function getResourceDownloadGrant(params: {
   const access = await getResourceAccessContext(params.userId, params.role)
   const hasAccess = await computeHasAccessForResource(access.user, access.subscription, {
     resourceId: params.resourceId,
-    isFree: file.resource.isFree,
   })
 
   if (!hasAccess) {
@@ -204,7 +200,6 @@ export async function resolveResourceDownloadByToken(params: {
       resource: {
         select: {
           id: true,
-          isFree: true,
         },
       },
     },
@@ -222,7 +217,6 @@ export async function resolveResourceDownloadByToken(params: {
   const access = await getResourceAccessContext(params.userId, user?.role ?? null)
   const hasAccess = await computeHasAccessForResource(access.user, access.subscription, {
     resourceId: file.resource.id,
-    isFree: file.resource.isFree,
   })
 
   if (!hasAccess) {

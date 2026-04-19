@@ -1,4 +1,3 @@
-export * from './access-service'
 export * from './bulk-service'
 
 export * from './create-service'
@@ -9,3 +8,4 @@ export * from './image-service'
 export * from './list-service'
 export * from './update-service'
 export * from './video-service'
+export * from './pedagogy-service'

@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { ZodType } from 'zod'
 import {
   CreateResourceSchema,
-  GrantResourceAccessSchema,
-
   ListResourcesFilterSchema,
   ResourceListResponseSchema,
   UpdateResourceSchema,
@@ -114,7 +112,6 @@ export function buildCreatedResourceResponse(resource: {
   educationLevel: { slug: string }
   subject: { slug: string }
   externalId: number | null
-  isFree: boolean
   images?: Array<{ url: string | null }>
   createdAt: Date
   updatedAt: Date
@@ -126,15 +123,13 @@ export function buildCreatedResourceResponse(resource: {
     educationLevel: resource.educationLevel.slug,
     subject: resource.subject.slug,
     externalId: resource.externalId,
-    isFree: resource.isFree,
     thumbUrl: resource.images?.[0]?.url || null,
     createdAt: resource.createdAt.toISOString(),
     updatedAt: resource.updatedAt.toISOString(),
     files: [],
     stats: {
-      totalUsers: 0,
-      accessGrants: 0,
-      subscriberAccess: 0,
+      totalDownloads: 0,
+      averageRating: 0,
     },
   }
 }
@@ -151,7 +146,6 @@ export function parseAdminResourceListFilters(request: NextRequest) {
       educationLevel: searchParams.get('educationLevel') ?? undefined,
       grade: searchParams.get('grade') ?? undefined,
       subject: searchParams.get('subject') ?? undefined,
-      isFree: searchParams.get('isFree') ?? undefined,
       sortBy: searchParams.get('sortBy') ?? undefined,
       order: searchParams.get('order') ?? undefined,
     },
@@ -171,7 +165,6 @@ export function createAdminResourceCollectionHandlers(config: {
     educationLevel?: string
     grade?: string
     subject?: string
-    isFree?: boolean
     sortBy: 'title' | 'createdAt' | 'updatedAt'
     order: 'asc' | 'desc'
   }) => Promise<{
@@ -184,7 +177,6 @@ export function createAdminResourceCollectionHandlers(config: {
     educationLevel: string
     subject: string
     externalId?: number | null
-    isFree: boolean
     thumbUrl?: string | null
     grades: string[]
 
@@ -277,7 +269,6 @@ export function createAdminResourceCrudHandlers(config: {
     educationLevel?: string
     subject?: string
     externalId?: number | null
-    isFree?: boolean
     thumbUrl?: string | null
     grades?: string[]
 
@@ -376,88 +367,6 @@ export function createAdminResourceCrudHandlers(config: {
   }
 }
 
-export function createAdminResourceAccessHandlers(config: {
-  getAccessList: (resourceId: string) => Promise<unknown>
-  grantAccess: (input: {
-    resourceId: string
-    userId: string
-    expiresAt?: Date
-  }) => Promise<unknown>
-}) {
-  return {
-    GET: async function GET(
-      request: NextRequest,
-      { params }: { params: Promise<{ id: string }> }
-    ) {
-      try {
-        const authResult = await authorizeAdminResourceRequest(request, {
-          key: 'admin:resources:access:list',
-          limit: 30,
-        })
-        if (authResult instanceof NextResponse) {
-          return authResult
-        }
-
-        const { id } = await params
-        return NextResponse.json(
-          { accessList: await config.getAccessList(id) },
-          { headers: { 'Cache-Control': 'private, max-age=10' } }
-        )
-      } catch (error) {
-        if (error instanceof Error && error.message.includes('not found')) {
-          return adminResourceNotFound(error.message)
-        }
-
-        return adminResourceServerError('[GET /api/v1/admin/resources/:id/access]', error)
-      }
-    },
-    POST: async function POST(
-      request: NextRequest,
-      { params }: { params: Promise<{ id: string }> }
-    ) {
-      try {
-        const authResult = await authorizeAdminResourceRequest(request, {
-          key: 'admin:resources:access:grant',
-          limit: 20,
-        })
-        if (authResult instanceof NextResponse) {
-          return authResult
-        }
-
-        const parsed = parseWithSchema(
-          GrantResourceAccessSchema,
-          await request.json(),
-          'Invalid body'
-        )
-        if (parsed instanceof NextResponse) {
-          return parsed
-        }
-
-        const { id } = await params
-        return NextResponse.json(
-          await config.grantAccess({
-            resourceId: id,
-            userId: parsed.userId,
-            expiresAt: parsed.expiresAt ? new Date(parsed.expiresAt) : undefined,
-          }),
-          { status: 201 }
-        )
-      } catch (error) {
-        if (error instanceof Error) {
-          if (error.message.includes('not found')) {
-            return adminResourceNotFound(error.message)
-          }
-
-          if (error.message.includes('already has access')) {
-            return adminResourceConflict(error.message)
-          }
-        }
-
-        return adminResourceServerError('[POST /api/v1/admin/resources/:id/access]', error)
-      }
-    },
-  }
-}
 
 
 

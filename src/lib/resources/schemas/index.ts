@@ -3,7 +3,6 @@ export {
   BulkOperationResultSchema,
   BulkUpdateResourcesSchema,
   CreateResourceSchema,
-  GrantResourceAccessSchema,
 
   ListResourcesFilterSchema,
   ReorderResourceImagesSchema,
@@ -18,7 +17,6 @@ export type {
   BulkOperationResult,
   BulkUpdateResourcesInput,
   CreateResourceInput,
-  GrantResourceAccessInput,
 
   ListResourcesFilter,
   ResourceDetailResponse,

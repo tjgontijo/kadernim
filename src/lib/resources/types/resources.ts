@@ -61,7 +61,6 @@ export interface ResourcesSummaryResponse {
   counts: {
     all: number
     mine: number
-    free: number
   }
   meta: {
     educationLevels: ResourceMetaItem[]

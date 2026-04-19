@@ -69,24 +69,6 @@ export async function getAdminResourceDetail(resourceId: string): Promise<Resour
     throw new Error('RESOURCE_NOT_FOUND')
   }
 
-  const [totalUsers, accessGrants, subscriberAccess] = await Promise.all([
-    prisma.resourceUserAccess.count({
-      where: { resourceId },
-    }),
-    prisma.resourceUserAccess.count({
-      where: {
-        resourceId,
-        expiresAt: { not: null },
-      },
-    }),
-    prisma.resourceUserAccess.count({
-      where: {
-        resourceId,
-        expiresAt: null,
-      },
-    }),
-  ])
-
   return ResourceDetailResponseSchema.parse({
     id: resource.id,
     title: resource.title,
@@ -94,7 +76,6 @@ export async function getAdminResourceDetail(resourceId: string): Promise<Resour
     educationLevel: resource.educationLevel?.slug,
     subject: resource.subject?.slug,
     externalId: resource.externalId,
-    isFree: resource.isFree,
     thumbUrl: resource.images?.[0]?.url || null,
     grades: resource.grades.map((grade) => grade.grade?.slug).filter(Boolean),
     createdAt: resource.createdAt.toISOString(),
@@ -112,9 +93,8 @@ export async function getAdminResourceDetail(resourceId: string): Promise<Resour
       createdAt: video.createdAt.toISOString(),
     })),
     stats: {
-      totalUsers,
-      accessGrants,
-      subscriberAccess,
+      totalDownloads: resource.downloadCount,
+      averageRating: resource.averageRating,
     },
 
   })

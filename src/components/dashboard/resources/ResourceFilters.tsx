@@ -18,7 +18,6 @@ import {
   DrawerTrigger,
 } from '@/components/ui/drawer'
 import { Filter } from 'lucide-react'
-import type { ResourceTab } from './ResourceTabs'
 import { SearchInput } from '../shared/search-input'
 import {
   useEducationLevels,
@@ -33,10 +32,9 @@ interface FilterOption {
 
 interface ResourceFiltersProps {
   onFiltersChange: (filters: { q?: string; educationLevel?: string; grade?: string; subject?: string }) => void
-  tab?: ResourceTab
 }
 
-export function ResourceFilters({ onFiltersChange, tab = 'all' }: ResourceFiltersProps) {
+export function ResourceFilters({ onFiltersChange }: ResourceFiltersProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [level, setLevel] = useState<string>('all')
   const [grade, setGrade] = useState<string>('all')
@@ -56,12 +54,7 @@ export function ResourceFilters({ onFiltersChange, tab = 'all' }: ResourceFilter
     return count;
   }, [level, grade, subject])
 
-  const placeholder =
-    tab === 'mine'
-      ? 'Buscar nos seus recursos'
-      : tab === 'free'
-        ? 'Buscar recursos gratuitos'
-        : 'Buscar materiais...'
+  const placeholder = 'Buscar materiais...'
 
   const handleApply = () => {
     onFiltersChange({

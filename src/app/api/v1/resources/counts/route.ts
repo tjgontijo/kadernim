@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     })
 
     const tabCount =
-      parsed.tab === 'mine' ? counts.mine : parsed.tab === 'free' ? counts.free : counts.all
+      parsed.tab === 'mine' ? counts.mine : counts.all
 
     return NextResponse.json({ data: { tab: parsed.tab, count: tabCount } })
   } catch (error) {

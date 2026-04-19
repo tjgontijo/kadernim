@@ -14,7 +14,6 @@ type Resource = {
   description?: string | null
   subject?: string | null
   educationLevel?: string | null
-  isFree?: boolean
   thumbUrl?: string | null
   grades: string[]
   createdAt: Date
@@ -75,24 +74,27 @@ export function ResourcesGridVirtuoso({
           Item: ItemContainer,
         }}
         itemContent={(index, resource) => (
-          <Card className="group relative h-full flex flex-col overflow-hidden border-border/50 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300">
-            {/* Thumbnail */}
+          <Card className="group relative h-full flex flex-col transition-all hover:shadow-xl border-line bg-card rounded-5 p-[16px]">
+            {/* Tape Effect */}
+            <div className="absolute -top-[10px] left-1/2 -translate-x-1/2 -rotate-2 w-[80px] h-[20px] bg-[#dfd6cd] shadow-tape border-x border-dashed border-x-[#c2b6ab] z-30 opacity-90" />
+
+            {/* Thumbnail Container with Border */}
             <div 
-              className="relative aspect-video w-full overflow-hidden bg-muted cursor-pointer"
+              className="relative aspect-[4/5] w-full overflow-hidden bg-paper-2 rounded-1 border border-line-soft cursor-pointer shrink-0"
               onClick={() => onEdit?.(resource.id)}
             >
               {resource.thumbUrl ? (
                 <img
                   src={resource.thumbUrl}
                   alt={resource.title}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  className="h-full w-full object-cover transition-transform duration-500"
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-primary/5">
                   <BookOpen className="h-8 w-8 text-primary/20" />
                 </div>
               )}
-              <div className="absolute top-2 right-2 flex flex-col gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+              <div className="absolute top-2 right-2 flex flex-col gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0 z-20">
                 <Button
                   variant="secondary"
                   size="icon"
@@ -126,15 +128,6 @@ export function ResourcesGridVirtuoso({
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
-              </div>
-              
-              <div className="absolute bottom-2 left-2">
-                 <Badge variant={resource.isFree ? "secondary" : "default"} className={cn(
-                   "text-[9px] uppercase tracking-widest px-2 py-0.5 shadow-lg",
-                   resource.isFree ? "bg-green-500/90 text-white" : "bg-primary/90"
-                 )}>
-                   {resource.isFree ? 'Grátis' : 'Premium'}
-                 </Badge>
               </div>
             </div>
 

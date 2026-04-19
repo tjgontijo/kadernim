@@ -34,8 +34,8 @@ type ResourceRow = {
   thumbUrl: string | null
   educationLevel: string
   subject: string
-  isFree: boolean
   hasAccess: boolean
+  isFavorite: boolean
 }
 
 /**
@@ -81,12 +81,8 @@ export async function getResourceList({
   const hasAccessCondition = buildHasAccessConditionSql(user, subscription)
 
   if (tab === 'mine') {
-    // Meus recursos: apenas itens em que hasAccess é true E nao sao gratuitos
+    // Meus recursos: apenas itens em que hasAccess é true
     whereConditions.push(hasAccessCondition)
-    whereConditions.push(PrismaNamespace.sql`r."isFree" = false`)
-  } else if (tab === 'free') {
-    // Gratuitos: apenas recursos isFree = true
-    whereConditions.push(PrismaNamespace.sql`r."isFree" = true`)
   }
 
   const whereClause = PrismaNamespace.join(
@@ -102,8 +98,13 @@ export async function getResourceList({
       (SELECT ri.url FROM "resource_image" ri WHERE ri."resourceId" = r.id ORDER BY ri."order" ASC LIMIT 1) AS "thumbUrl",
       el.slug AS "educationLevel",
       s.slug AS "subject",
-      r."isFree" AS "isFree",
-      ${hasAccessCondition} AS "hasAccess"
+      ${hasAccessCondition} AS "hasAccess",
+      EXISTS (
+        SELECT 1 FROM "user_resource_interaction" uri 
+        WHERE uri."resourceId" = r.id 
+        AND uri."userId" = ${user.userId || ''}::uuid 
+        AND uri."isSaved" = TRUE
+      ) AS "isFavorite"
     FROM "resource" r
     JOIN "education_level" el ON r."educationLevelId" = el.id
     JOIN "subject" s ON r."subjectId" = s.id
@@ -128,8 +129,8 @@ export async function getResourceList({
       thumbUrl: row.thumbUrl,
       educationLevel: row.educationLevel,
       subject: row.subject,
-      isFree: row.isFree,
       hasAccess: row.hasAccess,
+      isFavorite: row.isFavorite,
     })
   )
 

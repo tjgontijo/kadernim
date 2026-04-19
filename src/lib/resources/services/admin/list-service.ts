@@ -11,10 +11,8 @@ interface ListResourcesResponse {
     educationLevel: string
     subject: string
     externalId: number | null
-    isFree: boolean
     thumbUrl: string | null
     fileCount: number
-    accessCount: number
     grades: string[]
     createdAt: Date
     updatedAt: Date
@@ -40,7 +38,6 @@ export async function listResourcesService(
     q,
     educationLevel,
     subject,
-    isFree,
     sortBy,
     order,
   } = filters
@@ -70,9 +67,6 @@ export async function listResourcesService(
     whereConditions.subject = { slug: subject }
   }
 
-  if (isFree !== undefined) {
-    whereConditions.isFree = isFree
-  }
 
   // Get total count
   const total = await prisma.resource.count({
@@ -104,7 +98,6 @@ export async function listResourcesService(
       _count: {
         select: {
           files: true,
-          accessEntries: true,
         },
       },
       images: {
@@ -134,10 +127,8 @@ export async function listResourcesService(
     educationLevel: resource.educationLevel.name,
     subject: resource.subject.name,
     externalId: resource.externalId,
-    isFree: resource.isFree,
     thumbUrl: buildThumbUrl(resource.images[0]),
     fileCount: resource._count.files,
-    accessCount: resource._count.accessEntries,
     grades: resource.grades.map(rg => rg.grade.name),
     createdAt: resource.createdAt,
     updatedAt: resource.updatedAt,

@@ -9,7 +9,6 @@ export async function getRelatedResources(resourceId: string, limit: number = 4)
         select: {
           id: true,
           title: true,
-          isFree: true,
           subject: { select: { name: true } },
           educationLevel: { select: { name: true } },
           images: {
@@ -44,7 +43,6 @@ export async function getRelatedResources(resourceId: string, limit: number = 4)
     select: {
       id: true,
       title: true,
-      isFree: true,
       subject: { select: { slug: true, name: true } },
       educationLevel: { select: { slug: true, name: true } },
       images: {

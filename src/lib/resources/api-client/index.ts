@@ -10,17 +10,17 @@ export {
   fetchResourceAccessList,
   fetchResourceDetail,
   fetchResourceMeta,
+  fetchResourcePedagogy,
   fetchResourcesSummary,
   grantResourceAccess,
-
   reorderResourceImages,
   revokeResourceAccess,
-
+  toggleResourceFavorite,
   updateAdminResource,
   updateResourceImage,
+  updateResourcePedagogy,
   updateResourceVideo,
   uploadResourceFileWithProgress,
   uploadResourceImage,
   uploadResourceVideo,
 } from './resources-client'
-

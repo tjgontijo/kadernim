@@ -19,7 +19,6 @@ export async function createResourceService(
     educationLevel,
     subject,
     externalId,
-    isFree,
     thumbUrl,
   } = input
 
@@ -65,7 +64,6 @@ export async function createResourceService(
       educationLevelId: level.id,
       subjectId: sub.id,
       externalId: externalId ?? null,
-      isFree,
       grades: {
         create: input.grades?.map(gradeSlug => ({
           grade: { connect: { slug: gradeSlug } }

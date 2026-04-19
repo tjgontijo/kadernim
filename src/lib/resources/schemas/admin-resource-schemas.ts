@@ -20,7 +20,6 @@ export const CreateResourceSchema = z.object({
     .positive('externalId deve ser positivo')
     .optional()
     .nullable(),
-  isFree: z.boolean(),
   thumbUrl: z.string()
     .url('thumbUrl deve ser uma URL válida')
     .optional()
@@ -48,7 +47,6 @@ export const UpdateResourceSchema = z.object({
   educationLevel: z.string().optional(),
   subject: z.string().optional(),
   externalId: z.number().int().positive().optional().nullable(),
-  isFree: z.boolean().optional(),
   thumbUrl: z.string()
     .url('thumbUrl deve ser uma URL válida')
     .optional()
@@ -73,7 +71,6 @@ export const ListResourcesFilterSchema = z.object({
   educationLevel: z.string().optional(),
   grade: z.string().optional(),
   subject: z.string().optional(),
-  isFree: z.boolean().optional(),
   sortBy: z.enum(['title', 'createdAt', 'updatedAt']).default('updatedAt'),
   order: z.enum(['asc', 'desc']).default('desc'),
 })
@@ -113,7 +110,6 @@ export const ResourceDetailResponseSchema = z.object({
   educationLevel: z.string(),
   subject: z.string(),
   externalId: z.number().nullable(),
-  isFree: z.boolean(),
   thumbUrl: z.string().nullable(),
   grades: z.array(z.string()),
   createdAt: z.string(),
@@ -146,10 +142,9 @@ export const ResourceDetailResponseSchema = z.object({
     createdAt: z.string(),
   })),
   stats: z.object({
-    totalUsers: z.number(),
-    accessGrants: z.number(),
-    subscriberAccess: z.number(),
-  }),
+    totalDownloads: z.number().optional(),
+    averageRating: z.number().optional(),
+  }).optional(),
 
 })
 
@@ -163,10 +158,8 @@ export const ResourceListResponseSchema = z.object({
     educationLevel: z.string(),
     subject: z.string(),
     externalId: z.number().nullable(),
-    isFree: z.boolean(),
     thumbUrl: z.string().nullable(),
     fileCount: z.number(),
-    accessCount: z.number(),
     grades: z.array(z.string()),
     createdAt: z.string(),
     updatedAt: z.string(),
@@ -198,15 +191,6 @@ export type BulkOperationResult = z.infer<typeof BulkOperationResultSchema>
 
 
 
-export const GrantResourceAccessSchema = z.object({
-  userId: z.string().min(1),
-  expiresAt: z
-    .string()
-    .datetime()
-    .optional(),
-})
-
-export type GrantResourceAccessInput = z.infer<typeof GrantResourceAccessSchema>
 
 export const ReorderResourceImagesSchema = z.object({
   updates: z.array(

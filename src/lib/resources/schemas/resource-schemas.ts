@@ -10,7 +10,7 @@ export const ResourceFilterSchema = z.object({
   educationLevel: z.string().optional(),
   grade: z.string().optional(),
   subject: z.string().optional(),
-  tab: z.enum(['mine', 'free', 'all']).default('all'),
+  tab: z.enum(['mine', 'all']).default('all'),
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(20),
 })
@@ -24,8 +24,8 @@ export const ResourceSchema = z.object({
   thumbUrl: z.string().nullable().optional(),
   educationLevel: z.string(),
   subject: z.string(),
-  isFree: z.boolean(),
   hasAccess: z.boolean(),
+  isFavorite: z.boolean().default(false),
 })
 
 export type Resource = z.infer<typeof ResourceSchema>

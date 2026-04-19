@@ -28,12 +28,11 @@ export function useAdminResources(options?: UseAdminResourcesOptions) {
   const educationLevel = filters.educationLevel || ''
   const grade = filters.grade || ''
   const subject = filters.subject || ''
-  const isFree = filters.isFree !== undefined ? filters.isFree : ''
   const sortBy = filters.sortBy || 'updatedAt'
   const order = filters.order || 'desc'
 
   const query = useInfiniteQuery<ResourceListResponse>({
-    queryKey: ['admin-resources', { limit, q, educationLevel, grade, subject, isFree, sortBy, order }],
+    queryKey: ['admin-resources', { limit, q, educationLevel, grade, subject, sortBy, order }],
     queryFn: ({ pageParam = 1 }) =>
       fetchAdminResources({
         page: pageParam as number,
@@ -42,7 +41,6 @@ export function useAdminResources(options?: UseAdminResourcesOptions) {
         educationLevel: educationLevel || undefined,
         grade: grade || undefined,
         subject: subject || undefined,
-        isFree: isFree === '' ? undefined : Boolean(isFree),
         sortBy,
         order,
       }),

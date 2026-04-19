@@ -27,7 +27,6 @@ import {
   ResourcesGridVirtuoso,
   ResourcesTableVirtuoso,
 } from '@/components/dashboard/resources'
-import { ResourceEditDrawer } from '@/components/dashboard/resources/resource-drawer'
 import { useResourceMeta } from '@/hooks/resources/use-resources'
 import { useMobile } from '@/hooks/layout/use-mobile'
 
@@ -41,11 +40,7 @@ export default function AdminResourcesPage() {
   const SUBJECT_OPTIONS = metaData?.subjects || []
 
   const [limit, setLimit] = useState(15)
-  const [visibleColumns, setVisibleColumns] = useState<string[]>(['subject', 'educationLevel', 'isFree', 'createdAt'])
-  const [isFreeOnly, setIsFreeOnly] = useState(false)
-  const [resourceToEdit, setResourceToEdit] = useState<string | null>(null)
-  const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false)
-  const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false)
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(['subject', 'educationLevel', 'createdAt'])
 
   // Filters
   const [educationLevel, setEducationLevel] = useState<string>('')
@@ -74,7 +69,6 @@ export default function AdminResourcesPage() {
       educationLevel: educationLevel || undefined,
       grade: grade || undefined,
       subject: subject || undefined,
-      isFree: isFreeOnly ? true : undefined,
     },
   })
 
@@ -101,15 +95,13 @@ export default function AdminResourcesPage() {
   }
 
   const handleEditResource = (resourceId: string) => {
-    setResourceToEdit(resourceId)
-    setIsEditDrawerOpen(true)
+    router.push(`/resources/${resourceId}`)
   }
 
   const clearFilters = () => {
     setEducationLevel('')
     setSubject('')
     setGrade('')
-    setIsFreeOnly(false)
   }
 
   const getEducationLevelLabel = () => {
@@ -127,7 +119,7 @@ export default function AdminResourcesPage() {
     return metaData?.grades?.find(o => o.key === grade)?.label || 'Série/Ano'
   }
 
-  const hasActiveFilters = educationLevel || subject || grade || isFreeOnly
+  const hasActiveFilters = educationLevel || subject || grade
 
   const filteredGrades = (metaData?.grades || []).filter(
     (g) => !educationLevel || g.educationLevelKey === educationLevel
@@ -211,18 +203,6 @@ export default function AdminResourcesPage() {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <div className={cn("flex items-center gap-2 px-2", isMobile && "pt-2 border-t mt-2")}>
-        <Switch
-          id="is-free-crud"
-          checked={isFreeOnly}
-          onCheckedChange={(checked) => {
-            setIsFreeOnly(checked)
-          }}
-        />
-        <Label htmlFor="is-free-crud" className="text-xs font-medium cursor-pointer">
-          Apenas Gratuitos
-        </Label>
-      </div>
 
       {hasActiveFilters && (
         <Button
@@ -265,8 +245,7 @@ export default function AdminResourcesPage() {
         isLoading={isLoading}
         filters={filtersComponent}
         onAdd={() => {
-          setResourceToEdit(null)
-          setIsEditDrawerOpen(true)
+          router.push('/admin/resources/create')
         }}
         actions={
           view === 'list' && (
@@ -282,7 +261,6 @@ export default function AdminResourcesPage() {
                 <DropdownMenuSeparator />
                 <DropdownMenuCheckboxItem checked={visibleColumns.includes('subject')} onCheckedChange={() => toggleColumn('subject')}>Disciplina</DropdownMenuCheckboxItem>
                 <DropdownMenuCheckboxItem checked={visibleColumns.includes('educationLevel')} onCheckedChange={() => toggleColumn('educationLevel')}>Nível</DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem checked={visibleColumns.includes('isFree')} onCheckedChange={() => toggleColumn('isFree')}>Status (Pago/Grátis)</DropdownMenuCheckboxItem>
                 <DropdownMenuCheckboxItem checked={visibleColumns.includes('grades')} onCheckedChange={() => toggleColumn('grades')}>Anos / Séries</DropdownMenuCheckboxItem>
                 <DropdownMenuCheckboxItem checked={visibleColumns.includes('createdAt')} onCheckedChange={() => toggleColumn('createdAt')}>Data</DropdownMenuCheckboxItem>
               </DropdownMenuContent>
@@ -322,19 +300,6 @@ export default function AdminResourcesPage() {
           )}
         </div>
       </CrudPageShell>
-
-
-      <ResourceEditDrawer
-        resourceId={resourceToEdit}
-        open={isEditDrawerOpen}
-        onOpenChange={setIsEditDrawerOpen}
-        onSuccess={(data: any) => {
-          refetch()
-          if (data?.id) {
-            setResourceToEdit(data.id)
-          }
-        }}
-      />
     </>
   )
 }

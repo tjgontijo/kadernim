@@ -61,15 +61,15 @@ export function AdminStatsClient({ initialStats }: AdminStatsClientProps) {
                         <div className="flex items-center justify-between">
                             <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-ink-mute flex items-center gap-2">
                                 <TrendingUp className="size-3.5" />
-                                Gratuitos
+                                Assinaturas Ativas
                             </span>
                         </div>
                         <div>
                             <div className="font-display text-4xl font-medium tracking-tight text-ink">
-                                {stats?.freeResources || 0}
+                                {stats?.activeSubscriptions || 0}
                             </div>
                             <div className="text-[12px] font-semibold text-ink-mute mt-2">
-                                {Math.round(((stats?.freeResources || 0) / (stats?.totalResources || 1)) * 100)}% do total
+                                {Math.round(((stats?.activeSubscriptions || 0) / (stats?.totalUsers || 1)) * 100)}% de conversão
                             </div>
                         </div>
                     </div>
@@ -80,15 +80,15 @@ export function AdminStatsClient({ initialStats }: AdminStatsClientProps) {
                         <div className="flex items-center justify-between">
                             <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-ink-mute flex items-center gap-2">
                                 <BarChart3 className="size-3.5" />
-                                Premium
+                                Total Assinantes
                             </span>
                         </div>
                         <div>
                             <div className="font-display text-4xl font-medium tracking-tight text-ink">
-                                {stats?.paidResources || 0}
+                                {stats?.subscribers || 0}
                             </div>
                             <div className="text-[12px] font-semibold text-terracotta mt-2 italic font-hand text-lg leading-none">
-                                Exclusivos Pro
+                                Base Elite
                             </div>
                         </div>
                     </div>

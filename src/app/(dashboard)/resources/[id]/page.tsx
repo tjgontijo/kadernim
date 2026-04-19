@@ -23,6 +23,13 @@ import { ResourceActionSidebar } from '@/components/design-system/resources/Reso
 import { ResourceFilesList } from '@/components/design-system/resources/ResourceFilesList'
 import { ResourceRelatedStrip } from '@/components/design-system/resources/ResourceRelatedStrip'
 import { ResourceShareCard } from '@/components/design-system/resources/ResourceShareCard'
+import { useSessionQuery } from '@/hooks/auth/use-session'
+import { InlineEditWrapper } from '@/components/dashboard/resources/edit/inline-edit-wrapper'
+import { ResourceDetailsForm } from '@/components/dashboard/resources/edit/resource-details-form'
+import { ResourcePedagogyEditor } from '@/components/dashboard/resources/edit/resource-pedagogy-editor'
+import { ResourceCategorizationForm } from '@/components/dashboard/resources/edit/resource-categorization-form'
+import { ResourceImagesManager } from '@/components/dashboard/resources/edit/resource-images-manager'
+import { ResourceFilesManager } from '@/components/dashboard/resources/edit/resource-files-manager'
 
 export default function ResourceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -32,6 +39,9 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
   const [downloadFeedback, setDownloadFeedback] = useState<
     { type: 'error' | 'info'; text: string } | null
   >(null)
+
+  const { data: session } = useSessionQuery()
+  const isAdmin = session?.data?.user?.role === 'admin'
 
   const {
     data: resource,
@@ -161,24 +171,50 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px] gap-[48px] items-start tracking-tight">
         {/* LEFT COLUMN */}
         <div>
-          <ResourceGallery 
-             images={resource.images} 
-             thumbUrl={resource.thumbUrl} 
-             title={resource.title || ''} 
-          />
-          <ResourceOverview description={resource.description || ''} />
+          <InlineEditWrapper 
+            canEdit={isAdmin} 
+            title="Galeria de Imagens"
+            editor={() => <ResourceImagesManager resourceId={resource.id} initialImages={resource.images as any} currentThumbUrl={resource.thumbUrl || null} />}
+          >
+            <ResourceGallery 
+               images={resource.images} 
+               thumbUrl={resource.thumbUrl} 
+               title={resource.title || ''} 
+            />
+          </InlineEditWrapper>
+
+          <InlineEditWrapper 
+            canEdit={isAdmin} 
+            title="Informações Gerais"
+            editor={({ onClose }) => <ResourceDetailsForm resource={resource as any} onSuccess={onClose} />}
+          >
+            <ResourceOverview description={resource.description || ''} />
+          </InlineEditWrapper>
           
-          <ResourceObjectives 
-            objectives={resource.pedagogicalContent?.objectives} 
-          />
+          <InlineEditWrapper
+            canEdit={isAdmin}
+            title="Pedagogia (Objetivos e Passo a Passo)"
+            editor={() => <ResourcePedagogyEditor resourceId={resource.id} />}
+          >
+            <div className="space-y-6">
+              <ResourceObjectives 
+                objectives={resource.pedagogicalContent?.objectives} 
+              />
+              <ResourceTimeline 
+                steps={resource.pedagogicalContent?.steps} 
+              />
+            </div>
+          </InlineEditWrapper>
           
-          <ResourceTimeline 
-            steps={resource.pedagogicalContent?.steps} 
-          />
-          
-          <ResourceBNCC 
-            skills={resource.bnccSkills} 
-          />
+          <InlineEditWrapper
+            canEdit={isAdmin}
+            title="Categorização e BNCC"
+            editor={() => <ResourceCategorizationForm resource={resource as any} />}
+          >
+            <ResourceBNCC 
+              skills={resource.bnccSkills} 
+            />
+          </InlineEditWrapper>
           
           <ResourceReviews 
             resourceId={resource.id}
@@ -189,16 +225,23 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
 
         {/* RIGHT: sticky sidebar */}
         <aside className="sticky top-[84px] flex flex-col gap-[20px]">
+
           <ResourceActionSidebar 
              resource={resource}
              onDownload={handleDownload}
              downloadingFileId={downloadingFileId}
           />
-          <ResourceFilesList 
-             files={resource.files}
-             onDownload={handleDownload}
-             downloadingFileId={downloadingFileId}
-          />
+          <InlineEditWrapper
+            canEdit={isAdmin}
+            title="Arquivos"
+            editor={() => <ResourceFilesManager resourceId={resource.id} initialFiles={resource.files as any} />}
+          >
+            <ResourceFilesList 
+               files={resource.files}
+               onDownload={handleDownload}
+               downloadingFileId={downloadingFileId}
+            />
+          </InlineEditWrapper>
           
           {downloadFeedback && (
             <div
