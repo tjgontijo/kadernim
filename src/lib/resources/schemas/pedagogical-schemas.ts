@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const PedagogicalObjectiveSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().uuid().optional(),
   text: z.string().min(10).max(500),
   order: z.number().int().positive(),
 });
@@ -17,7 +17,7 @@ export const ResourceStepTypeEnum = z.enum([
 ]);
 
 export const PedagogicalStepSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().uuid().optional(),
   type: ResourceStepTypeEnum,
   title: z.string().min(5).max(100),
   duration: z.string().regex(/^\d+\s*(min|h)$/).optional(), // "15 min", "1 h"
@@ -25,20 +25,12 @@ export const PedagogicalStepSchema = z.object({
   order: z.number().int().positive(),
 });
 
-export const PedagogicalMaterialSchema = z.object({
-  id: z.string().uuid(),
-  name: z.string().min(5).max(200),
-  quantity: z.number().int().positive(),
-});
-
 export const PedagogicalObjectivesSchema = z.array(PedagogicalObjectiveSchema).min(1).max(10);
 export const PedagogicalStepsSchema = z.array(PedagogicalStepSchema).min(1).max(10);
-export const PedagogicalMaterialsSchema = z.array(PedagogicalMaterialSchema).max(20);
 
 export const PedagogicalContentSchema = z.object({
   objectives: PedagogicalObjectivesSchema,
   steps: PedagogicalStepsSchema,
-  materials: PedagogicalMaterialsSchema.optional(),
 });
 
 export type PedagogicalContent = z.infer<typeof PedagogicalContentSchema>;
@@ -47,13 +39,11 @@ export const PedagogicalContentUpdateSchema = z
   .object({
     objectives: PedagogicalObjectivesSchema.optional(),
     steps: PedagogicalStepsSchema.optional(),
-    materials: PedagogicalMaterialsSchema.optional(),
   })
   .refine(
     (value) =>
       value.objectives !== undefined ||
-      value.steps !== undefined ||
-      value.materials !== undefined,
+      value.steps !== undefined,
     { message: 'At least one section must be provided' }
   );
 

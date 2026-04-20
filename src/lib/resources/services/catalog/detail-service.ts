@@ -64,7 +64,6 @@ export async function getResourceDetailForUser(params: {
       reviewCount: true,
       averageRating: true,
       downloadCount: true,
-      pedagogicalContent: true,
       objectives: {
         select: {
           id: true,
@@ -169,18 +168,11 @@ export async function getResourceDetailForUser(params: {
     curatedAt: resource.curatedAt?.toISOString() || null,
     bnccSkills: resource.bnccSkills.map((bs) => bs.bnccSkill),
     pedagogicalContent: {
-      objectives:
-        resource.objectives.length > 0
-          ? resource.objectives
-          : (((resource.pedagogicalContent as any)?.objectives as any[]) ?? []),
-      steps:
-        resource.steps.length > 0
-          ? resource.steps.map((step) => ({
-              ...step,
-              duration: step.duration ?? null,
-            }))
-          : (((resource.pedagogicalContent as any)?.steps as any[]) ?? []),
-      materials: ((resource.pedagogicalContent as any)?.materials as any[]) ?? [],
+      objectives: resource.objectives,
+      steps: resource.steps.map((step) => ({
+        ...step,
+        duration: step.duration ?? null,
+      })),
     },
     files: resource.files.map((file) => ({
       id: file.id,

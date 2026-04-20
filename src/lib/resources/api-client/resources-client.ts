@@ -1,4 +1,4 @@
-import { PedagogicalContent, PedagogicalContentUpdate } from '../schemas/pedagogical-schemas'
+import { PedagogicalContent, PedagogicalObjectivesSchema, PedagogicalStepsSchema } from '../schemas/pedagogical-schemas'
 import type {
   AdminResourceDetail,
   AdminResourceListResponse,
@@ -315,24 +315,50 @@ export async function deleteResourceVideo(resourceId: string, videoId: string): 
 
   await parseJsonResponse(response)
 }
-export async function fetchResourcePedagogy(resourceId: string): Promise<PedagogicalContent | null> {
-  const response = await fetch(`/api/v1/admin/resources/${resourceId}/pedagogy`)
-  const json = await parseJsonResponse<{ content: PedagogicalContent | null }>(response)
-  return json.content
+export async function fetchResourceObjectives(
+  resourceId: string
+): Promise<PedagogicalContent['objectives']> {
+  const response = await fetch(`/api/v1/admin/resources/${resourceId}/objectives`)
+  const json = await parseJsonResponse<{ objectives: PedagogicalContent['objectives'] }>(response)
+  return json.objectives
 }
 
-export async function updateResourcePedagogy(
-  resourceId: string, 
-  content: PedagogicalContentUpdate
-): Promise<PedagogicalContent> {
-  const response = await fetch(`/api/v1/admin/resources/${resourceId}/pedagogy`, {
-    method: 'POST',
+export async function updateResourceObjectives(
+  resourceId: string,
+  objectives: PedagogicalContent['objectives']
+): Promise<PedagogicalContent['objectives']> {
+  const parsed = PedagogicalObjectivesSchema.parse(objectives)
+  const response = await fetch(`/api/v1/admin/resources/${resourceId}/objectives`, {
+    method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(content),
+    body: JSON.stringify(parsed),
   })
 
-  const json = await parseJsonResponse<{ content: PedagogicalContent }>(response)
-  return json.content
+  const json = await parseJsonResponse<{ objectives: PedagogicalContent['objectives'] }>(response)
+  return json.objectives
+}
+
+export async function fetchResourceSteps(
+  resourceId: string
+): Promise<PedagogicalContent['steps']> {
+  const response = await fetch(`/api/v1/admin/resources/${resourceId}/steps`)
+  const json = await parseJsonResponse<{ steps: PedagogicalContent['steps'] }>(response)
+  return json.steps
+}
+
+export async function updateResourceSteps(
+  resourceId: string,
+  steps: PedagogicalContent['steps']
+): Promise<PedagogicalContent['steps']> {
+  const parsed = PedagogicalStepsSchema.parse(steps)
+  const response = await fetch(`/api/v1/admin/resources/${resourceId}/steps`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(parsed),
+  })
+
+  const json = await parseJsonResponse<{ steps: PedagogicalContent['steps'] }>(response)
+  return json.steps
 }
 
 export async function toggleResourceFavorite(resourceId: string): Promise<{ isSaved: boolean }> {

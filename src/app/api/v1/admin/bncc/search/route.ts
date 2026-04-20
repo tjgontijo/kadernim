@@ -5,8 +5,11 @@ import { auth } from '@/server/auth/auth'
 export async function GET(request: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: request.headers })
-    
-    if (!session || !['admin', 'editor', 'manager'].includes(session.user.role)) {
+
+    const role = session?.user.role
+    const allowedRoles = ['admin', 'editor', 'manager']
+
+    if (!session || typeof role !== 'string' || !allowedRoles.includes(role)) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 

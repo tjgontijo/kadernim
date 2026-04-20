@@ -24,6 +24,7 @@ export async function updateResourceService(
     resourceType,
     pagesCount,
     estimatedDurationMinutes,
+    pedagogicalContent,
   } = input
 
   // Check if resource exists
@@ -62,6 +63,27 @@ export async function updateResourceService(
   if (pagesCount !== undefined) updateData.pagesCount = pagesCount
   if (estimatedDurationMinutes !== undefined) {
     updateData.estimatedDurationMinutes = estimatedDurationMinutes
+  }
+
+  if (pedagogicalContent !== undefined) {
+    updateData.objectives = {
+      deleteMany: {},
+      create: (pedagogicalContent?.objectives ?? []).map((objective, index) => ({
+        text: objective.text,
+        order: index + 1,
+      })),
+    }
+
+    updateData.steps = {
+      deleteMany: {},
+      create: (pedagogicalContent?.steps ?? []).map((step, index) => ({
+        type: step.type,
+        title: step.title,
+        duration: step.duration ?? null,
+        content: step.content,
+        order: index + 1,
+      })),
+    }
   }
   // if (thumbUrl !== undefined) updateData.thumbUrl = thumbUrl -- removed
   // 1. Determine levelId for validation

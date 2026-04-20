@@ -27,12 +27,12 @@ export const CreateResourceSchema = z.object({
   bnccCodes: z.array(z.string()).default([]),
   pedagogicalContent: z.object({
     objectives: z.array(z.object({
-      id: z.string().uuid(),
+      id: z.string().uuid().optional(),
       text: z.string(),
       order: z.number(),
     })).optional(),
     steps: z.array(z.object({
-      id: z.string().uuid(),
+      id: z.string().uuid().optional(),
       type: z.string(),
       title: z.string(),
       duration: z.string().optional().nullable(),
@@ -72,12 +72,12 @@ export const UpdateResourceSchema = z.object({
   bnccCodes: z.array(z.string()).optional(),
   pedagogicalContent: z.object({
     objectives: z.array(z.object({
-      id: z.string().uuid(),
+      id: z.string().uuid().optional(),
       text: z.string(),
       order: z.number(),
     })).optional(),
     steps: z.array(z.object({
-      id: z.string().uuid(),
+      id: z.string().uuid().optional(),
       type: z.string(),
       title: z.string(),
       duration: z.string().optional().nullable(),

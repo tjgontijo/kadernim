@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import type { PrismaClient } from '@db'
+import type { PrismaClient } from '@db/client'
 
 type RawEiRow = {
   code: string

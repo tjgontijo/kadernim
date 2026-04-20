@@ -6,6 +6,7 @@ import {
   ResourceListResponseSchema,
   UpdateResourceSchema,
 } from '@/lib/resources/schemas'
+import type { CreateResourceInput, UpdateResourceInput } from '@/lib/resources/schemas'
 import { requirePermission } from '@/server/auth/middleware'
 import { checkRateLimit } from '@/server/utils/rate-limit'
 
@@ -169,19 +170,7 @@ export function createAdminResourceCollectionHandlers(config: {
     data: Array<{ createdAt: Date | string; updatedAt: Date | string }>
     pagination: Record<string, unknown>
   }>
-  createResource: (input: {
-    title: string
-    description?: string | null
-    educationLevel: string
-    subject: string
-    thumbUrl?: string | null
-    grades: string[]
-    resourceType?: string
-    pagesCount?: number | null
-    estimatedDurationMinutes?: number | null
-
-    adminId: string
-  }) => Promise<unknown>
+  createResource: (input: CreateResourceInput & { adminId: string }) => Promise<unknown>
   buildCreatedResponse: (resource: unknown) => unknown
 }) {
   return {
@@ -262,20 +251,7 @@ export function createAdminResourceCollectionHandlers(config: {
 
 export function createAdminResourceCrudHandlers(config: {
   getDetail: (id: string) => Promise<unknown>
-  updateResource: (input: {
-    id: string
-    title?: string
-    description?: string | null
-    educationLevel?: string
-    subject?: string
-    thumbUrl?: string | null
-    grades?: string[]
-    resourceType?: string
-    pagesCount?: number | null
-    estimatedDurationMinutes?: number | null
-
-    adminId: string
-  }) => Promise<unknown>
+  updateResource: (input: UpdateResourceInput & { id: string; adminId: string }) => Promise<unknown>
   deleteResource: (id: string, adminId: string) => Promise<unknown>
 }) {
   return {

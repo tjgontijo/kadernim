@@ -1,6 +1,7 @@
 import {
   Body,
   Container,
+  Font,
   Head,
   Hr,
   Html,

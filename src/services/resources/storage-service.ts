@@ -150,11 +150,12 @@ export async function generatePreviewImagesFromPdf(options: {
       resource_type: 'image',
       context: { alt: `${options.resourceTitle} - ${options.fileDisplayName} - página ${page}` },
     })
+    const uploadedContext = uploaded.context as { custom?: { alt?: string } } | undefined
 
     images.push({
       cloudinaryPublicId: uploaded.public_id,
       url: uploaded.secure_url,
-      alt: uploaded.context?.custom?.alt || options.resourceTitle,
+      alt: uploadedContext?.custom?.alt ?? options.resourceTitle,
     })
   }
 

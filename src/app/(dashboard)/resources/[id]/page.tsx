@@ -26,7 +26,7 @@ import { ResourceShareCard } from '@/components/design-system/resources/Resource
 import { useSessionQuery } from '@/hooks/auth/use-session'
 import { InlineEditWrapper } from '@/components/dashboard/resources/edit/inline-edit-wrapper'
 import { ResourceDetailsForm } from '@/components/dashboard/resources/edit/resource-details-form'
-import { ResourcePedagogyEditor } from '@/components/dashboard/resources/edit/resource-pedagogy-editor'
+import { ResourceObjectivesStepsEditor } from '@/components/dashboard/resources/edit/resource-objectives-steps-editor'
 import { ResourceCategorizationForm } from '@/components/dashboard/resources/edit/resource-categorization-form'
 import { ResourceImagesManager } from '@/components/dashboard/resources/edit/resource-images-manager'
 import { ResourceFilesManager } from '@/components/dashboard/resources/edit/resource-files-manager'
@@ -189,7 +189,7 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
             canEdit={isAdmin}
             title="Objetivos de Aprendizagem"
             editor={() => (
-              <ResourcePedagogyEditor
+              <ResourceObjectivesStepsEditor
                 resourceId={resource.id}
                 sections={['objectives']}
               />
@@ -204,7 +204,7 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
             canEdit={isAdmin}
             title="Como conduzir a aula"
             editor={() => (
-              <ResourcePedagogyEditor
+              <ResourceObjectivesStepsEditor
                 resourceId={resource.id}
                 sections={['steps']}
               />

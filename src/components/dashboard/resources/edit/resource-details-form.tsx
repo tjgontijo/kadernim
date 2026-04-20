@@ -64,7 +64,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { RichTextEditor } from '@/components/dashboard/editor/rich-text-editor'
 import { useResourceMeta } from '@/hooks/resources/use-resources'
-import { v4 as uuidv4 } from 'uuid'
 import { cn } from '@/lib/utils/index'
 import { BnccSelector } from './bncc-selector'
 
@@ -139,7 +138,7 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
   // Watchers
   const selectedLevel = form.watch('educationLevel')
   const selectedSubject = form.watch('subject')
-  const selectedGrades = form.watch('grades')
+  const selectedGrades = form.watch('grades') ?? []
   const currentThumbUrl = form.watch('thumbUrl')
   const driveUrl = form.watch('googleDriveUrl')
   
@@ -535,7 +534,7 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
                 type="button" 
                 variant="outline" 
                 size="sm" 
-                onClick={() => appendObjective({ id: uuidv4(), text: '', order: objectives.length + 1 })}
+                onClick={() => appendObjective({ text: '', order: objectives.length + 1 })}
                 className="rounded-full border-line text-ink-soft hover:text-sage text-xs h-9"
               >
                 <PlusCircle className="mr-2 h-4 w-4" /> Add Objetivo
@@ -597,7 +596,7 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
                 type="button" 
                 variant="outline" 
                 size="sm" 
-                onClick={() => appendStep({ id: uuidv4(), type: 'ACTIVITY', title: '', content: '', order: steps.length + 1 })}
+                onClick={() => appendStep({ type: 'ACTIVITY', title: '', content: '', order: steps.length + 1 })}
                 className="rounded-full border-line text-ink-soft hover:text-terracotta text-xs h-9"
               >
                 <PlusCircle className="mr-2 h-4 w-4" /> Add Etapa
@@ -654,7 +653,12 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
                             <Clock className="h-3 w-3" /> Duração
                           </FormLabel>
                           <FormControl>
-                            <Input {...field} placeholder="Ex: 15 min" className="bg-paper border-line h-10 rounded-3" />
+                            <Input
+                              {...field}
+                              value={field.value ?? ''}
+                              placeholder="Ex: 15 min"
+                              className="bg-paper border-line h-10 rounded-3"
+                            />
                           </FormControl>
                         </FormItem>
                       )}
@@ -672,7 +676,6 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
                             value={field.value ?? ''}
                             onChange={field.onChange}
                             placeholder="Explique o que deve ser feito nesta etapa..."
-                            compact
                           />
                         </FormControl>
                       </FormItem>

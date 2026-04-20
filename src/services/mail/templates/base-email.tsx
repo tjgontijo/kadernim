@@ -206,6 +206,5 @@ const warningText = {
     fontSize: '13px',
     color: emailColors.status.warning.text,
     margin: '0',
-},
     lineHeight: '1.6',
 }

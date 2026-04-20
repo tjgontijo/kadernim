@@ -18,8 +18,6 @@ export async function createResourceService(
     description,
     educationLevel,
     subject,
-    externalId,
-    thumbUrl,
     resourceType,
     pagesCount,
     estimatedDurationMinutes,
@@ -62,8 +60,25 @@ export async function createResourceService(
       pagesCount: pagesCount ?? null,
       estimatedDurationMinutes: estimatedDurationMinutes ?? null,
       googleDriveUrl: googleDriveUrl ?? null,
-      thumbUrl,
-      pedagogicalContent: pedagogicalContent as any, // Cast to any for JSON column
+      objectives: pedagogicalContent?.objectives
+        ? {
+            create: pedagogicalContent.objectives.map((objective, index) => ({
+              text: objective.text,
+              order: index + 1,
+            })),
+          }
+        : undefined,
+      steps: pedagogicalContent?.steps
+        ? {
+            create: pedagogicalContent.steps.map((step, index) => ({
+              type: step.type,
+              title: step.title,
+              duration: step.duration ?? null,
+              content: step.content,
+              order: index + 1,
+            })),
+          }
+        : undefined,
       grades: {
         create: input.grades?.map(gradeSlug => ({
           grade: { connect: { slug: gradeSlug } }
