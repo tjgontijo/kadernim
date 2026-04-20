@@ -15,7 +15,8 @@ export async function uploadPdfToR2(
   options: { resourceSlug: string; driveFileId: string; fileName: string; mimeType: string }
 ) {
   const optimizedBuffer = await optimizePdf(buffer, options.fileName)
-  const key = `shared/files/${options.driveFileId}/file.pdf`
+  const key = buildResourcePdfObjectKey(options)
+  const contentDisposition = buildSafeContentDisposition(options.fileName)
 
   await r2Client.send(
     new PutObjectCommand({
@@ -23,7 +24,7 @@ export async function uploadPdfToR2(
       Key: key,
       Body: optimizedBuffer,
       ContentType: options.mimeType,
-      ContentDisposition: `attachment; filename="${options.fileName}"`,
+      ContentDisposition: contentDisposition,
     })
   )
 
@@ -43,7 +44,7 @@ export async function uploadVideoToCloudinary(
   buffer: Buffer,
   options: { resourceSlug: string; driveFileId: string; fileName: string }
 ) {
-  const publicId = `shared/videos/${options.driveFileId}`
+  const publicId = buildResourceVideoPublicId(options)
   
   if (ongoingUploads.has(publicId)) {
     console.log(`📡 Usando upload já em curso para o vídeo: ${options.fileName}`)
@@ -61,11 +62,10 @@ export async function uploadVideoToCloudinary(
       const stream = cloudinary.uploader.upload_chunked_stream(
         {
           resource_type: 'video',
-          folder: `shared/videos`,
-          public_id: options.driveFileId,
+          public_id: publicId,
           overwrite: true,
           chunk_size: 6_000_000,
-          tags: ['resource', 'video', 'shared'],
+          tags: ['resource', 'video', options.resourceSlug, options.driveFileId],
         },
         (error, result) => {
           if (error) return reject(error)
@@ -104,16 +104,18 @@ export async function generatePreviewImagesFromPdf(options: {
     throw new Error(`Arquivo muito grande (${(uploadBuffer.byteLength / 1024 / 1024).toFixed(1)}MB) para gerar previews no Cloudinary.`)
   }
 
+  const previewFileSlug = slugifyStorageName(stripExtension(options.pdfFileName), 'arquivo')
+  const basePath = `resources/${options.resourceSlug}/${options.driveFileId}`
+
   // 2. Upload como "PDF base" para extração de páginas
   const pdfSource = await new Promise<UploadApiResponse>((resolve, reject) => {
     const stream = cloudinary.uploader.upload_chunked_stream(
       {
         resource_type: 'image',
         format: 'pdf',
-        folder: `resources/${options.resourceSlug}/files/${options.driveFileId}/preview-source`,
-        public_id: 'pdf-source',
+        public_id: `${basePath}/thumb`,
         overwrite: true,
-        tags: ['resource', 'pdf-source', options.resourceSlug],
+        tags: ['resource', 'pdf-source', options.resourceSlug, options.driveFileId],
       },
       (error, result) => {
         if (error) return reject(error)
@@ -132,7 +134,7 @@ export async function generatePreviewImagesFromPdf(options: {
 
   for (let i = 0; i < selectedPages.length; i++) {
     const page = selectedPages[i]
-    const url = cloudinary.url(pdfSource.publicIp || pdfSource.public_id, {
+    const url = cloudinary.url(pdfSource.public_id, {
       secure: true,
       resource_type: 'image',
       format: 'jpg',
@@ -144,8 +146,7 @@ export async function generatePreviewImagesFromPdf(options: {
     })
 
     const uploaded = await cloudinary.uploader.upload(url, {
-      folder: `resources/${options.resourceSlug}/files/${options.driveFileId}/previews`,
-      public_id: `page-${i + 1}`,
+      public_id: `${basePath}/preview/${previewFileSlug}/images-${i + 1}`,
       overwrite: true,
       resource_type: 'image',
       context: { alt: `${options.resourceTitle} - ${options.fileDisplayName} - página ${page}` },
@@ -162,8 +163,74 @@ export async function generatePreviewImagesFromPdf(options: {
   return images
 }
 
+export function buildResourcePdfObjectKey(options: { resourceSlug: string; driveFileId: string; fileName: string }) {
+  const fileSlug = slugifyStorageName(stripExtension(options.fileName), 'arquivo')
+  return `resources/${options.resourceSlug}/${options.driveFileId}/files/${fileSlug}.pdf`
+}
+
+export function buildResourceVideoPublicId(options: { resourceSlug: string; driveFileId: string; fileName: string }) {
+  const fileSlug = slugifyStorageName(stripExtension(options.fileName), 'video')
+  return `resources/${options.resourceSlug}/${options.driveFileId}/videos/${fileSlug}`
+}
+
 function pickPreviewPages(total: number): number[] {
   if (total <= 4) return Array.from({ length: total }, (_, i) => i + 1)
   // Lógica simplificada: primeira, meio, penúltima, última (ou similar)
   return [1, Math.floor(total / 2), total - 1, total]
+}
+
+function buildSafeContentDisposition(fileName: string): string {
+  const asciiName = fileName
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^\x20-\x7E]/g, '')
+    .replace(/["\\]/g, '')
+    .trim()
+
+  const fallbackName = asciiName.length > 0 ? asciiName : 'file.pdf'
+  return `attachment; filename="${fallbackName}"`
+}
+
+function stripExtension(fileName: string): string {
+  return fileName.replace(/\.[^/.]+$/, '')
+}
+
+function slugifyStorageName(value: string, fallback: string): string {
+  const slug = value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+
+  return slug.length > 0 ? slug : fallback
+}
+
+/**
+ * Faz upload de imagem de capa a partir de uma URL para o Cloudinary.
+ */
+export async function uploadImageFromUrlToCloudinary(options: {
+  imageUrl: string
+  resourceId: string
+  publicId?: string
+  altText?: string
+}) {
+  const upload = await cloudinary.uploader.upload(options.imageUrl, {
+    folder: `resources/images/${options.resourceId}`,
+    public_id: options.publicId ?? 'cover',
+    overwrite: true,
+    resource_type: 'image',
+    quality: 'auto',
+    fetch_format: 'auto',
+    context: options.altText ? { alt: options.altText } : undefined,
+    tags: ['resource', 'image', 'seed', options.resourceId],
+  })
+
+  return {
+    publicId: upload.public_id,
+    url: upload.secure_url,
+    width: upload.width,
+    height: upload.height,
+    format: upload.format,
+  }
 }

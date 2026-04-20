@@ -9,7 +9,9 @@ import { listDriveFileIds, downloadDriveFile } from '../../src/services/resource
 import {
   uploadPdfToR2,
   uploadVideoToCloudinary,
-  generatePreviewImagesFromPdf
+  generatePreviewImagesFromPdf,
+  buildResourcePdfObjectKey,
+  buildResourceVideoPublicId
 } from '../../src/services/resources/storage-service'
 
 const CONCURRENCY_LIMIT = 5
@@ -17,6 +19,11 @@ const CONCURRENCY_LIMIT = 5
 async function logErrorToFile(message: string) {
   const timestamp = new Date().toISOString()
   await fs.appendFile(path.join(process.cwd(), 'seed-errors.txt'), `[${timestamp}] ${message}\n`).catch(() => { })
+}
+
+async function resetSeedDebugFiles() {
+  await fs.unlink(path.join(process.cwd(), 'seed-errors.txt')).catch(() => { })
+  await fs.unlink(path.join(process.cwd(), 'seed-manual-actions.md')).catch(() => { })
 }
 
 async function logManualAction(info: { resourceSlug: string; driveFileId: string; error: string }) {
@@ -38,108 +45,80 @@ function slugifyText(text: string) {
 
 export async function seedResourceFiles(prisma: PrismaClient) {
   console.log('🌱 Populando resource files com arquitetura de serviços...')
+  await resetSeedDebugFiles()
 
   const extIdToSlug = new Map(RESOURCES.map(r => [r.externalId, slugifyText(r.title)]))
+  const summary = {
+    foldersConfigured: FILES.length,
+    missingResourceMapping: 0,
+    missingResourceInDb: 0,
+    invalidFolderUrl: 0,
+    emptyDriveFolder: 0,
+    duplicatesSkipped: 0,
+    uploadedPdfsToR2: 0,
+    uploadedVideosToCloudinary: 0,
+    generatedPreviewSets: 0,
+    previewFailures: 0,
+    downloadFailures: 0,
+    folderFailures: 0,
+  }
 
   const processResource = async (f: typeof FILES[0]) => {
     const resourceSlug = extIdToSlug.get(f.externalId)
-    if (!resourceSlug) return
+    if (!resourceSlug) {
+      summary.missingResourceMapping += 1
+      console.warn(`⚠️ Sem mapeamento de resource para externalId=${f.externalId}`)
+      return
+    }
 
     const resource = await prisma.resource.findUnique({
       where: { slug: resourceSlug },
       select: { id: true }
     })
-    if (!resource) return
+    if (!resource) {
+      summary.missingResourceInDb += 1
+      console.warn(`⚠️ Recurso slug=${resourceSlug} não encontrado no banco (externalId=${f.externalId})`)
+      return
+    }
 
     const folderId = f.url.match(/\/folders\/([a-zA-Z0-9_-]+)/)?.[1]
-    if (!folderId) return
+    if (!folderId) {
+      summary.invalidFolderUrl += 1
+      console.warn(`⚠️ URL de pasta inválida para externalId=${f.externalId}: ${f.url}`)
+      return
+    }
 
     try {
       const driveFiles = await listDriveFileIds(folderId)
+      if (driveFiles.length === 0) {
+        summary.emptyDriveFolder += 1
+        console.warn(`⚠️ Nenhum arquivo encontrado na pasta do Drive extId=${f.externalId}, folderId=${folderId}`)
+        return
+      }
 
       for (const { id: driveFileId, name: driveFileName } of driveFiles) {
-        const expectedPublicId = `shared/files/${driveFileId}/file.pdf`
-        
-        // Refazer a checa de nome de forma mais precisa e case-insensitive
-        const allFiles = await prisma.resourceFile.findMany({ where: { resourceId: resource.id } })
-        
-        const isDuplicate = allFiles.some(f => 
-          f.name.trim().toLowerCase() === driveFileName.trim().toLowerCase() || 
-          f.cloudinaryPublicId === expectedPublicId
-        )
-
-        if (isDuplicate) {
-          console.log(`⏩ Pulando ${driveFileName} (já existe no recurso)`)
-          continue
-        }
-
         try {
           const downloaded = await downloadDriveFile(driveFileId)
 
-          // 2. Checar se este arquivo já foi subido por outro recurso (Reaproveitamento R2)
-          const sharedFile = await prisma.resourceFile.findFirst({
-            where: { cloudinaryPublicId: expectedPublicId }
-          })
-
-          if (sharedFile) {
-            console.log(`♻️  Reaproveitando arquivo R2: ${downloaded.fileName}`)
-            const created = await prisma.resourceFile.create({
-              data: {
-                resourceId: resource.id,
-                name: sharedFile.name,
-                url: sharedFile.url,
-                cloudinaryPublicId: sharedFile.cloudinaryPublicId,
-                fileType: sharedFile.fileType,
-                sizeBytes: sharedFile.sizeBytes
-              }
-            })
-            // Copiar previews também
-            const previews = await prisma.resourceFileImage.findMany({ where: { fileId: sharedFile.id } })
-            if (previews.length > 0) {
-              await prisma.resourceFileImage.createMany({
-                data: previews.map(p => ({
-                  fileId: created.id,
-                  url: p.url,
-                  cloudinaryPublicId: p.cloudinaryPublicId,
-                  alt: p.alt,
-                  order: p.order
-                }))
-              })
-            }
-            continue
-          }
-
           if (downloaded.mimeType.includes('video')) {
-            const expectedVideoId = `shared/videos/${driveFileId}`
-            
-            // 1. Checar se este recurso já tem este vídeo
-            const hasVideo = await prisma.resourceVideo.findFirst({
-              where: { resourceId: resource.id, cloudinaryPublicId: expectedVideoId }
+            const expectedVideoId = buildResourceVideoPublicId({
+              resourceSlug,
+              driveFileId,
+              fileName: downloaded.fileName
             })
 
-            if (hasVideo) {
-              console.log(`⏩ Vídeo já existe neste recurso: ${downloaded.fileName}`)
-              continue
-            }
-
-            // 2. Checar se este vídeo já foi subido por outro recurso (Reaproveitamento)
-            const sharedVideo = await prisma.resourceVideo.findFirst({
-              where: { cloudinaryPublicId: expectedVideoId }
+            const existingVideo = await prisma.resourceVideo.findUnique({
+              where: { cloudinaryPublicId: expectedVideoId },
+              select: { id: true, resourceId: true }
             })
 
-            if (sharedVideo) {
-              console.log(`♻️  Reaproveitando vídeo já subido: ${downloaded.fileName}`)
-              await prisma.resourceVideo.create({
-                data: {
-                  resourceId: resource.id,
-                  title: sharedVideo.title,
-                  cloudinaryPublicId: sharedVideo.cloudinaryPublicId,
-                  url: sharedVideo.url,
-                  thumbnail: sharedVideo.thumbnail,
-                  duration: sharedVideo.duration,
-                  order: 99
-                }
-              })
+            if (existingVideo) {
+              summary.duplicatesSkipped += 1
+              if (existingVideo.resourceId !== resource.id) {
+                console.warn(`⚠️ Vídeo ${expectedVideoId} já pertence a outro recurso, pulando.`)
+              } else {
+                console.log(`⏩ Pulando vídeo já existente: ${driveFileName}`)
+              }
               continue
             }
 
@@ -148,10 +127,8 @@ export async function seedResourceFiles(prisma: PrismaClient) {
               driveFileId,
               fileName: downloaded.fileName
             })
-            await prisma.resourceVideo.upsert({
-              where: { cloudinaryPublicId: upload.public_id },
-              update: {},
-              create: {
+            await prisma.resourceVideo.create({
+              data: {
                 resourceId: resource.id,
                 title: downloaded.fileName,
                 cloudinaryPublicId: upload.public_id,
@@ -161,17 +138,40 @@ export async function seedResourceFiles(prisma: PrismaClient) {
                 order: 99
               }
             })
+            summary.uploadedVideosToCloudinary += 1
             console.log(`✅ Vídeo: ${downloaded.fileName}`)
             continue
           }
 
           if (downloaded.mimeType.includes('pdf')) {
+            const expectedPdfKey = buildResourcePdfObjectKey({
+              resourceSlug,
+              driveFileId,
+              fileName: downloaded.fileName
+            })
+
+            const existingFile = await prisma.resourceFile.findUnique({
+              where: { cloudinaryPublicId: expectedPdfKey },
+              select: { id: true, resourceId: true }
+            })
+
+            if (existingFile) {
+              summary.duplicatesSkipped += 1
+              if (existingFile.resourceId !== resource.id) {
+                console.warn(`⚠️ Arquivo ${expectedPdfKey} já pertence a outro recurso, pulando.`)
+              } else {
+                console.log(`⏩ Pulando PDF já existente: ${driveFileName}`)
+              }
+              continue
+            }
+
             const upload = await uploadPdfToR2(downloaded.buffer, {
               resourceSlug,
               driveFileId,
               fileName: downloaded.fileName,
               mimeType: downloaded.mimeType
             })
+            summary.uploadedPdfsToR2 += 1
 
             const created = await prisma.resourceFile.create({
               data: {
@@ -204,22 +204,32 @@ export async function seedResourceFiles(prisma: PrismaClient) {
                   order: i
                 }))
               })
+              summary.generatedPreviewSets += 1
               console.log(`🖼️ Previews: ${f.name}`)
             } catch (e) {
+              summary.previewFailures += 1
               await logErrorToFile(`Falha preview extId=${f.externalId}: ${e}`)
+              console.error(`❌ Falha preview extId=${f.externalId}`, e)
             }
+            continue
           }
+
+          console.warn(`⚠️ Tipo de arquivo não suportado (${downloaded.mimeType}) para ${driveFileName}`)
         } catch (error) {
+          summary.downloadFailures += 1
           const errMsg = error instanceof Error ? error.message : String(error)
           if (errMsg.includes('confirmação') || errMsg.includes('grande') || errMsg.includes('permissão') || errMsg.includes('100MB')) {
             await logManualAction({ resourceSlug, driveFileId, error: errMsg })
           } else {
             await logErrorToFile(`Erro extId=${f.externalId}: ${errMsg}`)
           }
+          console.error(`❌ Erro ao processar arquivo extId=${f.externalId}, driveFileId=${driveFileId}: ${errMsg}`)
         }
       }
     } catch (error) {
+      summary.folderFailures += 1
       await logErrorToFile(`Falha pasta extId=${f.externalId}: ${error}`)
+      console.error(`❌ Falha ao processar pasta extId=${f.externalId}:`, error)
     }
   }
 
@@ -230,4 +240,6 @@ export async function seedResourceFiles(prisma: PrismaClient) {
     pool.add(p)
   }
   await Promise.all(pool)
+
+  console.log('📊 Resumo seedResourceFiles:', summary)
 }

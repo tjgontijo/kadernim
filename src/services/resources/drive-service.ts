@@ -22,28 +22,60 @@ export async function listDriveFileIds(folderId: string): Promise<{ id: string, 
     }
 
     const html = await response.text()
-    
-    // Regex para capturar ID e Nome no JSON da view embutida
-    // O padrão observado é ["id", "nome", ...]
-    const pattern = /\["(?![^"]*folder)([a-zA-Z0-9_-]{25,})","([^"]+)"/g
-    const matches = Array.from(html.matchAll(pattern))
-    
-    const files = matches.map(m => ({
-      id: m[1],
-      name: m[2]
-    }))
+    const filesFromMarkup = parseEmbeddedFolderEntries(html)
+    if (filesFromMarkup.length > 0) {
+      return dedupeById(filesFromMarkup)
+    }
 
-    // Filtro básico para evitar duplicatas e IDs inválidos
-    const seen = new Set()
-    return files.filter(f => {
-      if (seen.has(f.id)) return false
-      seen.add(f.id)
-      return true
-    })
+    // Fallback para versão antiga da página, que expunha pares ["id","nome"] no HTML.
+    const filesFromLegacy = parseLegacyJsonEntries(html)
+    return dedupeById(filesFromLegacy)
   } catch (error) {
     console.error(`❌ Erro ao listar arquivos da pasta ${folderId} no Drive:`, error)
     return []
   }
+}
+
+function parseEmbeddedFolderEntries(html: string): { id: string; name: string }[] {
+  const entries: { id: string; name: string }[] = []
+  const entryRegex = /<a href="https:\/\/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]{20,})\/view[^"]*"[^>]*>[\s\S]*?<div class="flip-entry-title">([\s\S]*?)<\/div>/g
+
+  for (const match of html.matchAll(entryRegex)) {
+    const id = match[1]
+    const rawTitle = match[2]
+    if (!id || !rawTitle) continue
+    const name = decodeHtmlEntities(rawTitle).trim()
+    if (!name) continue
+    entries.push({ id, name })
+  }
+
+  return entries
+}
+
+function parseLegacyJsonEntries(html: string): { id: string; name: string }[] {
+  const entries: { id: string; name: string }[] = []
+  const pattern = /\["(?![^"]*folder)([a-zA-Z0-9_-]{25,})","([^"]+)"/g
+
+  for (const match of html.matchAll(pattern)) {
+    const id = match[1]
+    const rawName = match[2]
+    if (!id || !rawName) continue
+    entries.push({
+      id,
+      name: decodeHtmlEntities(rawName).trim(),
+    })
+  }
+
+  return entries
+}
+
+function dedupeById(files: { id: string; name: string }[]) {
+  const seen = new Set<string>()
+  return files.filter((file) => {
+    if (seen.has(file.id)) return false
+    seen.add(file.id)
+    return true
+  })
 }
 
 /**
@@ -87,14 +119,37 @@ export async function downloadDriveFile(fileId: string): Promise<DownloadedDrive
 
   const contentDisposition = response.headers.get('content-disposition')
   const fileName = extractFileName(contentDisposition) || `file-${fileId}`
-  const mimeType = response.headers.get('content-type') || 'application/octet-stream'
+  const rawMimeType = response.headers.get('content-type') || 'application/octet-stream'
   const arrayBuffer = await response.arrayBuffer()
+  const buffer = Buffer.from(arrayBuffer)
+  const mimeType = normalizeMimeType(rawMimeType, fileName, buffer)
 
   return {
-    buffer: Buffer.from(arrayBuffer),
+    buffer,
     fileName,
     mimeType,
   }
+}
+
+function normalizeMimeType(rawMimeType: string, fileName: string, buffer: Buffer): string {
+  const mimeType = rawMimeType.split(';')[0]?.trim().toLowerCase() || 'application/octet-stream'
+  if (mimeType !== 'application/octet-stream' && mimeType !== 'application/binary') {
+    return mimeType
+  }
+
+  if (buffer.byteLength >= 5 && buffer.subarray(0, 5).toString('utf8') === '%PDF-') {
+    return 'application/pdf'
+  }
+
+  const extension = fileName.split('.').pop()?.toLowerCase()
+  if (!extension) return mimeType
+
+  if (extension === 'pdf') return 'application/pdf'
+  if (['mp4', 'mov', 'webm', 'avi', 'mkv', 'm4v'].includes(extension)) return `video/${extension === 'm4v' ? 'mp4' : extension}`
+  if (extension === 'wmv') return 'video/x-ms-wmv'
+  if (extension === 'flv') return 'video/x-flv'
+
+  return mimeType
 }
 
 function isHtmlResponse(contentType: string | null): boolean {
@@ -103,12 +158,35 @@ function isHtmlResponse(contentType: string | null): boolean {
 
 function extractFileName(disposition: string | null): string | null {
   if (!disposition) return null
-  const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
+  const encodedRegex = /filename\*\s*=\s*UTF-8''([^;\n]+)/i
+  const encodedMatch = encodedRegex.exec(disposition)
+  if (encodedMatch?.[1]) {
+    try {
+      return decodeURIComponent(encodedMatch[1]).trim()
+    } catch {
+      return encodedMatch[1].trim()
+    }
+  }
+
+  const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/i
   const matches = filenameRegex.exec(disposition)
   if (matches?.[1]) {
-    return matches[1].replace(/['"]/g, '')
+    const cleaned = matches[1].replace(/['"]/g, '').trim()
+    return normalizeHeaderFileName(cleaned)
   }
+
   return null
+}
+
+function normalizeHeaderFileName(fileName: string): string {
+  if (!/[ÃÂ]/.test(fileName)) return fileName
+
+  try {
+    const fixed = Buffer.from(fileName, 'latin1').toString('utf8')
+    return fixed.trim() || fileName
+  } catch {
+    return fileName
+  }
 }
 
 function extractDriveConfirmUrl(html: string): string | null {
