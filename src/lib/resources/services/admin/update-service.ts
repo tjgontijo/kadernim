@@ -21,7 +21,9 @@ export async function updateResourceService(
     educationLevel,
     subject,
     thumbUrl,
-    externalId, // Added externalId to destructuring
+    resourceType,
+    pagesCount,
+    estimatedDurationMinutes,
   } = input
 
   // Check if resource exists
@@ -56,17 +58,10 @@ export async function updateResourceService(
   }
 
 
-  if (externalId !== undefined) {
-    if (externalId !== null) {
-      const existing = await prisma.resource.findFirst({
-        where: {
-          externalId,
-          id: { not: id }
-        }
-      })
-      if (existing) throw new Error(`Resource with externalId ${externalId} already exists`)
-    }
-    updateData.externalId = externalId
+  if (resourceType !== undefined) updateData.resourceType = resourceType
+  if (pagesCount !== undefined) updateData.pagesCount = pagesCount
+  if (estimatedDurationMinutes !== undefined) {
+    updateData.estimatedDurationMinutes = estimatedDurationMinutes
   }
   // if (thumbUrl !== undefined) updateData.thumbUrl = thumbUrl -- removed
   // 1. Determine levelId for validation

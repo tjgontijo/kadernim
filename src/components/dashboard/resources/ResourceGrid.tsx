@@ -3,6 +3,7 @@
 import { forwardRef, useEffect, useState } from 'react'
 import { VirtuosoGrid } from 'react-virtuoso'
 import { ResourceCard } from './ResourceCard'
+import { ResourceCardSkeleton } from '@/components/dashboard/shared/skeletons/resource-card-skeleton'
 
 interface Resource {
   id: string
@@ -94,6 +95,14 @@ export function ResourceGrid({
           overscan={12}
           increaseViewportBy={{ top: 200, bottom: 400 }}
         />
+      )}
+
+      {isFetchingNextPage && (
+        <div className="mt-6 grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <ResourceCardSkeleton key={index} />
+          ))}
+        </div>
       )}
     </div>
   )

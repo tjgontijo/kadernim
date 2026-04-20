@@ -1,4 +1,4 @@
-import { PedagogicalContent } from '../schemas/pedagogical-schemas'
+import { PedagogicalContent, PedagogicalContentUpdate } from '../schemas/pedagogical-schemas'
 import type {
   AdminResourceDetail,
   AdminResourceListResponse,
@@ -323,7 +323,7 @@ export async function fetchResourcePedagogy(resourceId: string): Promise<Pedagog
 
 export async function updateResourcePedagogy(
   resourceId: string, 
-  content: PedagogicalContent
+  content: PedagogicalContentUpdate
 ): Promise<PedagogicalContent> {
   const response = await fetch(`/api/v1/admin/resources/${resourceId}/pedagogy`, {
     method: 'POST',
@@ -345,4 +345,3 @@ export async function toggleResourceFavorite(resourceId: string): Promise<{ isSa
   const json = await parseJsonResponse<{ data: { isSaved: boolean } }>(response)
   return json.data
 }
-

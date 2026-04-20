@@ -10,7 +10,6 @@ interface ListResourcesResponse {
     description: string | null
     educationLevel: string
     subject: string
-    externalId: number | null
     thumbUrl: string | null
     fileCount: number
     grades: string[]
@@ -126,7 +125,6 @@ export async function listResourcesService(
     description: resource.description,
     educationLevel: resource.educationLevel.name,
     subject: resource.subject.name,
-    externalId: resource.externalId,
     thumbUrl: buildThumbUrl(resource.images[0]),
     fileCount: resource._count.files,
     grades: resource.grades.map(rg => rg.grade.name),

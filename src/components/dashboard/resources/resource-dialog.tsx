@@ -39,7 +39,6 @@ export function ResourceDialog({ open, onOpenChange, resourceId, onSuccess }: Re
       description: '',
       educationLevel: '',
       subject: '',
-      externalId: undefined,
       thumbUrl: '',
     },
   })
@@ -51,16 +50,7 @@ export function ResourceDialog({ open, onOpenChange, resourceId, onSuccess }: Re
       if (isEditing) {
         await updateMutation.mutateAsync(data as any)
       } else {
-        // Ensure externalId is provided for creation
-        const externalId = (data as any).externalId
-        if (!externalId) {
-          toast.error('externalId é obrigatório')
-          return
-        }
-        await createMutation.mutateAsync({
-          ...data,
-          externalId,
-        } as any)
+        await createMutation.mutateAsync(data as any)
       }
       form.reset()
       onOpenChange(false)
@@ -164,22 +154,6 @@ export function ResourceDialog({ open, onOpenChange, resourceId, onSuccess }: Re
             )}
           </div>
 
-          {/* External ID */}
-          {!isEditing && (
-            <div className="space-y-2">
-              <Label htmlFor="externalId">ID Externo *</Label>
-              <Input
-                id="externalId"
-                type="number"
-                placeholder="ID do recurso externo"
-                {...form.register('externalId', { valueAsNumber: true })}
-                disabled={isSubmitting}
-              />
-              {form.formState.errors && (form.formState.errors as any).externalId && (
-                <p className="text-sm text-red-600">{(form.formState.errors as any).externalId?.message}</p>
-              )}
-            </div>
-          )}
 
 
           {/* Thumb URL */}

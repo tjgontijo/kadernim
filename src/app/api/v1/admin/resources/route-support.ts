@@ -111,7 +111,6 @@ export function buildCreatedResourceResponse(resource: {
   description: string | null
   educationLevel: { slug: string }
   subject: { slug: string }
-  externalId: number | null
   images?: Array<{ url: string | null }>
   createdAt: Date
   updatedAt: Date
@@ -122,7 +121,6 @@ export function buildCreatedResourceResponse(resource: {
     description: resource.description,
     educationLevel: resource.educationLevel.slug,
     subject: resource.subject.slug,
-    externalId: resource.externalId,
     thumbUrl: resource.images?.[0]?.url || null,
     createdAt: resource.createdAt.toISOString(),
     updatedAt: resource.updatedAt.toISOString(),
@@ -176,9 +174,11 @@ export function createAdminResourceCollectionHandlers(config: {
     description?: string | null
     educationLevel: string
     subject: string
-    externalId?: number | null
     thumbUrl?: string | null
     grades: string[]
+    resourceType?: string
+    pagesCount?: number | null
+    estimatedDurationMinutes?: number | null
 
     adminId: string
   }) => Promise<unknown>
@@ -268,9 +268,11 @@ export function createAdminResourceCrudHandlers(config: {
     description?: string | null
     educationLevel?: string
     subject?: string
-    externalId?: number | null
     thumbUrl?: string | null
     grades?: string[]
+    resourceType?: string
+    pagesCount?: number | null
+    estimatedDurationMinutes?: number | null
 
     adminId: string
   }) => Promise<unknown>

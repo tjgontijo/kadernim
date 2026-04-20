@@ -53,7 +53,7 @@ export function InlineEditWrapper({
 
       {/* The Dialog */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className={cn("max-h-[85vh] flex flex-col overflow-hidden p-0 border-line shadow-3 rounded-[24px]", dialogClassName)}>
+        <DialogContent className={cn("max-h-[85vh] !flex !flex-col !gap-0 overflow-hidden p-0 border-line shadow-3 rounded-[24px] bg-card", dialogClassName)}>
           <DialogHeader className="p-6 pb-5 bg-[#f5f1eb] border-b border-dashed border-line shrink-0 relative">
             <div className="absolute -top-[6px] left-1/2 -translate-x-1/2 -rotate-1 w-[80px] h-[20px] bg-[#dfd6cd] shadow-[0_2px_6px_oklch(0.3_0.02_60/0.15)] border-x border-dashed border-x-[#c2b6ab] z-10 opacity-90" />
             <DialogTitle className="font-display text-[22px] font-semibold text-ink flex items-center gap-2">
@@ -61,7 +61,7 @@ export function InlineEditWrapper({
               Editar {title}
             </DialogTitle>
           </DialogHeader>
-          <div className="flex-1 overflow-y-auto p-8 scrollbar-thin bg-surface-card">
+          <div className="flex-1 overflow-y-auto p-8 scrollbar-thin bg-card">
             {editor({ onClose: handleClose })}
           </div>
         </DialogContent>

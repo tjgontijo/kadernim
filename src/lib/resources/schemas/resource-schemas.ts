@@ -30,14 +30,6 @@ export const ResourceSchema = z.object({
 
 export type Resource = z.infer<typeof ResourceSchema>
 
-export const ResourceFileMetadataSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  createdAt: z.string(),
-})
-
-export type ResourceFileMetadata = z.infer<typeof ResourceFileMetadataSchema>
-
 export const ResourceImageSchema = z.object({
   id: z.string(),
   cloudinaryPublicId: z.string().optional(),
@@ -47,6 +39,15 @@ export const ResourceImageSchema = z.object({
 })
 
 export type ResourceImage = z.infer<typeof ResourceImageSchema>
+
+export const ResourceFileMetadataSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  createdAt: z.string(),
+  images: z.array(ResourceImageSchema).default([]),
+})
+
+export type ResourceFileMetadata = z.infer<typeof ResourceFileMetadataSchema>
 
 export const ResourceVideoSchema = z.object({
   id: z.string(),
@@ -102,6 +103,10 @@ export const ResourceDetailSchema = ResourceSchema.extend({
   videos: z.array(ResourceVideoSchema),
   
   // NOVOS CAMPOS
+  educationLevelSlug: z.string(),
+  subjectSlug: z.string(),
+  grades: z.array(z.string()).default([]),
+  gradeLabels: z.array(z.string()).default([]),
   slug: z.string().nullable(),
   isCurated: z.boolean(),
   curatedAt: z.string().nullable(),

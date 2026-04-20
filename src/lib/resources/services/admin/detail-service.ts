@@ -75,7 +75,6 @@ export async function getAdminResourceDetail(resourceId: string): Promise<Resour
     description: resource.description,
     educationLevel: resource.educationLevel?.slug,
     subject: resource.subject?.slug,
-    externalId: resource.externalId,
     thumbUrl: resource.images?.[0]?.url || null,
     grades: resource.grades.map((grade) => grade.grade?.slug).filter(Boolean),
     createdAt: resource.createdAt.toISOString(),

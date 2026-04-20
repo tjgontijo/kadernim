@@ -15,17 +15,31 @@ export const CreateResourceSchema = z.object({
     .nullable(),
   educationLevel: z.string().min(1, { message: 'Nível de educação é obrigatório' }),
   subject: z.string().min(1, { message: 'Matéria é obrigatória' }),
-  externalId: z.number()
-    .int()
-    .positive('externalId deve ser positivo')
-    .optional()
-    .nullable(),
   thumbUrl: z.string()
     .url('thumbUrl deve ser uma URL válida')
     .optional()
     .nullable(),
   grades: z.array(z.string()),
-
+  resourceType: z.string().optional(),
+  pagesCount: z.number().int().nonnegative().optional().nullable(),
+  estimatedDurationMinutes: z.number().int().nonnegative().optional().nullable(),
+  googleDriveUrl: z.string().url('URL do Google Drive inválida').optional().nullable(),
+  bnccCodes: z.array(z.string()).default([]),
+  pedagogicalContent: z.object({
+    objectives: z.array(z.object({
+      id: z.string().uuid(),
+      text: z.string(),
+      order: z.number(),
+    })).optional(),
+    steps: z.array(z.object({
+      id: z.string().uuid(),
+      type: z.string(),
+      title: z.string(),
+      duration: z.string().optional().nullable(),
+      content: z.string(),
+      order: z.number(),
+    })).optional(),
+  }).optional().nullable(),
 })
 
 export type CreateResourceInput = z.infer<typeof CreateResourceSchema>
@@ -46,13 +60,31 @@ export const UpdateResourceSchema = z.object({
     .nullable(),
   educationLevel: z.string().optional(),
   subject: z.string().optional(),
-  externalId: z.number().int().positive().optional().nullable(),
   thumbUrl: z.string()
     .url('thumbUrl deve ser uma URL válida')
     .optional()
     .nullable(),
   grades: z.array(z.string()).optional(),
-
+  resourceType: z.string().optional(),
+  pagesCount: z.number().int().nonnegative().optional().nullable(),
+  estimatedDurationMinutes: z.number().int().nonnegative().optional().nullable(),
+  googleDriveUrl: z.string().url('URL do Google Drive inválida').optional().nullable(),
+  bnccCodes: z.array(z.string()).optional(),
+  pedagogicalContent: z.object({
+    objectives: z.array(z.object({
+      id: z.string().uuid(),
+      text: z.string(),
+      order: z.number(),
+    })).optional(),
+    steps: z.array(z.object({
+      id: z.string().uuid(),
+      type: z.string(),
+      title: z.string(),
+      duration: z.string().optional().nullable(),
+      content: z.string(),
+      order: z.number(),
+    })).optional(),
+  }).optional().nullable(),
 })
 
 export type UpdateResourceInput = z.infer<typeof UpdateResourceSchema>
@@ -109,9 +141,13 @@ export const ResourceDetailResponseSchema = z.object({
   description: z.string().nullable(),
   educationLevel: z.string(),
   subject: z.string(),
-  externalId: z.number().nullable(),
   thumbUrl: z.string().nullable(),
   grades: z.array(z.string()),
+  resourceType: z.string().optional(),
+  pagesCount: z.number().nullable().optional(),
+  estimatedDurationMinutes: z.number().nullable().optional(),
+  googleDriveUrl: z.string().nullable().optional(),
+  bnccCodes: z.array(z.string()).default([]),
   createdAt: z.string(),
   updatedAt: z.string(),
   files: z.array(z.object({
@@ -157,7 +193,6 @@ export const ResourceListResponseSchema = z.object({
     description: z.string().nullable().optional(),
     educationLevel: z.string(),
     subject: z.string(),
-    externalId: z.number().nullable(),
     thumbUrl: z.string().nullable(),
     fileCount: z.number(),
     grades: z.array(z.string()),
@@ -186,11 +221,6 @@ export const BulkOperationResultSchema = z.object({
 })
 
 export type BulkOperationResult = z.infer<typeof BulkOperationResultSchema>
-
-
-
-
-
 
 export const ReorderResourceImagesSchema = z.object({
   updates: z.array(

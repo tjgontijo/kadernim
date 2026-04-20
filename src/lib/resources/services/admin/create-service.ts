@@ -20,28 +20,23 @@ export async function createResourceService(
     subject,
     externalId,
     thumbUrl,
+    resourceType,
+    pagesCount,
+    estimatedDurationMinutes,
+    googleDriveUrl,
+    pedagogicalContent,
+    bnccCodes,
   } = input
-
-  // Check if externalId already exists (only if provided)
-  if (externalId) {
-    const existingResource = await prisma.resource.findUnique({
-      where: { externalId },
-    })
-
-    if (existingResource) {
-      throw new Error(`Resource with externalId ${externalId} already exists`)
-    }
-  }
-
+ 
   // Resolve slugs to IDs
   const [level, sub] = await Promise.all([
     prisma.educationLevel.findUnique({ where: { slug: educationLevel } }),
     prisma.subject.findUnique({ where: { slug: subject } })
   ])
-
+ 
   if (!level) throw new Error(`Education level ${educationLevel} not found`)
   if (!sub) throw new Error(`Subject ${subject} not found`)
-
+ 
   // Validate that all grades belong to the specified education level
   if (input.grades && input.grades.length > 0) {
     const gradesInDb = await prisma.grade.findMany({
@@ -50,12 +45,12 @@ export async function createResourceService(
         educationLevelId: level.id
       }
     })
-
+ 
     if (gradesInDb.length !== input.grades.length) {
       throw new Error(`One or more grades do not belong to the selected education level (${educationLevel})`)
     }
   }
-
+ 
   // Create the resource
   const resource = await prisma.resource.create({
     data: {
@@ -63,12 +58,25 @@ export async function createResourceService(
       description: description || null,
       educationLevelId: level.id,
       subjectId: sub.id,
-      externalId: externalId ?? null,
+      resourceType: resourceType as any,
+      pagesCount: pagesCount ?? null,
+      estimatedDurationMinutes: estimatedDurationMinutes ?? null,
+      googleDriveUrl: googleDriveUrl ?? null,
+      thumbUrl,
+      pedagogicalContent: pedagogicalContent as any, // Cast to any for JSON column
       grades: {
         create: input.grades?.map(gradeSlug => ({
           grade: { connect: { slug: gradeSlug } }
         }))
-      }
+      },
+      bnccSkills: bnccCodes && bnccCodes.length > 0 ? {
+        create: (await prisma.bnccSkill.findMany({
+          where: { code: { in: bnccCodes } },
+          select: { id: true }
+        })).map(skill => ({
+          bnccSkill: { connect: { id: skill.id } }
+        }))
+      } : undefined
       // Handle images creation if input has them (logic tbd based on input schema)
     },
     include: {

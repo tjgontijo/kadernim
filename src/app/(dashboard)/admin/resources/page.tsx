@@ -29,6 +29,8 @@ import {
 } from '@/components/dashboard/resources'
 import { useResourceMeta } from '@/hooks/resources/use-resources'
 import { useMobile } from '@/hooks/layout/use-mobile'
+import { Skeleton } from '@/components/ui/skeleton'
+import { ResourceCardSkeleton } from '@/components/dashboard/shared/skeletons/resource-card-skeleton'
 
 export default function AdminResourcesPage() {
   const router = useRouter()
@@ -294,8 +296,27 @@ export default function AdminResourcesPage() {
           />
           
           {isFetchingNextPage && (
-            <div className="flex justify-center py-8">
-              <div className="h-6 w-6 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+            <div className="py-8">
+              {view === 'cards' ? (
+                <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <ResourceCardSkeleton key={index} />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-3 rounded-xl border border-border/60 bg-card p-4">
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <div key={index} className="flex items-center gap-3">
+                      <Skeleton className="h-9 w-9 rounded-full shrink-0" />
+                      <div className="space-y-2 flex-1">
+                        <Skeleton className="h-4 w-1/3" />
+                        <Skeleton className="h-3.5 w-1/2" />
+                      </div>
+                      <Skeleton className="h-8 w-20 rounded-lg" />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
