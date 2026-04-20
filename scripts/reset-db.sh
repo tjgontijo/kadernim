@@ -25,6 +25,17 @@ if [[ "$cloud_answer" =~ ^[Ss]$ ]]; then
   npx tsx scripts/clear-cloudinary.ts
 fi
 
+# 1.1 Limpeza do Cloudflare R2
+print_box "🧹 Preparação: Limpeza do Cloudflare R2"
+echo ""
+read -t 30 -p "❓ Deseja apagar TODOS os arquivos do R2 (PDFs) antes de prosseguir? (s/N): " -n 1 r2_answer || r2_answer="n"
+echo ""
+
+if [[ "$r2_answer" =~ ^[Ss]$ ]]; then
+  print_box "🧹 Removendo arquivos do R2..."
+  npx tsx scripts/clear-r2.ts
+fi
+
 # 2. Limpeza de arquivos locais e cache
 print_box "� Limpando arquivos locais e cache..."
 rm -rf .next .turbo node_modules/.cache prisma/generated public/sw.js public/manifest.webmanifest public/*.map public/*.js || true

@@ -318,37 +318,52 @@ model ResourceGrade {
 model ResourceImage {
   id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   resourceId         String   @db.Uuid
-  cloudinaryPublicId String
+  cloudinaryPublicId String   @unique
   url                String?
   alt                String?
   order              Int      @default(0)
   createdAt          DateTime @default(now())
   resource           Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
 
-  @@index([resourceId, order])
+  @@unique([resourceId, order])
   @@map("resource_image")
 }
 
 model ResourceFile {
-  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  resourceId         String   @db.Uuid
+  id                 String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  resourceId         String              @db.Uuid
   name               String
-  cloudinaryPublicId String
+  cloudinaryPublicId String   @unique
   url                String?
   fileType           String?
   sizeBytes          Int?
-  createdAt          DateTime @default(now())
-  resource           Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  createdAt          DateTime            @default(now())
+  resource           Resource            @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  images             ResourceFileImage[]
 
   @@index([resourceId])
   @@map("resource_file")
+}
+
+model ResourceFileImage {
+  id                 String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  fileId             String       @db.Uuid
+  cloudinaryPublicId String   @unique
+  url                String?
+  alt                String?
+  order              Int          @default(0)
+  createdAt          DateTime     @default(now())
+  file               ResourceFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@index([fileId, order])
+  @@map("resource_file_image")
 }
 
 model ResourceVideo {
   id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   resourceId         String   @db.Uuid
   title              String
-  cloudinaryPublicId String
+  cloudinaryPublicId String   @unique
   url                String?
   thumbnail          String?
   duration           Int?
@@ -367,7 +382,6 @@ model Resource {
   description      String?
   educationLevelId String    @db.Uuid
   subjectId        String    @db.Uuid
-  externalId       Int?      @unique
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   originRequestId  String?   @unique
@@ -387,6 +401,9 @@ model Resource {
   averageRating Float @default(0)
   downloadCount Int   @default(0)
 
+  googleDriveUrl String?
+  externalId     Int?      @unique
+
   pedagogicalContent Json?
 
   archivedAt DateTime?
@@ -403,6 +420,8 @@ model Resource {
   images         ResourceImage[]
   videos         ResourceVideo[]
   bnccSkills     ResourceBnccSkill[]
+  objectives    ResourceObjective[]
+  steps         ResourceStep[]
 
   @@index([educationLevelId])
   @@index([subjectId])
@@ -412,6 +431,35 @@ model Resource {
   @@index([slug])
   @@index([archivedAt])
   @@map("resource")
+}
+
+model ResourceObjective {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  resourceId String   @map("resource_id") @db.Uuid
+  text       String
+  order      Int      @default(0)
+  createdAt  DateTime @map("created_at") @default(now())
+  updatedAt  DateTime @map("updated_at") @updatedAt
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@index([resourceId, order])
+  @@map("resource_objective")
+}
+
+model ResourceStep {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  resourceId String   @map("resource_id") @db.Uuid
+  type       String
+  title      String
+  duration   String?
+  content    String   @db.Text
+  order      Int      @default(0)
+  createdAt  DateTime @map("created_at") @default(now())
+  updatedAt  DateTime @map("updated_at") @updatedAt
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@index([resourceId, order])
+  @@map("resource_step")
 }
 
 model BnccSkill {
