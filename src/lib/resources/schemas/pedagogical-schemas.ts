@@ -31,17 +31,41 @@ export const PedagogicalMaterialSchema = z.object({
   quantity: z.number().int().positive(),
 });
 
+export const PedagogicalObjectivesSchema = z.array(PedagogicalObjectiveSchema).min(1).max(10);
+export const PedagogicalStepsSchema = z.array(PedagogicalStepSchema).min(1).max(10);
+export const PedagogicalMaterialsSchema = z.array(PedagogicalMaterialSchema).max(20);
+
 export const PedagogicalContentSchema = z.object({
-  objectives: z.array(PedagogicalObjectiveSchema).min(1).max(10),
-  steps: z.array(PedagogicalStepSchema).min(1).max(10),
-  materials: z.array(PedagogicalMaterialSchema).optional(),
+  objectives: PedagogicalObjectivesSchema,
+  steps: PedagogicalStepsSchema,
+  materials: PedagogicalMaterialsSchema.optional(),
 });
 
 export type PedagogicalContent = z.infer<typeof PedagogicalContentSchema>;
+
+export const PedagogicalContentUpdateSchema = z
+  .object({
+    objectives: PedagogicalObjectivesSchema.optional(),
+    steps: PedagogicalStepsSchema.optional(),
+    materials: PedagogicalMaterialsSchema.optional(),
+  })
+  .refine(
+    (value) =>
+      value.objectives !== undefined ||
+      value.steps !== undefined ||
+      value.materials !== undefined,
+    { message: 'At least one section must be provided' }
+  );
+
+export type PedagogicalContentUpdate = z.infer<typeof PedagogicalContentUpdateSchema>;
 
 /**
  * Validates pedagogical content against the schema
  */
 export function validatePedagogicalContent(data: unknown) {
   return PedagogicalContentSchema.safeParse(data);
+}
+
+export function validatePedagogicalContentUpdate(data: unknown) {
+  return PedagogicalContentUpdateSchema.safeParse(data);
 }

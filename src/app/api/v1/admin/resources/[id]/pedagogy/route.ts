@@ -10,7 +10,7 @@ import {
   getPedagogicalContent, 
   updatePedagogicalContent 
 } from '@/lib/resources/services/admin/pedagogy-service'
-import { PedagogicalContentSchema } from '@/lib/resources/schemas/pedagogical-schemas'
+import { PedagogicalContentUpdateSchema } from '@/lib/resources/schemas/pedagogical-schemas'
 
 export async function GET(
   request: NextRequest,
@@ -54,7 +54,7 @@ export async function POST(
     const body = await request.json()
     
     const parsed = parseWithSchema(
-      PedagogicalContentSchema,
+      PedagogicalContentUpdateSchema,
       body,
       'Invalid pedagogical content'
     )
