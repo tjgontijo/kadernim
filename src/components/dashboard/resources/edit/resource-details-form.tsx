@@ -78,10 +78,8 @@ interface ResourceDetailsFormProps {
     bnccCodes?: string[]
     thumbUrl?: string | null
     googleDriveUrl?: string | null
-    pedagogicalContent?: {
-      objectives: { id: string; text: string; order: number }[]
-      steps: { id: string; type: string; title: string; duration?: string | null; content: string; order: number }[]
-    } | null
+    objectives?: { id?: string; text: string; order: number }[]
+    steps?: { id?: string; type: string; title: string; duration?: string | null; content: string; order: number }[]
   }
   onSuccess?: (resource: any) => void
 }
@@ -117,22 +115,20 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
       bnccCodes: resource.bnccCodes || [],
       thumbUrl: resource.thumbUrl || '',
       googleDriveUrl: resource.googleDriveUrl || '',
-      pedagogicalContent: resource.pedagogicalContent || {
-        objectives: [],
-        steps: []
-      }
+      objectives: resource.objectives || [],
+      steps: resource.steps || [],
     },
   })
 
   // Field Arrays
   const { fields: objectives, append: appendObjective, remove: removeObjective } = useFieldArray({
     control: form.control,
-    name: "pedagogicalContent.objectives"
+    name: "objectives"
   })
 
   const { fields: steps, append: appendStep, remove: removeStep, move: moveStep } = useFieldArray({
     control: form.control,
-    name: "pedagogicalContent.steps"
+    name: "steps"
   })
 
   // Watchers
@@ -549,7 +545,7 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
                   </div>
                   <FormField
                     control={form.control}
-                    name={`pedagogicalContent.objectives.${index}.text`}
+                    name={`objectives.${index}.text`}
                     render={({ field }) => (
                       <FormItem className="flex-1">
                         <FormControl>
@@ -613,7 +609,7 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
                   <div className="flex flex-col md:flex-row gap-6">
                     <FormField
                       control={form.control}
-                      name={`pedagogicalContent.steps.${index}.type`}
+                      name={`steps.${index}.type`}
                       render={({ field }) => (
                         <FormItem className="md:w-1/3">
                           <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-ink-mute">Tipo</FormLabel>
@@ -634,7 +630,7 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
                     />
                     <FormField
                       control={form.control}
-                      name={`pedagogicalContent.steps.${index}.title`}
+                      name={`steps.${index}.title`}
                       render={({ field }) => (
                         <FormItem className="flex-1">
                           <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-ink-mute">Título da Etapa</FormLabel>
@@ -646,7 +642,7 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
                     />
                     <FormField
                       control={form.control}
-                      name={`pedagogicalContent.steps.${index}.duration`}
+                      name={`steps.${index}.duration`}
                       render={({ field }) => (
                         <FormItem className="md:w-1/4">
                           <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-ink-mute flex items-center gap-1">
@@ -667,7 +663,7 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
 
                   <FormField
                     control={form.control}
-                    name={`pedagogicalContent.steps.${index}.content`}
+                    name={`steps.${index}.content`}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-ink-mute">Instruções Práticas</FormLabel>

@@ -80,14 +80,18 @@ export async function seedEnrichResources(prisma: PrismaClient) {
             data: {
                 description: item.description,
                 authorId: randomAuthor.id,
-                pedagogicalContent: {
-                    objectives: item.objectives.map((text, i) => ({ id: `obj-${i}`, order: i + 1, text })),
-                    steps: [
-                        { id: 's1', order: 1, type: 'WARMUP', title: 'Introdução', duration: '15 min', content: 'Inicie com uma conversa sobre o tema, levantando conhecimentos prévios.' },
-                        { id: 's2', order: 2, type: 'DISTRIBUTION', title: 'Mão na Massa', duration: '30 min', content: 'Aplique as folhas de atividades propostas neste material.' },
-                        { id: 's3', order: 3, type: 'CONCLUSION', title: 'Encerramento', duration: '15 min', content: 'Socialize os resultados e tire dúvidas finais.' }
-                    ]
-                }
+                objectives: {
+                    deleteMany: {},
+                    create: item.objectives.map((text, i) => ({ order: i + 1, text })),
+                },
+                steps: {
+                    deleteMany: {},
+                    create: [
+                        { order: 1, type: 'WARMUP', title: 'Introdução', duration: '15 min', content: 'Inicie com uma conversa sobre o tema, levantando conhecimentos prévios.' },
+                        { order: 2, type: 'DISTRIBUTION', title: 'Mão na Massa', duration: '30 min', content: 'Aplique as folhas de atividades propostas neste material.' },
+                        { order: 3, type: 'CONCLUSION', title: 'Encerramento', duration: '15 min', content: 'Socialize os resultados e tire dúvidas finais.' },
+                    ],
+                },
             }
         });
 

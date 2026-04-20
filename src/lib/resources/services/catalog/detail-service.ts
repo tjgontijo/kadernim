@@ -167,13 +167,11 @@ export async function getResourceDetailForUser(params: {
     thumbUrl: resource.images?.[0]?.url || null,
     curatedAt: resource.curatedAt?.toISOString() || null,
     bnccSkills: resource.bnccSkills.map((bs) => bs.bnccSkill),
-    pedagogicalContent: {
-      objectives: resource.objectives,
-      steps: resource.steps.map((step) => ({
-        ...step,
-        duration: step.duration ?? null,
-      })),
-    },
+    objectives: resource.objectives,
+    steps: resource.steps.map((step) => ({
+      ...step,
+      duration: step.duration ?? null,
+    })),
     files: resource.files.map((file) => ({
       id: file.id,
       name: file.name,

@@ -404,8 +404,6 @@ model Resource {
   googleDriveUrl String?
   externalId     Int?      @unique
 
-  pedagogicalContent Json?
-
   archivedAt DateTime?
 
   reviews          Review[]

@@ -196,7 +196,7 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
             )}
           >
             <ResourceObjectives 
-              objectives={resource.pedagogicalContent?.objectives} 
+              objectives={resource.objectives} 
             />
           </InlineEditWrapper>
 
@@ -211,7 +211,7 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
             )}
           >
             <ResourceTimeline 
-              steps={resource.pedagogicalContent?.steps} 
+              steps={resource.steps} 
             />
           </InlineEditWrapper>
           

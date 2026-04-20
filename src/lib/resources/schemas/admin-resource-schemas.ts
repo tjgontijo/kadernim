@@ -1,5 +1,20 @@
 import { z } from 'zod'
 
+const ResourceObjectiveInputSchema = z.object({
+  id: z.string().uuid().optional(),
+  text: z.string(),
+  order: z.number(),
+})
+
+const ResourceStepInputSchema = z.object({
+  id: z.string().uuid().optional(),
+  type: z.string(),
+  title: z.string(),
+  duration: z.string().optional().nullable(),
+  content: z.string(),
+  order: z.number(),
+})
+
 // ============================================
 // CREATE RESOURCE SCHEMA
 // ============================================
@@ -25,21 +40,8 @@ export const CreateResourceSchema = z.object({
   estimatedDurationMinutes: z.number().int().nonnegative().optional().nullable(),
   googleDriveUrl: z.string().url('URL do Google Drive inválida').optional().nullable(),
   bnccCodes: z.array(z.string()).default([]),
-  pedagogicalContent: z.object({
-    objectives: z.array(z.object({
-      id: z.string().uuid().optional(),
-      text: z.string(),
-      order: z.number(),
-    })).optional(),
-    steps: z.array(z.object({
-      id: z.string().uuid().optional(),
-      type: z.string(),
-      title: z.string(),
-      duration: z.string().optional().nullable(),
-      content: z.string(),
-      order: z.number(),
-    })).optional(),
-  }).optional().nullable(),
+  objectives: z.array(ResourceObjectiveInputSchema).optional(),
+  steps: z.array(ResourceStepInputSchema).optional(),
 })
 
 export type CreateResourceInput = z.infer<typeof CreateResourceSchema>
@@ -70,21 +72,8 @@ export const UpdateResourceSchema = z.object({
   estimatedDurationMinutes: z.number().int().nonnegative().optional().nullable(),
   googleDriveUrl: z.string().url('URL do Google Drive inválida').optional().nullable(),
   bnccCodes: z.array(z.string()).optional(),
-  pedagogicalContent: z.object({
-    objectives: z.array(z.object({
-      id: z.string().uuid().optional(),
-      text: z.string(),
-      order: z.number(),
-    })).optional(),
-    steps: z.array(z.object({
-      id: z.string().uuid().optional(),
-      type: z.string(),
-      title: z.string(),
-      duration: z.string().optional().nullable(),
-      content: z.string(),
-      order: z.number(),
-    })).optional(),
-  }).optional().nullable(),
+  objectives: z.array(ResourceObjectiveInputSchema).optional(),
+  steps: z.array(ResourceStepInputSchema).optional(),
 })
 
 export type UpdateResourceInput = z.infer<typeof UpdateResourceSchema>

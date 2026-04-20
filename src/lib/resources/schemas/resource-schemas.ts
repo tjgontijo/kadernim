@@ -79,23 +79,28 @@ export const BnccSkillSchema = z.object({
 
 export type BnccSkill = z.infer<typeof BnccSkillSchema>
 
-export const PedagogicalContentSchema = z.object({
-  objectives: z.array(z.object({
+export const ResourceObjectivesSchema = z.array(
+  z.object({
     id: z.string(),
     text: z.string(),
     order: z.number(),
-  })),
-  steps: z.array(z.object({
+  })
+)
+
+export type ResourceObjectives = z.infer<typeof ResourceObjectivesSchema>
+
+export const ResourceStepsSchema = z.array(
+  z.object({
     id: z.string(),
     type: z.string(),
     title: z.string(),
     duration: z.string().nullable(),
     content: z.string(),
     order: z.number(),
-  })),
-}).nullable()
+  })
+)
 
-export type PedagogicalContent = z.infer<typeof PedagogicalContentSchema>
+export type ResourceSteps = z.infer<typeof ResourceStepsSchema>
 
 export const ResourceDetailSchema = ResourceSchema.extend({
   files: z.array(ResourceFileMetadataSchema),
@@ -120,7 +125,8 @@ export const ResourceDetailSchema = ResourceSchema.extend({
   
   author: AuthorSchema.nullable(),
   bnccSkills: z.array(BnccSkillSchema),
-  pedagogicalContent: PedagogicalContentSchema,
+  objectives: ResourceObjectivesSchema,
+  steps: ResourceStepsSchema,
 })
 
 export type ResourceDetail = z.infer<typeof ResourceDetailSchema>

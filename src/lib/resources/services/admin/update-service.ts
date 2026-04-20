@@ -24,7 +24,8 @@ export async function updateResourceService(
     resourceType,
     pagesCount,
     estimatedDurationMinutes,
-    pedagogicalContent,
+    objectives,
+    steps,
   } = input
 
   // Check if resource exists
@@ -65,18 +66,20 @@ export async function updateResourceService(
     updateData.estimatedDurationMinutes = estimatedDurationMinutes
   }
 
-  if (pedagogicalContent !== undefined) {
+  if (objectives !== undefined) {
     updateData.objectives = {
       deleteMany: {},
-      create: (pedagogicalContent?.objectives ?? []).map((objective, index) => ({
+      create: objectives.map((objective, index) => ({
         text: objective.text,
         order: index + 1,
       })),
     }
+  }
 
+  if (steps !== undefined) {
     updateData.steps = {
       deleteMany: {},
-      create: (pedagogicalContent?.steps ?? []).map((step, index) => ({
+      create: steps.map((step, index) => ({
         type: step.type,
         title: step.title,
         duration: step.duration ?? null,

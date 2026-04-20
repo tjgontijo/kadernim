@@ -22,7 +22,8 @@ export async function createResourceService(
     pagesCount,
     estimatedDurationMinutes,
     googleDriveUrl,
-    pedagogicalContent,
+    objectives,
+    steps,
     bnccCodes,
   } = input
  
@@ -60,17 +61,17 @@ export async function createResourceService(
       pagesCount: pagesCount ?? null,
       estimatedDurationMinutes: estimatedDurationMinutes ?? null,
       googleDriveUrl: googleDriveUrl ?? null,
-      objectives: pedagogicalContent?.objectives
+      objectives: objectives
         ? {
-            create: pedagogicalContent.objectives.map((objective, index) => ({
+            create: objectives.map((objective, index) => ({
               text: objective.text,
               order: index + 1,
             })),
           }
         : undefined,
-      steps: pedagogicalContent?.steps
+      steps: steps
         ? {
-            create: pedagogicalContent.steps.map((step, index) => ({
+            create: steps.map((step, index) => ({
               type: step.type,
               title: step.title,
               duration: step.duration ?? null,

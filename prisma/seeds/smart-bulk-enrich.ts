@@ -83,17 +83,21 @@ export async function seedSmartEnrich(prisma: PrismaClient) {
       data: {
         description,
         authorId: resource.authorId || curatorAuthor.id,
-        pedagogicalContent: {
-            objectives: [
-                { id: 'obj1', order: 1, text: `Dominar os conceitos base de ${resource.subject.name} previstos para esta etapa.` },
-                { id: 'obj2', order: 2, text: 'Promover a autonomia do estudante através de atividades lúdicas.' }
-            ],
-            steps: [
-                { id: 's1', order: 1, type: 'WARMUP', title: 'Contextualização', duration: '15 min', content: 'Inicie com perguntas disparadoras para identificar o que os alunos já sabem.' },
-                { id: 's2', order: 2, type: 'DISTRIBUTION', title: 'Desenvolvimento', duration: '30 min', content: 'Aplique o material impresso/digital seguindo as orientações de cada página.' },
-                { id: 's3', order: 3, type: 'CONCLUSION', title: 'Sistematização', duration: '15 min', content: 'Corrija coletivamente e reforce os conceitos principais aprendidos.' }
-            ]
-        }
+        objectives: {
+          deleteMany: {},
+          create: [
+            { order: 1, text: `Dominar os conceitos base de ${resource.subject.name} previstos para esta etapa.` },
+            { order: 2, text: 'Promover a autonomia do estudante através de atividades lúdicas.' },
+          ],
+        },
+        steps: {
+          deleteMany: {},
+          create: [
+            { order: 1, type: 'WARMUP', title: 'Contextualização', duration: '15 min', content: 'Inicie com perguntas disparadoras para identificar o que os alunos já sabem.' },
+            { order: 2, type: 'DISTRIBUTION', title: 'Desenvolvimento', duration: '30 min', content: 'Aplique o material impresso/digital seguindo as orientações de cada página.' },
+            { order: 3, type: 'CONCLUSION', title: 'Sistematização', duration: '15 min', content: 'Corrija coletivamente e reforce os conceitos principais aprendidos.' },
+          ],
+        },
       }
     });
 

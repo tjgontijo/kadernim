@@ -89,15 +89,18 @@ async function main() {
       curatedAt: new Date(),
       resourceType: 'PRINTABLE_ACTIVITY',
       estimatedDurationMinutes: 50,
-      pedagogicalContent: {
-        objectives: [
-          { id: 'obj1', order: 1, text: 'Reconhecer representações pictóricas de frações usuais em contextos do cotidiano.' },
-          { id: 'obj2', order: 2, text: 'Associar a representação visual de uma fração à sua notação numérica correspondente.' },
-          { id: 'obj3', order: 3, text: 'Comunicar oralmente o raciocínio utilizado para identificar a fração sorteada.' }
+      objectives: {
+        deleteMany: {},
+        create: [
+          { order: 1, text: 'Reconhecer representações pictóricas de frações usuais em contextos do cotidiano.' },
+          { order: 2, text: 'Associar a representação visual de uma fração à sua notação numérica correspondente.' },
+          { order: 3, text: 'Comunicar oralmente o raciocínio utilizado para identificar a fração sorteada.' },
         ],
-        steps: [
+      },
+      steps: {
+        deleteMany: {},
+        create: [
           {
-            id: 'step1',
             order: 1,
             type: 'WARMUP',
             title: 'Aquecimento coletivo',
@@ -105,7 +108,6 @@ async function main() {
             content: 'Pergunte à turma e introduza meio, um terço e um quarto usando exemplos reais como frutas ou chocolate.'
           },
           {
-            id: 'step2',
             order: 2,
             type: 'DISTRIBUTION',
             title: 'Distribuição das cartelas',
@@ -113,7 +115,6 @@ async function main() {
             content: 'Entregue uma cartela e 12 fichas para cada estudante. Explique as regras do bingo de frações.'
           },
           {
-            id: 'step3',
             order: 3,
             type: 'PRACTICE',
             title: 'Rodadas de bingo',
@@ -121,15 +122,14 @@ async function main() {
             content: 'Sorteie um cartão de chamada e apresente a fração visualmente. Os alunos devem identificar o correspondente numérico.'
           },
           {
-            id: 'step4',
             order: 4,
             type: 'CONCLUSION',
             title: 'Conversa de fechamento',
             duration: '10 min',
             content: 'Pergunte qual fração foi mais difícil de identificar e por quê. Reforce os conceitos aprendidos.'
-          }
-        ]
-      }
+          },
+        ],
+      },
     },
     create: {
       id: resourceId,
@@ -144,7 +144,6 @@ async function main() {
       resourceType: 'PRINTABLE_ACTIVITY',
       pagesCount: 6,
       estimatedDurationMinutes: 50,
-      pedagogicalContent: {}
     }
   });
 
