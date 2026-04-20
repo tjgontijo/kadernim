@@ -1,32 +1,35 @@
 import { Skeleton } from '@/components/ui/skeleton'
 import { Card } from '@/components/ui/card'
-import { AspectRatio } from '@/components/ui/aspect-ratio'
 
 export function ResourceCardSkeleton() {
-    return (
-        <Card className="flex h-full flex-col overflow-hidden border-border/50 bg-card rounded-3xl p-3">
-            <div className="relative overflow-hidden rounded-2xl bg-muted shrink-0">
-                <AspectRatio ratio={1 / 1}>
-                    <Skeleton className="h-full w-full" />
-                </AspectRatio>
+  return (
+    <div className="relative h-full">
+      <div className="absolute -top-[12px] left-1/2 -translate-x-1/2 -rotate-2 w-[100px] h-[24px] bg-[#dfd6cd] shadow-tape border-x border-dashed border-x-[#c2b6ab] z-30 opacity-90" />
+
+      <Card className="flex h-full flex-col transition-all border-line bg-card rounded-5 p-[16px]">
+        <div className="relative aspect-[4/5] bg-paper-2 rounded-4 border border-line-soft overflow-hidden shrink-0">
+          <Skeleton className="h-full w-full rounded-none" />
+          <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,transparent,transparent_10px,oklch(0.88_0.02_75_/_0.5)_10px,oklch(0.88_0.02_75_/_0.5)_11px)] opacity-30 z-10" />
+        </div>
+
+        <div className="flex flex-1 flex-col pt-5">
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-6 w-[92%]" />
+            <Skeleton className="h-6 w-[68%]" />
+            <Skeleton className="h-4 w-full mt-1" />
+            <Skeleton className="h-4 w-[82%]" />
+          </div>
+
+          <div className="mt-4 flex items-center justify-between pt-3 border-t border-dashed border-line">
+            <div className="flex flex-wrap gap-1.5">
+              <Skeleton className="h-6 w-24 rounded-full" />
+              <Skeleton className="h-6 w-20 rounded-full" />
             </div>
 
-            <div className="flex flex-1 flex-col px-3 py-5 pb-2">
-                <div className="flex-1 space-y-2.5">
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-4/5" />
-
-                    <div className="pt-2 space-y-2">
-                        <Skeleton className="h-3 w-full" />
-                        <Skeleton className="h-3 w-3/4" />
-                    </div>
-                </div>
-
-                <div className="mt-4 flex flex-wrap gap-1.5 pt-3 border-t border-border/40">
-                    <Skeleton className="h-5 w-20 rounded-md" />
-                    <Skeleton className="h-5 w-16 rounded-md" />
-                </div>
-            </div>
-        </Card>
-    )
+            <Skeleton className="h-9 w-9 rounded-full" />
+          </div>
+        </div>
+      </Card>
+    </div>
+  )
 }
