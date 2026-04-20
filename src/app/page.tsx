@@ -20,6 +20,7 @@ import {
   Layers,
   RefreshCw,
 } from 'lucide-react'
+import { Logo } from '@/components/ui/logo'
 
 /* ─────────────────────────────────────────────
    LAYOUT WRAPPER
@@ -37,16 +38,7 @@ function Navbar() {
   return (
     <nav className="sticky top-0 z-50 bg-surface-card/80 backdrop-blur-md border-b border-line/60">
       <W className="h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center">
-          <Image
-            src="/images/logo_transparent_crop.png"
-            alt="Kadernim"
-            width={140}
-            height={32}
-            className="h-8 w-auto object-contain"
-            priority
-          />
-        </Link>
+        <Logo href="/" />
 
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-ink-soft">
           <a href="#biblioteca" className="hover:text-ink transition-colors">O que você recebe</a>
@@ -499,15 +491,7 @@ function Footer() {
   return (
     <footer className="py-10 border-t border-line/40 bg-surface-card">
       <W className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <Link href="/" className="flex items-center">
-          <Image
-            src="/images/logo_transparent_crop.png"
-            alt="Kadernim"
-            width={105}
-            height={24}
-            className="h-6 w-auto object-contain"
-          />
-        </Link>
+        <Logo href="/" showText={false} />
         <p className="text-xs text-ink-mute text-center">
           Materiais pedagógicos feitos por quem vive a sala de aula.
         </p>

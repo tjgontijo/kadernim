@@ -34,6 +34,7 @@ import { UserRoleType } from '@/types/users/user-role'
 import { authClient } from '@/lib/auth/auth-client'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils/index'
+import { Logo } from '@/components/ui/logo'
 
 interface AppSidebarProps {
   user: {
@@ -163,17 +164,10 @@ export function AppSidebar({ user }: AppSidebarProps) {
   const SidebarContentInternal = (
     <div className="flex flex-col h-full w-full px-[14px] py-[20px]">
       <div className="pb-[24px] mb-[24px] border-b border-dashed border-line shrink-0">
-        <Link href="/resources" className="flex items-center gap-[12px] w-full">
-          <div className="relative w-[34px] h-[34px] rounded-[10px] bg-ink text-white flex items-center justify-center font-display font-semibold text-[18px] after:absolute after:-top-[2px] after:-right-[2px] after:w-[8px] after:h-[8px] after:rounded-full after:bg-mustard shrink-0 shadow-1 border border-transparent">
-            K
-          </div>
-          {!collapsed && (
-            <div className="overflow-hidden">
-              <div className="font-display font-semibold text-[20px] tracking-[-0.02em] leading-none whitespace-nowrap text-ink">Kadernim</div>
-              <div className="font-hand text-[15px] text-terracotta leading-none mt-1 whitespace-nowrap">de professora p/ professora</div>
-            </div>
-          )}
-        </Link>
+        <Logo 
+          href="/resources" 
+          showText={!collapsed} 
+        />
       </div>
       <SidebarContent className="gap-0 py-0 scrollbar-hide px-0 pb-8">
         {navGroups.map((group, i) => (

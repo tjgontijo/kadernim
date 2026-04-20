@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { ProductCarousel } from '../sections/product-carousel'
 import type { MarketingProduct } from '@/lib/marketing/types'
+import { Logo } from '@/components/ui/logo'
 
 const go = () => { window.location.href = '/checkout' }
 
@@ -571,13 +572,7 @@ function Footer() {
     <footer className="border-t border-white/6 bg-[#05050A] py-8 2xl:py-10">
       <W className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center">
-          <Image
-            src="/images/logo_transparent_crop.png"
-            alt="Kadernim"
-            width={105}
-            height={24}
-            className="h-6 w-auto object-contain"
-          />
+          <Logo textColor="text-white" iconBg="bg-white/10" />
         </div>
         <p className="text-xs 2xl:text-sm text-slate-700 text-center">
           Devolvendo o tempo e o dinheiro que o professor merece.

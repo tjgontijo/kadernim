@@ -19,6 +19,7 @@ import {
   Award,
 } from 'lucide-react'
 import { type CheckoutPlanCatalog } from '@/lib/billing/checkout-offer'
+import { Logo } from '@/components/ui/logo'
 
 /* ─────────────────────────────────────────────
    LAYOUT
@@ -34,21 +35,12 @@ const W = ({ children, className = '' }: { children: React.ReactNode; className?
 ───────────────────────────────────────────── */
 function Navbar() {
   return (
-    <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-stone-200/60">
+    <nav className="sticky top-0 z-50 bg-surface-card/80 backdrop-blur-md border-b border-line/60">
       <W className="h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center">
-          <Image
-            src="/images/logo_transparent_crop.png"
-            alt="Kadernim"
-            width={140}
-            height={32}
-            className="h-8 w-auto object-contain"
-            priority
-          />
-        </Link>
+        <Logo href="/" />
         <Link
           href="/login"
-          className="text-sm font-semibold text-stone-500 hover:text-stone-800 transition-colors"
+          className="text-sm font-semibold text-ink-soft hover:text-ink transition-colors"
         >
           Entrar →
         </Link>
@@ -66,18 +58,18 @@ function BillingToggle({ period, onChange }: { period: Period; onChange: (p: Per
   return (
     <div className="flex flex-col items-center gap-4">
       {/* Container Principal */}
-      <div className="relative flex items-center bg-stone-100 rounded-[18px] p-1.5 w-[280px] h-[52px] shadow-inner border border-stone-200/20">
+      <div className="relative flex items-center bg-paper-2 rounded-[18px] p-1.5 w-[280px] h-[52px] shadow-inner border border-line">
 
         {/* Active Pill (Fundo Branco) */}
         <div
-          className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] rounded-[12px] bg-brand-3/20 shadow-sm border border-stone-300/20 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${period === 'monthly' ? 'translate-x-0' : 'translate-x-full'
+          className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] rounded-[12px] bg-surface-card shadow-sm border border-line transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${period === 'monthly' ? 'translate-x-0' : 'translate-x-full'
             }`}
         />
 
         {/* Botão Mensal */}
         <button
           onClick={() => onChange('monthly')}
-          className={`flex-1 relative z-10 h-full flex items-center justify-center text-sm font-bold transition-colors duration-200 ${period === 'monthly' ? 'text-brand-1' : 'text-stone-400 hover:text-stone-600'
+          className={`flex-1 relative z-10 h-full flex items-center justify-center text-sm font-bold transition-colors duration-200 ${period === 'monthly' ? 'text-ink' : 'text-ink-mute hover:text-ink-soft'
             }`}
         >
           Mensal
@@ -86,11 +78,11 @@ function BillingToggle({ period, onChange }: { period: Period; onChange: (p: Per
         {/* Botão Anual */}
         <button
           onClick={() => onChange('annual')}
-          className={`flex-1 relative z-10 h-full flex items-center justify-center gap-2 text-sm font-bold transition-colors duration-200 ${period === 'annual' ? 'text-brand-1' : 'text-stone-400 hover:text-stone-600'
+          className={`flex-1 relative z-10 h-full flex items-center justify-center gap-2 text-sm font-bold transition-colors duration-200 ${period === 'annual' ? 'text-terracotta' : 'text-ink-mute hover:text-ink-soft'
             }`}
         >
           Anual
-          <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-md transition-colors ${period === 'annual' ? 'bg-brand-2/10 text-brand-1' : 'bg-stone-200 text-stone-500'
+          <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-md transition-colors ${period === 'annual' ? 'bg-terracotta-2 text-terracotta' : 'bg-paper-3 text-ink-mute'
             }`}>
             −20%
           </span>
@@ -98,9 +90,9 @@ function BillingToggle({ period, onChange }: { period: Period; onChange: (p: Per
       </div>
 
       {period === 'annual' && (
-        <div className="flex items-center gap-1.5 px-3 py-1 bg-green-50 rounded-full border border-green-100 animate-in fade-in slide-in-from-top-1 duration-300">
-          <Sparkles className="h-3 w-3 text-brand-1" />
-          <span className="text-brand-1 text-[11px] font-bold">
+        <div className="flex items-center gap-1.5 px-3 py-1 bg-sage-2 rounded-full border border-sage/20 animate-in fade-in slide-in-from-top-1 duration-300">
+          <Sparkles className="h-3 w-3 text-sage" />
+          <span className="text-sage text-[11px] font-bold">
             Assine 12 meses, pague apenas 10
           </span>
         </div>
@@ -133,7 +125,6 @@ function PricingCard({ period, catalog }: { period: Period; catalog: CheckoutPla
 
   // No anual, o preço principal que mostramos é o equivalente mensal arredondado
   const displayPrice = plan.creditCardAmount
-  const isCents = plan.creditCardAmount % 1 !== 0
 
   const detailLabel = period === 'monthly'
     ? 'Plano mensal sem fidelidade'
@@ -141,7 +132,7 @@ function PricingCard({ period, catalog }: { period: Period; catalog: CheckoutPla
 
   return (
     <div className="max-w-md mx-auto w-full group">
-      <div className="relative rounded-r-5 bg-surface-card border-2 border-terracotta shadow-3 p-1.5 transition-all duration-300 hover:shadow-terracotta/20 paper-grain">
+      <div className="relative rounded-5 bg-surface-card border-2 border-terracotta shadow-3 p-1.5 transition-all duration-300 hover:shadow-terracotta/20 paper-grain overflow-hidden">
         <div className="bg-paper-2 rounded-[22px] border border-line-soft overflow-hidden">
           {/* Header */}
           <div className="px-5 sm:px-8 pt-10 pb-8 text-center">
@@ -166,7 +157,7 @@ function PricingCard({ period, catalog }: { period: Period; catalog: CheckoutPla
                   <span className="text-ink-mute text-sm font-medium tracking-tight">/mês</span>
                 )}
               </div>
-              <p className="text-caption mt-3 px-4 py-1.5 bg-paper-3 rounded-full border border-line">
+              <p className="text-caption mt-3 px-4 py-1.5 bg-paper-3 rounded-full border border-line text-ink-mute">
                 {detailLabel}
               </p>
             </div>
@@ -206,7 +197,7 @@ function PricingCard({ period, catalog }: { period: Period; catalog: CheckoutPla
                 <ShieldCheck className="h-4 w-4 text-sage" />
                 <span className="text-xs font-bold text-ink-soft">7 dias de garantia total</span>
               </div>
-              <p className="text-[10px] text-ink-faint font-medium uppercase tracking-widest">Cancele quando quiser. Sem multa</p>
+              <p className="text-[10px] text-ink-faint font-medium uppercase tracking-widest">Cancele quando quiser · Sem multa</p>
             </div>
           </div>
         </div>
@@ -223,19 +214,19 @@ function Comparison() {
     <section className="py-24">
       <W>
         <div className="text-center mb-16">
-          <h2 className="text-3xl font-black text-stone-800 mb-4 tracking-tight uppercase">
+          <h2 className="text-3xl font-bold text-ink mb-2 tracking-tight">
             Por que o Kadernim é diferente?
           </h2>
-          <p className="text-stone-500 font-medium">Qualidade curada vs volume aleatório</p>
+          <p className="text-ink-soft font-medium">Qualidade curada vs volume aleatório</p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-px bg-stone-200 rounded-3xl overflow-hidden border border-stone-200">
-          <div className="bg-white p-10">
+        <div className="grid md:grid-cols-2 gap-px bg-line rounded-3xl overflow-hidden border border-line shadow-2">
+          <div className="bg-surface-card p-10">
             <div className="flex items-center gap-3 mb-8">
-              <div className="h-10 w-10 bg-stone-100 rounded-xl flex items-center justify-center">
-                <Zap className="h-5 w-5 text-stone-400" />
+              <div className="h-10 w-10 bg-paper-2 rounded-xl flex items-center justify-center border border-line">
+                <Zap className="h-5 w-5 text-ink-mute" />
               </div>
-              <h3 className="text-xl font-black text-stone-400 uppercase tracking-tight">Packs de 20k Arquivos</h3>
+              <h3 className="text-xl font-bold text-ink-mute uppercase tracking-tight">Packs de 20k Arquivos</h3>
             </div>
             <ul className="space-y-4">
               {[
@@ -245,23 +236,17 @@ function Comparison() {
                 'Comprou, acabou (sem atualizações)',
                 'Muitas vezes com erros de português',
               ].map((t) => (
-                <li key={t} className="flex items-center gap-3 text-sm font-bold text-stone-400 line-through decoration-stone-200">
+                <li key={t} className="flex items-center gap-3 text-sm font-semibold text-ink-faint line-through decoration-line">
                   <span className="text-lg">×</span> {t}
                 </li>
               ))}
             </ul>
           </div>
 
-          <div className="bg-white p-10 relative">
-            <div className="absolute inset-0 bg-violet-50/30 -z-10" />
+          <div className="bg-surface-card p-10 relative">
+            <div className="absolute inset-0 bg-sage-2/30 -z-10" />
             <div className="flex items-center mb-8">
-              <Image
-                src="/images/logo_transparent_crop.png"
-                alt="Kadernim"
-                width={175}
-                height={40}
-                className="h-10 w-auto object-contain"
-              />
+              <Logo showText={false} />
             </div>
             <ul className="space-y-4">
               {[
@@ -271,8 +256,8 @@ function Comparison() {
                 'Novas atividades reais toda semana',
                 'Feito por professoras atuantes',
               ].map((t) => (
-                <li key={t} className="flex items-center gap-3 text-sm font-bold text-brand-1">
-                  <Check className="h-4 w-4 text-brand-1" strokeWidth={4} /> {t}
+                <li key={t} className="flex items-center gap-3 text-sm font-bold text-sage">
+                  <Check className="h-4 w-4 text-sage" strokeWidth={4} /> { t }
                 </li>
               ))}
             </ul>
@@ -297,22 +282,22 @@ function FAQ() {
   ]
 
   return (
-    <section className="py-24 bg-stone-50/50 border-t border-stone-200/60">
+    <section className="py-24 bg-paper-2/50 border-t border-line">
       <W>
         <div className="max-w-2xl mx-auto">
-          <h2 className="text-3xl font-black text-stone-800 text-center mb-12 uppercase tracking-tight">Dúvidas Frequentes</h2>
+          <h2 className="text-3xl font-bold text-ink text-center mb-12 tracking-tight">Dúvidas Frequentes</h2>
           <div className="space-y-4">
             {items.map((item, i) => (
-              <div key={i} className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
+              <div key={i} className="bg-surface-card rounded-2xl border border-line shadow-1 overflow-hidden">
                 <button
                   onClick={() => setOpen(open === i ? null : i)}
                   className="w-full flex items-center justify-between p-6 text-left"
                 >
-                  <span className="font-bold text-stone-800">{item.q}</span>
-                  <ChevronDown className={`h-5 w-5 text-stone-400 transition-transform ${open === i ? 'rotate-180 text-brand-1' : ''}`} />
+                  <span className="font-bold text-ink">{item.q}</span>
+                  <ChevronDown className={`h-5 w-5 text-ink-mute transition-transform ${open === i ? 'rotate-180 text-terracotta' : ''}`} />
                 </button>
                 {open === i && (
-                  <div className="px-6 pb-6 text-sm font-medium text-stone-500 border-t border-stone-50 pt-4 animate-in fade-in duration-300">
+                  <div className="px-6 pb-6 text-sm font-medium text-ink-soft border-t border-line/40 pt-4 animate-in fade-in duration-300">
                     {item.a}
                   </div>
                 )}
@@ -332,7 +317,7 @@ export function PlansClient({ catalog }: { catalog: CheckoutPlanCatalog }) {
   const [period, setPeriod] = useState<Period>('annual')
 
   return (
-    <div className="min-h-screen bg-[#FDFCFB] text-stone-900 selection:bg-brand-3/30 selection:text-brand-1 antialiased font-sans">
+    <div className="min-h-screen bg-paper text-ink selection:bg-terracotta/20 selection:text-terracotta antialiased paper-grain">
       <Navbar />
 
       <main>
@@ -372,7 +357,7 @@ export function PlansClient({ catalog }: { catalog: CheckoutPlanCatalog }) {
         </section>
 
         {/* TRUST SIGNALS */}
-        <section className="pb-24 border-b border-stone-100">
+        <section className="pb-24 border-b border-line">
           <W>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {[
@@ -382,10 +367,10 @@ export function PlansClient({ catalog }: { catalog: CheckoutPlanCatalog }) {
                 { icon: Heart, label: 'Feito c/ Amor' },
               ].map(({ icon: Icon, label }) => (
                 <div key={label} className="flex flex-col items-center gap-3 text-center">
-                  <div className="h-12 w-12 bg-white rounded-2xl border border-stone-200 flex items-center justify-center shadow-sm">
-                    <Icon className="h-6 w-6 text-brand-1" />
+                  <div className="h-12 w-12 bg-surface-card rounded-2xl border border-line flex items-center justify-center shadow-1">
+                    <Icon className="h-6 w-6 text-terracotta" />
                   </div>
-                  <span className="text-xs font-bold text-stone-700 uppercase tracking-widest">{label}</span>
+                  <span className="text-[10px] sm:text-xs font-bold text-ink uppercase tracking-widest">{label}</span>
                 </div>
               ))}
             </div>
@@ -400,31 +385,23 @@ export function PlansClient({ catalog }: { catalog: CheckoutPlanCatalog }) {
       </main>
 
       {/* Footer */}
-      <footer className="py-12 bg-white border-t border-stone-200/60">
+      <footer className="py-12 bg-surface-card border-t border-line">
         <W className="flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex flex-col items-center md:items-start gap-4">
-            <Link href="/" className="flex items-center">
-              <Image
-                src="/images/logo_transparent_crop.png"
-                alt="Kadernim"
-                width={122}
-                height={28}
-                className="h-7 w-auto object-contain"
-              />
-            </Link>
-            <p className="text-sm font-medium text-stone-400 max-w-xs text-center md:text-left">
+            <Logo href="/" />
+            <p className="text-sm font-medium text-ink-mute max-w-xs text-center md:text-left">
               Biblioteca pedagógica completa para professoras da Educação Infantil e Fundamental I.
             </p>
           </div>
 
           <div className="flex items-center gap-10">
-            <Link href="/login" className="text-xs font-bold text-stone-500 uppercase tracking-widest hover:text-stone-900 transition-colors">Entrar</Link>
-            <Link href="/plans" className="text-xs font-bold text-stone-500 uppercase tracking-widest hover:text-stone-900 transition-colors">Planos</Link>
-            <a href="#" className="text-xs font-bold text-stone-500 uppercase tracking-widest hover:text-stone-900 transition-colors">Termos</a>
+            <Link href="/login" className="text-xs font-bold text-ink-soft uppercase tracking-widest hover:text-ink transition-colors">Entrar</Link>
+            <Link href="/plans" className="text-xs font-bold text-ink-soft uppercase tracking-widest hover:text-ink transition-colors">Planos</Link>
+            <a href="#" className="text-xs font-bold text-ink-soft uppercase tracking-widest hover:text-ink transition-colors">Termos</a>
           </div>
         </W>
-        <div className="mt-12 text-center border-t border-stone-100 pt-8">
-          <p className="text-[10px] font-black text-stone-300 uppercase tracking-[0.2em]">© {new Date().getFullYear()} Kadernim. Todos os direitos reservados</p>
+        <div className="mt-12 text-center border-t border-line pt-8">
+          <p className="text-[10px] font-black text-ink-faint uppercase tracking-[0.2em]">© {new Date().getFullYear()} Kadernim. Todos os direitos reservados</p>
         </div>
       </footer>
     </div>
