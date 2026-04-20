@@ -27,6 +27,7 @@ import {
     DrawerFooter,
     DrawerClose,
 } from '@/components/ui/drawer'
+import { CrudContentSkeleton } from '@/components/dashboard/shared/skeletons/crud-content-skeleton'
 
 interface CrudPageShellProps {
     title: string
@@ -58,6 +59,7 @@ interface CrudPageShellProps {
     children: React.ReactNode
 
     isLoading?: boolean
+    loadingFallback?: React.ReactNode
 }
 
 export function CrudPageShell({
@@ -82,7 +84,8 @@ export function CrudPageShell({
     filters,
     actions,
     children,
-    isLoading
+    isLoading,
+    loadingFallback,
 }: CrudPageShellProps) {
     const { isMobile } = useMobile()
 
@@ -190,11 +193,8 @@ export function CrudPageShell({
                 )}
             >
                 {isLoading ? (
-                    <div className="flex items-center justify-center h-full">
-                        <div className="flex flex-col items-center gap-3">
-                            <div className="h-8 w-8 rounded-full border-4 border-primary/10 border-t-primary animate-spin" />
-                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Carregando...</p>
-                        </div>
+                    <div className="p-4 md:p-6 pb-20">
+                        {loadingFallback || <CrudContentSkeleton view={view} />}
                     </div>
                 ) : (
                     React.Children.map(children, child => {

@@ -1,4 +1,5 @@
 import { File, FileText, Presentation, Download, RefreshCw } from 'lucide-react'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 export function ResourceFilesList({ files, onDownload, downloadingFileId }: any) {
   if (!files || files.length === 0) return null
@@ -29,9 +30,16 @@ export function ResourceFilesList({ files, onDownload, downloadingFileId }: any)
                 <File className="h-[18px] w-[18px]" />}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-[14px] font-medium text-ink group-hover:text-terracotta transition-colors truncate mb-[2px]">
-                {f.name}
-              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="text-[14px] font-medium text-ink group-hover:text-terracotta transition-colors truncate mb-[2px] cursor-help">
+                    {f.name}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  {f.name}
+                </TooltipContent>
+              </Tooltip>
               <div className="text-[11px] text-ink-mute font-mono tracking-[0.02em]">
                 Clique para baixar
               </div>

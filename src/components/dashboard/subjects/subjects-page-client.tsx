@@ -15,6 +15,7 @@ import { SubjectForm } from '@/components/dashboard/subjects/subject-form'
 import { toast } from 'sonner'
 import { type SubjectInput, type Subject } from '@/lib/taxonomy/types'
 import { DeleteConfirmDialog } from '@/components/dashboard/crud/delete-confirm-dialog'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export function SubjectsPageClient() {
     const [isDeletingId, setIsDeletingId] = useState<string | null>(null)
@@ -108,8 +109,34 @@ export function SubjectsPageClient() {
                     />
                     
                     {crud.isFetchingNextPage && (
-                        <div className="flex justify-center py-8">
-                            <div className="h-6 w-6 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+                        <div className="py-8">
+                            {crud.view === 'cards' ? (
+                                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                    {Array.from({ length: 4 }).map((_, index) => (
+                                        <div key={index} className="rounded-xl border border-border bg-card p-4 space-y-4">
+                                            <Skeleton className="h-6 w-20 rounded-full" />
+                                            <Skeleton className="h-5 w-3/4" />
+                                            <Skeleton className="h-4 w-full" />
+                                            <div className="border-t border-border/40 pt-3 flex justify-end">
+                                                <Skeleton className="h-8 w-20 rounded-lg" />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="space-y-3 rounded-xl border border-border/60 bg-card p-4">
+                                    {Array.from({ length: 4 }).map((_, index) => (
+                                        <div key={index} className="flex items-center gap-3">
+                                            <Skeleton className="h-9 w-9 rounded-full shrink-0" />
+                                            <div className="space-y-2 flex-1">
+                                                <Skeleton className="h-4 w-1/4" />
+                                                <Skeleton className="h-3.5 w-1/3" />
+                                            </div>
+                                            <Skeleton className="h-8 w-24 rounded-lg" />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

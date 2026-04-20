@@ -1,7 +1,6 @@
 'use client'
 
 import { Suspense, useEffect, useState, useRef } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Clock, Edit3 } from 'lucide-react'
@@ -120,9 +119,19 @@ function OTPSentContent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-paper relative overflow-hidden paper-grain">
       <div className="w-full max-w-md px-4 relative z-10">
-        <div className="bg-surface-card rounded-r-5 border border-line shadow-3 p-8 sm:p-10 relative">
-          {/* Subtle notebook lines decoration */}
-          <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-20 bg-[repeating-linear-gradient(transparent,transparent_31px,var(--line)_31px,var(--line)_32px)]" />
+        <div className="bg-white rounded-r-5 border border-line shadow-3 p-8 pl-12 sm:p-10 sm:pl-14 relative overflow-visible">
+          {/* Notebook spiral rings */}
+          <div className="pointer-events-none absolute inset-y-7 -left-[11px] z-20 flex flex-col justify-between">
+            {Array.from({ length: 12 }).map((_, index) => (
+              <span
+                key={index}
+                className="block h-[14px] w-[14px] rounded-full border border-[#c6bdb3] bg-white shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_1px_2px_rgba(36,30,24,0.15)]"
+              />
+            ))}
+          </div>
+
+          {/* Notebook spine */}
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-[28px] border-r border-[#e2dacf] bg-[linear-gradient(to_right,#f5f1ea,#fdfbf7)]" />
           
           <div className="mb-10 flex justify-center relative">
             <Link href="/">
@@ -166,7 +175,7 @@ function OTPSentContent() {
                 value={form.otp}
                 onChange={handleOtpChange}
                 ref={otpInputRef}
-                className="block w-full rounded-r-3 border border-line bg-surface-card py-4 text-center text-4xl font-display font-black tracking-[0.3em] text-ink placeholder:text-ink-faint focus:border-terracotta focus:ring-4 focus:ring-terracotta-2 transition-all shadow-sm"
+                className="block w-full rounded-r-3 border border-line bg-paper-2 py-4 text-center text-4xl font-display font-black tracking-[0.3em] text-ink placeholder:text-ink-faint focus:border-terracotta focus:ring-4 focus:ring-terracotta-2 transition-all shadow-sm"
                 placeholder="000000"
                 aria-label="Código de verificação"
               />
@@ -175,7 +184,7 @@ function OTPSentContent() {
             <button
               type="submit"
               disabled={verifyStatus === 'verifying'}
-              className="flex w-full cursor-pointer justify-center rounded-full bg-terracotta px-4 py-4 text-base font-semibold text-paper shadow-1 shadow-[0_1px_0_var(--terracotta-2)] transition-all hover:bg-terracotta-2 active:translate-y-[1px] disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex w-full cursor-pointer justify-center rounded-3 bg-terracotta px-4 py-4 text-base font-semibold text-paper shadow-1 shadow-[0_1px_0_var(--terracotta-2)] transition-all hover:bg-terracotta-2 active:translate-y-[1px] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {verifyStatus === 'verifying' ? <Spinner className="h-5 w-5 text-paper" /> : 'Entrar na plataforma'}
             </button>
@@ -186,7 +195,7 @@ function OTPSentContent() {
               type="button"
               onClick={handleResend}
               disabled={resendStatus === 'sending' || countdown > 0}
-              className="flex w-full items-center justify-center gap-2 rounded-full border border-line bg-surface-card px-4 py-3 text-xs font-bold text-ink-soft transition-all hover:bg-paper-2 hover:border-line-soft hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 rounded-3 border border-line bg-paper-2 px-4 py-3 text-xs font-bold text-ink-soft transition-all hover:bg-paper-2 hover:border-line-soft hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
             >
               {resendStatus === 'sending' ? (
                 <Spinner className="h-4 w-4 text-terracotta" />
@@ -203,7 +212,7 @@ function OTPSentContent() {
             <button
               type="button"
               onClick={() => router.push('/login')}
-              className="flex w-full items-center justify-center gap-2 rounded-full px-4 py-2 text-xs font-bold text-ink-faint hover:text-terracotta transition-colors"
+              className="flex w-full items-center justify-center gap-2 rounded-3 px-4 py-2 text-xs font-bold text-ink-faint hover:text-terracotta transition-colors"
             >
               <Edit3 className="h-4 w-4" />
               Usar outro e-mail

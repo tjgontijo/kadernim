@@ -34,6 +34,12 @@ export function ResourceActionSidebar({ resource, onDownload, downloadingFileId 
   const updatedDate = resource.curatedAt 
     ? new Date(resource.curatedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
     : 'Recentemente'
+  const schoolYearLabel =
+    resource.gradeLabels && resource.gradeLabels.length > 0
+      ? resource.gradeLabels.length <= 2
+        ? resource.gradeLabels.join(', ')
+        : `${resource.gradeLabels[0]}, ${resource.gradeLabels[1]} +${resource.gradeLabels.length - 2}`
+      : 'Não definido'
 
   useEffect(() => {
     async function loadInteraction() {
@@ -204,7 +210,7 @@ export function ResourceActionSidebar({ resource, onDownload, downloadingFileId 
               <Users className="h-[12px] w-[12px]" strokeWidth={2} />
               ano escolar
             </div>
-            <div className="text-[14px] font-medium text-ink">Ver BNCC</div>
+            <div className="text-[14px] font-medium text-ink">{schoolYearLabel}</div>
           </div>
           <div className="flex flex-col gap-[2px]">
             <div className="flex items-center gap-[5px] text-[11px] text-ink-mute uppercase tracking-[0.1em] font-semibold">

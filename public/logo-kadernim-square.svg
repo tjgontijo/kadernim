@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&amp;display=swap');
+      .box {
+        fill: #2B2620; /* Kadernim ink / grafite */
+      }
+      .letter {
+        font-family: 'Fraunces', Georgia, serif;
+        font-weight: 600;
+        font-size: 520px;
+        fill: #FBF6EC; /* Kadernim paper / cream */
+      }
+      .dot {
+        fill: #E8B14E; /* Kadernim mustard */
+      }
+    </style>
+  </defs>
+
+  <!-- Background block perfectly following the design system proportions -->
+  <!-- 34x34 scaled by 25.3 to fit in 1024 nicely with room for the dot -->
+  <rect class="box" x="82" y="82" width="860" height="860" rx="253" ry="253" />
+
+  <!-- Letter K, centered within the box -->
+  <!-- Y coordinate is slightly adjusted to visually center the optical mass of 'K' in Fraunces -->
+  <text class="letter" x="512" y="680" text-anchor="middle">K</text>
+
+  <!-- Mustard dot (top right) -->
+  <circle class="dot" cx="917" cy="107" r="101" />
+</svg>

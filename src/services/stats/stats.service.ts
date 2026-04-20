@@ -5,11 +5,13 @@ export class StatsService {
         const [
             totalResources,
             totalUsers,
+            totalSubjects,
             activeSubscriptions,
             subscribers
         ] = await Promise.all([
             prisma.resource.count(),
             prisma.user.count(),
+            prisma.subject.count(),
             prisma.subscription.count({ where: { isActive: true } }),
             prisma.user.count({ where: { role: 'subscriber' } })
         ])
@@ -17,6 +19,7 @@ export class StatsService {
         return {
             totalResources,
             totalUsers,
+            totalSubjects,
             activeSubscriptions,
             subscribers
         }

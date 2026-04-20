@@ -43,8 +43,18 @@ export async function getResourceDetailForUser(params: {
       id: true,
       title: true,
       description: true,
-      educationLevel: { select: { name: true } },
-      subject: { select: { name: true } },
+      educationLevel: { select: { slug: true, name: true } },
+      subject: { select: { slug: true, name: true } },
+      grades: {
+        select: {
+          grade: {
+            select: {
+              slug: true,
+              name: true,
+            },
+          },
+        },
+      },
       slug: true,
       isCurated: true,
       curatedAt: true,
@@ -55,6 +65,25 @@ export async function getResourceDetailForUser(params: {
       averageRating: true,
       downloadCount: true,
       pedagogicalContent: true,
+      objectives: {
+        select: {
+          id: true,
+          text: true,
+          order: true,
+        },
+        orderBy: { order: 'asc' },
+      },
+      steps: {
+        select: {
+          id: true,
+          type: true,
+          title: true,
+          duration: true,
+          content: true,
+          order: true,
+        },
+        orderBy: { order: 'asc' },
+      },
       author: {
         select: {
           id: true,
@@ -80,6 +109,15 @@ export async function getResourceDetailForUser(params: {
           id: true,
           name: true,
           createdAt: true,
+          images: {
+            select: {
+              id: true,
+              url: true,
+              alt: true,
+              order: true,
+            },
+            orderBy: { order: 'asc' },
+          },
         },
       },
       images: {
@@ -118,15 +156,42 @@ export async function getResourceDetailForUser(params: {
     ...resource,
     educationLevel: resource.educationLevel.name,
     subject: resource.subject.name,
+    educationLevelSlug: resource.educationLevel.slug,
+    subjectSlug: resource.subject.slug,
+    grades: resource.grades
+      .map((rg) => rg.grade?.slug)
+      .filter((slug): slug is string => Boolean(slug)),
+    gradeLabels: resource.grades
+      .map((rg) => rg.grade?.name)
+      .filter((name): name is string => Boolean(name)),
     hasAccess,
     thumbUrl: resource.images?.[0]?.url || null,
     curatedAt: resource.curatedAt?.toISOString() || null,
     bnccSkills: resource.bnccSkills.map((bs) => bs.bnccSkill),
-    pedagogicalContent: resource.pedagogicalContent as any, // Cast to any as Prisma JsonValue doesn't match Zod output exactly but structure does
+    pedagogicalContent: {
+      objectives:
+        resource.objectives.length > 0
+          ? resource.objectives
+          : (((resource.pedagogicalContent as any)?.objectives as any[]) ?? []),
+      steps:
+        resource.steps.length > 0
+          ? resource.steps.map((step) => ({
+              ...step,
+              duration: step.duration ?? null,
+            }))
+          : (((resource.pedagogicalContent as any)?.steps as any[]) ?? []),
+      materials: ((resource.pedagogicalContent as any)?.materials as any[]) ?? [],
+    },
     files: resource.files.map((file) => ({
       id: file.id,
       name: file.name,
       createdAt: file.createdAt.toISOString(),
+      images: (file.images || []).map((img) => ({
+        id: img.id,
+        url: img.url,
+        alt: img.alt,
+        order: img.order,
+      })),
     })),
     images: resource.images.map((img) => ({
       id: img.id,

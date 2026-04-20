@@ -33,6 +33,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarMenuSubButton,
+  SidebarMenuBadge,
   SidebarRail,
   useSidebar,
 } from '@/components/ui/sidebar'
@@ -44,6 +45,7 @@ import {
 import { useQuery } from '@tanstack/react-query'
 import { defineAbilitiesFor, PermissionAction, PermissionSubject } from '@/lib/auth/permissions'
 import { UserRoleType } from '@/types/users/user-role'
+import { Badge } from '@/components/ui/badge'
 
 type NavItem = {
   title: string
@@ -51,6 +53,7 @@ type NavItem = {
   icon: keyof typeof ICON_MAP
   permission?: { action: PermissionAction; subject: PermissionSubject }
   subItems?: SubNavItem[]
+  count?: number
 }
 
 type SubNavItem = {
@@ -99,6 +102,17 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
     staleTime: Infinity,
   })
 
+  const { data: stats } = useQuery({
+    queryKey: ['admin-stats'],
+    queryFn: async () => {
+      const response = await fetch('/api/v1/admin/stats')
+      if (!response.ok) throw new Error('Failed to fetch stats')
+      return response.json()
+    },
+    refetchInterval: 30000, // Refresh every 30s
+  })
+
+
   const userRole = (user.role || 'user') as UserRoleType
   const ability = defineAbilitiesFor(userRole)
 
@@ -116,10 +130,29 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
 
   // Gestão de Dados Section
   const dataItems: NavItem[] = [
-    { title: 'Recursos', href: '/admin/resources', icon: 'BookOpen', permission: { action: 'read', subject: 'Resource' } },
-    { title: 'Disciplinas', href: '/admin/subjects', icon: 'Hash', permission: { action: 'read', subject: 'Subject' } },
-    { title: 'Usuários', href: '/admin/users', icon: 'Users', permission: { action: 'read', subject: 'User' } },
+    {
+      title: 'Recursos',
+      href: '/admin/resources',
+      icon: 'BookOpen',
+      permission: { action: 'read', subject: 'Resource' },
+      count: stats?.totalResources
+    },
+    {
+      title: 'Disciplinas',
+      href: '/admin/subjects',
+      icon: 'Hash',
+      permission: { action: 'read', subject: 'Subject' },
+      count: stats?.totalSubjects
+    },
+    {
+      title: 'Usuários',
+      href: '/admin/users',
+      icon: 'Users',
+      permission: { action: 'read', subject: 'User' },
+      count: stats?.totalUsers
+    },
   ]
+
 
 
 
@@ -133,6 +166,7 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
       href: '/admin/billing',
       icon: 'CreditCard',
       permission: { action: 'manage', subject: 'all' },
+      count: stats?.activeSubscriptions
     },
   ]
 
@@ -199,7 +233,14 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
             <span>{item.title}</span>
           </Link>
         </SidebarMenuButton>
+        {item.count !== undefined && (
+          <SidebarMenuBadge className="bg-sage-2/50 text-sage group-data-[active=true]/menu-item:bg-sage group-data-[active=true]/menu-item:text-paper border border-sage/10 font-body">
+            {item.count}
+          </SidebarMenuBadge>
+        )}
       </SidebarMenuItem>
+
+
     )
   }
 

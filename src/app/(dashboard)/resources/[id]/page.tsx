@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { use, useCallback, useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft, ArrowDownToLine, Clock, Layers, Calendar, ChevronLeft, Download, RefreshCw, AlertTriangle, Info, Share2, Link as LinkIcon, Flag, File, FileText, Presentation, Users } from 'lucide-react'
+import { ArrowLeft, ArrowDownToLine, Clock, Layers, Calendar, ChevronLeft, Download, AlertTriangle, Info, Share2, Link as LinkIcon, Flag, File, FileText, Presentation, Users } from 'lucide-react'
 import {
   createResourceDownloadLink,
   fetchResourceDetail,
@@ -30,6 +30,7 @@ import { ResourcePedagogyEditor } from '@/components/dashboard/resources/edit/re
 import { ResourceCategorizationForm } from '@/components/dashboard/resources/edit/resource-categorization-form'
 import { ResourceImagesManager } from '@/components/dashboard/resources/edit/resource-images-manager'
 import { ResourceFilesManager } from '@/components/dashboard/resources/edit/resource-files-manager'
+import { ResourceDetailPageSkeleton } from '@/components/dashboard/resources/resource-detail-page-skeleton'
 
 export default function ResourceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -132,14 +133,7 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
   )
 
   if (isLoading) {
-    return (
-      <div className="flex h-96 items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <RefreshCw className="h-8 w-8 animate-spin text-terracotta" />
-          <p className="text-sm font-medium text-muted-foreground animate-pulse">Carregando material...</p>
-        </div>
-      </div>
-    )
+    return <ResourceDetailPageSkeleton />
   }
 
   if (error || !resource) {
@@ -176,10 +170,10 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
             title="Galeria de Imagens"
             editor={() => <ResourceImagesManager resourceId={resource.id} initialImages={resource.images as any} currentThumbUrl={resource.thumbUrl || null} />}
           >
-            <ResourceGallery 
-               images={resource.images} 
-               thumbUrl={resource.thumbUrl} 
-               title={resource.title || ''} 
+            <ResourceGallery
+               files={resource.files}
+               videos={resource.videos}
+               title={resource.title || ''}
             />
           </InlineEditWrapper>
 
@@ -193,23 +187,51 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
           
           <InlineEditWrapper
             canEdit={isAdmin}
-            title="Pedagogia (Objetivos e Passo a Passo)"
-            editor={() => <ResourcePedagogyEditor resourceId={resource.id} />}
+            title="Objetivos de Aprendizagem"
+            editor={() => (
+              <ResourcePedagogyEditor
+                resourceId={resource.id}
+                sections={['objectives']}
+              />
+            )}
           >
-            <div className="space-y-6">
-              <ResourceObjectives 
-                objectives={resource.pedagogicalContent?.objectives} 
+            <ResourceObjectives 
+              objectives={resource.pedagogicalContent?.objectives} 
+            />
+          </InlineEditWrapper>
+
+          <InlineEditWrapper
+            canEdit={isAdmin}
+            title="Como conduzir a aula"
+            editor={() => (
+              <ResourcePedagogyEditor
+                resourceId={resource.id}
+                sections={['steps']}
               />
-              <ResourceTimeline 
-                steps={resource.pedagogicalContent?.steps} 
-              />
-            </div>
+            )}
+          >
+            <ResourceTimeline 
+              steps={resource.pedagogicalContent?.steps} 
+            />
           </InlineEditWrapper>
           
           <InlineEditWrapper
             canEdit={isAdmin}
-            title="Categorização e BNCC"
-            editor={() => <ResourceCategorizationForm resource={resource as any} />}
+            title="BNCC e Categorização"
+            editor={() => (
+              <ResourceCategorizationForm
+                context="bncc"
+                resource={{
+                  id: resource.id,
+                  educationLevel: resource.educationLevel,
+                  educationLevelSlug: resource.educationLevelSlug,
+                  subject: resource.subject,
+                  subjectSlug: resource.subjectSlug,
+                  grades: resource.grades ?? [],
+                  bnccSkills: resource.bnccSkills,
+                }}
+              />
+            )}
           >
             <ResourceBNCC 
               skills={resource.bnccSkills} 
@@ -220,17 +242,38 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
             resourceId={resource.id}
             averageRating={resource.averageRating}
             reviewCount={resource.reviewCount}
+            isAdmin={isAdmin}
           />
         </div>
 
         {/* RIGHT: sticky sidebar */}
         <aside className="sticky top-[84px] flex flex-col gap-[20px]">
-
-          <ResourceActionSidebar 
-             resource={resource}
-             onDownload={handleDownload}
-             downloadingFileId={downloadingFileId}
-          />
+          <InlineEditWrapper
+            canEdit={isAdmin}
+            title="Informações do Card Lateral"
+            editor={() => (
+              <ResourceCategorizationForm
+                context="sidebar"
+                resource={{
+                  id: resource.id,
+                  educationLevel: resource.educationLevel,
+                  educationLevelSlug: resource.educationLevelSlug,
+                  subject: resource.subject,
+                  subjectSlug: resource.subjectSlug,
+                  grades: resource.grades ?? [],
+                  resourceType: resource.resourceType,
+                  pagesCount: resource.pagesCount,
+                  estimatedDurationMinutes: resource.estimatedDurationMinutes,
+                }}
+              />
+            )}
+          >
+            <ResourceActionSidebar 
+               resource={resource}
+               onDownload={handleDownload}
+               downloadingFileId={downloadingFileId}
+            />
+          </InlineEditWrapper>
           <InlineEditWrapper
             canEdit={isAdmin}
             title="Arquivos"

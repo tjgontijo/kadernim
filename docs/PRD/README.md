@@ -79,6 +79,24 @@ Sistema completo de detalhes de recurso com Autoria, Reviews, Interações de Us
 
 ---
 
+### 4. **Dashboard Loading UX Standardization (Skeleton-First)**
+Status: **Draft**  
+Prioridade: **Alta**  
+Timeline: **36-54h em 5 fases**
+
+Padronização de loading no dashboard com foco em skeleton 1:1, eliminação de spinner full-page e regras únicas para loading/refetch/empty/error.
+
+**Arquivos:**
+- [`dashboard-loading-skeleton-standardization.md`](./dashboard-loading-skeleton-standardization.md) - PRD principal com princípios, fases, critérios e checklist
+
+**Resumo:**
+- ❌ **Problema:** cada rota carrega de um jeito (spinner, skeleton parcial, render antecipada)
+- ✅ **Solução:** padrão único `loading.tsx` + skeleton de layout equivalente por rota
+- 🧭 **Piloto:** `/resources` e `/resources/[id]`
+- 🎯 **Resultado Esperado:** UX consistente e sem flicker perceptível no dashboard
+
+---
+
 ## 🎯 Roadmap de Implementação
 
 ```
@@ -138,6 +156,7 @@ Cada PRD é um documento independente que pode ser:
 | PIX Automatic Failure Handling | Draft | Alta | Design |
 | PIX Checkout UX | Draft | Média | Design |
 | **Resource Details** | **Pronto para Implementação** | **Alta** | **Fase 1** |
+| Dashboard Loading UX Standardization | Draft | Alta | Planejamento |
 
 ---
 
@@ -150,4 +169,4 @@ Cada PRD é um documento independente que pode ser:
 
 ---
 
-**Última Atualização:** 2026-04-15
+**Última Atualização:** 2026-04-19
