@@ -23,9 +23,7 @@ interface BaseEmailProps {
 }
 
 /**
- * Base email template wrapper.
- * Use this to wrap dynamic content from the admin panel
- * with the Kadernim branded header/footer.
+ * Base email template wrapper optimized for deliverability.
  */
 export const BaseEmail = ({
     preheader = '',
@@ -36,13 +34,13 @@ export const BaseEmail = ({
         {preheader && <Preview>{preheader}</Preview>}
         <Body style={main}>
             <Container style={container}>
-                {/* Header with gradient */}
+                {/* Header */}
                 <Section style={header}>
                     <Text style={headerTitle}>Kadernim</Text>
-                    <Text style={headerSubtitle}>Plataforma de Gerenciamento de Recursos Educacionais</Text>
+                    <Text style={headerSubtitle}>Recursos Educacionais</Text>
                 </Section>
 
-                {/* Main Content - injected HTML */}
+                {/* Main Content */}
                 <Section style={content}>
                     <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
                 </Section>
@@ -51,40 +49,33 @@ export const BaseEmail = ({
                 <Section style={footer}>
                     <Hr style={hr} />
 
-                    {/* Support Box */}
                     <Section style={supportBox}>
-                        <Text style={supportTitle}>Precisa de ajuda?</Text>
+                        <Text style={supportTitle}>Suporte ao Professor</Text>
                         <Text style={supportText}>
-                            📞 <Link href="https://wa.me/556198698704" style={linkStyle}>(61) 99869-8704</Link>
+                            WhatsApp: <Link href="https://wa.me/5561998698704" style={linkStyle}>(61) 99869-8704</Link>
                         </Text>
                         <Text style={supportText}>
-                            ✉️ <Link href="mailto:contato@kadernim.com.br" style={linkStyle}>contato@kadernim.com.br</Link>
+                            E-mail: <Link href="mailto:contato@kadernim.com.br" style={linkStyle}>contato@kadernim.com.br</Link>
                         </Text>
                     </Section>
 
                     <Hr style={hr} />
 
-                    {/* Warning */}
                     <Section style={warningBox}>
                         <Text style={warningText}>
-                            <strong>⏰ Atenção:</strong> Se você não solicitou este email, ignore-o.
+                            <strong>Aviso:</strong> Se você não solicitou este contato, por favor desconsidere este e-mail.
                         </Text>
                     </Section>
 
-                    {/* Security Notice */}
-                    <Text style={securityText}>
-                        🔒 <strong>Segurança:</strong> Nunca compartilhe códigos e senhas com outras pessoas. Nós nunca pedimos códigos e senhas.
-                    </Text>
-
                     <Text style={footerText}>
-                        © {new Date().getFullYear()} Kadernim. Todos os direitos reservados.
+                        © {new Date().getFullYear()} Kadernim. Brasília, DF.
                     </Text>
                     <Text style={footerSmall}>
-                        Este é um email automático. Por favor, não responda.
+                        Este é um envio automático. Por favor, não responda.
                     </Text>
                     <Text style={footerSmall}>
                         <Link href="{{unsubscribe_url}}" style={unsubscribeLink}>
-                            Descadastrar-se
+                            Descadastrar-se das comunicações
                         </Link>
                     </Text>
                 </Section>
@@ -95,13 +86,6 @@ export const BaseEmail = ({
 
 export default BaseEmail
 
-/**
- * Renders the base email template with dynamic content.
- * 
- * @param htmlContent - The HTML content from admin template (with variables already replaced)
- * @param preheader - Optional preheader text shown in inbox preview
- * @returns Rendered HTML string ready for sending
- */
 export async function renderBaseEmail({
     htmlContent,
     preheader = '',
@@ -112,91 +96,90 @@ export async function renderBaseEmail({
     return html
 }
 
-// ============ STYLES (usando emailColors) ============
+// ============ STYLES (Otimizados para Entrega) ============
 
 const main = {
     backgroundColor: emailColors.background.page,
-    fontFamily:
-        '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif',
+    fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif',
+    padding: '20px 0',
 }
 
 const container = {
     margin: '0 auto',
-    padding: '20px 0 48px',
+    backgroundColor: emailColors.background.card,
+    border: `1px solid ${emailColors.border.default}`,
+    borderRadius: '8px',
     maxWidth: '600px',
 }
 
 const header = {
-    background: emailColors.primary.gradient,
-    padding: '40px 20px',
+    padding: '32px 40px 0px',
     textAlign: 'center' as const,
-    borderRadius: '8px 8px 0 0',
 }
 
 const headerTitle = {
-    color: emailColors.primary.foreground,
+    color: emailColors.text.primary,
     margin: '0',
     fontSize: '28px',
     fontWeight: 'bold' as const,
+    letterSpacing: '-0.5px',
 }
 
 const headerSubtitle = {
-    color: emailColors.primary.light,
-    margin: '8px 0 0 0',
-    fontSize: '14px',
+    color: emailColors.text.muted,
+    margin: '4px 0 0 0',
+    fontSize: '12px',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '1px',
 }
 
 const content = {
-    background: emailColors.background.card,
-    padding: '40px 30px',
+    padding: '32px 40px',
     fontSize: '16px',
-    lineHeight: '1.6',
+    lineHeight: '1.5',
     color: emailColors.text.primary,
 }
 
 const footer = {
-    background: emailColors.background.card,
-    padding: '0 30px 40px 30px',
-    borderRadius: '0 0 8px 8px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    padding: '0 40px 40px 40px',
 }
 
 const hr = {
-    borderColor: emailColors.border.default,
-    margin: '24px 0',
+    borderColor: emailColors.border.light,
+    margin: '32px 0',
 }
 
 const supportBox = {
-    background: emailColors.brand.supportBox,
-    borderRadius: '6px',
-    padding: '16px',
+    background: emailColors.background.muted,
+    borderRadius: '8px',
+    padding: '20px',
     margin: '16px 0',
 }
 
 const supportTitle = {
     fontSize: '15px',
-    color: emailColors.brand.supportTitle,
+    color: emailColors.text.primary,
     fontWeight: 'bold' as const,
-    margin: '0 0 8px 0',
+    margin: '0 0 10px 0',
 }
 
 const supportText = {
     fontSize: '13px',
-    color: emailColors.brand.supportText,
+    color: emailColors.text.secondary,
     margin: '4px 0',
-    lineHeight: '1.5',
 }
 
 const linkStyle = {
-    color: emailColors.text.link,
+    color: emailColors.primary.main,
     fontWeight: 'bold' as const,
+    textDecoration: 'none',
 }
 
 const footerText = {
     fontSize: '12px',
     color: emailColors.text.muted,
     textAlign: 'center' as const,
-    margin: '0 0 8px 0',
+    margin: '32px 0 8px 0',
 }
 
 const footerSmall = {
@@ -214,20 +197,15 @@ const unsubscribeLink = {
 const warningBox = {
     background: emailColors.status.warning.background,
     border: `1px solid ${emailColors.status.warning.border}`,
-    borderRadius: '6px',
+    borderRadius: '8px',
     padding: '16px',
     margin: '24px 0',
 }
 
 const warningText = {
-    fontSize: '14px',
+    fontSize: '13px',
     color: emailColors.status.warning.text,
     margin: '0',
-}
-
-const securityText = {
-    fontSize: '13px',
-    color: emailColors.text.secondary,
-    margin: '24px 0',
+},
     lineHeight: '1.6',
 }
