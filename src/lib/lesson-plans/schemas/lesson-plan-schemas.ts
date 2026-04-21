@@ -20,7 +20,7 @@ export const LessonPlanFlowItemSchema = z.object({
   durationMinutes: z.number().int().min(1),
   teacherActions: z.array(z.string().min(1)).min(1),
   studentActions: z.array(z.string().min(1)).min(1),
-  useResourceStepIds: z.array(z.string()).optional(),
+  useResourceStepIds: z.array(z.string()),
 })
 
 export const LessonPlanContentSchema = z.object({
