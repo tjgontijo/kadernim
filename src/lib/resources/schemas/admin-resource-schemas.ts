@@ -76,6 +76,7 @@ export const UpdateResourceSchema = z.object({
   resourceType: z.string().optional(),
   pagesCount: z.number().int().nonnegative().optional().nullable(),
   estimatedDurationMinutes: z.number().int().nonnegative().optional().nullable(),
+  googleDriveUrl: z.string().url('URL do Google Drive inválida').optional().nullable(),
   bnccCodes: z.array(z.string()).optional(),
   objectives: z.array(ResourceObjectiveInputSchema).optional(),
   steps: z.array(ResourceStepInputSchema).optional(),
