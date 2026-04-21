@@ -69,13 +69,13 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 <claude-mem-context>
 # Memory Context
 
-# [kadernim] recent context, 2026-04-20 1:37pm GMT-3
+# [kadernim] recent context, 2026-04-21 9:20am GMT-3
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision
 Format: ID TIME TYPE TITLE
 Fetch details: get_observations([IDs]) | Search: mem-search skill
 
-Stats: 32 obs (10,459t read) | 214,137t work | 95% savings
+Stats: 36 obs (11,917t read) | 236,768t work | 95% savings
 
 ### Apr 20, 2026
 164 12:50p 🔵 scripts/clear-r2.ts Not Found in Git History — Kadernim
@@ -110,6 +110,11 @@ Stats: 32 obs (10,459t read) | 214,137t work | 95% savings
 222 " 🔴 Seed Files Fixed — `@db` Import Alias Changed to `@db/client`
 223 " 🔴 Email Templates — Missing `Font` Import Added to otp-email.tsx; pix-failure-email.tsx Also Affected
 224 " ✅ pedagogy-service.ts Renamed to resource-pedagogical-service.ts
+### Apr 21, 2026
+225 9:16a 🔵 Cloudinary Upload Failing — Missing API Key at Runtime
+227 9:17a 🔴 Image Upload Route — Fixed Cloudinary Config by Using Shared Client
+229 " 🔵 TypeScript Build — Only One Error Remaining in Test File
+231 9:18a 🔵 Kadernim Env File Layout — CLOUDINARY_URL Confirmed in .env
 
-Access 214k tokens of past work via get_observations([IDs]) or mem-search skill.
+Access 237k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>

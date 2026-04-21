@@ -64,6 +64,7 @@ export async function seedResources(prisma: PrismaClient) {
         const upload = await uploadImageFromUrlToCloudinary({
           imageUrl: res.imageUrl,
           resourceId: resource.id,
+          resourceSlug: slug,
           publicId: 'cover',
           altText: res.title,
         })
@@ -74,6 +75,15 @@ export async function seedResources(prisma: PrismaClient) {
         summary.imageUploadsFailed += 1
         console.error(`⚠️ Falha upload capa para "${res.title}", mantendo URL original.`, error)
       }
+
+      // Atualiza o recurso com os campos de thumb
+      await prisma.resource.update({
+        where: { id: resource.id },
+        data: {
+          thumbUrl: coverUrl,
+          thumbPublicId: coverPublicId,
+        },
+      })
 
       // Imagem principal (order 0) no banco
       await prisma.resourceImage.upsert({

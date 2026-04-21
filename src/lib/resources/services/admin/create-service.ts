@@ -1,6 +1,7 @@
 import { prisma } from '@/server/db'
 import type { Resource, EducationLevel, Subject } from '@db/client'
 import { CreateResourceInput } from '@/lib/resources/schemas/admin-resource-schemas'
+import { slugify } from '@/lib/utils/string'
 
 export interface CreateResourceServiceInput extends CreateResourceInput {
   adminId: string
@@ -8,7 +9,7 @@ export interface CreateResourceServiceInput extends CreateResourceInput {
 
 /**
  * Create a new resource in the database
- * Validates that externalId is unique
+ * Validates that slug is unique
  */
 export async function createResourceService(
   input: CreateResourceServiceInput
@@ -25,7 +26,19 @@ export async function createResourceService(
     objectives,
     steps,
     bnccCodes,
+    thumbUrl,
+    thumbPublicId,
   } = input
+
+  // Generate slug and check for duplicates
+  const slug = slugify(title)
+  const existingBySlug = await prisma.resource.findUnique({
+    where: { slug }
+  })
+
+  if (existingBySlug) {
+    throw new Error('RESOURCE_ALREADY_EXISTS')
+  }
  
   // Resolve slugs to IDs
   const [level, sub] = await Promise.all([
@@ -54,6 +67,7 @@ export async function createResourceService(
   const resource = await prisma.resource.create({
     data: {
       title,
+      slug,
       description: description || null,
       educationLevelId: level.id,
       subjectId: sub.id,
@@ -61,6 +75,8 @@ export async function createResourceService(
       pagesCount: pagesCount ?? null,
       estimatedDurationMinutes: estimatedDurationMinutes ?? null,
       googleDriveUrl: googleDriveUrl ?? null,
+      thumbUrl: thumbUrl ?? null,
+      thumbPublicId: thumbPublicId ?? null,
       objectives: objectives
         ? {
             create: objectives.map((objective, index) => ({

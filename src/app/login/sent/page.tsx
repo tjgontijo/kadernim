@@ -32,7 +32,7 @@ function OTPSentContent() {
   useEffect(() => {
     const emailParam = searchParams.get('email')
     if (emailParam) {
-      setForm((prev) => ({ ...prev, email: emailParam }))
+      setForm((prev) => ({ ...prev, email: emailParam.trim() }))
     }
 
     // Foca no input de OTP automaticamente após o componente ser montado
@@ -60,7 +60,18 @@ function OTPSentContent() {
   const handleVerify = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
-    if (!form.email || form.otp.length !== 6) {
+    if (!form.email) {
+      toast.error('E-mail não encontrado.')
+      return
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(form.email)) {
+      toast.error('E-mail inválido.')
+      return
+    }
+
+    if (form.otp.length !== 6) {
       toast.error('Informe o código de 6 dígitos.')
       return
     }
@@ -90,6 +101,12 @@ function OTPSentContent() {
   const handleResend = async () => {
     if (!form.email) {
       toast.error('Email não encontrado. Volte e solicite um novo código.')
+      return
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(form.email)) {
+      toast.error('E-mail inválido.')
       return
     }
 
@@ -171,7 +188,6 @@ function OTPSentContent() {
                 pattern="[0-9]*"
                 autoComplete="one-time-code"
                 maxLength={6}
-                required
                 value={form.otp}
                 onChange={handleOtpChange}
                 ref={otpInputRef}

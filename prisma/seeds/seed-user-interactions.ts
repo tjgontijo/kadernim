@@ -4,8 +4,8 @@ import { fakerPT_BR as faker } from '@faker-js/faker';
 export async function seedUserInteractions(prisma: PrismaClient) {
   console.log('💾 Gerando Interações de Usuários (Salvos, Planejados)...');
 
-  const users = await prisma.user.findMany({ take: 15 });
-  const resources = await prisma.resource.findMany({ take: 80 });
+  const users = await prisma.user.findMany();
+  const resources = await prisma.resource.findMany();
 
   if (users.length === 0 || resources.length === 0) {
     console.log('⚠️  Sem usuários ou recursos para criar interações. Pulando...');

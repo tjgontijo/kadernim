@@ -5,7 +5,7 @@ import {
   getResourceVideoById,
   updateResourceVideo,
 } from '@/lib/resources/services/admin'
-import { deleteVideo } from '@/server/clients/cloudinary/video-client'
+import { deleteAsset } from '@/lib/storage/cloudinary'
 import { parseWithSchema } from '../../../route-support'
 import {
   deleteCloudinaryAsset,
@@ -59,7 +59,7 @@ export async function DELETE(
     }
 
     await deleteCloudinaryAsset(
-      deleteVideo,
+      (publicId) => deleteAsset(publicId, 'video'),
       video.cloudinaryPublicId,
       '[DELETE VIDEO] Cloudinary deletion error:'
     )

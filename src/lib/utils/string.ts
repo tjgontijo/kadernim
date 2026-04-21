@@ -17,3 +17,18 @@ export function buildAccentRegex(str: string): string {
     .replace(/[uúùûüUÚÙÛÜ]/g, '[uúùûüUÚÙÛÜ]')
     .replace(/[cçCÇ]/g, '[cçCÇ]')
 }
+
+/**
+ * Converte uma string em um slug para uso em URLs ou caminhos de arquivos.
+ */
+export function slugify(text: string): string {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .normalize('NFD') // Divide caracteres acentuados em letra + acento
+    .replace(/[\u0300-\u036f]/g, '') // Remove os acentos
+    .replace(/[^\w\s-]/g, '') // Remove caracteres não amigáveis
+    .replace(/[\s_-]+/g, '-') // Substitui espaços e underscores por hífens
+    .replace(/^-+|-+$/g, '') // Remove hífens no início e fim
+}

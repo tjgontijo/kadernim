@@ -156,7 +156,7 @@ export function adminResourceConflict(error: string) {
   return NextResponse.json({ error }, { status: 409 })
 }
 
-export function createAdminResourceCollectionHandlers(config: {
+export function createAdminResourceCollectionHandlers<T, TOutput>(config: {
   listResources: (filters: {
     page: number
     limit: number
@@ -170,8 +170,8 @@ export function createAdminResourceCollectionHandlers(config: {
     data: Array<{ createdAt: Date | string; updatedAt: Date | string }>
     pagination: Record<string, unknown>
   }>
-  createResource: (input: CreateResourceInput & { adminId: string }) => Promise<unknown>
-  buildCreatedResponse: (resource: unknown) => unknown
+  createResource: (input: CreateResourceInput & { adminId: string }) => Promise<T>
+  buildCreatedResponse: (resource: T) => TOutput
 }) {
   return {
     GET: async function GET(request: NextRequest) {
@@ -239,8 +239,10 @@ export function createAdminResourceCollectionHandlers(config: {
 
         return NextResponse.json(config.buildCreatedResponse(resource), { status: 201 })
       } catch (error) {
-        if (error instanceof Error && error.message.includes('already exists')) {
-          return adminResourceConflict(error.message)
+        if (error instanceof Error) {
+          if (error.message.includes('already exists') || error.message === 'RESOURCE_ALREADY_EXISTS') {
+            return adminResourceConflict('Já existe um recurso com este título')
+          }
         }
 
         return adminResourceServerError('[POST /api/v1/admin/resources]', error)
@@ -249,10 +251,10 @@ export function createAdminResourceCollectionHandlers(config: {
   }
 }
 
-export function createAdminResourceCrudHandlers(config: {
-  getDetail: (id: string) => Promise<unknown>
-  updateResource: (input: UpdateResourceInput & { id: string; adminId: string }) => Promise<unknown>
-  deleteResource: (id: string, adminId: string) => Promise<unknown>
+export function createAdminResourceCrudHandlers<T, TOutput>(config: {
+  getDetail: (id: string) => Promise<T | null>
+  updateResource: (input: UpdateResourceInput & { id: string; adminId: string }) => Promise<any>
+  deleteResource: (id: string, adminId: string) => Promise<void>
 }) {
   return {
     GET: async function GET(
@@ -308,11 +310,13 @@ export function createAdminResourceCrudHandlers(config: {
 
         return NextResponse.json(await config.getDetail(id))
       } catch (error) {
-        if (
-          error instanceof Error &&
-          (error.message === 'RESOURCE_NOT_FOUND' || error.message.includes('not found'))
-        ) {
-          return adminResourceNotFound()
+        if (error instanceof Error) {
+          if (error.message === 'RESOURCE_NOT_FOUND' || error.message.includes('not found')) {
+            return adminResourceNotFound()
+          }
+          if (error.message === 'RESOURCE_ALREADY_EXISTS') {
+            return adminResourceConflict('Já existe outro recurso com este título')
+          }
         }
 
         return adminResourceServerError('[PUT /api/v1/admin/resources/:id]', error)
@@ -348,7 +352,7 @@ export function createAdminResourceCrudHandlers(config: {
 
 
 
-export function createAdminResourceFileUploadHandler(config: {
+export function createAdminResourceFileUploadHandler<TFile, TOutput>(config: {
   uploadFile: (file: File, folder: string, resourceId: string) => Promise<{
     fileName: string
     publicId: string
@@ -365,8 +369,8 @@ export function createAdminResourceFileUploadHandler(config: {
     fileType?: string
     sizeBytes?: number
     adminId: string
-  }) => Promise<unknown>
-  serializeFile: (file: unknown) => unknown
+  }) => Promise<TFile>
+  serializeFile: (file: TFile) => TOutput
 }) {
   return async function POST(
     request: NextRequest,
@@ -418,9 +422,9 @@ export function createAdminResourceFileUploadHandler(config: {
   }
 }
 
-export function createAdminResourceImageHandlers(config: {
+export function createAdminResourceImageHandlers<TImage, TOutput>(config: {
   assertResourceExists: (resourceId: string) => Promise<unknown>
-  listImages: (resourceId: string) => Promise<unknown>
+  listImages: (resourceId: string) => Promise<TImage[]>
   uploadImage: (
     file: File,
     folder: string,
@@ -432,8 +436,9 @@ export function createAdminResourceImageHandlers(config: {
     cloudinaryPublicId: string
     url: string
     alt?: string
-  }) => Promise<unknown>
-  serializeImage: (image: unknown) => unknown
+  }) => Promise<TImage>
+  serializeImage: (image: TImage) => TOutput
+  prisma: any // Prisma is too complex to genericize here, keeping as any for DB client
 }) {
   return {
     GET: async function GET(
@@ -469,9 +474,15 @@ export function createAdminResourceImageHandlers(config: {
 
         await config.assertResourceExists(id)
 
+        const resource = await config.prisma.resource.findUnique({
+          where: { id },
+          select: { slug: true }
+        })
+        const slug = resource?.slug || id
+
         const uploadResult = await config.uploadImage(
           file,
-          'resources/images',
+          `resources/${slug}/images`,
           id,
           typeof altText === 'string' ? altText : undefined
         )

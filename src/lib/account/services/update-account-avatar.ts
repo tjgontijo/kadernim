@@ -1,4 +1,4 @@
-import { deleteImage, uploadImage } from '@/server/clients/cloudinary/image-client'
+import { uploadImage, deleteAsset } from '@/lib/storage/cloudinary'
 import { prisma } from '@/server/db'
 import { logger } from '@/server/logger'
 import { fail, ok, type Result } from '@/lib/shared/result'
@@ -20,28 +20,30 @@ export async function updateAccountAvatar(
   try {
     const upload = await uploadImage(
       input.file,
-      'avatar',
-      `user-avatar-${userId}`,
-      'User Avatar'
+      {
+        folder: 'avatar',
+        publicId: `user-avatar-${userId}`,
+        context: { alt: 'User Avatar' }
+      }
     )
 
     try {
       const updatedUser = await prisma.user.update({
         where: { id: userId },
-        data: { image: upload.url },
+        data: { image: upload.secure_url },
         select: { image: true },
       })
 
       return ok({ image: updatedUser.image ?? '' })
     } catch (error) {
       try {
-        await deleteImage(upload.publicId)
+        await deleteAsset(upload.public_id)
       } catch (cleanupError) {
         logger.warn(
           {
             domain: 'account',
             userId,
-            publicId: upload.publicId,
+            publicId: upload.public_id,
             error: cleanupError instanceof Error ? cleanupError.message : String(cleanupError),
           },
           'Failed to rollback avatar upload after database error'

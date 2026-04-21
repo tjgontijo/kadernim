@@ -5,7 +5,7 @@ import {
   getResourceImageById,
   updateResourceImage,
 } from '@/lib/resources/services/admin'
-import { deleteImage } from '@/server/clients/cloudinary/image-client'
+import { deleteAsset } from '@/lib/storage/cloudinary'
 import { parseWithSchema } from '../../../route-support'
 import {
   deleteCloudinaryAsset,
@@ -54,7 +54,7 @@ export async function DELETE(
     }
 
     await deleteCloudinaryAsset(
-      deleteImage,
+      deleteAsset,
       image.cloudinaryPublicId,
       '[DELETE IMAGE] Cloudinary deletion error:'
     )

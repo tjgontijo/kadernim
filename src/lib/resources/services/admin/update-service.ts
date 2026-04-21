@@ -1,6 +1,7 @@
 import { prisma } from '@/server/db'
 import type { Resource, EducationLevel, Subject } from '@db/client'
 import { UpdateResourceInput } from '@/lib/resources/schemas/admin-resource-schemas'
+import { slugify } from '@/lib/utils/string'
 
 export interface UpdateResourceServiceInput extends UpdateResourceInput {
   id: string
@@ -20,10 +21,12 @@ export async function updateResourceService(
     description,
     educationLevel,
     subject,
-    thumbUrl,
     resourceType,
     pagesCount,
     estimatedDurationMinutes,
+    googleDriveUrl,
+    thumbUrl,
+    thumbPublicId,
     objectives,
     steps,
   } = input
@@ -40,7 +43,24 @@ export async function updateResourceService(
   // Build update data (only include provided fields)
   const updateData: any = {}
 
-  if (title !== undefined) updateData.title = title
+  if (title !== undefined) {
+    const newSlug = slugify(title)
+    
+    // If slug changed, check for duplicates
+    if (newSlug !== existingResource.slug) {
+      const duplicate = await prisma.resource.findUnique({
+        where: { slug: newSlug }
+      })
+      
+      if (duplicate) {
+        throw new Error('RESOURCE_ALREADY_EXISTS')
+      }
+      
+      updateData.slug = newSlug
+    }
+    
+    updateData.title = title
+  }
   if (description !== undefined) updateData.description = description
 
   if (educationLevel !== undefined) {
@@ -67,6 +87,9 @@ export async function updateResourceService(
   }
 
   if (objectives !== undefined) {
+    updateData.googleDriveUrl = googleDriveUrl ?? null
+    updateData.thumbUrl = thumbUrl ?? null
+    updateData.thumbPublicId = thumbPublicId ?? null
     updateData.objectives = {
       deleteMany: {},
       create: objectives.map((objective, index) => ({
@@ -88,7 +111,8 @@ export async function updateResourceService(
       })),
     }
   }
-  // if (thumbUrl !== undefined) updateData.thumbUrl = thumbUrl -- removed
+  if (thumbUrl !== undefined) updateData.thumbUrl = thumbUrl
+  if (thumbPublicId !== undefined) updateData.thumbPublicId = thumbPublicId
   // 1. Determine levelId for validation
   const levelId = updateData.educationLevelId || existingResource.educationLevelId;
 

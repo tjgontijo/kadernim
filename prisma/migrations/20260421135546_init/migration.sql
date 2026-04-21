@@ -371,6 +371,8 @@ CREATE TABLE "resource" (
     "reviewCount" INTEGER NOT NULL DEFAULT 0,
     "averageRating" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "downloadCount" INTEGER NOT NULL DEFAULT 0,
+    "thumbUrl" TEXT,
+    "thumbPublicId" TEXT,
     "googleDriveUrl" TEXT,
     "externalId" INTEGER,
     "archivedAt" TIMESTAMP(3),

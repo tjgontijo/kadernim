@@ -50,7 +50,7 @@ export async function seedReviews(prisma: PrismaClient) {
     users.push(user);
   }
 
-  const resources = await prisma.resource.findMany({ take: 50 }); // Pega os primeiros 50
+  const resources = await prisma.resource.findMany(); // Pega todos os recursos
   console.log(`💬 Distribuindo avaliações para ${resources.length} recursos...`);
 
   for (const resource of resources) {

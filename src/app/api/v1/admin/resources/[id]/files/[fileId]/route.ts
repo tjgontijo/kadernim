@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { deleteFileService, getResourceFileById } from '@/lib/resources/services/admin'
 import { requirePermission } from '@/server/auth/middleware'
 import { checkRateLimit } from '@/server/utils/rate-limit'
-import { deleteFile } from '@/server/clients/cloudinary/file-client'
+import { deleteAsset } from '@/lib/storage/cloudinary'
 
 /**
  * DELETE /api/v1/admin/resources/:id/files/:fileId
@@ -46,7 +46,7 @@ export async function DELETE(
 
     // Delete from Cloudinary
     try {
-      await deleteFile(file.cloudinaryPublicId)
+      await deleteAsset(file.cloudinaryPublicId, 'raw')
     } catch (cloudinaryError) {
       console.error('[DELETE FILE] Cloudinary deletion error:', cloudinaryError)
     }

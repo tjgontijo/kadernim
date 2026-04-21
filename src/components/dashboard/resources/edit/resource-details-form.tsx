@@ -21,11 +21,12 @@ import {
   Upload,
   Link as LinkIcon,
   RefreshCcw,
-  X,
   CheckCircle2,
   AlertCircle,
-  Hash
+  Hash,
+  Trash
 } from 'lucide-react'
+import { slugify } from '@/lib/utils/string'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -66,6 +67,7 @@ import { RichTextEditor } from '@/components/dashboard/editor/rich-text-editor'
 import { useResourceMeta } from '@/hooks/resources/use-resources'
 import { cn } from '@/lib/utils/index'
 import { BnccSelector } from './bncc-selector'
+import { DeleteConfirmDialog } from '@/components/dashboard/crud/delete-confirm-dialog'
 
 interface ResourceDetailsFormProps {
   resource: {
@@ -77,7 +79,11 @@ interface ResourceDetailsFormProps {
     grades: string[]
     bnccCodes?: string[]
     thumbUrl?: string | null
+    thumbPublicId?: string | null
     googleDriveUrl?: string | null
+    resourceType?: string
+    pagesCount?: number | null
+    estimatedDurationMinutes?: number | null
     objectives?: { id?: string; text: string; order: number }[]
     steps?: { id?: string; type: string; title: string; duration?: string | null; content: string; order: number }[]
   }
@@ -103,6 +109,7 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
   const fileInputRef = useRef<HTMLInputElement>(null)
   const isEditing = !!resource.id
   const [isUploadingThumb, setIsUploadingThumb] = useState(false)
+  const [isDeleteThumbDialogOpen, setIsDeleteThumbDialogOpen] = useState(false)
 
   const form = useForm<UpdateResourceInput>({
     resolver: zodResolver(isEditing ? UpdateResourceSchema : CreateResourceSchema),
@@ -114,6 +121,7 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
       grades: resource.grades || [],
       bnccCodes: resource.bnccCodes || [],
       thumbUrl: resource.thumbUrl || '',
+      thumbPublicId: resource.thumbPublicId || '',
       googleDriveUrl: resource.googleDriveUrl || '',
       objectives: resource.objectives || [],
       steps: resource.steps || [],
@@ -136,7 +144,9 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
   const selectedSubject = form.watch('subject')
   const selectedGrades = form.watch('grades') ?? []
   const currentThumbUrl = form.watch('thumbUrl')
+  const currentThumbPublicId = form.watch('thumbPublicId')
   const driveUrl = form.watch('googleDriveUrl')
+  const resourceTitle = form.watch('title')
   
   const showGrades = !!selectedLevel && !!selectedSubject
   
@@ -173,6 +183,8 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
     setIsUploadingThumb(true)
     const formData = new FormData()
     formData.append('file', file)
+    const resourceSlug = slugify(resourceTitle || 'recurso')
+    formData.append('resourceSlug', resourceSlug)
 
     try {
       const response = await fetch('/api/v1/admin/uploads/image', {
@@ -184,6 +196,7 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
       
       const data = await response.json()
       form.setValue('thumbUrl', data.url, { shouldValidate: true })
+      form.setValue('thumbPublicId', data.publicId, { shouldValidate: true })
       toast.success('Capa enviada com sucesso!')
     } catch (error) {
       toast.error('Erro ao subir imagem de capa')
@@ -250,12 +263,37 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
                            >
                              <RefreshCcw className="h-4 w-4 mr-2" /> Trocar
                            </Button>
-                           <X 
-                             className="absolute top-4 right-4 h-6 w-6 text-white cursor-pointer hover:text-berry transition-colors shadow-2xl"
-                             onClick={(e) => {
-                               e.stopPropagation();
-                               form.setValue('thumbUrl', '');
+                           <DeleteConfirmDialog
+                             open={isDeleteThumbDialogOpen}
+                             onOpenChange={setIsDeleteThumbDialogOpen}
+                            onConfirm={async () => {
+                               if (currentThumbPublicId) {
+                                 try {
+                                   await fetch(`/api/v1/admin/uploads/image?publicId=${currentThumbPublicId}`, {
+                                     method: 'DELETE',
+                                   })
+                                 } catch (err) {
+                                   console.error('Erro ao remover no Cloudinary', err)
+                                 }
+                               }
+                               form.setValue('thumbUrl', '', { shouldValidate: true })
+                               form.setValue('thumbPublicId', '', { shouldValidate: true })
+                               setIsDeleteThumbDialogOpen(false)
                              }}
+                             title="Remover capa?"
+                             description="A imagem será removida permanentemente do armazenamento e deste material."
+                             confirmText="Remover permanentemente"
+                             trigger={
+                               <Button
+                                 type="button"
+                                 variant="ghost"
+                                 size="icon"
+                                 className="absolute top-4 right-4 h-8 w-8 text-white hover:text-berry hover:bg-white/10 transition-colors shadow-2xl"
+                                 onClick={(e) => e.stopPropagation()}
+                               >
+                                 <Trash2 className="h-6 w-6" />
+                               </Button>
+                             }
                            />
                         </div>
                       </>

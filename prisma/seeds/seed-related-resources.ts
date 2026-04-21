@@ -4,7 +4,7 @@ import { fakerPT_BR as faker } from '@faker-js/faker';
 export async function seedRelatedResources(prisma: PrismaClient) {
   console.log('🔗 Gerando Recursos Relacionados (Combina com...)...');
 
-  const resources = await prisma.resource.findMany({ take: 100 });
+  const resources = await prisma.resource.findMany();
   const adminUser = await prisma.user.findFirst({
     where: { role: { in: ['admin', 'manager', 'editor'] } }
   });
@@ -18,7 +18,7 @@ export async function seedRelatedResources(prisma: PrismaClient) {
   const relationTypes = ['COMPLEMENTS', 'PREREQUISITE', 'ADVANCED', 'RELATED_TOPIC'];
 
   // Para cada recurso, criar 2-4 relacionamentos
-  for (let i = 0; i < Math.min(resources.length, 50); i++) {
+  for (let i = 0; i < resources.length; i++) {
     const sourceResource = resources[i];
     const relatedCount = faker.number.int({ min: 2, max: 4 });
 

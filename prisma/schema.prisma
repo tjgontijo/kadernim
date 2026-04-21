@@ -401,6 +401,9 @@ model Resource {
   averageRating Float @default(0)
   downloadCount Int   @default(0)
 
+  thumbUrl       String?
+  thumbPublicId  String?
+
   googleDriveUrl String?
   externalId     Int?      @unique
 

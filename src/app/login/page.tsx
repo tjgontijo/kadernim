@@ -192,9 +192,6 @@ function RequestOtpContent() {
                   type="email"
                   autoComplete="email"
                   {...register('email')}
-                  onBlur={(e) => {
-                    setValue('email', e.target.value.trim(), { shouldValidate: true })
-                  }}
                   className={`block w-full rounded-r-3 border-line py-3.5 pl-11 text-ink placeholder:text-ink-faint focus:border-terracotta focus:ring-4 focus:ring-terracotta-2 sm:text-sm transition-all shadow-sm ${errors.email
                     ? 'border-destructive focus:ring-destructive/20 focus:border-destructive'
                     : 'bg-paper-2'

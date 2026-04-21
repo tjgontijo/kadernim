@@ -34,6 +34,9 @@ export const CreateResourceSchema = z.object({
     .url('thumbUrl deve ser uma URL válida')
     .optional()
     .nullable(),
+  thumbPublicId: z.string()
+    .optional()
+    .nullable(),
   grades: z.array(z.string()),
   resourceType: z.string().optional(),
   pagesCount: z.number().int().nonnegative().optional().nullable(),
@@ -64,6 +67,9 @@ export const UpdateResourceSchema = z.object({
   subject: z.string().optional(),
   thumbUrl: z.string()
     .url('thumbUrl deve ser uma URL válida')
+    .optional()
+    .nullable(),
+  thumbPublicId: z.string()
     .optional()
     .nullable(),
   grades: z.array(z.string()).optional(),
@@ -131,6 +137,7 @@ export const ResourceDetailResponseSchema = z.object({
   educationLevel: z.string(),
   subject: z.string(),
   thumbUrl: z.string().nullable(),
+  thumbPublicId: z.string().nullable().optional(),
   grades: z.array(z.string()),
   resourceType: z.string().optional(),
   pagesCount: z.number().nullable().optional(),

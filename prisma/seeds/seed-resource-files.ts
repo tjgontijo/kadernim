@@ -14,7 +14,7 @@ import {
   buildResourceVideoPublicId
 } from '../../src/services/resources/storage-service'
 
-const CONCURRENCY_LIMIT = 5
+const CONCURRENCY_LIMIT = 10
 
 async function logErrorToFile(message: string) {
   const timestamp = new Date().toISOString()
@@ -47,6 +47,7 @@ export async function seedResourceFiles(prisma: PrismaClient) {
   console.log('🌱 Populando resource files com arquitetura de serviços...')
   await resetSeedDebugFiles()
 
+  const startTimeGlobal = performance.now()
   const extIdToSlug = new Map(RESOURCES.map(r => [r.externalId, slugifyText(r.title)]))
   const summary = {
     foldersConfigured: FILES.length,
@@ -64,6 +65,7 @@ export async function seedResourceFiles(prisma: PrismaClient) {
   }
 
   const processResource = async (f: typeof FILES[0]) => {
+    const startTimeResource = performance.now()
     const resourceSlug = extIdToSlug.get(f.externalId)
     if (!resourceSlug) {
       summary.missingResourceMapping += 1
@@ -73,13 +75,15 @@ export async function seedResourceFiles(prisma: PrismaClient) {
 
     const resource = await prisma.resource.findUnique({
       where: { slug: resourceSlug },
-      select: { id: true }
+      select: { id: true, title: true }
     })
     if (!resource) {
       summary.missingResourceInDb += 1
       console.warn(`⚠️ Recurso slug=${resourceSlug} não encontrado no banco (externalId=${f.externalId})`)
       return
     }
+
+    console.log(`🎬 [Material] Processando: ${resource.title}...`)
 
     const folderId = f.url.match(/\/folders\/([a-zA-Z0-9_-]+)/)?.[1]
     if (!folderId) {
@@ -98,12 +102,14 @@ export async function seedResourceFiles(prisma: PrismaClient) {
 
       for (const { id: driveFileId, name: driveFileName } of driveFiles) {
         try {
+          const startDownload = performance.now()
           const downloaded = await downloadDriveFile(driveFileId)
+          const downloadDuration = ((performance.now() - startDownload) / 1000).toFixed(1)
+          console.log(`  📥 Download Drive: ${downloadDuration}s (${driveFileName})`)
 
           if (downloaded.mimeType.includes('video')) {
             const expectedVideoId = buildResourceVideoPublicId({
               resourceSlug,
-              driveFileId,
               fileName: downloaded.fileName
             })
 
@@ -124,6 +130,7 @@ export async function seedResourceFiles(prisma: PrismaClient) {
 
             const upload = await uploadVideoToCloudinary(downloaded.buffer, {
               resourceSlug,
+              driveFolderId: folderId,
               driveFileId,
               fileName: downloaded.fileName
             })
@@ -167,6 +174,7 @@ export async function seedResourceFiles(prisma: PrismaClient) {
 
             const upload = await uploadPdfToR2(downloaded.buffer, {
               resourceSlug,
+              driveFolderId: folderId,
               driveFileId,
               fileName: downloaded.fileName,
               mimeType: downloaded.mimeType
@@ -188,6 +196,7 @@ export async function seedResourceFiles(prisma: PrismaClient) {
               const images = await generatePreviewImagesFromPdf({
                 resourceSlug,
                 resourceTitle: f.name,
+                driveFolderId: folderId,
                 driveFileId,
                 pdfFileName: downloaded.fileName,
                 pdfBuffer: downloaded.buffer,
@@ -226,6 +235,8 @@ export async function seedResourceFiles(prisma: PrismaClient) {
           console.error(`❌ Erro ao processar arquivo extId=${f.externalId}, driveFileId=${driveFileId}: ${errMsg}`)
         }
       }
+      const duration = ((performance.now() - startTimeResource) / 1000).toFixed(1)
+      console.log(`✅ ${resource.title} concluído em ${duration}s\n`)
     } catch (error) {
       summary.folderFailures += 1
       await logErrorToFile(`Falha pasta extId=${f.externalId}: ${error}`)
@@ -241,5 +252,10 @@ export async function seedResourceFiles(prisma: PrismaClient) {
   }
   await Promise.all(pool)
 
+  const totalDuration = ((performance.now() - startTimeGlobal) / 1000).toFixed(1)
   console.log('📊 Resumo seedResourceFiles:', summary)
+  console.log(`⏱️  Tempo Total: ${totalDuration}s`)
+  if (summary.uploadedPdfsToR2 > 0) {
+    console.log(`🚀 Média por PDF: ${(Number(totalDuration) / summary.uploadedPdfsToR2).toFixed(1)}s`)
+  }
 }

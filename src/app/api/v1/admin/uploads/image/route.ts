@@ -1,13 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { v2 as cloudinary } from 'cloudinary'
 import { requireRole } from '@/server/auth/middleware'
+import { uploadImage, deleteAsset } from '@/lib/storage/cloudinary'
 import { UserRole } from '@/types/users/user-role'
-
-cloudinary.config({
-  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-})
 
 export async function POST(req: NextRequest) {
   const authResult = await requireRole(req, UserRole.admin)
@@ -18,25 +12,16 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData()
     const file = formData.get('file') as File
+    const resourceSlug = formData.get('resourceSlug') as string | null
     
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
-    const arrayBuffer = await file.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
-
-    const result = await new Promise<any>((resolve, reject) => {
-      cloudinary.uploader.upload_stream(
-        {
-          folder: 'kadernim/resources/thumbs',
-          resource_type: 'image',
-        },
-        (error, result) => {
-          if (error) reject(error)
-          else resolve(result)
-        }
-      ).end(buffer)
+    const result = await uploadImage(file, {
+      folder: resourceSlug ? `resources/${resourceSlug}/images` : 'resources/images',
+      publicId: resourceSlug ? 'cover' : undefined,
+      overwrite: true,
     })
 
     return NextResponse.json({ 
@@ -46,5 +31,28 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('[UPLOAD ERROR]', error)
     return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  const authResult = await requireRole(req, UserRole.admin)
+  if (authResult instanceof NextResponse) {
+    return authResult
+  }
+
+  try {
+    const { searchParams } = new URL(req.url)
+    const publicId = searchParams.get('publicId')
+
+    if (!publicId) {
+      return NextResponse.json({ error: 'No publicId provided' }, { status: 400 })
+    }
+
+    await deleteAsset(publicId)
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('[DELETE ERROR]', error)
+    return NextResponse.json({ error: 'Delete failed' }, { status: 500 })
   }
 }

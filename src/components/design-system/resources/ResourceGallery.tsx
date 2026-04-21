@@ -144,30 +144,35 @@ export function ResourceGallery({ files = [], videos = [], title = 'Material' }:
     }
   }, [allItems, selectedItemId])
 
-  const selectedImages = selectedItem?.galleryType === 'file' ? (selectedItem as any).images : []
+  const selectedImages: ResourceImage[] =
+    selectedItem?.galleryType === 'file'
+      ? ((selectedItem as ResourceFile).images ?? [])
+      : []
+  const selectedImage = selectedImages[activeImageIndex] ?? selectedImages[0] ?? null
 
   useEffect(() => {
-    if (!selectedImages?.length) return
+    if (selectedImages.length === 0) {
+      if (activeImageIndex !== 0) setActiveImageIndex(0)
+      return
+    }
 
-    if (activeImageIndex >= selectedImages.length) {
+    if (activeImageIndex < 0 || activeImageIndex >= selectedImages.length) {
       setActiveImageIndex(0)
     }
-  }, [activeImageIndex, selectedImages])
+  }, [activeImageIndex, selectedImages.length])
 
   const handlePrevious = () => {
-    if (selectedImages) {
-      setActiveImageIndex((prev) =>
-        prev === 0 ? selectedImages.length - 1 : prev - 1
-      )
-    }
+    if (selectedImages.length <= 1) return
+    setActiveImageIndex((prev) =>
+      prev === 0 ? selectedImages.length - 1 : prev - 1
+    )
   }
 
   const handleNext = () => {
-    if (selectedImages) {
-      setActiveImageIndex((prev) =>
-        prev === selectedImages.length - 1 ? 0 : prev + 1
-      )
-    }
+    if (selectedImages.length <= 1) return
+    setActiveImageIndex((prev) =>
+      prev === selectedImages.length - 1 ? 0 : prev + 1
+    )
   }
 
   if (allItems.length > 0 && selectedItem) {
@@ -180,7 +185,7 @@ export function ResourceGallery({ files = [], videos = [], title = 'Material' }:
         {/* Main Container: Sidebar + Gallery */}
         <div className="flex gap-[16px] items-stretch">
           {/* Sidebar with File Covers - Scrollable */}
-          {files.length > 1 && (
+          {allItems.length > 0 && (
             <div className="relative flex-shrink-0 w-[124px] -ml-[6px]">
               <ScrollArea className="absolute inset-0">
                 <div ref={scrollContainerRef} className="flex flex-col gap-[16px] pb-[40px] pt-[4px] px-[6px]">
@@ -262,13 +267,19 @@ export function ResourceGallery({ files = [], videos = [], title = 'Material' }:
                     )}
                   </div>
                 ) : (
-                  <LazyImage
-                    src={selectedImages[activeImageIndex].url || ''}
-                    alt={selectedImages[activeImageIndex].alt || `${selectedItem.name} - página ${activeImageIndex + 1}`}
-                    fill
-                    className="object-contain scale-105"
-                    sizes="(max-width: 768px) 100vw, 60vw"
-                  />
+                  selectedImage?.url ? (
+                    <LazyImage
+                      src={selectedImage.url}
+                      alt={selectedImage.alt || `${selectedItem.name} - página ${activeImageIndex + 1}`}
+                      fill
+                      className="object-contain scale-105"
+                      sizes="(max-width: 768px) 100vw, 60vw"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-paper-2 text-ink-mute text-[13px] font-medium px-[12px] text-center">
+                      Pré-visualização indisponível para este arquivo
+                    </div>
+                  )
                 )}
               </div>
 

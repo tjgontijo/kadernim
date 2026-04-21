@@ -1,40 +1,39 @@
-import { r2Client, R2_BUCKET_NAME, R2_PUBLIC_URL } from '../../server/clients/r2/config'
-import { cloudinary } from '../../server/clients/cloudinary/config'
-import { PutObjectCommand } from '@aws-sdk/client-s3'
-import type { UploadApiResponse } from 'cloudinary'
-import { Readable } from 'node:stream'
-import { optimizePdf, optimizeVideo, CLOUDINARY_RAW_MAX_BYTES, CLOUDINARY_VIDEO_MAX_BYTES } from './media-service'
-
-const ongoingUploads = new Map<string, Promise<any>>()
+import { uploadToR2, getR2PublicUrl } from '@/lib/storage/r2'
+import { uploadVideoChunked, uploadImage, uploadFromUrl, getCloudinaryUrl } from '@/lib/storage/cloudinary'
+import {
+  optimizePdf,
+  optimizeVideo,
+  CLOUDINARY_RAW_MAX_BYTES,
+  CLOUDINARY_VIDEO_MAX_BYTES,
+  extractPdfPages
+} from '@/lib/media'
 
 /**
  * Faz o upload de um PDF para o Cloudflare R2 após otimização.
  */
 export async function uploadPdfToR2(
   buffer: Buffer,
-  options: { resourceSlug: string; driveFileId: string; fileName: string; mimeType: string }
+  options: { resourceSlug: string; driveFolderId: string; driveFileId: string; fileName: string; mimeType: string }
 ) {
+  const startOpt = performance.now()
   const optimizedBuffer = await optimizePdf(buffer, options.fileName)
+  const optDuration = ((performance.now() - startOpt) / 1000).toFixed(1)
+  console.log(`  ⚙️ Otimização PDF: ${optDuration}s`)
+
+  const startUpload = performance.now()
   const key = buildResourcePdfObjectKey(options)
   const contentDisposition = buildSafeContentDisposition(options.fileName)
 
-  await r2Client.send(
-    new PutObjectCommand({
-      Bucket: R2_BUCKET_NAME,
-      Key: key,
-      Body: optimizedBuffer,
-      ContentType: options.mimeType,
-      ContentDisposition: contentDisposition,
-    })
-  )
-
-  const url = R2_PUBLIC_URL ? `${R2_PUBLIC_URL}/${key}` : key
-
-  return {
+  const result = await uploadToR2({
     key,
-    url,
-    sizeBytes: optimizedBuffer.byteLength,
-  }
+    body: optimizedBuffer,
+    contentType: options.mimeType,
+    contentDisposition,
+  })
+  const uploadDuration = ((performance.now() - startUpload) / 1000).toFixed(1)
+  console.log(`  ☁️ Upload R2: ${uploadDuration}s`)
+
+  return result
 }
 
 /**
@@ -42,141 +41,119 @@ export async function uploadPdfToR2(
  */
 export async function uploadVideoToCloudinary(
   buffer: Buffer,
-  options: { resourceSlug: string; driveFileId: string; fileName: string }
+  options: { resourceSlug: string; driveFolderId: string; driveFileId: string; fileName: string }
 ) {
   const publicId = buildResourceVideoPublicId(options)
-  
-  if (ongoingUploads.has(publicId)) {
-    console.log(`📡 Usando upload já em curso para o vídeo: ${options.fileName}`)
-    return ongoingUploads.get(publicId)!
+  const uploadBuffer = await optimizeVideo(buffer, options.fileName)
+
+  if (uploadBuffer.byteLength > CLOUDINARY_VIDEO_MAX_BYTES) {
+    throw new Error(`O vídeo permanece acima de 100MB (${(uploadBuffer.byteLength / 1024 / 1024).toFixed(1)}MB) mesmo após compressão.`)
   }
 
-  const uploadPromise = (async () => {
-    const uploadBuffer = await optimizeVideo(buffer, options.fileName)
-
-    if (uploadBuffer.byteLength > CLOUDINARY_VIDEO_MAX_BYTES) {
-      throw new Error(`O vídeo permanece acima de 100MB (${(uploadBuffer.byteLength / 1024 / 1024).toFixed(1)}MB) mesmo após compressão.`)
-    }
-
-    return new Promise<UploadApiResponse>((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_chunked_stream(
-        {
-          resource_type: 'video',
-          public_id: publicId,
-          overwrite: true,
-          chunk_size: 6_000_000,
-          tags: ['resource', 'video', options.resourceSlug, options.driveFileId],
-        },
-        (error, result) => {
-          if (error) return reject(error)
-          if (result && 'done' in result && result.done === false) return
-          if (!result) return reject(new Error('Upload failed - empty result'))
-          resolve(result as UploadApiResponse)
-        }
-      )
-      Readable.from(uploadBuffer).pipe(stream)
-    })
-  })()
-
-  ongoingUploads.set(publicId, uploadPromise)
-  
-  // Limpar cache de upload após 2 minutos
-  setTimeout(() => ongoingUploads.delete(publicId), 120_000)
-  
-  return uploadPromise
+  return await uploadVideoChunked(uploadBuffer, {
+    folder: '', // Public ID already has path
+    publicId: publicId,
+    tags: ['resource', 'video', options.resourceSlug, options.driveFolderId, options.driveFileId],
+  })
 }
 
 /**
- * Gera imagens de preview do PDF no Cloudinary.
+ * Gera imagens de preview do PDF localmente e faz upload para o Cloudinary em paralelo.
  */
 export async function generatePreviewImagesFromPdf(options: {
   resourceSlug: string
   resourceTitle: string
+  driveFolderId: string
   driveFileId: string
   pdfFileName: string
   pdfBuffer: Buffer
   fileDisplayName: string
 }) {
-  // 1. Otimizar PDF antes de tentar mandar pro Cloudinary para preview
-  const uploadBuffer = await optimizePdf(options.pdfBuffer, options.pdfFileName)
+  // 1. Usar o buffer original para extração (mais rápido e melhor qualidade)
+  const totalPagesEstimate = options.pdfBuffer.length > 5000000 ? 20 : 10 
+  const selectedPages = pickPreviewPages(24) 
 
-  if (uploadBuffer.byteLength > CLOUDINARY_RAW_MAX_BYTES) {
-    throw new Error(`Arquivo muito grande (${(uploadBuffer.byteLength / 1024 / 1024).toFixed(1)}MB) para gerar previews no Cloudinary.`)
-  }
+  // 2. Extrair páginas localmente usando Ghostscript
+  const startExtract = performance.now()
+  const pageBuffers = await extractPdfPages(options.pdfBuffer, selectedPages, options.pdfFileName)
+  const extractDuration = ((performance.now() - startExtract) / 1000).toFixed(1)
+  console.log(`  🖼️ Extração Local (${selectedPages.length} pgs): ${extractDuration}s`)
 
   const previewFileSlug = slugifyStorageName(stripExtension(options.pdfFileName), 'arquivo')
-  const basePath = `resources/${options.resourceSlug}/${options.driveFileId}`
+  const basePath = `resources/${options.resourceSlug}/images`
 
-  // 2. Upload como "PDF base" para extração de páginas
-  const pdfSource = await new Promise<UploadApiResponse>((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_chunked_stream(
-      {
-        resource_type: 'image',
-        format: 'pdf',
-        public_id: `${basePath}/thumb`,
-        overwrite: true,
-        tags: ['resource', 'pdf-source', options.resourceSlug, options.driveFileId],
-      },
-      (error, result) => {
-        if (error) return reject(error)
-        if (result && 'done' in result && result.done === false) return
-        if (!result) return reject(new Error('Upload source failed'))
-        resolve(result)
-      }
-    )
-    Readable.from(uploadBuffer).pipe(stream)
-  })
-
-  // 3. Escolher e gerar imagens de páginas específicas
-  const totalPages = (pdfSource as any).pages || 1
-  const selectedPages = pickPreviewPages(totalPages)
-  const images = []
-
-  for (let i = 0; i < selectedPages.length; i++) {
-    const page = selectedPages[i]
-    const url = cloudinary.url(pdfSource.public_id, {
-      secure: true,
-      resource_type: 'image',
-      format: 'jpg',
-      transformation: [
-        { page },
-        { quality: 'auto:good' },
-        { width: 1400, crop: 'limit' },
-      ],
+  // 3. Upload de todas as páginas em paralelo para o Cloudinary
+  const startUpload = performance.now()
+  const uploadPromises = pageBuffers.map(async (buffer, i) => {
+    const pageNumber = selectedPages[i]
+    const uploaded = await uploadImage(buffer, {
+      folder: `${basePath}/preview/${previewFileSlug}`,
+      publicId: `page-${i + 1}`,
+      context: { alt: `${options.resourceTitle} - ${options.fileDisplayName} - página ${pageNumber}` },
+      tags: ['resource', 'preview', options.resourceSlug, options.driveFolderId]
     })
 
-    const uploaded = await cloudinary.uploader.upload(url, {
-      public_id: `${basePath}/preview/${previewFileSlug}/images-${i + 1}`,
-      overwrite: true,
-      resource_type: 'image',
-      context: { alt: `${options.resourceTitle} - ${options.fileDisplayName} - página ${page}` },
-    })
     const uploadedContext = uploaded.context as { custom?: { alt?: string } } | undefined
 
-    images.push({
+    return {
       cloudinaryPublicId: uploaded.public_id,
       url: uploaded.secure_url,
       alt: uploadedContext?.custom?.alt ?? options.resourceTitle,
-    })
-  }
+    }
+  })
 
-  return images
+  const results = await Promise.all(uploadPromises)
+  const uploadDuration = ((performance.now() - startUpload) / 1000).toFixed(1)
+  console.log(`  ☁️ Upload Cloudinary (Paralelo): ${uploadDuration}s`)
+
+  return results
 }
 
 export function buildResourcePdfObjectKey(options: { resourceSlug: string; driveFileId: string; fileName: string }) {
-  const fileSlug = slugifyStorageName(stripExtension(options.fileName), 'arquivo')
-  return `resources/${options.resourceSlug}/${options.driveFileId}/files/${fileSlug}.pdf`
+  const safeName = slugifyStorageName(options.fileName, 'material')
+  return `resources/${options.resourceSlug}/files/${options.driveFileId}/${safeName}`
 }
 
-export function buildResourceVideoPublicId(options: { resourceSlug: string; driveFileId: string; fileName: string }) {
-  const fileSlug = slugifyStorageName(stripExtension(options.fileName), 'video')
-  return `resources/${options.resourceSlug}/${options.driveFileId}/videos/${fileSlug}`
+export function buildResourceVideoPublicId(options: { resourceSlug: string; fileName: string }) {
+  const safeName = slugifyStorageName(stripExtension(options.fileName), 'video')
+  return `resources/${options.resourceSlug}/videos/${safeName}`
+}
+
+export function buildResourceThumbPublicId(options: { resourceSlug: string }) {
+  return `resources/${options.resourceSlug}/thumb`
 }
 
 function pickPreviewPages(total: number): number[] {
-  if (total <= 4) return Array.from({ length: total }, (_, i) => i + 1)
-  // Lógica simplificada: primeira, meio, penúltima, última (ou similar)
-  return [1, Math.floor(total / 2), total - 1, total]
+  if (total <= 0) return []
+
+  // Mais agressivo: Para materiais ricos, queremos mostrar até 8 imagens.
+  if (total < 12) {
+    if (total <= 8) return Array.from({ length: total }, (_, i) => i + 1)
+    return uniquePages([1, 2, 3, 4, 6, 8, total - 1, total].filter(p => p <= total))
+  }
+
+  // Para documentos grandes, pegamos uma amostra bem distribuída
+  const firstAllowedPage = 1 // Inicia na 1 para materiais pequenos, mas vamos manter a lógica de pular se for muito grande?
+  // Na verdade, materiais de professores geralmente a capa é importante.
+  
+  const step = Math.floor(total / 8)
+  const candidates = [
+    1,
+    2,
+    3,
+    1 + step,
+    1 + 2 * step,
+    1 + 3 * step,
+    total - 1,
+    total,
+  ]
+
+  return uniquePages(candidates.filter((page) => page >= 1 && page <= total))
+}
+
+
+function uniquePages(pages: number[]): number[] {
+  return Array.from(new Set(pages)).sort((a, b) => a - b)
 }
 
 function buildSafeContentDisposition(fileName: string): string {
@@ -212,16 +189,17 @@ function slugifyStorageName(value: string, fallback: string): string {
 export async function uploadImageFromUrlToCloudinary(options: {
   imageUrl: string
   resourceId: string
+  resourceSlug?: string
   publicId?: string
   altText?: string
 }) {
-  const upload = await cloudinary.uploader.upload(options.imageUrl, {
-    folder: `resources/images/${options.resourceId}`,
-    public_id: options.publicId ?? 'cover',
-    overwrite: true,
-    resource_type: 'image',
-    quality: 'auto',
-    fetch_format: 'auto',
+  const folder = options.resourceSlug
+    ? `resources/${options.resourceSlug}/images`
+    : `resources/images/${options.resourceId}`
+
+  const upload = await uploadFromUrl(options.imageUrl, {
+    folder: folder,
+    publicId: options.publicId ?? 'cover',
     context: options.altText ? { alt: options.altText } : undefined,
     tags: ['resource', 'image', 'seed', options.resourceId],
   })
@@ -234,3 +212,4 @@ export async function uploadImageFromUrlToCloudinary(options: {
     format: upload.format,
   }
 }
+
