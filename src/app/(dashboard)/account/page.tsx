@@ -312,13 +312,12 @@ export default function AccountPage() {
                     {/* Header: Avatar & Name */}
                     <div className="flex flex-col items-center mb-10">
                         <div className="relative group">
-                            <div className="absolute -inset-3 rounded-full border border-dashed border-line-soft bg-paper/70 -z-10" />
                             <Avatar
-                                className="data-[size=default]:size-40 h-40 w-40 rounded-full border-[6px] border-line shadow-2 relative transition-transform duration-500 group-hover:scale-[1.02] cursor-pointer"
+                                className="data-[size=default]:size-40 h-40 w-40 !rounded-full border-[6px] border-line shadow-2 relative transition-transform duration-500 group-hover:scale-[1.02] cursor-pointer"
                                 onClick={() => account.image && setIsImagePreviewOpen(true)}
                             >
-                                <AvatarImage src={account.image || ''} className="object-cover" />
-                                <AvatarFallback className="text-4xl font-black bg-paper-2 text-ink-mute">
+                                <AvatarImage src={account.image || ''} className="object-cover !rounded-full" />
+                                <AvatarFallback className="text-4xl font-black bg-paper-2 text-ink-mute !rounded-full">
                                     {account.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '??'}
                                 </AvatarFallback>
                             </Avatar>
