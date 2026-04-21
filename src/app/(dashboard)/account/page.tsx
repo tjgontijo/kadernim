@@ -269,10 +269,11 @@ export default function AccountPage() {
 
                 <CardContent className="p-8 pt-0">
                     {/* Header: Avatar & Name */}
-                    <div className="flex flex-col items-center mb-12">
+                    <div className="flex flex-col items-center mb-10">
                         <div className="relative group">
+                            <div className="absolute -inset-3 rounded-full border border-dashed border-line-soft bg-paper/70 -z-10" />
                             <Avatar
-                                className="h-40 w-40 border-[6px] border-line shadow-2 relative transition-transform duration-500 group-hover:scale-[1.02] cursor-pointer"
+                                className="data-[size=default]:size-40 h-40 w-40 rounded-full border-[6px] border-line shadow-2 relative transition-transform duration-500 group-hover:scale-[1.02] cursor-pointer"
                                 onClick={() => account.image && setIsImagePreviewOpen(true)}
                             >
                                 <AvatarImage src={account.image || ''} className="object-cover" />
@@ -289,7 +290,7 @@ export default function AccountPage() {
 
                             <label
                                 htmlFor="avatar-upload-main"
-                                className="absolute bottom-1 right-1 rounded-full border border-line bg-paper p-2 text-ink-mute shadow-1 transition-all hover:text-terracotta opacity-100 md:opacity-0 md:group-hover:opacity-100"
+                                className="absolute bottom-2 right-2 rounded-full border border-line bg-paper p-2.5 text-ink-mute shadow-1 transition-all hover:text-terracotta opacity-100 md:opacity-0 md:group-hover:opacity-100"
                             >
                                 <Camera className="h-3.5 w-3.5" />
                             </label>
@@ -322,6 +323,9 @@ export default function AccountPage() {
                                     </Badge>
                                 )}
                             </div>
+                            <p className="text-xs font-medium text-ink-mute mt-1">
+                                Clique na foto para visualizar ou atualizar
+                            </p>
                         </div>
                     </div>
 
