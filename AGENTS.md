@@ -69,13 +69,13 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 <claude-mem-context>
 # Memory Context
 
-# [kadernim] recent context, 2026-04-21 9:20am GMT-3
+# [kadernim] recent context, 2026-04-21 8:51pm GMT-3
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision
 Format: ID TIME TYPE TITLE
 Fetch details: get_observations([IDs]) | Search: mem-search skill
 
-Stats: 36 obs (11,917t read) | 236,768t work | 95% savings
+Stats: 38 obs (12,733t read) | 258,477t work | 95% savings
 
 ### Apr 20, 2026
 164 12:50p 🔵 scripts/clear-r2.ts Not Found in Git History — Kadernim
@@ -115,6 +115,8 @@ Stats: 36 obs (11,917t read) | 236,768t work | 95% savings
 227 9:17a 🔴 Image Upload Route — Fixed Cloudinary Config by Using Shared Client
 229 " 🔵 TypeScript Build — Only One Error Remaining in Test File
 231 9:18a 🔵 Kadernim Env File Layout — CLOUDINARY_URL Confirmed in .env
+234 9:20a 🔵 Resource thumbUrl Architecture — Upload Route Feeds resource-details-form.tsx
+235 " 🟣 Thumbnail Removal — Now Uses DeleteConfirmDialog Instead of Instant X Button
 
-Access 237k tokens of past work via get_observations([IDs]) or mem-search skill.
+Access 258k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>
