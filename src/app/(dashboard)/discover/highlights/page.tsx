@@ -83,7 +83,7 @@ export default function HighlightsPage() {
   const topDownloads = Math.max(...items.map((item) => item.recentDownloads), 0)
 
   return (
-    <PageScaffold>
+    <PageScaffold className="pt-4 sm:pt-6">
       <PageScaffold.Highlight>
         <div className="overflow-hidden rounded-4 border border-line bg-ink text-paper shadow-2">
           <div className="grid gap-4 bg-[repeating-linear-gradient(to_bottom,transparent_0,transparent_31px,oklch(1_0_0_/_0.08)_31px,oklch(1_0_0_/_0.08)_32px)] px-5 py-5 sm:grid-cols-[1fr_auto] sm:px-6">
