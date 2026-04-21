@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react'
 import { FavoriteCard } from '@/components/dashboard/favorites/FavoriteCard'
 import { useResourcesSummaryQuery } from '@/hooks/resources/use-resources'
 import { PageScaffold } from '@/components/dashboard/shared/page-scaffold'
-import { ResourcesPageSkeleton } from '@/components/dashboard/resources/resources-page-skeleton'
+import { FavoritesPageSkeleton } from '@/components/dashboard/favorites/favorites-page-skeleton'
 import { Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
@@ -29,7 +29,7 @@ export default function FavoritesPage() {
 
   // Skeleton
   if (isLoading && items.length === 0) {
-    return <ResourcesPageSkeleton />
+    return <FavoritesPageSkeleton />
   }
 
   return (
