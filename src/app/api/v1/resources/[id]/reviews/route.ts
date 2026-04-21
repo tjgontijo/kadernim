@@ -100,7 +100,7 @@ export async function PATCH(
     })
 
     // Invalidar cache de reviews públicas ao moderar
-    revalidateTag(`resource:${id}:reviews`)
+    revalidateTag(`resource:${id}:reviews`, { expire: 0 })
 
     return NextResponse.json({ data: review })
   } catch (error) {
