@@ -3,27 +3,22 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
-    User,
     Mail,
     Phone,
     Calendar,
     Crown,
     Loader2,
     Check,
-    ExternalLink,
     Sparkles,
     Camera,
     Pencil,
-    Settings,
-    Smartphone,
-    RefreshCw,
-    Trash2,
     LogOut,
     Shield,
-    Download,
-    AlertCircle
+    CreditCard,
+    Receipt,
+    History
 } from 'lucide-react'
-import { format, differenceInDays } from 'date-fns'
+import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -32,9 +27,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils/index'
 import {
     applyWhatsAppMask,
     removeWhatsAppMask,
@@ -77,6 +71,48 @@ interface AccountData {
     } | null
 }
 
+interface BillingOverviewData {
+    subscription: {
+        id: string
+        status: string
+        isActive: boolean
+        createdAt: string
+        expiresAt: string | null
+        paymentMethod: 'CREDIT_CARD' | 'PIX' | 'PIX_AUTOMATIC' | null
+        failureReason: string | null
+        failureCount: number
+        nextRetryAt: string | null
+        lastFailureMessage: string | null
+    } | null
+    invoices: Array<{
+        id: string
+        status: string
+        value: number
+        dueDate: string
+        description: string | null
+        invoiceUrl: string | null
+        createdAt: string
+    }>
+}
+
+type BillingPaymentMethod = NonNullable<BillingOverviewData['subscription']>['paymentMethod']
+
+function formatPaymentMethod(method: BillingPaymentMethod) {
+    if (method === 'CREDIT_CARD') return 'Cartão de crédito'
+    if (method === 'PIX_AUTOMATIC') return 'PIX automático'
+    if (method === 'PIX') return 'PIX mensal'
+    return 'Não informado'
+}
+
+function formatInvoiceStatus(status: string) {
+    if (status === 'RECEIVED' || status === 'CONFIRMED') return 'Pago'
+    if (status === 'PENDING') return 'Pendente'
+    if (status === 'OVERDUE') return 'Atrasado'
+    if (status === 'FAILED') return 'Falhou'
+    if (status === 'CANCELED') return 'Cancelado'
+    return status
+}
+
 export default function AccountPage() {
     const queryClient = useQueryClient()
     const [isEditingProfile, setIsEditingProfile] = useState(false)
@@ -88,6 +124,7 @@ export default function AccountPage() {
     const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false)
     const [isRevokingSessions, setIsRevokingSessions] = useState(false)
     const [showLogoutAllDialog, setShowLogoutAllDialog] = useState(false)
+    const [showBillingDetailsDialog, setShowBillingDetailsDialog] = useState(false)
 
 
     const { data: account, isLoading } = useQuery<AccountData>({
@@ -99,7 +136,15 @@ export default function AccountPage() {
         },
     })
 
-    const version = account?.latestVersion
+    const { data: billingOverview, isLoading: isBillingLoading } = useQuery<BillingOverviewData>({
+        queryKey: ['billing-overview'],
+        enabled: showBillingDetailsDialog,
+        queryFn: async () => {
+            const res = await fetch('/api/v1/billing/overview')
+            if (!res.ok) throw new Error('Erro ao carregar assinatura')
+            return res.json()
+        },
+    })
 
     const updateMutation = useMutation({
         mutationFn: async (data: { name?: string; phone?: string | null }) => {
@@ -167,8 +212,7 @@ export default function AccountPage() {
     }
 
     const handleSubscribe = () => {
-        // Redireciona para página de billing para membros ou checkout direto
-        window.location.href = '/billing'
+        window.location.href = '/checkout'
     }
 
     const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -248,9 +292,6 @@ export default function AccountPage() {
     }
 
     const subscription = account.subscription
-    const daysRemaining = subscription?.expiresAt
-        ? differenceInDays(new Date(subscription.expiresAt), new Date())
-        : null
 
     return (
         <div className="w-full max-w-3xl mx-auto space-y-6 px-4 sm:px-0 pt-8 pb-16">
@@ -431,137 +472,76 @@ export default function AccountPage() {
                 </CardContent>
             </Card>
 
-            {/* Card: Assinatura */}
+            {/* Card: Assinatura (resumo) */}
             <Card className="overflow-hidden rounded-4 border border-line bg-card shadow-1">
                 <CardHeader className="p-8 pb-0">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="p-3 bg-mustard-2 rounded-3 border border-line">
-                                <Crown className="h-6 w-6 text-ink" />
-                            </div>
-                            <div>
-                                <CardTitle className="text-xl font-display font-semibold tracking-tight">Assinatura</CardTitle>
-                                <CardDescription className="font-medium text-ink-mute">Gestão do seu plano premium</CardDescription>
-                            </div>
+                    <div className="flex items-center gap-3">
+                        <div className="p-3 bg-mustard-2 rounded-3 border border-line">
+                            <Crown className="h-6 w-6 text-ink" />
+                        </div>
+                        <div>
+                            <CardTitle className="text-xl font-display font-semibold tracking-tight">Assinatura</CardTitle>
+                            <CardDescription className="font-medium text-ink-mute">Resumo do seu plano atual</CardDescription>
                         </div>
                     </div>
                 </CardHeader>
 
-                <CardContent className="p-8">
-                    {/* Admin - Acesso total */}
-                    {account.role === 'admin' && (
-                        <div className="p-4 rounded-3 bg-paper-2 border border-line flex items-center gap-4">
-                            <div className="h-12 w-12 rounded-3 bg-card border border-line flex items-center justify-center text-ink">
-                                <Settings className="h-6 w-6" />
-                            </div>
-                            <div>
-                                <h4 className="font-black text-ink">Acesso Administrativo</h4>
-                                <p className="text-sm text-ink-mute font-medium">Você possui privilégios de acesso total vitalício.</p>
+                <CardContent className="p-8 space-y-5">
+                    {account.role === 'admin' ? (
+                        <div className="p-4 rounded-3 bg-paper-2 border border-line">
+                            <p className="font-black text-ink">Acesso administrativo</p>
+                            <p className="text-sm text-ink-mute mt-1">Conta com privilégios de administração.</p>
+                        </div>
+                    ) : subscription?.isActive ? (
+                        <div className="space-y-3">
+                            <Badge className="bg-sage-2 text-sage border-sage/20 font-black px-3 py-0.5 rounded-full uppercase text-[10px] tracking-widest">
+                                Assinatura ativa
+                            </Badge>
+                            <div className="grid gap-3 sm:grid-cols-2">
+                                <div className="rounded-3 border border-line bg-paper-2 px-4 py-3">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-ink-mute">Plano</p>
+                                    <p className="font-bold text-ink mt-1">Kadernim Pro</p>
+                                </div>
+                                <div className="rounded-3 border border-line bg-paper-2 px-4 py-3">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-ink-mute">Próxima renovação</p>
+                                    <p className="font-bold text-ink mt-1">
+                                        {subscription.expiresAt
+                                            ? format(new Date(subscription.expiresAt), "d 'de' MMMM", { locale: ptBR })
+                                            : 'Sem expiração'}
+                                    </p>
+                                </div>
                             </div>
                         </div>
-                    )}
-
-                    {/* Subscriber com assinatura ativa */}
-                    {account.role === 'subscriber' && subscription?.isActive && (
-                        <div className="space-y-6">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <Badge className="bg-emerald-500/10 text-emerald-600 border-none font-black px-4 py-1 rounded-full uppercase text-[10px] tracking-widest">
-                                        Assinatura Ativa
-                                    </Badge>
-                                </div>
-                            </div>
-
-                            {subscription.expiresAt && (
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex flex-col">
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">Próxima Renovação</span>
-                                            <span className="font-black text-foreground text-lg">
-                                                {format(new Date(subscription.expiresAt), "d MMM yyyy", { locale: ptBR })}
-                                            </span>
-                                        </div>
-
-                                        {daysRemaining !== null && (
-                                            <div className="text-right">
-                                                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">Tempo Restante</span>
-                                                <div className={cn(
-                                                    "text-lg font-black",
-                                                    daysRemaining > 30 ? "text-emerald-600" :
-                                                        daysRemaining > 7 ? "text-amber-600" : "text-red-600"
-                                                )}>
-                                                    {daysRemaining} dias
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {daysRemaining !== null && (
-                                        <div className="w-full bg-muted/50 rounded-full h-3 overflow-hidden p-0.5">
-                                            <div
-                                                className={cn(
-                                                    "h-full rounded-full transition-all duration-1000 ease-out shadow-sm",
-                                                    daysRemaining > 30 ? "bg-emerald-500" :
-                                                        daysRemaining > 7 ? "bg-amber-500" : "bg-red-500"
-                                                )}
-                                                style={{ width: `${Math.min(100, Math.max(5, (daysRemaining / 365) * 100))}%` }}
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {!subscription.expiresAt && (
-                                <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 flex items-center gap-4">
-                                    <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                                        <Sparkles className="h-6 w-6" />
-                                    </div>
-                                    <div>
-                                        <h4 className="font-black text-primary">Acesso Vitalício</h4>
-                                        <p className="text-sm text-primary/70 font-medium">Sua conta premium não possui data de expiração.</p>
-                                    </div>
-                                </div>
-                            )}
-
-                            <Button
-                                variant="outline"
-                                className="w-full h-14 rounded-3 font-black uppercase tracking-widest text-xs border-line hover:bg-paper-2 transition-all active:scale-[0.98]"
-                                onClick={() => window.location.href = '/billing'}
-                            >
-                                <Settings className="h-4 w-4 mr-3" />
-                                Gerenciar Plano e Faturas
-                            </Button>
-                        </div>
-                    )}
-
-                    {/* Subscriber com assinatura expirada ou user comum */}
-                    {account.role !== 'admin' && !(account.role === 'subscriber' && subscription?.isActive) && (
-                        <div className="space-y-6">
-                            <div className="text-center py-8 px-4 bg-muted/20 rounded-3xl border border-dashed border-muted-foreground/20">
-                                <div className="inline-flex items-center justify-center w-16 h-16 rounded-3 bg-paper mb-4 shadow-1 border border-line">
-                                    <Sparkles className="h-8 w-8 text-terracotta/70" />
-                                </div>
-                                <h3 className="font-display font-semibold text-2xl tracking-tight mb-2">
-                                    {subscription && !subscription.isActive
-                                        ? 'Assinatura Expirada'
-                                        : 'Seja Premium'}
-                                </h3>
-                                <p className="text-sm text-ink-mute font-medium max-w-xs mx-auto leading-relaxed">
-                                    {subscription && !subscription.isActive
-                                        ? 'Sua assinatura terminou. Renove agora para recuperar o acesso a todos os materiais.'
-                                        : 'Desbloqueie o acesso completo a todos os recursos e materiais exclusivos da plataforma.'}
+                    ) : (
+                        <div className="space-y-4">
+                            <div className="rounded-3 border border-dashed border-line bg-paper-2 px-4 py-5 text-center">
+                                <p className="font-display text-2xl font-semibold text-ink">
+                                    {subscription ? 'Assinatura expirada' : 'Você ainda não é premium'}
+                                </p>
+                                <p className="text-sm text-ink-mute mt-1">
+                                    {subscription
+                                        ? 'Renove para voltar a ter acesso completo.'
+                                        : 'Desbloqueie todos os recursos com o plano Kadernim Pro.'}
                                 </p>
                             </div>
-
                             <Button
-                                className="w-full h-16 rounded-3 font-black uppercase tracking-[0.15em] text-xs shadow-2 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                className="w-full h-14 rounded-3 font-black uppercase tracking-[0.12em] text-xs shadow-2"
                                 onClick={handleSubscribe}
                             >
-                                <Crown className="h-5 w-5 mr-3" />
-                                {subscription && !subscription.isActive ? 'Renovar Assinatura' : 'Quero ser Premium'}
+                                <Crown className="h-4 w-4 mr-3" />
+                                {subscription ? 'Renovar assinatura' : 'Assinar agora'}
                             </Button>
                         </div>
                     )}
+
+                    <Button
+                        variant="outline"
+                        className="w-full h-12 rounded-3 font-black uppercase tracking-widest text-[11px] border-line hover:bg-paper-2"
+                        onClick={() => setShowBillingDetailsDialog(true)}
+                    >
+                        <History className="h-4 w-4 mr-2" />
+                        Ver detalhes da assinatura
+                    </Button>
                 </CardContent>
             </Card>
             {/* Card: Segurança */}
@@ -637,6 +617,100 @@ export default function AccountPage() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            <Dialog open={showBillingDetailsDialog} onOpenChange={setShowBillingDetailsDialog}>
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <CreditCard className="h-5 w-5 text-terracotta" />
+                            Detalhes da assinatura
+                        </DialogTitle>
+                        <DialogDescription>
+                            Status do plano e histórico recente de cobrança.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {isBillingLoading ? (
+                        <div className="py-10 flex items-center justify-center">
+                            <Loader2 className="h-6 w-6 animate-spin text-ink-mute" />
+                        </div>
+                    ) : !billingOverview?.subscription ? (
+                        <div className="space-y-4">
+                            <div className="rounded-3 border border-dashed border-line bg-paper-2 px-4 py-6 text-center">
+                                <p className="font-display text-2xl font-semibold text-ink">Sem assinatura ativa</p>
+                                <p className="text-sm text-ink-mute mt-1">Assine o Kadernim Pro para desbloquear todos os materiais.</p>
+                            </div>
+                            <Button className="w-full" onClick={handleSubscribe}>
+                                <Crown className="h-4 w-4 mr-2" />
+                                Assinar Kadernim Pro
+                            </Button>
+                        </div>
+                    ) : (
+                        <div className="space-y-5">
+                            <div className="grid gap-3 sm:grid-cols-2">
+                                <div className="rounded-3 border border-line bg-paper-2 px-4 py-3">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-ink-mute">Status</p>
+                                    <p className="font-bold text-ink mt-1">
+                                        {billingOverview.subscription.isActive ? 'Ativa' : formatInvoiceStatus(billingOverview.subscription.status)}
+                                    </p>
+                                </div>
+                                <div className="rounded-3 border border-line bg-paper-2 px-4 py-3">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-ink-mute">Pagamento</p>
+                                    <p className="font-bold text-ink mt-1">{formatPaymentMethod(billingOverview.subscription.paymentMethod)}</p>
+                                </div>
+                                <div className="rounded-3 border border-line bg-paper-2 px-4 py-3">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-ink-mute">Membro desde</p>
+                                    <p className="font-bold text-ink mt-1">
+                                        {format(new Date(billingOverview.subscription.createdAt), "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                                    </p>
+                                </div>
+                                <div className="rounded-3 border border-line bg-paper-2 px-4 py-3">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-ink-mute">Próxima renovação</p>
+                                    <p className="font-bold text-ink mt-1">
+                                        {billingOverview.subscription.expiresAt
+                                            ? format(new Date(billingOverview.subscription.expiresAt), "d 'de' MMMM 'de' yyyy", { locale: ptBR })
+                                            : 'Sem expiração'}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <h4 className="text-sm font-black uppercase tracking-wider text-ink-mute">Histórico recente</h4>
+                                <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                                    {billingOverview.invoices.length === 0 ? (
+                                        <div className="rounded-3 border border-line bg-paper-2 px-4 py-4 text-sm text-ink-mute">
+                                            Nenhuma cobrança registrada até o momento.
+                                        </div>
+                                    ) : (
+                                        billingOverview.invoices.map((invoice) => (
+                                            <div key={invoice.id} className="rounded-3 border border-line bg-paper-2 px-4 py-3 flex items-center justify-between gap-3">
+                                                <div className="min-w-0">
+                                                    <p className="font-bold text-ink truncate">{invoice.description || 'Cobrança mensal'}</p>
+                                                    <p className="text-xs text-ink-mute mt-0.5">
+                                                        Vencimento: {format(new Date(invoice.dueDate), 'dd/MM/yyyy')} • {formatInvoiceStatus(invoice.status)}
+                                                    </p>
+                                                </div>
+                                                <div className="flex items-center gap-2 shrink-0">
+                                                    <span className="text-sm font-black text-ink">
+                                                        R$ {Number(invoice.value).toFixed(2).replace('.', ',')}
+                                                    </span>
+                                                    {invoice.invoiceUrl && (
+                                                        <Button variant="outline" size="sm" asChild className="h-8">
+                                                            <a href={invoice.invoiceUrl} target="_blank" rel="noopener noreferrer">
+                                                                <Receipt className="h-3.5 w-3.5" />
+                                                            </a>
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
 
             <AvatarCropper
                 image={tempAvatar}

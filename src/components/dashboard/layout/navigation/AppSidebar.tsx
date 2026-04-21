@@ -7,7 +7,6 @@ import {
   BookOpen,
   Users,
   Hash,
-  CreditCard,
   User,
   LogOut,
   ShieldCheck,
@@ -105,7 +104,6 @@ export function AppSidebar({ user }: AppSidebarProps) {
       label: 'Conta',
       items: [
         { title: 'Meu perfil', href: '/account', icon: User },
-        { title: 'Assinatura', href: '/billing', icon: CreditCard },
         { title: 'Sair', href: '#', icon: LogOut, onClick: handleLogout },
       ],
     },
