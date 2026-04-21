@@ -3,7 +3,6 @@ import { headers } from 'next/headers'
 import { getBillingCheckoutCatalog } from '@/lib/billing/queries'
 import { auth } from '@/server/auth/auth'
 import { GuestCheckoutForm } from '@/components/dashboard/billing/checkout-form'
-import Image from 'next/image'
 import { Lock } from 'lucide-react'
 
 export const metadata: Metadata = {
@@ -52,6 +51,11 @@ export default async function CheckoutPage(props: {
       </header>
 
       <main className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+        <div className="mb-6 sm:mb-8 text-center">
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-ink-mute">Assinatura Kadernim Pro</p>
+          <h1 className="font-display text-3xl sm:text-4xl text-ink mt-2 tracking-tight">Finalize sua assinatura</h1>
+          <p className="font-hand text-2xl text-terracotta mt-1">acesso imediato apos o pagamento</p>
+        </div>
         <GuestCheckoutForm prefilledUser={prefilledUser} catalog={catalog} initialPlan={planId} />
       </main>
     </div>

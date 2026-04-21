@@ -6,7 +6,7 @@ import {
   MAX_ANNUAL_CARD_INSTALLMENTS,
   MIN_ANNUAL_CARD_INSTALLMENTS,
 } from '@/lib/billing/checkout-offer'
-import { isValidCpfCnpj } from '@/lib/utils/cpf-cnpj'
+import { isValidCpf } from '@/lib/utils/cpf-cnpj'
 
 const CheckoutCreditCardSchema = z.object({
   holderName: z.string().min(3, 'Nome no cartão inválido').optional(),
@@ -19,8 +19,8 @@ const CheckoutCreditCardSchema = z.object({
 const CheckoutPlanIdSchema = z.enum(CHECKOUT_PLAN_IDS)
 
 export const CheckoutRequestSchema = z.object({
-  cpfCnpj: z.string().trim().refine(isValidCpfCnpj, {
-    message: 'CPF ou CNPJ inválido',
+  cpfCnpj: z.string().trim().refine(isValidCpf, {
+    message: 'CPF inválido',
   }),
   paymentMethod: z.enum([
     PaymentMethod.PIX,

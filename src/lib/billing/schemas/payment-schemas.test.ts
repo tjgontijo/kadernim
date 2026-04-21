@@ -26,6 +26,17 @@ test('CheckoutRequestSchema rejects cpf with invalid check digits', () => {
   assert.equal(parsed.success, false)
 })
 
+test('CheckoutRequestSchema rejects cnpj input', () => {
+  const parsed = CheckoutRequestSchema.safeParse({
+    cpfCnpj: '04.252.011/0001-10',
+    paymentMethod: PaymentMethod.PIX,
+    planId: 'annual',
+    installments: 1,
+  })
+
+  assert.equal(parsed.success, false)
+})
+
 test('SplitUpdateSchema accepts valid masked cnpj', () => {
   const parsed = SplitUpdateSchema.safeParse({
     companyName: 'Elev8',

@@ -13,7 +13,6 @@ import {
   Lock,
   QrCode,
   Shield,
-  Sparkles,
   Zap,
 } from 'lucide-react'
 import {
@@ -26,7 +25,7 @@ import {
   type CheckoutPlanId,
 } from '@/lib/billing/checkout-offer'
 import { createBillingCheckout } from '@/lib/billing/api-client'
-import { applyCpfCnpjMask, isValidCpfCnpj, normalizeCpfCnpj } from '@/lib/utils/cpf-cnpj'
+import { applyCpfMask, isValidCpf, normalizeCpfCnpj } from '@/lib/utils/cpf-cnpj'
 import { PixQrCode } from './checkout-pix-qrcode'
 
 function fmtPhone(value: string) {
@@ -79,9 +78,11 @@ function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <label htmlFor={id} className="block text-sm font-semibold text-gray-700">{label}</label>
+      <label htmlFor={id} className="block text-[11px] font-bold uppercase tracking-[0.12em] text-ink-mute">
+        {label}
+      </label>
       {children}
-      {error ? <p role="alert" className="text-xs text-red-600 font-medium mt-1">{error}</p> : null}
+      {error ? <p role="alert" className="text-xs text-berry font-semibold mt-1">{error}</p> : null}
     </div>
   )
 }
@@ -94,9 +95,9 @@ function TextInput({
   return (
     <input
       id={id}
-      className={`w-full h-11 px-3.5 rounded-lg border border-gray-300 text-sm text-gray-900
-        placeholder-gray-400 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/25
-        focus:border-blue-500 transition-all ${className}`}
+      className={`w-full h-12 px-4 rounded-3 border border-line bg-paper-2 text-sm text-ink
+        placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-terracotta/20
+        focus:border-terracotta transition-all ${className}`}
       {...props}
     />
   )
@@ -120,61 +121,65 @@ function PlanSelector({
       <button
         type="button"
         onClick={() => setPlan('monthly')}
-        className={`w-full text-left rounded-xl border-2 px-4 py-3.5 transition-all flex items-center justify-between gap-3 ${
-          plan === 'monthly' ? 'border-blue-600 bg-blue-50/50' : 'border-gray-200 bg-white hover:border-gray-300'
+        className={`w-full text-left rounded-4 border px-4 py-3.5 transition-all flex items-center justify-between gap-3 ${
+          plan === 'monthly'
+            ? 'border-terracotta bg-terracotta-2/30 shadow-1'
+            : 'border-line bg-surface-card hover:border-terracotta/40'
         }`}
         aria-pressed={plan === 'monthly'}
       >
         <div className="flex items-center gap-3">
           <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-            plan === 'monthly' ? 'border-blue-600' : 'border-gray-300'
+            plan === 'monthly' ? 'border-terracotta' : 'border-line'
           }`}>
-            {plan === 'monthly' ? <div className="h-2 w-2 rounded-full bg-blue-600" /> : null}
+            {plan === 'monthly' ? <div className="h-2 w-2 rounded-full bg-terracotta" /> : null}
           </div>
           <div>
-            <p className={`text-sm font-bold leading-none mb-0.5 ${plan === 'monthly' ? 'text-blue-700' : 'text-gray-800'}`}>
+            <p className={`text-sm font-bold leading-none mb-0.5 ${plan === 'monthly' ? 'text-ink' : 'text-ink-soft'}`}>
               {monthlyPlan.label}
             </p>
-            <p className="text-xs text-gray-400">{monthlyPlan.description}</p>
+            <p className="text-xs text-ink-mute">{monthlyPlan.description}</p>
           </div>
         </div>
-        <p className={`text-lg font-black shrink-0 ${plan === 'monthly' ? 'text-blue-700' : 'text-gray-800'}`}>
-          R$&nbsp;{fmtWholeAmount(monthlyPlan.creditCardAmount)}<span className="text-xs font-medium text-gray-400">/mes</span>
+        <p className={`text-lg font-black shrink-0 ${plan === 'monthly' ? 'text-terracotta' : 'text-ink'}`}>
+          R$&nbsp;{fmtWholeAmount(monthlyPlan.creditCardAmount)}<span className="text-xs font-medium text-ink-mute">/mes</span>
         </p>
       </button>
 
       <button
         type="button"
         onClick={() => setPlan('annual')}
-        className={`w-full text-left rounded-xl border-2 px-4 py-3.5 transition-all flex items-center justify-between gap-3 relative ${
-          plan === 'annual' ? 'border-green-500 bg-green-50/50' : 'border-gray-200 bg-white hover:border-gray-300'
+        className={`w-full text-left rounded-4 border px-4 py-3.5 transition-all flex items-center justify-between gap-3 relative ${
+          plan === 'annual'
+            ? 'border-sage bg-sage-2/30 shadow-1'
+            : 'border-line bg-surface-card hover:border-sage/40'
         }`}
         aria-pressed={plan === 'annual'}
       >
         {annualPlan.badge ? (
-          <span className="absolute -top-2.5 right-3 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full tracking-wide">
+          <span className="absolute -top-2.5 right-3 bg-sage text-white text-[10px] font-bold px-2 py-0.5 rounded-full tracking-wide">
             {annualPlan.badge}
           </span>
         ) : null}
         <div className="flex items-center gap-3">
           <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-            plan === 'annual' ? 'border-green-500' : 'border-gray-300'
+            plan === 'annual' ? 'border-sage' : 'border-line'
           }`}>
-            {plan === 'annual' ? <div className="h-2 w-2 rounded-full bg-green-500" /> : null}
+            {plan === 'annual' ? <div className="h-2 w-2 rounded-full bg-sage" /> : null}
           </div>
           <div>
-            <p className={`text-sm font-bold leading-none mb-0.5 ${plan === 'annual' ? 'text-green-700' : 'text-gray-800'}`}>
+            <p className={`text-sm font-bold leading-none mb-0.5 ${plan === 'annual' ? 'text-ink' : 'text-ink-soft'}`}>
               {annualPlan.label}
             </p>
-            <p className="text-xs text-gray-400">{annualPlan.description}</p>
+            <p className="text-xs text-ink-mute">{annualPlan.description}</p>
           </div>
         </div>
         <div className="text-right shrink-0">
-          <p className={`text-lg font-black leading-none ${plan === 'annual' ? 'text-green-700' : 'text-gray-800'}`}>
+          <p className={`text-lg font-black leading-none ${plan === 'annual' ? 'text-sage' : 'text-ink'}`}>
             R$&nbsp;{fmtWholeAmount(annualPlan.creditCardAmount)}
           </p>
-          {annualPreview ? <p className="text-[11px] font-semibold text-gray-500 mt-1">ou ate {annualPreview.priceLabel}</p> : null}
-          {annualPlan.strikeLabel ? <p className="text-xs text-gray-400 line-through">{annualPlan.strikeLabel}</p> : null}
+          {annualPreview ? <p className="text-[11px] font-semibold text-ink-mute mt-1">ou ate {annualPreview.priceLabel}</p> : null}
+          {annualPlan.strikeLabel ? <p className="text-xs text-ink-mute line-through">{annualPlan.strikeLabel}</p> : null}
         </div>
       </button>
     </div>
@@ -191,15 +196,15 @@ function OrderSummary({
   setPlan: (value: CheckoutPlanId) => void
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-      <div className="bg-gradient-to-br from-blue-600 to-blue-700 px-5 py-5">
+    <div className="bg-surface-card rounded-4 border border-line overflow-hidden shadow-1 paper-grain">
+      <div className="bg-paper-2 px-5 py-5 border-b border-line">
         <div className="flex items-center gap-3">
-          <div className="h-11 w-11 bg-white/15 rounded-xl flex items-center justify-center border border-white/20">
-            <BookOpen className="h-5 w-5 text-white" aria-hidden="true" />
+          <div className="h-11 w-11 bg-terracotta-2 rounded-3 flex items-center justify-center border border-line">
+            <BookOpen className="h-5 w-5 text-terracotta" aria-hidden="true" />
           </div>
           <div>
-            <p className="text-blue-200 text-[11px] font-semibold uppercase tracking-widest leading-none mb-1">Kadernim Pro</p>
-            <p className="text-white text-base font-bold leading-none">Acesso ilimitado</p>
+            <p className="text-ink-mute text-[11px] font-semibold uppercase tracking-widest leading-none mb-1">Kadernim Pro</p>
+            <p className="text-ink text-base font-bold leading-none">Acesso ilimitado</p>
           </div>
         </div>
       </div>
@@ -207,20 +212,20 @@ function OrderSummary({
       <div className="px-5 py-4 space-y-4">
         <ul className="space-y-2.5">
           {[
-            { icon: BookOpen, text: '+248 materiais em PDF prontos' },
-            { icon: Sparkles, text: 'Gerador de plano de aula com IA' },
-            { icon: Zap, text: 'Novos materiais toda semana' },
-          ].map(({ icon: Icon, text }) => (
+            '+248 materiais em PDF prontos',
+            'Gerador de plano de aula com IA',
+            'Novos materiais toda semana',
+          ].map((text) => (
             <li key={text} className="flex items-center gap-2.5">
-              <div className="h-5 w-5 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-                <Check className="h-3 w-3 text-blue-600" aria-hidden="true" />
+              <div className="h-5 w-5 rounded-full bg-sage-2 flex items-center justify-center shrink-0 border border-sage/20">
+                <Check className="h-3 w-3 text-sage" aria-hidden="true" />
               </div>
-              <span className="text-sm text-gray-600">{text}</span>
+              <span className="text-sm text-ink-soft">{text}</span>
             </li>
           ))}
         </ul>
 
-        <div className="h-px bg-gray-100" />
+        <div className="h-px bg-line" />
 
         <PlanSelector catalog={catalog} plan={plan} setPlan={setPlan} />
       </div>
@@ -243,7 +248,7 @@ export function GuestCheckoutForm({
   const [name, setName] = useState(prefilledUser?.name ?? '')
   const [email, setEmail] = useState(prefilledUser?.email ?? '')
   const [phone, setPhone] = useState('')
-  const [cpfCnpj, setCpfCnpj] = useState('')
+  const [cpf, setCpf] = useState('')
   const [ccNumber, setCcNumber] = useState('')
   const [ccHolder, setCcHolder] = useState('')
   const [ccMonth, setCcMonth] = useState('')
@@ -286,7 +291,7 @@ export function GuestCheckoutForm({
       if (phone.replace(/\D/g, '').length < 10) nextErrors.phone = 'WhatsApp obrigatorio'
     }
 
-    if (!isValidCpfCnpj(cpfCnpj)) nextErrors.cpfCnpj = 'CPF ou CNPJ invalido'
+    if (!isValidCpf(cpf)) nextErrors.cpf = 'CPF invalido'
 
     if (method === 'CREDIT_CARD') {
       if (!ccNumber || ccNumber.replace(/\D/g, '').length < 14) nextErrors.ccNumber = 'Numero invalido'
@@ -308,7 +313,7 @@ export function GuestCheckoutForm({
 
       const body: Record<string, unknown> = {
         email: (prefilledUser?.email ?? email).trim().toLowerCase(),
-        cpfCnpj: normalizeCpfCnpj(cpfCnpj),
+        cpfCnpj: normalizeCpfCnpj(cpf),
         paymentMethod: selectedPaymentMethod,
         planId: plan,
         installments: plan === 'annual' && method === 'CREDIT_CARD' ? annualInstallments : 1,
@@ -398,31 +403,31 @@ export function GuestCheckoutForm({
     <div className="max-w-5xl mx-auto">
       <div className="grid md:grid-cols-[1fr_320px] lg:grid-cols-[1fr_360px] gap-5 lg:gap-8 items-start">
         <div className="order-2 md:order-1 space-y-4">
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2.5">
-              <div className="h-6 w-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center shrink-0">1</div>
-              <h2 className="text-sm font-bold text-gray-800">Dados pessoais</h2>
+          <div className="bg-card rounded-4 border border-line overflow-hidden shadow-1">
+            <div className="px-5 py-4 border-b border-line bg-paper-2 flex items-center gap-2.5">
+              <div className="h-6 w-6 rounded-full bg-terracotta text-white text-xs font-bold flex items-center justify-center shrink-0">1</div>
+              <h2 className="text-sm font-bold text-ink">Dados pessoais</h2>
             </div>
             <div className="px-5 py-5">
               {isLoggedIn ? (
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
-                    <div className="h-9 w-9 bg-blue-600 rounded-full flex items-center justify-center shrink-0">
+                  <div className="flex items-center gap-3 bg-paper-2 border border-line rounded-3 px-4 py-3">
+                    <div className="h-9 w-9 bg-terracotta rounded-full flex items-center justify-center shrink-0">
                       <span className="text-white text-sm font-bold">{prefilledUser?.name?.charAt(0).toUpperCase() || 'U'}</span>
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-gray-800">{prefilledUser?.name}</p>
-                      <p className="text-xs text-gray-500">{prefilledUser?.email}</p>
+                      <p className="text-sm font-bold text-ink">{prefilledUser?.name}</p>
+                      <p className="text-xs text-ink-mute">{prefilledUser?.email}</p>
                     </div>
                   </div>
-                  <Field label="CPF ou CNPJ" id="cpfcnpj" error={errors.cpfCnpj}>
+                  <Field label="CPF" id="cpf" error={errors.cpf}>
                     <TextInput
-                      id="cpfcnpj"
+                      id="cpf"
                       placeholder="000.000.000-00"
-                      value={cpfCnpj}
-                      onChange={(event) => setCpfCnpj(applyCpfCnpjMask(event.target.value))}
+                      value={cpf}
+                      onChange={(event) => setCpf(applyCpfMask(event.target.value))}
                       inputMode="numeric"
-                      maxLength={18}
+                      maxLength={14}
                     />
                   </Field>
                 </div>
@@ -460,14 +465,14 @@ export function GuestCheckoutForm({
                     </Field>
                   </div>
                   <div className="sm:col-span-2">
-                    <Field label="CPF ou CNPJ" id="cpfcnpj" error={errors.cpfCnpj}>
+                    <Field label="CPF" id="cpf" error={errors.cpf}>
                       <TextInput
-                        id="cpfcnpj"
+                        id="cpf"
                         placeholder="000.000.000-00"
-                        value={cpfCnpj}
-                        onChange={(event) => setCpfCnpj(applyCpfCnpjMask(event.target.value))}
+                        value={cpf}
+                        onChange={(event) => setCpf(applyCpfMask(event.target.value))}
                         inputMode="numeric"
-                        maxLength={18}
+                        maxLength={14}
                       />
                     </Field>
                   </div>
@@ -476,14 +481,14 @@ export function GuestCheckoutForm({
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2.5">
-              <div className="h-6 w-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center shrink-0">2</div>
-              <h2 className="text-sm font-bold text-gray-800">Forma de pagamento</h2>
+          <div className="bg-card rounded-4 border border-line overflow-hidden shadow-1">
+            <div className="px-5 py-4 border-b border-line bg-paper-2 flex items-center gap-2.5">
+              <div className="h-6 w-6 rounded-full bg-terracotta text-white text-xs font-bold flex items-center justify-center shrink-0">2</div>
+              <h2 className="text-sm font-bold text-ink">Forma de pagamento</h2>
             </div>
             <div className="px-5 py-5 space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Metodo</label>
+                <label className="block text-[11px] font-bold uppercase tracking-[0.12em] text-ink-mute mb-2">Metodo</label>
                 <div className="grid grid-cols-2 gap-2">
                   {([
                     { key: 'PIX', icon: QrCode, label: 'Pix' },
@@ -493,10 +498,10 @@ export function GuestCheckoutForm({
                       key={key}
                       type="button"
                       onClick={() => setMethod(key)}
-                      className={`flex items-center justify-center gap-2 h-11 rounded-lg border-2 text-sm font-semibold transition-all ${
+                      className={`flex items-center justify-center gap-2 h-11 rounded-3 border text-sm font-semibold transition-all ${
                         method === key
-                          ? 'border-blue-600 bg-blue-50 text-blue-700'
-                          : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                          ? 'border-terracotta bg-terracotta-2/40 text-terracotta'
+                          : 'border-line bg-surface-card text-ink-soft hover:border-terracotta/40'
                       }`}
                     >
                       <Icon className="h-4 w-4" aria-hidden="true" />
@@ -507,9 +512,9 @@ export function GuestCheckoutForm({
               </div>
 
               {method === 'PIX' ? (
-                <div className="flex items-start gap-3 rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3">
-                  <Zap className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" aria-hidden="true" />
-                  <p className="text-xs text-emerald-800 leading-relaxed">
+                <div className="flex items-start gap-3 rounded-3 bg-sage-2/60 border border-sage/20 px-4 py-3">
+                  <Zap className="h-4 w-4 text-sage mt-0.5 shrink-0" aria-hidden="true" />
+                  <p className="text-xs text-ink-soft leading-relaxed">
                     <span className="font-semibold">{plan === 'monthly' ? 'Aprovacao instantanea.' : 'Pagamento anual no PIX.'}</span>{' '}
                     {selectedPlan.pixDescription}
                   </p>
@@ -518,11 +523,11 @@ export function GuestCheckoutForm({
 
               {method === 'CREDIT_CARD' && plan === 'annual' ? (
                 <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-gray-700">Parcelamento do anual</label>
+                  <label className="block text-[11px] font-bold uppercase tracking-[0.12em] text-ink-mute">Parcelamento do anual</label>
                   <select
                     value={annualInstallments}
                     onChange={(event) => setAnnualInstallments(Number(event.target.value))}
-                    className="w-full h-11 px-3.5 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-500 transition-all"
+                    className="w-full h-11 px-3.5 rounded-3 border border-line text-sm text-ink bg-paper-2 focus:outline-none focus:ring-2 focus:ring-terracotta/20 focus:border-terracotta transition-all"
                   >
                     {annualInstallmentOptions.map((option) => (
                       <option key={option.count} value={option.count}>
@@ -537,7 +542,7 @@ export function GuestCheckoutForm({
                 <div className="space-y-4">
                   <Field label="Numero do cartao" id="ccnumber" error={errors.ccNumber}>
                     <div className="relative">
-                      <CreditCard className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" aria-hidden="true" />
+                      <CreditCard className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-faint" aria-hidden="true" />
                       <TextInput
                         id="ccnumber"
                         className="pl-10"
@@ -577,7 +582,7 @@ export function GuestCheckoutForm({
                   type="button"
                   onClick={() => payMutation.mutate()}
                   disabled={payMutation.isPending}
-                  className="w-full py-4 rounded-xl bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white font-bold text-[15px] flex items-center justify-center gap-2.5 transition-colors shadow-lg shadow-green-600/20"
+                  className="w-full py-4 rounded-full bg-terracotta hover:bg-terracotta-hover disabled:opacity-60 text-white font-bold text-[15px] flex items-center justify-center gap-2.5 transition-colors shadow-2"
                 >
                   {payMutation.isPending ? (
                     <><Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> Processando...</>
@@ -585,17 +590,17 @@ export function GuestCheckoutForm({
                     <><Lock className="h-4 w-4" aria-hidden="true" /> Assinar por {selectedPricing.submitLabel} <ChevronRight className="h-4 w-4" aria-hidden="true" /></>
                   )}
                 </button>
-                <p className="text-center text-xs text-gray-400 flex items-center justify-center gap-1.5">
+                <p className="text-center text-xs text-ink-mute flex items-center justify-center gap-1.5">
                   <Shield className="h-3 w-3" aria-hidden="true" />
                   Pagamento 100% seguro e criptografado
                 </p>
               </div>
 
-              <div className="flex items-start gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3.5">
-                <Shield className="h-5 w-5 text-green-600 shrink-0 mt-0.5" aria-hidden="true" />
+              <div className="flex items-start gap-3 rounded-3 border border-sage/20 bg-sage-2/60 px-4 py-3.5">
+                <Shield className="h-5 w-5 text-sage shrink-0 mt-0.5" aria-hidden="true" />
                 <div>
-                  <p className="text-sm font-bold text-gray-800">Garantia de 7 dias</p>
-                  <p className="text-xs text-gray-500 mt-0.5">Nao gostou? Devolvemos 100% sem perguntas.</p>
+                  <p className="text-sm font-bold text-ink">Garantia de 7 dias</p>
+                  <p className="text-xs text-ink-mute mt-0.5">Nao gostou? Devolvemos 100% sem perguntas.</p>
                 </div>
               </div>
             </div>
