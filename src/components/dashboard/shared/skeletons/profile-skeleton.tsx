@@ -1,45 +1,68 @@
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Card, CardContent } from '@/components/ui/card'
+
+function InfoRowSkeleton() {
+  return (
+    <div className="flex items-center gap-4">
+      <Skeleton className="h-10 w-10 shrink-0 rounded-3 bg-paper-2" />
+      <div className="flex-1 space-y-2">
+        <Skeleton className="h-3 w-20 bg-paper-2" />
+        <Skeleton className="h-5 w-52 bg-paper-2" />
+      </div>
+    </div>
+  )
+}
 
 export function ProfileSkeleton() {
-    return (
-        <div className="max-w-2xl mx-auto space-y-8 py-8">
-            {/* Profile Card Skeleton */}
-            <Card className="border-none shadow-xl shadow-foreground/5 bg-card/50 backdrop-blur-sm overflow-hidden pt-12 relative">
-                <CardContent className="p-8 pt-0 text-center">
-                    <div className="flex flex-col items-center mb-12">
-                        <Skeleton className="h-40 w-40 rounded-full border-[6px] border-background shadow-2xl" />
-                        <Skeleton className="h-10 w-48 mt-8 rounded-xl" />
-                        <Skeleton className="h-6 w-24 mt-4 rounded-full" />
-                    </div>
+  return (
+    <div className="w-full max-w-3xl mx-auto space-y-6 px-4 sm:px-0 pt-8 pb-16">
+      <Card className="relative overflow-hidden rounded-4 border border-line bg-card shadow-1 paper-grain pt-10">
+        <CardContent className="p-8 pt-2">
+          <div className="mb-10 flex flex-col items-center">
+            <Skeleton className="h-36 w-36 rounded-full border-4 border-line bg-paper-2 shadow-2" />
+            <Skeleton className="mt-6 h-10 w-56 bg-paper-2" />
+            <Skeleton className="mt-3 h-6 w-28 rounded-full bg-paper-2" />
+          </div>
 
-                    <div className="space-y-6 max-w-sm mx-auto text-left">
-                        {[1, 2, 3].map((i) => (
-                            <div key={i} className="flex items-center gap-4">
-                                <Skeleton className="h-10 w-10 rounded-2xl shrink-0" />
-                                <div className="space-y-2 flex-grow">
-                                    <Skeleton className="h-3 w-16" />
-                                    <Skeleton className="h-5 w-48" />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </CardContent>
-            </Card>
+          <div className="space-y-6">
+            <InfoRowSkeleton />
+            <InfoRowSkeleton />
+            <InfoRowSkeleton />
+          </div>
+        </CardContent>
+      </Card>
 
-            {/* Subscription Card Skeleton */}
-            <Card className="border-none shadow-xl shadow-foreground/5 bg-card/50 backdrop-blur-sm overflow-hidden">
-                <div className="p-8 space-y-6">
-                    <div className="flex gap-4 items-center">
-                        <Skeleton className="h-12 w-12 rounded-2xl" />
-                        <div className="space-y-2">
-                            <Skeleton className="h-5 w-32" />
-                            <Skeleton className="h-4 w-48" />
-                        </div>
-                    </div>
-                    <Skeleton className="h-24 w-full rounded-2xl" />
-                </div>
-            </Card>
-        </div>
-    )
+      <Card className="overflow-hidden rounded-4 border border-line bg-card shadow-1">
+        <CardHeader className="p-8 pb-0">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-12 w-12 rounded-3 bg-paper-2" />
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-40 bg-paper-2" />
+              <Skeleton className="h-4 w-56 bg-paper-2" />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-8 space-y-4">
+          <Skeleton className="h-22 w-full rounded-3 bg-paper-2" />
+          <Skeleton className="h-14 w-full rounded-3 bg-paper-2" />
+        </CardContent>
+      </Card>
+
+      <Card className="overflow-hidden rounded-4 border border-line bg-card shadow-1">
+        <CardHeader className="p-8 pb-0">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-12 w-12 rounded-3 bg-paper-2" />
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-28 bg-paper-2" />
+              <Skeleton className="h-4 w-52 bg-paper-2" />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-8 space-y-3">
+          <Skeleton className="h-14 w-full rounded-3 bg-paper-2" />
+          <Skeleton className="h-14 w-full rounded-3 bg-paper-2" />
+        </CardContent>
+      </Card>
+    </div>
+  )
 }

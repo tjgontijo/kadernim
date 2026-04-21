@@ -253,14 +253,14 @@ export default function AccountPage() {
         : null
 
     return (
-        <div className="w-full max-w-2xl mx-auto space-y-8 py-8">
+        <div className="w-full max-w-3xl mx-auto space-y-6 px-4 sm:px-0 pt-8 pb-16">
             {/* Unified Card: Profile + Details */}
-            <Card className="border-none shadow-xl shadow-foreground/5 bg-card/50 backdrop-blur-sm overflow-hidden pt-12 relative">
+            <Card className="relative overflow-hidden rounded-4 border border-line bg-card shadow-1 paper-grain pt-10">
                 {/* Edit Button - Top Right */}
                 {!isEditingProfile && (
                     <button
                         onClick={handleEditStart}
-                        className="absolute top-6 right-6 p-2.5 text-primary bg-primary/10 hover:bg-primary/20 rounded-full transition-all shadow-sm border border-primary/20 hover:scale-110 active:scale-95 z-10"
+                        className="absolute top-6 right-6 rounded-full border border-line bg-paper-2 p-2.5 text-ink-soft shadow-1 transition-all hover:text-terracotta z-10"
                         title="Editar Perfil"
                     >
                         <Pencil className="h-4 w-4" />
@@ -272,11 +272,11 @@ export default function AccountPage() {
                     <div className="flex flex-col items-center mb-12">
                         <div className="relative group">
                             <Avatar
-                                className="h-40 w-40 border-[6px] border-background shadow-2xl relative transition-transform duration-500 group-hover:scale-[1.02] cursor-pointer"
+                                className="h-40 w-40 border-[6px] border-line shadow-2 relative transition-transform duration-500 group-hover:scale-[1.02] cursor-pointer"
                                 onClick={() => account.image && setIsImagePreviewOpen(true)}
                             >
                                 <AvatarImage src={account.image || ''} className="object-cover" />
-                                <AvatarFallback className="text-4xl font-black bg-primary/5 text-primary/40 backdrop-blur-sm">
+                                <AvatarFallback className="text-4xl font-black bg-paper-2 text-ink-mute">
                                     {account.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '??'}
                                 </AvatarFallback>
                             </Avatar>
@@ -289,7 +289,7 @@ export default function AccountPage() {
 
                             <label
                                 htmlFor="avatar-upload-main"
-                                className="absolute bottom-1 right-1 p-2 bg-background/80 backdrop-blur-sm text-muted-foreground hover:text-primary rounded-full cursor-pointer shadow-md hover:shadow-lg transition-all border border-border opacity-100 md:opacity-0 md:group-hover:opacity-100 hover:scale-110 active:scale-95"
+                                className="absolute bottom-1 right-1 rounded-full border border-line bg-paper p-2 text-ink-mute shadow-1 transition-all hover:text-terracotta opacity-100 md:opacity-0 md:group-hover:opacity-100"
                             >
                                 <Camera className="h-3.5 w-3.5" />
                             </label>
@@ -304,19 +304,19 @@ export default function AccountPage() {
                         </div>
 
                         <div className="mt-6 flex flex-col items-center gap-2">
-                            <h1 className="text-3xl font-black tracking-tighter text-foreground text-center">
+                            <h1 className="text-center font-display text-4xl font-semibold tracking-tight text-ink">
                                 {account.name}
                             </h1>
 
                             <div className="flex items-center gap-2">
                                 {account.role === 'admin' && (
-                                    <Badge className="bg-purple-500/10 text-purple-600 border-purple-200/50 font-bold px-3 py-0.5 rounded-full">
+                                    <Badge className="bg-paper-2 text-ink border-line font-bold px-3 py-0.5 rounded-full">
                                         <Crown className="h-3.5 w-3.5 mr-1.5" />
                                         Admin
                                     </Badge>
                                 )}
                                 {account.role === 'subscriber' && (
-                                    <Badge className="bg-primary/10 text-primary border-primary/20 font-bold px-3 py-0.5 rounded-full">
+                                    <Badge className="bg-sage-2 text-sage border-sage/20 font-bold px-3 py-0.5 rounded-full">
                                         <Sparkles className="h-3.5 w-3.5 mr-1.5" />
                                         Assinante
                                     </Badge>
@@ -379,14 +379,14 @@ export default function AccountPage() {
                     ) : (
                         <div className="space-y-6">
                             <div className="grid gap-6">
-                                <div className="flex items-center gap-4 transition-all hover:translate-x-1">
-                                    <div className="h-10 w-10 rounded-2xl bg-primary/5 flex items-center justify-center text-primary">
+                                <div className="flex items-center gap-4">
+                                    <div className="h-10 w-10 rounded-3 border border-line bg-paper-2 flex items-center justify-center text-terracotta">
                                         <Mail className="h-5 w-5" />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">E-mail</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-ink-mute">E-mail</span>
                                         <div className="flex items-center gap-2">
-                                            <span className="font-bold text-foreground">{account.email}</span>
+                                            <span className="font-bold text-ink">{account.email}</span>
                                             {account.emailVerified && (
                                                 <div className="h-4 w-4 rounded-full bg-emerald-500/10 flex items-center justify-center" title="E-mail Verificado">
                                                     <Check className="h-2.5 w-2.5 text-emerald-600" />
@@ -396,27 +396,27 @@ export default function AccountPage() {
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-4 transition-all hover:translate-x-1">
-                                    <div className="h-10 w-10 rounded-2xl bg-primary/5 flex items-center justify-center text-primary">
+                                <div className="flex items-center gap-4">
+                                    <div className="h-10 w-10 rounded-3 border border-line bg-paper-2 flex items-center justify-center text-terracotta">
                                         <Phone className="h-5 w-5" />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">WhatsApp</span>
-                                        <span className="font-bold text-foreground">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-ink-mute">WhatsApp</span>
+                                        <span className="font-bold text-ink">
                                             {account.phone
                                                 ? applyWhatsAppMask(denormalizeWhatsApp(account.phone))
-                                                : <span className="text-muted-foreground/40 italic font-medium">Não informado</span>}
+                                                : <span className="text-ink-faint italic font-medium">Não informado</span>}
                                         </span>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-4 transition-all hover:translate-x-1">
-                                    <div className="h-10 w-10 rounded-2xl bg-primary/5 flex items-center justify-center text-primary">
+                                <div className="flex items-center gap-4">
+                                    <div className="h-10 w-10 rounded-3 border border-line bg-paper-2 flex items-center justify-center text-terracotta">
                                         <Calendar className="h-5 w-5" />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">Membro desde</span>
-                                        <span className="font-bold text-foreground">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-ink-mute">Membro desde</span>
+                                        <span className="font-bold text-ink">
                                             {format(new Date(account.createdAt), "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
                                         </span>
                                     </div>
@@ -428,16 +428,16 @@ export default function AccountPage() {
             </Card>
 
             {/* Card: Assinatura */}
-            <Card className="border-none shadow-xl shadow-foreground/5 bg-card/50 backdrop-blur-sm overflow-hidden">
+            <Card className="overflow-hidden rounded-4 border border-line bg-card shadow-1">
                 <CardHeader className="p-8 pb-0">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="p-3 bg-amber-500/10 rounded-2xl">
-                                <Crown className="h-6 w-6 text-amber-600" />
+                            <div className="p-3 bg-mustard-2 rounded-3 border border-line">
+                                <Crown className="h-6 w-6 text-ink" />
                             </div>
                             <div>
-                                <CardTitle className="text-xl font-black tracking-tight">Assinatura</CardTitle>
-                                <CardDescription className="font-medium">Gestão do seu plano premium</CardDescription>
+                                <CardTitle className="text-xl font-display font-semibold tracking-tight">Assinatura</CardTitle>
+                                <CardDescription className="font-medium text-ink-mute">Gestão do seu plano premium</CardDescription>
                             </div>
                         </div>
                     </div>
@@ -446,13 +446,13 @@ export default function AccountPage() {
                 <CardContent className="p-8">
                     {/* Admin - Acesso total */}
                     {account.role === 'admin' && (
-                        <div className="p-4 rounded-2xl bg-purple-500/5 border border-purple-500/10 flex items-center gap-4">
-                            <div className="h-12 w-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-600">
+                        <div className="p-4 rounded-3 bg-paper-2 border border-line flex items-center gap-4">
+                            <div className="h-12 w-12 rounded-3 bg-card border border-line flex items-center justify-center text-ink">
                                 <Settings className="h-6 w-6" />
                             </div>
                             <div>
-                                <h4 className="font-black text-purple-900 dark:text-purple-300">Acesso Administrativo</h4>
-                                <p className="text-sm text-purple-600/70 font-medium">Você possui privilégios de acesso total vitalício.</p>
+                                <h4 className="font-black text-ink">Acesso Administrativo</h4>
+                                <p className="text-sm text-ink-mute font-medium">Você possui privilégios de acesso total vitalício.</p>
                             </div>
                         </div>
                     )}
@@ -521,7 +521,7 @@ export default function AccountPage() {
 
                             <Button
                                 variant="outline"
-                                className="w-full h-14 rounded-2xl font-black uppercase tracking-widest text-xs border-muted-foreground/10 hover:bg-muted transition-all active:scale-[0.98]"
+                                className="w-full h-14 rounded-3 font-black uppercase tracking-widest text-xs border-line hover:bg-paper-2 transition-all active:scale-[0.98]"
                                 onClick={() => window.location.href = '/billing'}
                             >
                                 <Settings className="h-4 w-4 mr-3" />
@@ -534,15 +534,15 @@ export default function AccountPage() {
                     {account.role !== 'admin' && !(account.role === 'subscriber' && subscription?.isActive) && (
                         <div className="space-y-6">
                             <div className="text-center py-8 px-4 bg-muted/20 rounded-3xl border border-dashed border-muted-foreground/20">
-                                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-background mb-4 shadow-sm border border-muted-foreground/5">
-                                    <Sparkles className="h-8 w-8 text-primary/40" />
+                                <div className="inline-flex items-center justify-center w-16 h-16 rounded-3 bg-paper mb-4 shadow-1 border border-line">
+                                    <Sparkles className="h-8 w-8 text-terracotta/70" />
                                 </div>
-                                <h3 className="font-black text-xl tracking-tight mb-2">
+                                <h3 className="font-display font-semibold text-2xl tracking-tight mb-2">
                                     {subscription && !subscription.isActive
                                         ? 'Assinatura Expirada'
                                         : 'Seja Premium'}
                                 </h3>
-                                <p className="text-sm text-muted-foreground font-medium max-w-xs mx-auto leading-relaxed">
+                                <p className="text-sm text-ink-mute font-medium max-w-xs mx-auto leading-relaxed">
                                     {subscription && !subscription.isActive
                                         ? 'Sua assinatura terminou. Renove agora para recuperar o acesso a todos os materiais.'
                                         : 'Desbloqueie o acesso completo a todos os recursos e materiais exclusivos da plataforma.'}
@@ -550,7 +550,7 @@ export default function AccountPage() {
                             </div>
 
                             <Button
-                                className="w-full h-16 rounded-2xl font-black uppercase tracking-[0.15em] text-xs shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                className="w-full h-16 rounded-3 font-black uppercase tracking-[0.15em] text-xs shadow-2 hover:scale-[1.02] active:scale-[0.98] transition-all"
                                 onClick={handleSubscribe}
                             >
                                 <Crown className="h-5 w-5 mr-3" />
@@ -561,16 +561,16 @@ export default function AccountPage() {
                 </CardContent>
             </Card>
             {/* Card: Segurança */}
-            <Card className="border-none shadow-xl shadow-foreground/5 bg-card/50 backdrop-blur-sm overflow-hidden">
+            <Card className="overflow-hidden rounded-4 border border-line bg-card shadow-1">
                 <CardHeader className="p-8 pb-0">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="p-3 bg-red-500/10 rounded-2xl">
-                                <Shield className="h-6 w-6 text-red-600" />
+                            <div className="p-3 bg-berry-2 rounded-3 border border-line">
+                                <Shield className="h-6 w-6 text-berry" />
                             </div>
                             <div>
-                                <CardTitle className="text-xl font-black tracking-tight">Segurança</CardTitle>
-                                <CardDescription className="font-medium">Gerenciamento de acesso e sessões</CardDescription>
+                                <CardTitle className="text-xl font-display font-semibold tracking-tight">Segurança</CardTitle>
+                                <CardDescription className="font-medium text-ink-mute">Gerenciamento de acesso e sessões</CardDescription>
                             </div>
                         </div>
                     </div>
@@ -582,7 +582,7 @@ export default function AccountPage() {
                         <Button
                             variant="outline"
                             onClick={() => setShowLogoutAllDialog(true)}
-                            className="w-full h-14 rounded-2xl font-black uppercase tracking-widest text-xs border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950/50 transition-all active:scale-[0.98]"
+                            className="w-full h-14 rounded-3 font-black uppercase tracking-widest text-xs border-berry/30 text-berry hover:bg-berry-2/60 transition-all active:scale-[0.98]"
                         >
                             <Shield className="h-4 w-4 mr-3" />
                             Sair de Todos os Dispositivos
@@ -592,7 +592,7 @@ export default function AccountPage() {
                         <Button
                             variant="ghost"
                             onClick={handleLogout}
-                            className="w-full h-14 rounded-2xl font-black uppercase tracking-widest text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-all active:scale-[0.98]"
+                            className="w-full h-14 rounded-3 font-black uppercase tracking-widest text-xs text-ink-mute hover:text-ink hover:bg-paper-2 transition-all active:scale-[0.98]"
                         >
                             <LogOut className="h-4 w-4 mr-3" />
                             Sair da Conta
