@@ -45,21 +45,6 @@ export async function getResourceHighlights({
   const windowStart = new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000)
 
   const rows = await prisma.$queryRaw<ResourceHighlightRow[]>(PrismaNamespace.sql`
-    WITH ranking AS (
-      SELECT
-        uri."resourceId" AS "resourceId",
-        COUNT(*)::int AS "recentDownloads",
-        MAX(uri."downloadedAt") AS "lastDownloadedAt"
-      FROM "user_resource_interaction" uri
-      WHERE uri."downloadedAt" IS NOT NULL
-        AND uri."downloadedAt" >= ${windowStart}
-      GROUP BY uri."resourceId"
-      ORDER BY
-        COUNT(*) DESC,
-        MAX(uri."downloadedAt") DESC,
-        uri."resourceId" ASC
-      LIMIT ${limit}
-    )
     SELECT
       r.id,
       r.title,
@@ -77,14 +62,27 @@ export async function getResourceHighlights({
           AND uri."isSaved" = TRUE
       ) AS "isFavorite",
       ROW_NUMBER() OVER (
-        ORDER BY ranking."recentDownloads" DESC, ranking."lastDownloadedAt" DESC, r.id ASC
+        ORDER BY COUNT(recent_uri.id) DESC, MAX(recent_uri."downloadedAt") DESC NULLS LAST, r."downloadCount" DESC, r.title ASC, r.id ASC
       )::int AS "rank",
-      ranking."recentDownloads" AS "recentDownloads"
-    FROM ranking
-    JOIN "resource" r ON r.id = ranking."resourceId"
+      COUNT(recent_uri.id)::int AS "recentDownloads"
+    FROM "resource" r
     JOIN "education_level" el ON r."educationLevelId" = el.id
     JOIN "subject" s ON r."subjectId" = s.id
+    LEFT JOIN "user_resource_interaction" recent_uri
+      ON recent_uri."resourceId" = r.id
+      AND recent_uri."downloadedAt" IS NOT NULL
+      AND recent_uri."downloadedAt" >= ${windowStart}
+    GROUP BY
+      r.id,
+      r.title,
+      r.description,
+      r."downloadCount",
+      el.slug,
+      s.slug,
+      s."color",
+      s."textColor"
     ORDER BY "rank" ASC
+    LIMIT ${limit}
   `)
 
   return rows.map((row) => {
