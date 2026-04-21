@@ -2,15 +2,30 @@
 
 import Link from 'next/link'
 import { LazyImage } from '@/components/shared/lazy-image'
-import { Lock, Heart, Loader2 } from 'lucide-react'
+import { Lock, Heart, FileText } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { useToggleFavorite } from '@/hooks/resources/use-resources'
 import { toast } from 'sonner'
-import { AspectRatio } from '@/components/ui/aspect-ratio'
 import { BadgeEducationLevel } from './BadgeEducationLevel'
 import { BadgeSubject } from './BadgeSubject'
-import { Separator } from '@/components/ui/separator'
-import { Badge } from '@/components/ui/badge'
+
+// Helper to generate consistent pattern based on ID
+const getPatternStyle = (id: string) => {
+  const index = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 4
+  const patterns = [
+    { backgroundImage: 'repeating-linear-gradient(-45deg, transparent 0, transparent 10px, oklch(0.4 0.1 30) 10px, oklch(0.4 0.1 30) 11px)' },
+    { 
+      backgroundImage: 'radial-gradient(oklch(0.4 0.1 30) 1px, transparent 0)',
+      backgroundSize: '12px 12px'
+    },
+    { backgroundImage: 'repeating-linear-gradient(to bottom, transparent 0, transparent 19px, oklch(0.4 0.1 30) 19px, oklch(0.4 0.1 30) 20px)' },
+    { 
+      backgroundImage: 'linear-gradient(oklch(0.4 0.1 30) 1px, transparent 1px), linear-gradient(90deg, oklch(0.4 0.1 30) 1px, transparent 1px)',
+      backgroundSize: '16px 16px'
+    }
+  ]
+  return patterns[index]
+}
 
 interface ResourceCardProps {
   id: string
@@ -19,6 +34,8 @@ interface ResourceCardProps {
   thumbUrl?: string | null
   educationLevel: string
   subject: string
+  subjectColor?: string | null
+  subjectTextColor?: string | null
   hasAccess: boolean
   isFavorite?: boolean
 }
@@ -30,6 +47,8 @@ export function ResourceCard({
   thumbUrl,
   educationLevel,
   subject,
+  subjectColor,
+  subjectTextColor,
   hasAccess,
   isFavorite = false,
 }: ResourceCardProps) {
@@ -57,7 +76,8 @@ export function ResourceCard({
       <Card className="flex h-full flex-col transition-all hover:shadow-3 border-line bg-card rounded-5 p-[16px]">
         {/* Image Container with Border and Padding */}
         <div className="relative aspect-[4/5] bg-paper-2 rounded-4 border border-line-soft overflow-hidden shrink-0">
-          <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,transparent,transparent_10px,oklch(0.88_0.02_75_/_0.5)_10px,oklch(0.88_0.02_75_/_0.5)_11px)] opacity-50 z-10" />
+          {/* Subtle Paper Texture Overlay - Shared by all */}
+          <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,transparent,transparent_10px,oklch(0.88_0.02_75_/_0.3)_10px,oklch(0.88_0.02_75_/_0.3)_11px)] opacity-50 z-20 pointer-events-none" />
 
           {thumbUrl ? (
             <LazyImage
@@ -68,8 +88,19 @@ export function ResourceCard({
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center">
-              <span className="font-mono text-[11px] text-ink-mute uppercase tracking-widest">Sem imagem</span>
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-4 bg-paper-2">
+              {/* Dynamic Pattern based on ID */}
+              <div 
+                className="absolute inset-0 opacity-20 mix-blend-multiply" 
+                style={getPatternStyle(id)} 
+              />
+              
+              <div className="relative z-10 bg-paper/90 backdrop-blur-sm border border-line-soft w-full py-6 flex flex-col items-center justify-center px-4 shadow-sm transform -rotate-1">
+                <FileText className="w-8 h-8 text-terracotta/40 mb-3" strokeWidth={1.5} />
+                <p className="w-full text-center font-display text-sm font-bold leading-tight text-ink line-clamp-3 uppercase tracking-tight">
+                  {title}
+                </p>
+              </div>
             </div>
           )}
 
@@ -87,21 +118,23 @@ export function ResourceCard({
 
         <div className="flex flex-1 flex-col pt-5">
           <div className="flex-1 space-y-2">
-            <h3 className="line-clamp-2 font-display text-lg font-semibold text-ink leading-tight tracking-tight group-hover:text-terracotta transition-colors">
+            <h3 className="line-clamp-2 font-display text-lg font-semibold text-ink leading-tight tracking-tight group-hover:text-terracotta transition-colors min-h-[2.5rem]">
               {title}
             </h3>
 
-            {description && (
-              <p className="line-clamp-2 text-body-s">
-                {description}
-              </p>
-            )}
+            <p className="line-clamp-2 text-body-s min-h-[2.5rem]">
+              {description || ''}
+            </p>
           </div>
 
           <div className="mt-4 flex items-center justify-between pt-3 border-t border-dashed border-line">
             <div className="flex flex-wrap gap-1.5">
               <BadgeEducationLevel level={educationLevel} />
-              <BadgeSubject subject={subject} />
+              <BadgeSubject 
+                subject={subject} 
+                color={subjectColor}
+                textColor={subjectTextColor}
+              />
             </div>
 
             <button

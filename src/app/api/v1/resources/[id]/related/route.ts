@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { unstable_cache } from 'next/cache'
 import { getRelatedResources } from '@/lib/resources/services/catalog/related-service'
 
-export const dynamic = 'force-dynamic'
+const getCachedRelated = (id: string) =>
+  unstable_cache(
+    () => getRelatedResources(id),
+    [`resource-related-${id}`],
+    { revalidate: 3600, tags: [`resource:${id}:related`] }
+  )()
 
 export async function GET(
   req: NextRequest,
@@ -9,7 +15,7 @@ export async function GET(
 ) {
   try {
     const { id } = await ctx.params
-    const related = await getRelatedResources(id)
+    const related = await getCachedRelated(id)
     
     const formatted = related.map((r) => ({
       ...r,

@@ -8,6 +8,7 @@ export {
   fetchAdminResourceDetail,
   fetchAdminResources,
   fetchResourceAccessList,
+  fetchResourceCounts,
   fetchResourceDetail,
   fetchResourceMeta,
   fetchResourceObjectives,

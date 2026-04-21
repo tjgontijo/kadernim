@@ -10,7 +10,7 @@ export const ResourceFilterSchema = z.object({
   educationLevel: z.string().optional(),
   grade: z.string().optional(),
   subject: z.string().optional(),
-  tab: z.enum(['mine', 'all']).default('all'),
+  tab: z.enum(['mine', 'all', 'favorites']).default('all'),
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(20),
 })
@@ -24,6 +24,8 @@ export const ResourceSchema = z.object({
   thumbUrl: z.string().nullable().optional(),
   educationLevel: z.string(),
   subject: z.string(),
+  subjectColor: z.string().nullable().optional(),
+  subjectTextColor: z.string().nullable().optional(),
   hasAccess: z.boolean(),
   isFavorite: z.boolean().default(false),
 })
@@ -115,6 +117,7 @@ export const ResourceDetailSchema = ResourceSchema.extend({
   slug: z.string().nullable(),
   isCurated: z.boolean(),
   curatedAt: z.string().nullable(),
+  archivedAt: z.string().nullable().optional(),
   resourceType: z.string(),
   pagesCount: z.number().nullable(),
   estimatedDurationMinutes: z.number().nullable(),

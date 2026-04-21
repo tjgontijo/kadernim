@@ -44,7 +44,7 @@ export async function getResourceDetailForUser(params: {
       title: true,
       description: true,
       educationLevel: { select: { slug: true, name: true } },
-      subject: { select: { slug: true, name: true } },
+      subject: { select: { slug: true, name: true, color: true, textColor: true } },
       grades: {
         select: {
           grade: {
@@ -58,6 +58,7 @@ export async function getResourceDetailForUser(params: {
       slug: true,
       isCurated: true,
       curatedAt: true,
+      archivedAt: true,
       resourceType: true,
       pagesCount: true,
       estimatedDurationMinutes: true,
@@ -155,6 +156,8 @@ export async function getResourceDetailForUser(params: {
     ...resource,
     educationLevel: resource.educationLevel.name,
     subject: resource.subject.name,
+    subjectColor: resource.subject.color,
+    subjectTextColor: resource.subject.textColor,
     educationLevelSlug: resource.educationLevel.slug,
     subjectSlug: resource.subject.slug,
     grades: resource.grades
@@ -166,6 +169,7 @@ export async function getResourceDetailForUser(params: {
     hasAccess,
     thumbUrl: resource.images?.[0]?.url || null,
     curatedAt: resource.curatedAt?.toISOString() || null,
+    archivedAt: resource.archivedAt?.toISOString() || null,
     bnccSkills: resource.bnccSkills.map((bs) => bs.bnccSkill),
     objectives: resource.objectives,
     steps: resource.steps.map((step) => ({

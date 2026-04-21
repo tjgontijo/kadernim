@@ -12,6 +12,8 @@ interface Resource {
   thumbUrl?: string | null
   educationLevel: string
   subject: string
+  subjectColor?: string | null
+  subjectTextColor?: string | null
   hasAccess: boolean
   isFavorite?: boolean
 }
@@ -57,6 +59,17 @@ export function ResourceGrid({
     if (el) setScrollParent(el)
   }, [])
 
+  const GridFooter = () => {
+    if (!isFetchingNextPage) return <div className="h-10" />
+    return (
+      <div className="mt-6 grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 pb-10">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <ResourceCardSkeleton key={index} />
+        ))}
+      </div>
+    )
+  }
+
   return (
     <div className="w-full">
       {items.length === 0 && !isLoading ? (
@@ -83,6 +96,8 @@ export function ResourceGrid({
               thumbUrl={resource.thumbUrl}
               educationLevel={resource.educationLevel}
               subject={resource.subject}
+              subjectColor={resource.subjectColor}
+              subjectTextColor={resource.subjectTextColor}
               hasAccess={resource.hasAccess}
               isFavorite={resource.isFavorite}
             />
@@ -90,19 +105,12 @@ export function ResourceGrid({
           components={{
             Item: ItemContainer,
             List: ListContainer,
+            Footer: GridFooter,
           }}
           listClassName="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
           overscan={12}
           increaseViewportBy={{ top: 200, bottom: 400 }}
         />
-      )}
-
-      {isFetchingNextPage && (
-        <div className="mt-6 grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, index) => (
-            <ResourceCardSkeleton key={index} />
-          ))}
-        </div>
       )}
     </div>
   )

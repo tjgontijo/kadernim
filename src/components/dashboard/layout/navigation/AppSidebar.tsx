@@ -35,6 +35,7 @@ import { authClient } from '@/lib/auth/auth-client'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils/index'
 import { Logo } from '@/components/ui/logo'
+import { useResourceCounts } from '@/hooks/resources/use-resources'
 
 interface AppSidebarProps {
   user: {
@@ -64,6 +65,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const { isMobile, state, setOpenMobile } = useSidebar()
+  const { data: counts } = useResourceCounts()
   const collapsed = state === 'collapsed'
   
   const userRole = (user.role || 'user') as UserRoleType
@@ -88,17 +90,15 @@ export function AppSidebar({ user }: AppSidebarProps) {
   const navGroups: NavGroup[] = [
     {
       items: [
-        { title: 'Biblioteca', href: '/resources', icon: BookOpen, count: '842' },
-        { title: 'Meus favoritos', href: '/favorites', icon: Heart, count: '38' },
-        { title: 'Coleções', href: '/collections', icon: FolderHeart, count: '7' },
+        { title: 'Biblioteca', href: '/resources', icon: BookOpen, count: counts?.library?.toString() },
+        { title: 'Meus favoritos', href: '/favorites', icon: Heart, count: counts?.favorites?.toString() },
         { title: 'Planejador', href: '/planner', icon: Calendar },
       ],
     },
     {
       label: 'Descobrir',
       items: [
-        { title: 'Novidades', href: '/discover/new', icon: Sparkles },
-        { title: 'Esta semana', href: '/discover/weekly', icon: Clock },
+        { title: 'Destaques', href: '/discover/highlights', icon: Sparkles },
       ],
     },
     {

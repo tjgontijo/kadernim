@@ -60,10 +60,15 @@ export async function fetchResourceMeta(): Promise<ResourceMetaResponse> {
   return parseJsonResponse<ResourceMetaResponse>(response)
 }
 
+export async function fetchResourceCounts(): Promise<{ library: number; favorites: number }> {
+  const response = await fetch('/api/v1/resources/counts')
+  return parseJsonResponse<{ library: number; favorites: number }>(response)
+}
+
 export async function fetchResourcesSummary(params: {
   page?: number
   limit?: number
-  tab: 'all' | 'mine'
+  tab: 'all' | 'mine' | 'favorites'
   q?: string
   educationLevel?: string
   grade?: string

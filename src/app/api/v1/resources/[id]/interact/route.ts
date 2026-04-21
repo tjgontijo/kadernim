@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/server/auth/auth'
 import { toggleSaveResource, planResource, getUserInteraction } from '@/lib/resources/services/catalog/interaction-service'
+import { revalidateTag } from 'next/cache'
+import { buildResourceCacheTag } from '@/server/utils/cache'
 
 export const dynamic = 'force-dynamic'
 
@@ -44,6 +46,10 @@ export async function POST(
       result = await planResource(session.user.id, id, plannedFor)
     } else {
       return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
+    }
+
+    if (action === 'save' || action === 'plan') {
+      revalidateTag(buildResourceCacheTag(session.user.id), 'max')
     }
 
     return NextResponse.json({ data: result })

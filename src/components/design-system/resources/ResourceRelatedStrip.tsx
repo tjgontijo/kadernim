@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -22,23 +22,16 @@ interface ResourceRelatedStripProps {
 }
 
 export function ResourceRelatedStrip({ resourceId }: ResourceRelatedStripProps) {
-  const [items, setItems] = useState<RelatedResource[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    async function loadRelated() {
-      try {
-        const res = await fetch(`/api/v1/resources/${resourceId}/related`)
-        const json = await res.json()
-        if (json.data) setItems(json.data)
-      } catch (err) {
-        console.error('Failed to load related', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    loadRelated()
-  }, [resourceId])
+  const { data: items = [], isLoading: loading } = useQuery({
+    queryKey: ['resource-related', resourceId],
+    queryFn: async () => {
+      const res = await fetch(`/api/v1/resources/${resourceId}/related`)
+      if (!res.ok) throw new Error('Failed to load related')
+      const json = await res.json()
+      return (json.data as RelatedResource[]) || []
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutos de cache
+  })
 
   if (!loading && items.length === 0) return null
 

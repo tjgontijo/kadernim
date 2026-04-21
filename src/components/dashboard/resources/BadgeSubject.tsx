@@ -2,6 +2,8 @@ import { Badge } from '@/components/ui/badge'
 
 interface BadgeSubjectProps {
   subject: string
+  color?: string | null
+  textColor?: string | null
 }
 
 const subjectLabels: Record<string, string> = {
@@ -18,14 +20,15 @@ const subjectLabels: Record<string, string> = {
   'biologia': 'Biologia',
   'quimica': 'Química',
   'fisica': 'Física',
+  'ensino-religioso': 'Ensino Religioso',
   'data-importante': 'Data Importante',
   'planejamento': 'Planejamento',
   // Campos de Experiência (EI)
   'eu-outro-nos': 'O eu, o outro e o nós',
   'corpo-gestos-movimentos': 'Corpo, gestos e movimentos',
   'tracos-sons-cores-formas': 'Traços, sons, cores e formas',
-  'escuta-fala-pensamento-imaginacao': 'Escuta, fala, pensamento e imaginação',
-  'espacos-tempos-quantidades-relacoes-transformacoes': 'Espaços, tempos, quantidades, relações e transformações',
+  'escuta-fala-pensamento': 'Escuta, fala, pensamento e imaginação',
+  'espacos-tempos-quantidades': 'Espaços, tempos, quantidades, relações e transformações',
 }
 
 const subjectVariants: Record<string, any> = {
@@ -39,12 +42,18 @@ const subjectVariants: Record<string, any> = {
   'educacao-fisica': 'edfis',
 }
 
-export function BadgeSubject({ subject }: BadgeSubjectProps) {
+export function BadgeSubject({ subject, color, textColor }: BadgeSubjectProps) {
   const label = subjectLabels[subject] ?? subject
   const variant = subjectVariants[subject] || 'outline'
 
+  const style = color ? { 
+    backgroundColor: color, 
+    color: textColor || 'var(--ink)',
+    borderColor: 'transparent'
+  } : {}
+
   return (
-    <Badge variant={variant}>
+    <Badge variant={variant} style={style}>
       {label}
     </Badge>
   )

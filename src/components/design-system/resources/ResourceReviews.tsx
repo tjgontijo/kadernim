@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, MessageSquarePlus, RefreshCw, Star, X } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { toast } from 'sonner'
@@ -76,8 +77,7 @@ export function ResourceReviews({
   reviewCount,
   isAdmin = false,
 }: ResourceReviewsProps) {
-  const [reviews, setReviews] = useState<ReviewWithUser[]>([])
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
   const [showForm, setShowForm] = useState(false)
   const [showAllDialog, setShowAllDialog] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -86,21 +86,18 @@ export function ResourceReviews({
   const [formComment, setFormComment] = useState('')
   const [formFeedback, setFormFeedback] = useState<string | null>(null)
 
-  const loadReviews = async () => {
-    try {
+  const { data: reviews = [], isLoading: loading } = useQuery<ReviewWithUser[]>({
+    queryKey: ['resource-reviews', resourceId],
+    queryFn: async () => {
       const res = await fetch(`/api/v1/resources/${resourceId}/reviews`)
+      if (!res.ok) throw new Error('Failed to load reviews')
       const json = await res.json()
-      if (json.data) setReviews(json.data)
-    } catch (err) {
-      console.error('Failed to load reviews', err)
-    } finally {
-      setLoading(false)
-    }
-  }
+      return json.data || []
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutos de cache
+  })
 
-  useEffect(() => {
-    loadReviews()
-  }, [resourceId])
+  const loadReviews = () => queryClient.invalidateQueries({ queryKey: ['resource-reviews', resourceId] })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

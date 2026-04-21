@@ -34,6 +34,8 @@ type ResourceRow = {
   thumbUrl: string | null
   educationLevel: string
   subject: string
+  subjectColor: string | null
+  subjectTextColor: string | null
   hasAccess: boolean
   isFavorite: boolean
 }
@@ -83,6 +85,14 @@ export async function getResourceList({
   if (tab === 'mine') {
     // Meus recursos: apenas itens em que hasAccess é true
     whereConditions.push(hasAccessCondition)
+  } else if (tab === 'favorites') {
+    // Favoritos: apenas itens onde isSaved é true na user_resource_interaction
+    whereConditions.push(PrismaNamespace.sql`EXISTS (
+      SELECT 1 FROM "user_resource_interaction" uri 
+      WHERE uri."resourceId" = r.id 
+      AND uri."userId" = ${user.userId || ''}::uuid 
+      AND uri."isSaved" = TRUE
+    )`)
   }
 
   const whereClause = PrismaNamespace.join(
@@ -98,6 +108,8 @@ export async function getResourceList({
       (SELECT ri.url FROM "resource_image" ri WHERE ri."resourceId" = r.id ORDER BY ri."order" ASC LIMIT 1) AS "thumbUrl",
       el.slug AS "educationLevel",
       s.slug AS "subject",
+      s."color" AS "subjectColor",
+      s."textColor" AS "subjectTextColor",
       ${hasAccessCondition} AS "hasAccess",
       EXISTS (
         SELECT 1 FROM "user_resource_interaction" uri 
@@ -129,8 +141,10 @@ export async function getResourceList({
       thumbUrl: row.thumbUrl,
       educationLevel: row.educationLevel,
       subject: row.subject,
+      subjectColor: row.subjectColor,
+      subjectTextColor: row.subjectTextColor,
       hasAccess: row.hasAccess,
-      isFavorite: row.isFavorite,
+      isFavorite: Boolean(row.isFavorite),
     })
   )
 

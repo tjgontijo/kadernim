@@ -1,9 +1,10 @@
 'use client'
 
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient, type InfiniteData } from '@tanstack/react-query'
-import { fetchResourceMeta, fetchResourcesSummary, toggleResourceFavorite } from '@/lib/resources/api-client'
+import { fetchResourceCounts, fetchResourceMeta, fetchResourcesSummary, toggleResourceFavorite } from '@/lib/resources/api-client'
 import type {
     Resource,
+    ResourceDetail,
     ResourceMetaResponse,
     ResourcesSummaryResponse,
 } from '@/lib/resources/types'
@@ -16,7 +17,7 @@ interface Filters {
     subject?: string
 }
 
-export type SummaryTab = 'all' | 'mine'
+export type SummaryTab = 'all' | 'mine' | 'favorites'
 
 export interface UseResourcesSummaryQueryParams {
     tab: SummaryTab
@@ -32,6 +33,17 @@ export function useResourceMeta() {
         queryKey: ['resource-meta'],
         queryFn: fetchResourceMeta,
         staleTime: 1000 * 60 * 60, // 1 hour
+    })
+}
+
+/**
+ * Hook to fetch library and user favorites counts
+ */
+export function useResourceCounts() {
+    return useQuery({
+        queryKey: ['resource-counts'],
+        queryFn: fetchResourceCounts,
+        staleTime: 1000 * 60 * 60, // 1 hour (as requested)
     })
 }
 
@@ -102,9 +114,18 @@ export function useToggleFavorite() {
     return useMutation({
         mutationFn: (resourceId: string) => toggleResourceFavorite(resourceId),
         onMutate: async (resourceId) => {
+            // Cancelar queries para não sobrescrever o update otimista
             await queryClient.cancelQueries({ queryKey: ['resources-summary'] })
-            const previousSummary = queryClient.getQueryData(['resources-summary'])
+            await queryClient.cancelQueries({ queryKey: ['resource-detail', resourceId] })
 
+            // Snapshot de todas as listagens que podem conter este recurso
+            const previousQueries = queryClient.getQueriesData<InfiniteData<ResourcesSummaryResponse>>({ 
+                queryKey: ['resources-summary'] 
+            })
+            
+            const previousDetail = queryClient.getQueryData<ResourceDetail>(['resource-detail', resourceId])
+
+            // 1. Atualizar listagens otimisticamente
             queryClient.setQueriesData<InfiniteData<ResourcesSummaryResponse>>(
                 { queryKey: ['resources-summary'] },
                 (old) => {
@@ -123,16 +144,31 @@ export function useToggleFavorite() {
                 }
             )
 
-            return { previousSummary }
+            // 2. Atualizar detalhe otimisticamente
+            if (previousDetail) {
+                queryClient.setQueryData<ResourceDetail>(
+                    ['resource-detail', resourceId],
+                    { ...previousDetail, isFavorite: !previousDetail.isFavorite }
+                )
+            }
+
+            return { previousQueries, previousDetail }
         },
         onError: (err, resourceId, context) => {
-            if (context?.previousSummary) {
-                queryClient.setQueryData(['resources-summary'], context.previousSummary)
+            // Rollback de todas as listagens afetadas
+            context?.previousQueries?.forEach(([queryKey, data]) => {
+                queryClient.setQueryData(queryKey, data)
+            })
+            
+            // Rollback do detalhe
+            if (context?.previousDetail) {
+                queryClient.setQueryData(['resource-detail', resourceId], context.previousDetail)
             }
         },
-        onSettled: () => {
+        onSettled: (_, __, resourceId) => {
             queryClient.invalidateQueries({ queryKey: ['resources-summary'] })
-            queryClient.invalidateQueries({ queryKey: ['resource-detail'] })
+            queryClient.invalidateQueries({ queryKey: ['resource-detail', resourceId] })
+            queryClient.invalidateQueries({ queryKey: ['resource-counts'] })
         },
     })
 }

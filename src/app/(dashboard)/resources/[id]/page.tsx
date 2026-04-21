@@ -24,16 +24,18 @@ import { ResourceFilesList } from '@/components/design-system/resources/Resource
 import { ResourceRelatedStrip } from '@/components/design-system/resources/ResourceRelatedStrip'
 import { ResourceShareCard } from '@/components/design-system/resources/ResourceShareCard'
 import { useSessionQuery } from '@/hooks/auth/use-session'
-import { InlineEditWrapper } from '@/components/dashboard/resources/edit/inline-edit-wrapper'
-import { ResourceDetailsForm } from '@/components/dashboard/resources/edit/resource-details-form'
-import { ResourceObjectivesStepsEditor } from '@/components/dashboard/resources/edit/resource-objectives-steps-editor'
-import { ResourceCategorizationForm } from '@/components/dashboard/resources/edit/resource-categorization-form'
-import { ResourceImagesManager } from '@/components/dashboard/resources/edit/resource-images-manager'
-import { ResourceFilesManager } from '@/components/dashboard/resources/edit/resource-files-manager'
+import { useRouter } from 'next/navigation'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
+import { updateAdminResource } from '@/lib/resources/api-client'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { ResourceDetailPageSkeleton } from '@/components/dashboard/resources/resource-detail-page-skeleton'
 
 export default function ResourceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
+  const router = useRouter()
+  const queryClient = useQueryClient()
   const { setResourceTitle, setResourceSubject, setResourceEducationLevel } = useResource()
   const [downloadingFileId, setDownloadingFileId] = useState<string | null>(null)
   const [activeImageIndex, setActiveImageIndex] = useState(0)
@@ -51,6 +53,40 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
   } = useQuery<ResourceDetail>({
     queryKey: ['resource-detail', id],
     queryFn: () => fetchResourceDetail(id),
+  })
+
+  // Mutation para publicar/despublicar com optimistic update
+  const publishMutation = useMutation({
+    mutationFn: (isPublished: boolean) => 
+      updateAdminResource(resource?.id!, { 
+        archivedAt: isPublished ? null : new Date().toISOString()
+      }),
+    onMutate: async (isPublished) => {
+      // Cancela qualquer refetch em andamento para evitar sobrescrever o optimistic update
+      await queryClient.cancelQueries({ queryKey: ['resource-detail', id] })
+      // Salva o estado anterior para rollback em caso de erro
+      const previous = queryClient.getQueryData<ResourceDetail>(['resource-detail', id])
+      // Atualiza o cache imediatamente
+      queryClient.setQueryData<ResourceDetail>(['resource-detail', id], (old) => {
+        if (!old) return old
+        return { ...old, archivedAt: isPublished ? null : new Date().toISOString() }
+      })
+      return { previous }
+    },
+    onSuccess: (_, isPublished) => {
+      toast.success(isPublished ? 'Material publicado!' : 'Material movido para rascunhos')
+    },
+    onError: (_, __, context) => {
+      // Reverte para o estado anterior se a requisição falhar
+      if (context?.previous) {
+        queryClient.setQueryData(['resource-detail', id], context.previous)
+      }
+      toast.error('Erro ao alterar status')
+    },
+    onSettled: () => {
+      // Confirma com o servidor após a mutação (sucesso ou erro)
+      queryClient.invalidateQueries({ queryKey: ['resource-detail', id] })
+    },
   })
 
   // Provide the loaded resource title and sub-entities to the navigation globally
@@ -165,78 +201,25 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px] gap-[48px] items-start tracking-tight">
         {/* LEFT COLUMN */}
         <div>
-          <InlineEditWrapper 
-            canEdit={isAdmin} 
-            title="Galeria de Imagens"
-            editor={() => <ResourceImagesManager resourceId={resource.id} initialImages={resource.images as any} currentThumbUrl={resource.thumbUrl || null} />}
-          >
-            <ResourceGallery
-               files={resource.files}
-               videos={resource.videos}
-               title={resource.title || ''}
-            />
-          </InlineEditWrapper>
+          <ResourceGallery
+            files={resource.files}
+            videos={resource.videos}
+            title={resource.title || ''}
+          />
 
-          <InlineEditWrapper 
-            canEdit={isAdmin} 
-            title="Informações Gerais"
-            editor={({ onClose }) => <ResourceDetailsForm resource={resource as any} onSuccess={onClose} />}
-          >
-            <ResourceOverview description={resource.description || ''} />
-          </InlineEditWrapper>
+          <ResourceOverview description={resource.description || ''} />
           
-          <InlineEditWrapper
-            canEdit={isAdmin}
-            title="Objetivos de Aprendizagem"
-            editor={() => (
-              <ResourceObjectivesStepsEditor
-                resourceId={resource.id}
-                sections={['objectives']}
-              />
-            )}
-          >
-            <ResourceObjectives 
-              objectives={resource.objectives} 
-            />
-          </InlineEditWrapper>
+          <ResourceObjectives 
+            objectives={resource.objectives} 
+          />
 
-          <InlineEditWrapper
-            canEdit={isAdmin}
-            title="Como conduzir a aula"
-            editor={() => (
-              <ResourceObjectivesStepsEditor
-                resourceId={resource.id}
-                sections={['steps']}
-              />
-            )}
-          >
-            <ResourceTimeline 
-              steps={resource.steps} 
-            />
-          </InlineEditWrapper>
+          <ResourceTimeline 
+            steps={resource.steps} 
+          />
           
-          <InlineEditWrapper
-            canEdit={isAdmin}
-            title="BNCC e Categorização"
-            editor={() => (
-              <ResourceCategorizationForm
-                context="bncc"
-                resource={{
-                  id: resource.id,
-                  educationLevel: resource.educationLevel,
-                  educationLevelSlug: resource.educationLevelSlug,
-                  subject: resource.subject,
-                  subjectSlug: resource.subjectSlug,
-                  grades: resource.grades ?? [],
-                  bnccSkills: resource.bnccSkills,
-                }}
-              />
-            )}
-          >
-            <ResourceBNCC 
-              skills={resource.bnccSkills} 
-            />
-          </InlineEditWrapper>
+          <ResourceBNCC 
+            skills={resource.bnccSkills} 
+          />
           
           <ResourceReviews 
             resourceId={resource.id}
@@ -248,43 +231,51 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
 
         {/* RIGHT: sticky sidebar */}
         <aside className="sticky top-[84px] flex flex-col gap-[20px]">
-          <InlineEditWrapper
-            canEdit={isAdmin}
-            title="Informações do Card Lateral"
-            editor={() => (
-              <ResourceCategorizationForm
-                context="sidebar"
-                resource={{
-                  id: resource.id,
-                  educationLevel: resource.educationLevel,
-                  educationLevelSlug: resource.educationLevelSlug,
-                  subject: resource.subject,
-                  subjectSlug: resource.subjectSlug,
-                  grades: resource.grades ?? [],
-                  resourceType: resource.resourceType,
-                  pagesCount: resource.pagesCount,
-                  estimatedDurationMinutes: resource.estimatedDurationMinutes,
-                }}
-              />
-            )}
-          >
-            <ResourceActionSidebar 
-               resource={resource}
-               onDownload={handleDownload}
-               downloadingFileId={downloadingFileId}
-            />
-          </InlineEditWrapper>
-          <InlineEditWrapper
-            canEdit={isAdmin}
-            title="Arquivos"
-            editor={() => <ResourceFilesManager resourceId={resource.id} initialFiles={resource.files as any} />}
-          >
-            <ResourceFilesList 
-               files={resource.files}
-               onDownload={handleDownload}
-               downloadingFileId={downloadingFileId}
-            />
-          </InlineEditWrapper>
+          {isAdmin && (
+            <div className="bg-card border border-line rounded-5 p-6 shadow-sm space-y-5">
+              <div className="text-center border-b border-line-soft pb-4">
+                <Label className="text-[10px] uppercase tracking-[0.2em] font-black text-ink-mute/60">Controle do Editor</Label>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between px-1">
+                  <p className="text-sm font-bold text-ink">
+                    {!resource.archivedAt ? (
+                      <span className="text-sage flex items-center gap-1.5">● Publicado</span>
+                    ) : (
+                      <span className="text-ink-mute flex items-center gap-1.5">○ Rascunho</span>
+                    )}
+                  </p>
+                  <Switch 
+                    checked={!resource.archivedAt}
+                    onCheckedChange={(checked) => publishMutation.mutate(checked)}
+                    disabled={publishMutation.isPending}
+                    className="data-[state=checked]:bg-sage scale-90"
+                  />
+                </div>
+
+                <Button
+                  variant="outline"
+                  className="w-full bg-paper border-line text-ink hover:text-terracotta hover:border-terracotta/30 font-bold py-5 rounded-4 transition-all shadow-sm"
+                  onClick={() => router.push(`/resources/${resource.id}/edit`)}
+                >
+                  Editar Material
+                </Button>
+              </div>
+            </div>
+          )}
+
+          <ResourceActionSidebar 
+             resource={resource}
+             onDownload={handleDownload}
+             downloadingFileId={downloadingFileId}
+          />
+          
+          <ResourceFilesList 
+             files={resource.files}
+             onDownload={handleDownload}
+             downloadingFileId={downloadingFileId}
+          />
           
           {downloadFeedback && (
             <div

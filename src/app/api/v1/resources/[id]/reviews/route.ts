@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { unstable_cache, revalidateTag } from 'next/cache'
 import { auth } from '@/server/auth/auth'
 import {
   createResourceReview,
@@ -7,7 +8,12 @@ import {
   moderateResourceReview,
 } from '@/lib/resources/services/catalog/review-service'
 
-export const dynamic = 'force-dynamic'
+const getCachedReviews = (id: string) =>
+  unstable_cache(
+    () => getApprovedReviewsForResource(id),
+    [`resource-reviews-${id}`],
+    { revalidate: 300, tags: [`resource:${id}:reviews`] } // 5 min
+  )()
 
 export async function GET(
   req: NextRequest,
@@ -17,9 +23,11 @@ export async function GET(
     const { id } = await ctx.params
     const session = await auth.api.getSession({ headers: req.headers })
     const isAdmin = session?.user?.role === 'admin'
+
+    // Admin gets fresh data always; public users get cached data
     const reviews = isAdmin
       ? await getAllReviewsForResource(id)
-      : await getApprovedReviewsForResource(id)
+      : await getCachedReviews(id)
 
     return NextResponse.json({ data: reviews })
   } catch (error) {
@@ -90,6 +98,9 @@ export async function PATCH(
       moderatorId: session.user.id,
       status,
     })
+
+    // Invalidar cache de reviews públicas ao moderar
+    revalidateTag(`resource:${id}:reviews`)
 
     return NextResponse.json({ data: review })
   } catch (error) {

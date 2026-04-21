@@ -164,7 +164,7 @@ export async function fetchResourceSummary(input: {
 
 export function resourceSummaryHeaders(cacheKey: string[]) {
   return {
-    'Cache-Control': 'private, max-age=30, stale-while-revalidate=120',
+    'Cache-Control': 'private, no-cache, max-age=0, s-maxage=30, stale-while-revalidate=120',
     'CDN-Cache-Control': 'private, max-age=30, stale-while-revalidate=120',
     Vary: 'Authorization, Cookie',
     'X-Resource-Cache-Key': cacheKey.join(':'),

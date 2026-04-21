@@ -14,26 +14,26 @@ export async function seedTaxonomy(prisma: PrismaClient) {
    */
   const subjects = [
     // Componentes Curriculares (Ensino Fundamental)
-    { name: 'Língua Portuguesa', slug: 'lingua-portuguesa' },
-    { name: 'Matemática', slug: 'matematica' },
-    { name: 'Ciências', slug: 'ciencias' },
-    { name: 'História', slug: 'historia' },
-    { name: 'Geografia', slug: 'geografia' },
-    { name: 'Arte', slug: 'arte' },
-    { name: 'Educação Física', slug: 'educacao-fisica' },
-    { name: 'Língua Inglesa', slug: 'lingua-inglesa' },
-    { name: 'Ensino Religioso', slug: 'ensino-religioso' },
+    { name: 'Língua Portuguesa', slug: 'lingua-portuguesa', color: 'oklch(0.95 0.05 25)', textColor: 'oklch(0.40 0.12 25)' },
+    { name: 'Matemática', slug: 'matematica', color: 'oklch(0.95 0.05 250)', textColor: 'oklch(0.40 0.12 250)' },
+    { name: 'Ciências', slug: 'ciencias', color: 'oklch(0.95 0.05 145)', textColor: 'oklch(0.35 0.12 145)' },
+    { name: 'História', slug: 'historia', color: 'oklch(0.95 0.05 60)', textColor: 'oklch(0.35 0.15 60)' },
+    { name: 'Geografia', slug: 'geografia', color: 'oklch(0.95 0.05 190)', textColor: 'oklch(0.35 0.12 190)' },
+    { name: 'Arte', slug: 'arte', color: 'oklch(0.95 0.05 325)', textColor: 'oklch(0.35 0.15 325)' },
+    { name: 'Educação Física', slug: 'educacao-fisica', color: 'oklch(0.95 0.05 170)', textColor: 'oklch(0.30 0.10 170)' },
+    { name: 'Língua Inglesa', slug: 'lingua-inglesa', color: 'oklch(0.96 0.10 95)', textColor: 'oklch(0.45 0.15 95)' },
+    { name: 'Ensino Religioso', slug: 'ensino-religioso', color: 'oklch(0.92 0.02 75)', textColor: 'oklch(0.30 0.02 75)' },
 
     // Matérias Extra-Curriculares / Suporte
-    { name: 'Planejamento', slug: 'planejamento' },
-    { name: 'Datas Importantes', slug: 'data-importante' },
+    { name: 'Planejamento', slug: 'planejamento', color: 'oklch(0.94 0.015 85)', textColor: 'oklch(0.4 0.015 60)' },
+    { name: 'Datas Importantes', slug: 'data-importante', color: 'oklch(0.95 0.04 82)', textColor: 'oklch(0.66 0.12 82)' },
 
     // Campos de Experiência (Educação Infantil)
-    { name: 'O eu, o outro e o nós', slug: 'eu-outro-nos' },
-    { name: 'Corpo, gestos e movimentos', slug: 'corpo-gestos-movimentos' },
-    { name: 'Traços, sons, cores e formas', slug: 'tracos-sons-cores-formas' },
-    { name: 'Escuta, fala, pensamento e imaginação', slug: 'escuta-fala-pensamento' },
-    { name: 'Espaços, tempos, quantidades, relações e transformações', slug: 'espacos-tempos-quantidades' },
+    { name: 'O eu, o outro e o nós', slug: 'eu-outro-nos', color: 'oklch(0.94 0.08 42)', textColor: 'oklch(0.3 0.1 42)' },
+    { name: 'Corpo, gestos e movimentos', slug: 'corpo-gestos-movimentos', color: 'oklch(0.94 0.08 140)', textColor: 'oklch(0.3 0.1 140)' },
+    { name: 'Traços, sons, cores e formas', slug: 'tracos-sons-cores-formas', color: 'oklch(0.94 0.08 320)', textColor: 'oklch(0.3 0.1 320)' },
+    { name: 'Escuta, fala, pensamento e imaginação', slug: 'escuta-fala-pensamento', color: 'oklch(0.94 0.08 260)', textColor: 'oklch(0.3 0.1 260)' },
+    { name: 'Espaços, tempos, quantidades, relações e transformações', slug: 'espacos-tempos-quantidades', color: 'oklch(0.94 0.08 200)', textColor: 'oklch(0.3 0.1 200)' },
   ] as const
 
   const gradesByLevelSlug = {
@@ -110,8 +110,17 @@ export async function seedTaxonomy(prisma: PrismaClient) {
   for (const subject of subjects) {
     await prisma.subject.upsert({
       where: { slug: subject.slug },
-      update: { name: subject.name },
-      create: { name: subject.name, slug: subject.slug },
+      update: { 
+        name: subject.name,
+        color: subject.color,
+        textColor: subject.textColor,
+      },
+      create: { 
+        name: subject.name, 
+        slug: subject.slug,
+        color: subject.color,
+        textColor: subject.textColor,
+      },
     })
   }
 

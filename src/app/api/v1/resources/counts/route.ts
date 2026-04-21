@@ -1,34 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server'
-import {
-  authorizeResourceListRequest,
-  fetchCachedResourceCounts,
-  parseResourceListFilters,
-  resourceCountsServerError,
-} from '../route-support'
+import { prisma } from '@/server/db'
+import { auth } from "@/server/auth/auth"
 
 export async function GET(request: NextRequest) {
-  try {
-    const authResult = await authorizeResourceListRequest(request)
-    if (authResult instanceof NextResponse) {
-      return authResult
+    try {
+        const session = await auth.api.getSession({
+            headers: request.headers
+        })
+
+        const [libraryCount, favoriteCount] = await Promise.all([
+            // Conta apenas materiais ativos (não arquivados)
+            prisma.resource.count({
+                where: {
+                    archivedAt: null
+                }
+            }),
+            // Conta favoritos se houver sessão
+            session?.user?.id 
+                ? prisma.userResourceInteraction.count({
+                    where: {
+                        userId: session.user.id,
+                        isSaved: true
+                    }
+                })
+                : Promise.resolve(0)
+        ])
+
+        return NextResponse.json({
+            library: libraryCount,
+            favorites: favoriteCount
+        }, {
+            headers: {
+                'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=600'
+            }
+        })
+    } catch (error) {
+        console.error('[API] Erro ao buscar contadores:', error)
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
     }
-
-    const parsed = parseResourceListFilters(request)
-    if (parsed instanceof NextResponse) {
-      return parsed
-    }
-
-    const counts = await fetchCachedResourceCounts({
-      userId: authResult.userId,
-      role: authResult.role,
-      filters: parsed,
-    })
-
-    const tabCount =
-      parsed.tab === 'mine' ? counts.mine : counts.all
-
-    return NextResponse.json({ data: { tab: parsed.tab, count: tabCount } })
-  } catch (error) {
-    return resourceCountsServerError(error)
-  }
 }

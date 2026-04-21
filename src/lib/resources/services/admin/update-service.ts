@@ -29,6 +29,7 @@ export async function updateResourceService(
     thumbPublicId,
     objectives,
     steps,
+    archivedAt,
   } = input
 
   // Check if resource exists
@@ -85,6 +86,7 @@ export async function updateResourceService(
   if (estimatedDurationMinutes !== undefined) {
     updateData.estimatedDurationMinutes = estimatedDurationMinutes
   }
+  if (archivedAt !== undefined) updateData.archivedAt = archivedAt
 
   if (objectives !== undefined) {
     updateData.googleDriveUrl = googleDriveUrl ?? null

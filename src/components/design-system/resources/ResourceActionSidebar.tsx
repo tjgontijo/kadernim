@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
-import { Download, RefreshCw, ArrowDownToLine, Calendar, Layers, Clock, Users, FileText, Bookmark, BookmarkCheck } from 'lucide-react'
+import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { Download, RefreshCw, Calendar, Layers, Clock, Users, FileText, Bookmark, BookmarkCheck } from 'lucide-react'
 import type { ResourceDetail } from '@/lib/resources/types'
 
 interface ResourceActionSidebarProps {
@@ -26,8 +27,6 @@ const RESOURCE_TYPE_LABELS: Record<string, string> = {
 }
 
 export function ResourceActionSidebar({ resource, onDownload, downloadingFileId }: ResourceActionSidebarProps) {
-  const [isSaved, setIsSaved] = useState(false)
-  const [isPlanned, setIsPlanned] = useState(false)
   const [loadingAction, setLoadingAction] = useState<string | null>(null)
 
   const author = resource.author
@@ -41,48 +40,43 @@ export function ResourceActionSidebar({ resource, onDownload, downloadingFileId 
         : `${resource.gradeLabels[0]}, ${resource.gradeLabels[1]} +${resource.gradeLabels.length - 2}`
       : 'Não definido'
 
-  useEffect(() => {
-    async function loadInteraction() {
-      try {
-        const res = await fetch(`/api/v1/resources/${resource.id}/interact`)
-        const json = await res.json()
-        if (json.data) {
-          setIsSaved(json.data.isSaved)
-          setIsPlanned(json.data.isPlanned)
-        }
-      } catch (err) {
-        console.error('Failed to load interaction', err)
-      }
-    }
-    loadInteraction()
-  }, [resource.id])
+  const { data: interaction, refetch: refetchInteraction } = useQuery({
+    queryKey: ['resource-interact', resource.id],
+    queryFn: async () => {
+      const res = await fetch(`/api/v1/resources/${resource.id}/interact`)
+      if (!res.ok) throw new Error('Failed to load interaction')
+      const json = await res.json()
+      return json.data as { isSaved: boolean; isPlanned: boolean } | null
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutos
+  })
+
+  const isSaved = interaction?.isSaved ?? false
+  const isPlanned = interaction?.isPlanned ?? false
 
   const handleToggleSave = async () => {
     setLoadingAction('save')
     try {
-      const res = await fetch(`/api/v1/resources/${resource.id}/interact`, {
+      await fetch(`/api/v1/resources/${resource.id}/interact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'save' }),
       })
-      const json = await res.json()
-      if (json.data) setIsSaved(json.data.isSaved)
+      await refetchInteraction()
     } finally {
       setLoadingAction(null)
     }
   }
 
   const handleTogglePlan = async () => {
-    // Simple toggle for now, in a real app might open a date picker
     setLoadingAction('plan')
     try {
-      const res = await fetch(`/api/v1/resources/${resource.id}/interact`, {
+      await fetch(`/api/v1/resources/${resource.id}/interact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'plan', plannedFor: !isPlanned ? new Date() : null }),
       })
-      const json = await res.json()
-      if (json.data) setIsPlanned(json.data.isPlanned)
+      await refetchInteraction()
     } finally {
       setLoadingAction(null)
     }

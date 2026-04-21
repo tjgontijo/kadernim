@@ -66,6 +66,8 @@ CREATE TABLE "subject" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
+    "color" TEXT,
+    "textColor" TEXT,
 
     CONSTRAINT "subject_pkey" PRIMARY KEY ("id")
 );
