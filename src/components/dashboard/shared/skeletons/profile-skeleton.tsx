@@ -19,9 +19,13 @@ export function ProfileSkeleton() {
       <Card className="relative overflow-hidden rounded-4 border border-line bg-card shadow-1 paper-grain pt-10">
         <CardContent className="p-8 pt-2">
           <div className="mb-10 flex flex-col items-center">
-            <Skeleton className="h-36 w-36 rounded-full border-4 border-line bg-paper-2 shadow-2" />
-            <Skeleton className="mt-6 h-10 w-56 bg-paper-2" />
-            <Skeleton className="mt-3 h-6 w-28 rounded-full bg-paper-2" />
+            <div className="relative">
+              <Skeleton className="h-40 w-40 !rounded-full border-[6px] border-line bg-paper-2 shadow-2" />
+              <Skeleton className="absolute bottom-2 right-2 h-8 w-8 !rounded-full border border-line bg-paper" />
+            </div>
+            <Skeleton className="mt-6 h-11 w-64 rounded-2 bg-paper-2" />
+            <Skeleton className="mt-3 h-6 w-28 !rounded-full bg-paper-2" />
+            <Skeleton className="mt-3 h-3 w-48 rounded-2 bg-paper-2" />
           </div>
 
           <div className="space-y-6">
@@ -42,9 +46,15 @@ export function ProfileSkeleton() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-8 space-y-4">
-          <Skeleton className="h-22 w-full rounded-3 bg-paper-2" />
-          <Skeleton className="h-14 w-full rounded-3 bg-paper-2" />
+        <CardContent className="p-8 space-y-5">
+          <div className="space-y-3">
+            <Skeleton className="h-6 w-36 !rounded-full bg-paper-2" />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Skeleton className="h-20 w-full rounded-3 bg-paper-2" />
+              <Skeleton className="h-20 w-full rounded-3 bg-paper-2" />
+            </div>
+          </div>
+          <Skeleton className="h-12 w-full rounded-3 bg-paper-2" />
         </CardContent>
       </Card>
 
@@ -58,7 +68,7 @@ export function ProfileSkeleton() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-8 space-y-3">
+        <CardContent className="p-8 space-y-4">
           <Skeleton className="h-14 w-full rounded-3 bg-paper-2" />
           <Skeleton className="h-14 w-full rounded-3 bg-paper-2" />
         </CardContent>
