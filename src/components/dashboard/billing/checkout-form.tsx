@@ -243,7 +243,7 @@ export function GuestCheckoutForm({
   initialPlan?: CheckoutPlanId
 }) {
   const [plan, setPlan] = useState<CheckoutPlanId>(initialPlan ?? DEFAULT_CHECKOUT_PLAN_ID)
-  const [method, setMethod] = useState<Method>('PIX')
+  const [method, setMethod] = useState<Method>('CREDIT_CARD')
   const [annualInstallments, setAnnualInstallments] = useState(1)
   const [name, setName] = useState(prefilledUser?.name ?? '')
   const [email, setEmail] = useState(prefilledUser?.email ?? '')
@@ -491,8 +491,8 @@ export function GuestCheckoutForm({
                 <label className="block text-[11px] font-bold uppercase tracking-[0.12em] text-ink-mute mb-2">Metodo</label>
                 <div className="grid grid-cols-2 gap-2">
                   {([
-                    { key: 'PIX', icon: QrCode, label: 'Pix' },
                     { key: 'CREDIT_CARD', icon: CreditCard, label: 'Cartao de credito' },
+                    { key: 'PIX', icon: QrCode, label: 'Pix' },
                   ] as const).map(({ key, icon: Icon, label }) => (
                     <button
                       key={key}
