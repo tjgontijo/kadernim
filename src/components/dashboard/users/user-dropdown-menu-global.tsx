@@ -15,7 +15,6 @@ import { useSidebar } from '@/components/ui/sidebar'
 import { useRouter } from 'next/navigation'
 import { authClient } from '@/lib/auth/auth-client'
 import { ChevronDown, LogOut } from 'lucide-react'
-import { ThemeSwitcherItem } from '@/components/shared/theme-switcher-item'
 import { cn } from '@/lib/utils/index'
 
 interface UserDropdownMenuGlobalProps {
@@ -103,8 +102,6 @@ export function UserDropdownMenuGlobal({ userName, userEmail, userImage, customT
           <p className="text-sm font-medium leading-none">{userName}</p>
           <p className="text-xs leading-none text-muted-foreground">{userEmail}</p>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <ThemeSwitcherItem />
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout} className="text-destructive cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />

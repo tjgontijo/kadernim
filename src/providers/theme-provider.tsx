@@ -14,6 +14,7 @@ export function ThemeProvider({
             enableSystem={false}
             disableTransitionOnChange
             {...props}
+            forcedTheme="light"
         >
             {children}
         </NextThemesProvider>

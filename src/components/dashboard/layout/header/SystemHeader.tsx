@@ -4,8 +4,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { LogOut, Settings, User, ShieldCheck } from 'lucide-react'
-import { ThemeSwitcherItem } from '@/components/shared/theme-switcher-item'
-import { useTheme } from 'next-themes'
 import { authClient } from '@/lib/auth/auth-client'
 import { UserRole } from '@/types/users/user-role'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
@@ -17,10 +15,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
-  DropdownMenuPortal,
 } from '@/components/ui/dropdown-menu'
 import { useSessionQuery } from '@/hooks/auth/use-session'
 
@@ -28,7 +22,6 @@ export function SystemHeader() {
   const { data: session } = useSessionQuery()
   const router = useRouter()
   const pathname = usePathname()
-  const { setTheme } = useTheme()
 
   const handleLogout = async () => {
     await authClient.signOut({
@@ -109,10 +102,6 @@ export function SystemHeader() {
                 <span>Configurações</span>
               </Link>
             </DropdownMenuItem>
-
-            <DropdownMenuSeparator />
-
-            <ThemeSwitcherItem />
 
             <DropdownMenuSeparator />
 
