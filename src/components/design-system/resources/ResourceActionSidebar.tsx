@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Download, RefreshCw, Calendar, Layers, Clock, Users, FileText, Bookmark, BookmarkCheck } from 'lucide-react'
+import { Download, RefreshCw, Layers, Clock, Users, FileText, Bookmark, BookmarkCheck } from 'lucide-react'
 import type { ResourceDetail } from '@/lib/resources/types'
+import { CreateResourceLessonPlanDialog } from '@/components/dashboard/lesson-plans/create-resource-lesson-plan-dialog'
 
 interface ResourceActionSidebarProps {
   resource: ResourceDetail
@@ -46,13 +47,12 @@ export function ResourceActionSidebar({ resource, onDownload, downloadingFileId 
       const res = await fetch(`/api/v1/resources/${resource.id}/interact`)
       if (!res.ok) throw new Error('Failed to load interaction')
       const json = await res.json()
-      return json.data as { isSaved: boolean; isPlanned: boolean } | null
+      return json.data as { isSaved: boolean } | null
     },
     staleTime: 1000 * 60 * 5, // 5 minutos
   })
 
   const isSaved = interaction?.isSaved ?? false
-  const isPlanned = interaction?.isPlanned ?? false
 
   const handleToggleSave = async () => {
     setLoadingAction('save')
@@ -61,20 +61,6 @@ export function ResourceActionSidebar({ resource, onDownload, downloadingFileId 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'save' }),
-      })
-      await refetchInteraction()
-    } finally {
-      setLoadingAction(null)
-    }
-  }
-
-  const handleTogglePlan = async () => {
-    setLoadingAction('plan')
-    try {
-      await fetch(`/api/v1/resources/${resource.id}/interact`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'plan', plannedFor: !isPlanned ? new Date() : null }),
       })
       await refetchInteraction()
     } finally {
@@ -143,7 +129,7 @@ export function ResourceActionSidebar({ resource, onDownload, downloadingFileId 
             </button>
           )}
           
-          <div className="grid grid-cols-2 gap-[8px]">
+          <div className="grid grid-cols-1 gap-[8px]">
             <button 
               onClick={handleToggleSave}
               disabled={loadingAction === 'save'}
@@ -162,19 +148,9 @@ export function ResourceActionSidebar({ resource, onDownload, downloadingFileId 
               )}
               {isSaved ? 'Salvo' : 'Salvar'}
             </button>
-            <button 
-              onClick={handleTogglePlan}
-              disabled={loadingAction === 'plan'}
-              className={`w-full inline-flex items-center justify-center gap-[8px] px-[20px] py-[12px] font-body text-[15px] font-semibold rounded-full border transition-all shadow-1 ${
-                isPlanned 
-                  ? 'bg-terracotta-2 border-terracotta text-terracotta' 
-                  : 'bg-card border-line text-ink hover:bg-paper-2'
-              }`}
-            >
-              <Calendar className="h-[16px] w-[16px]" strokeWidth={1.8} />
-              {isPlanned ? 'Planejado' : 'Planejar'}
-            </button>
           </div>
+
+          <CreateResourceLessonPlanDialog resourceId={resource.id} />
         </div>
 
         <hr className="border-0 border-t border-dashed border-line my-[20px]" />

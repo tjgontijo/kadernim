@@ -15,6 +15,7 @@ model EducationLevel {
   grades     Grade[]
   resources  Resource[]
   bnccSkills BnccSkill[]
+  lessonPlans LessonPlan[]
 
   @@map("education_level")
 }
@@ -29,6 +30,7 @@ model Grade {
   subjects         GradeSubject[]
   resources        ResourceGrade[]
   bnccSkills       BnccSkill[]
+  lessonPlans      LessonPlan[]
 
   @@index([educationLevelId])
   @@map("grade")
@@ -44,6 +46,7 @@ model Subject {
   grades     GradeSubject[]
   resources  Resource[]
   bnccSkills BnccSkill[]
+  lessonPlans LessonPlan[]
 
   @@map("subject")
 }
@@ -87,6 +90,7 @@ model User {
   reviewsAsModeration Review[]                  @relation("ReviewModerator")
   userInteractions    UserResourceInteraction[]
   relationsCreated    RelatedResource[]
+  lessonPlans         LessonPlan[]
 
   @@map("user")
 }
@@ -415,6 +419,7 @@ model Resource {
   userInteractions UserResourceInteraction[]
   sourceRelations  RelatedResource[]         @relation("source")
   targetRelations  RelatedResource[]         @relation("target")
+  lessonPlans      LessonPlan[]
 
   educationLevel EducationLevel       @relation(fields: [educationLevelId], references: [id])
   subject        Subject              @relation(fields: [subjectId], references: [id])
@@ -719,4 +724,65 @@ enum RelatedResourceType {
   PREREQUISITE
   ADVANCED
   RELATED_TOPIC
+}
+
+enum LessonPlanOrigin {
+  RESOURCE
+  MANUAL
+}
+
+enum LessonPlanStatus {
+  GENERATED
+  FAILED
+  ARCHIVED
+}
+
+enum LessonPlanMode {
+  FULL_LESSON
+  REVIEW
+  GROUP_ACTIVITY
+  DIAGNOSTIC
+  HOMEWORK
+}
+
+model LessonPlan {
+  id               String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId           String           @db.Uuid
+  sourceResourceId String?          @db.Uuid
+
+  title            String
+  status           LessonPlanStatus @default(GENERATED)
+  origin           LessonPlanOrigin @default(RESOURCE)
+  mode             LessonPlanMode
+
+  educationLevelId String?          @db.Uuid
+  subjectId        String?          @db.Uuid
+  gradeId          String?          @db.Uuid
+
+  durationMinutes  Int
+  classCount       Int?
+  teacherNote      String?          @db.Text
+
+  content          Json
+  sourceSnapshot   Json
+  generationMeta   Json?
+
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  archivedAt       DateTime?
+
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sourceResource   Resource?        @relation(fields: [sourceResourceId], references: [id], onDelete: SetNull)
+  educationLevel   EducationLevel?  @relation(fields: [educationLevelId], references: [id], onDelete: SetNull)
+  subject          Subject?         @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  grade            Grade?           @relation(fields: [gradeId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([userId, archivedAt])
+  @@index([userId, sourceResourceId])
+  @@index([sourceResourceId])
+  @@index([educationLevelId])
+  @@index([subjectId])
+  @@index([gradeId])
+  @@map("lesson_plan")
 }
