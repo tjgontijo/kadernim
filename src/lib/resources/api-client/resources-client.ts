@@ -8,6 +8,7 @@ import type {
   ResourceAccessListResponse,
   ResourceDetail,
   ResourceDownloadLinkResponse,
+  ResourceHighlightsResponse,
   ResourceMetaResponse,
   ResourcesSummaryResponse,
   UpdateResourceImageInput,
@@ -77,6 +78,11 @@ export async function fetchResourcesSummary(params: {
   const query = buildQuery(params)
   const response = await fetch(`/api/v1/resources/summary?${query}`)
   return parseJsonResponse<ResourcesSummaryResponse>(response)
+}
+
+export async function fetchResourceHighlights(): Promise<ResourceHighlightsResponse> {
+  const response = await fetch('/api/v1/resources/highlights')
+  return parseJsonResponse<ResourceHighlightsResponse>(response)
 }
 
 export async function fetchResourceDetail(resourceId: string): Promise<ResourceDetail> {

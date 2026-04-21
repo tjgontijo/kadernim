@@ -1,10 +1,11 @@
 'use client'
 
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient, type InfiniteData } from '@tanstack/react-query'
-import { fetchResourceCounts, fetchResourceMeta, fetchResourcesSummary, toggleResourceFavorite } from '@/lib/resources/api-client'
+import { fetchResourceCounts, fetchResourceHighlights, fetchResourceMeta, fetchResourcesSummary, toggleResourceFavorite } from '@/lib/resources/api-client'
 import type {
     Resource,
     ResourceDetail,
+    ResourceHighlightsResponse,
     ResourceMetaResponse,
     ResourcesSummaryResponse,
 } from '@/lib/resources/types'
@@ -103,6 +104,16 @@ export function useResourcesSummaryQuery({
         isLoading: query.isLoading,
         isFetchingNextPage: query.isFetchingNextPage,
     }
+}
+
+export function useResourceHighlightsQuery() {
+    return useQuery<ResourceHighlightsResponse>({
+        queryKey: ['resources-highlights'],
+        queryFn: fetchResourceHighlights,
+        staleTime: 60_000,
+        gcTime: 5 * 60_000,
+        refetchOnWindowFocus: false,
+    })
 }
 
 /**

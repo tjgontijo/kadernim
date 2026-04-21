@@ -30,6 +30,19 @@ export type {
   UpdateResourceVideoInput,
 }
 
+export interface ResourceHighlight extends Resource {
+  rank: number
+  recentDownloads: number
+}
+
+export interface ResourceHighlightsResponse {
+  data: ResourceHighlight[]
+  meta: {
+    windowDays: number
+    generatedAt: string
+  }
+}
+
 export interface ResourceMetaItem {
   key: string
   label: string

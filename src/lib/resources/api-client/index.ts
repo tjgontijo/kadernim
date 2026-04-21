@@ -10,6 +10,7 @@ export {
   fetchResourceAccessList,
   fetchResourceCounts,
   fetchResourceDetail,
+  fetchResourceHighlights,
   fetchResourceMeta,
   fetchResourceObjectives,
   fetchResourceSteps,
