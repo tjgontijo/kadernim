@@ -79,10 +79,6 @@ export default function HighlightsPage() {
 
   return (
     <PageScaffold>
-      <PageScaffold.Header
-        title={<>Top 10 <span className="text-primary italic">em alta</span></>}
-      />
-
       <PageScaffold.Highlight>
         <div className="overflow-hidden rounded-4 border border-line bg-ink text-paper shadow-2">
           <div className="grid gap-4 bg-[repeating-linear-gradient(to_bottom,transparent_0,transparent_31px,oklch(1_0_0_/_0.08)_31px,oklch(1_0_0_/_0.08)_32px)] px-5 py-5 sm:grid-cols-[1fr_auto] sm:px-6">
@@ -120,13 +116,6 @@ export default function HighlightsPage() {
           </div>
         ) : (
           <div className="overflow-hidden rounded-4 border border-line bg-surface-card shadow-1">
-            <div className="hidden items-center gap-4 border-b border-dashed border-line bg-paper-2/60 px-4 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-ink-mute sm:flex">
-              <div className="w-14">Rank</div>
-              <div className="w-16">Capa</div>
-              <div className="min-w-0 flex-1">Material</div>
-              <div className="w-40 text-right">Popularidade</div>
-            </div>
-
             {items.map((item) => (
               <Link key={item.id} href={`/resources/${item.id}`} className="group block border-b border-dashed border-line last:border-b-0">
                 <article className={`border-l-4 ${getRankTone(item.rank).border} px-3 py-3 transition-colors group-hover:bg-paper-2/50 sm:px-4 sm:py-4`}>
