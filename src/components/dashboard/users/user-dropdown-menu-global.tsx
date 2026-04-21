@@ -12,9 +12,10 @@ import {
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useSidebar } from '@/components/ui/sidebar'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { authClient } from '@/lib/auth/auth-client'
-import { ChevronDown, LogOut } from 'lucide-react'
+import { ChevronDown, LogOut, User } from 'lucide-react'
 import { cn } from '@/lib/utils/index'
 
 interface UserDropdownMenuGlobalProps {
@@ -102,6 +103,13 @@ export function UserDropdownMenuGlobal({ userName, userEmail, userImage, customT
           <p className="text-sm font-medium leading-none">{userName}</p>
           <p className="text-xs leading-none text-muted-foreground">{userEmail}</p>
         </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/account" className="flex cursor-pointer items-center gap-2">
+            <User className="h-4 w-4" />
+            <span>Minha conta</span>
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout} className="text-destructive cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />

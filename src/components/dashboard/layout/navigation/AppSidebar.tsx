@@ -8,14 +8,10 @@ import {
   Users,
   Hash,
   User,
-  LogOut,
   ShieldCheck,
   Heart,
-  FolderHeart,
   Calendar,
-  Sparkles,
-  Clock,
-  Settings
+  Sparkles
 } from 'lucide-react'
 import {
   Sidebar,
@@ -30,8 +26,6 @@ import {
 } from '@/components/ui/sidebar'
 import { defineAbilitiesFor, PermissionAction, PermissionSubject } from '@/lib/auth/permissions'
 import { UserRoleType } from '@/types/users/user-role'
-import { authClient } from '@/lib/auth/auth-client'
-import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils/index'
 import { Logo } from '@/components/ui/logo'
 import { useResourceCounts } from '@/hooks/resources/use-resources'
@@ -62,7 +56,6 @@ type NavGroup = {
 
 export function AppSidebar({ user }: AppSidebarProps) {
   const pathname = usePathname()
-  const router = useRouter()
   const { isMobile, state, setOpenMobile } = useSidebar()
   const { data: counts } = useResourceCounts()
   const collapsed = state === 'collapsed'
@@ -74,16 +67,6 @@ export function AppSidebar({ user }: AppSidebarProps) {
     if (isMobile) {
       setOpenMobile(false)
     }
-  }
-
-  const handleLogout = async () => {
-    await authClient.signOut({
-      fetchOptions: {
-        onSuccess: () => {
-          router.push('/login')
-        },
-      },
-    })
   }
 
   const navGroups: NavGroup[] = [
@@ -101,10 +84,9 @@ export function AppSidebar({ user }: AppSidebarProps) {
       ],
     },
     {
-      label: 'Conta',
+      label: 'Configurações',
       items: [
         { title: 'Meu perfil', href: '/account', icon: User },
-        { title: 'Sair', href: '#', icon: LogOut, onClick: handleLogout },
       ],
     },
   ]

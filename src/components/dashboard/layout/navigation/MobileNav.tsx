@@ -16,7 +16,7 @@ export function MobileNav() {
     const navItems = [
         { label: 'Recursos', icon: LayoutGrid, href: '/resources' },
         ...(isAdmin ? [{ label: 'Admin', icon: ShieldCheck, href: '/admin' }] : []),
-        { label: 'Conta', icon: User, href: '/account' }
+        { label: 'Config.', icon: User, href: '/account' }
     ];
 
     return (

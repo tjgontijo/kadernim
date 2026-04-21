@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
-import { LogOut, Settings, User, ShieldCheck } from 'lucide-react'
+import { LogOut, User, ShieldCheck } from 'lucide-react'
 import { authClient } from '@/lib/auth/auth-client'
 import { UserRole } from '@/types/users/user-role'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
@@ -98,8 +98,8 @@ export function SystemHeader() {
 
             <DropdownMenuItem asChild>
               <Link href="/account" className="flex cursor-pointer items-center gap-2">
-                <Settings className="h-4 w-4" />
-                <span>Configurações</span>
+                <User className="h-4 w-4" />
+                <span>Minha conta</span>
               </Link>
             </DropdownMenuItem>
 
