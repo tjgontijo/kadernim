@@ -38,7 +38,8 @@ export interface ResourceHighlight extends Resource {
 export interface ResourceHighlightsResponse {
   data: ResourceHighlight[]
   meta: {
-    windowDays: number
+    monthLabel: string
+    periodStart: string
     generatedAt: string
   }
 }

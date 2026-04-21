@@ -16,7 +16,7 @@ export interface ResourceHighlight extends Resource {
 export interface ResourceHighlightsParams {
   user: UserAccessContext
   subscription: SubscriptionContext
-  windowDays: number
+  periodStart: Date
   limit: number
 }
 
@@ -38,11 +38,10 @@ type ResourceHighlightRow = {
 export async function getResourceHighlights({
   user,
   subscription,
-  windowDays,
+  periodStart,
   limit,
 }: ResourceHighlightsParams): Promise<ResourceHighlight[]> {
   const hasAccessCondition = buildHasAccessConditionSql(user, subscription)
-  const windowStart = new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000)
 
   const rows = await prisma.$queryRaw<ResourceHighlightRow[]>(PrismaNamespace.sql`
     SELECT
@@ -71,7 +70,7 @@ export async function getResourceHighlights({
     LEFT JOIN "user_resource_interaction" recent_uri
       ON recent_uri."resourceId" = r.id
       AND recent_uri."downloadedAt" IS NOT NULL
-      AND recent_uri."downloadedAt" >= ${windowStart}
+      AND recent_uri."downloadedAt" >= ${periodStart}
     GROUP BY
       r.id,
       r.title,

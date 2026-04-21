@@ -15,6 +15,11 @@ function formatDownloadsLabel(downloads: number) {
   return `${downloads} ${downloads === 1 ? 'download recente' : 'downloads recentes'}`
 }
 
+function formatMonthLabel(monthLabel: string) {
+  if (!monthLabel) return ''
+  return monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1)
+}
+
 function getRankTone(rank: number) {
   if (rank === 1) {
     return {
@@ -74,7 +79,7 @@ function RankingRowsSkeleton() {
 export default function HighlightsPage() {
   const { data, isLoading } = useResourceHighlightsQuery()
   const items = (data?.data ?? []).slice(0, TOP_LIMIT)
-  const windowDays = data?.meta.windowDays ?? 30
+  const monthLabel = data?.meta.monthLabel ?? ''
   const topDownloads = Math.max(...items.map((item) => item.recentDownloads), 0)
 
   return (
@@ -91,14 +96,14 @@ export default function HighlightsPage() {
                 Os 10 materiais mais acessados agora
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-3 text-sm sm:w-[260px]">
+            <div className="text-sm sm:w-[260px]">
               <div className="rounded-3 border border-paper/15 bg-paper/10 px-3 py-2">
-                <div className="font-display text-2xl leading-none text-mustard">{TOP_LIMIT}</div>
-                <div className="mt-1 text-xs font-semibold uppercase tracking-[0.1em] text-paper/60">posições</div>
-              </div>
-              <div className="rounded-3 border border-paper/15 bg-paper/10 px-3 py-2">
-                <div className="font-display text-2xl leading-none text-mustard">{windowDays}</div>
-                <div className="mt-1 text-xs font-semibold uppercase tracking-[0.1em] text-paper/60">dias</div>
+                <div className="font-display text-2xl leading-none text-mustard">
+                  {formatMonthLabel(monthLabel)}
+                </div>
+                <div className="mt-1 text-xs font-semibold uppercase tracking-[0.1em] text-paper/60">
+                  destaque do mês atual
+                </div>
               </div>
             </div>
           </div>
