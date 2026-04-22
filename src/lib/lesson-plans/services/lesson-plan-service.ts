@@ -160,7 +160,7 @@ export async function createLessonPlanFromResource(params: {
 }) {
   const source = await getResourceSnapshotForPlanner(params.resourceId)
 
-  const { content, model } = await generateLessonPlanContent({
+  const { content, model, metrics } = await generateLessonPlanContent({
     resourceSnapshot: source.snapshot,
     durationMinutes: params.input.durationMinutes,
     mode: params.input.mode,
@@ -194,6 +194,7 @@ export async function createLessonPlanFromResource(params: {
         model,
         generatedAt: new Date().toISOString(),
         modeLabel: modeLabel(params.input.mode),
+        usage: metrics,
       } as Prisma.InputJsonValue,
     },
     include: {

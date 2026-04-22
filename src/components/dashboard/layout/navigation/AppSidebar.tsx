@@ -11,7 +11,8 @@ import {
   ShieldCheck,
   Heart,
   Calendar,
-  Sparkles
+  Sparkles,
+  Brain
 } from 'lucide-react'
 import {
   Sidebar,
@@ -99,6 +100,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
         { title: 'Gestão de Recursos', href: '/admin/resources', icon: ShieldCheck, permission: { action: 'read', subject: 'Resource' } },
         { title: 'Disciplinas', href: '/admin/subjects', icon: Hash, permission: { action: 'read', subject: 'Subject' } },
         { title: 'Usuários', href: '/admin/users', icon: Users, permission: { action: 'read', subject: 'User' } },
+        { title: 'Custos IA', href: '/admin/ai-costs', icon: Brain },
       ],
     })
   }

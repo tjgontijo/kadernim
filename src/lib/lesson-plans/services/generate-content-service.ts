@@ -2,6 +2,7 @@ import { generateObject } from 'ai'
 import { openai } from '@ai-sdk/openai'
 import type { CreateLessonPlanInput, ResourceSnapshot, LessonPlanContent } from '@/lib/lesson-plans/schemas'
 import { LessonPlanContentSchema } from '@/lib/lesson-plans/schemas'
+import { estimateCostUsd, extractUsageTokens } from '@/lib/lesson-plans/services/cost-estimation-service'
 
 function modeToLabel(mode: CreateLessonPlanInput['mode']) {
   if (mode === 'FULL_LESSON') return 'Aula completa'
@@ -86,8 +87,26 @@ export async function generateLessonPlanContent(input: {
   durationMinutes: number
   mode: CreateLessonPlanInput['mode']
   teacherNote?: string
-}): Promise<{ content: LessonPlanContent; model: string }> {
+}): Promise<{
+  content: LessonPlanContent
+  model: string
+  metrics: {
+    attempts: number
+    latencyMs: number
+    inputTokens: number
+    outputTokens: number
+    totalTokens: number
+    inputCostUsd: number
+    outputCostUsd: number
+    totalCostUsd: number
+  }
+}> {
   const model = process.env.LESSON_PLAN_MODEL || 'gpt-4o-mini'
+  const startedAt = Date.now()
+  let attempts = 0
+  let inputTokens = 0
+  let outputTokens = 0
+  let totalTokens = 0
 
   let result = await generateObject({
     model: openai(model),
@@ -95,6 +114,13 @@ export async function generateLessonPlanContent(input: {
     prompt: buildPrompt(input),
     temperature: 0.4,
   })
+  attempts += 1
+  {
+    const usage = extractUsageTokens((result as { usage?: unknown }).usage)
+    inputTokens += usage.inputTokens
+    outputTokens += usage.outputTokens
+    totalTokens += usage.totalTokens
+  }
 
   const issues = evaluateGeneratedContent(result.object, input)
   if (issues.length > 0) {
@@ -111,10 +137,27 @@ Problemas detectados que devem ser corrigidos:
 ${issues.map((issue, index) => `${index + 1}. ${issue}`).join('\n')}
 `,
     })
+    attempts += 1
+    const usage = extractUsageTokens((result as { usage?: unknown }).usage)
+    inputTokens += usage.inputTokens
+    outputTokens += usage.outputTokens
+    totalTokens += usage.totalTokens
   }
+
+  const costs = estimateCostUsd(model, { inputTokens, outputTokens, totalTokens })
 
   return {
     content: result.object,
     model,
+    metrics: {
+      attempts,
+      latencyMs: Date.now() - startedAt,
+      inputTokens,
+      outputTokens,
+      totalTokens,
+      inputCostUsd: costs.inputCostUsd,
+      outputCostUsd: costs.outputCostUsd,
+      totalCostUsd: costs.totalCostUsd,
+    },
   }
 }
