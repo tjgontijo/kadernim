@@ -225,7 +225,7 @@ function RequestOtpContent() {
 
           <p className="mt-10 text-center text-body-s relative">
             Não tem uma conta?{' '}
-            <Link href="/plans" className="text-terracotta font-bold hover:underline">
+            <Link href="/#planos" className="text-terracotta font-bold hover:underline">
               Ver planos
             </Link>
           </p>

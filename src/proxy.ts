@@ -11,6 +11,10 @@ function looksLikeSessionCookie(v?: string) {
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  if (pathname === '/plans' || pathname.startsWith('/plans/')) {
+    return NextResponse.redirect(new URL('/#planos', request.url))
+  }
+
   // Rotas que não precisam de validação
   const isApiOrStaticRoute = pathname.startsWith('/api') ||
     pathname.includes('/_next/') ||
@@ -24,7 +28,7 @@ export async function proxy(request: NextRequest) {
   }
 
   const AUTH_ROUTES = ['/dashboard', '/account']
-  const PUBLIC_ROUTES = ['/login', '/plans', '/checkout']
+  const PUBLIC_ROUTES = ['/login', '/checkout']
 
   const matchesRoute = (route: string) =>
     pathname === route || pathname.startsWith(`${route}/`)

@@ -2,6 +2,8 @@ import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { getFeaturedResources } from '@/lib/marketing/product-data'
+import { getBillingCheckoutCatalog } from '@/lib/billing/queries'
+import { formatCheckoutCurrency, type CheckoutPlanCatalog } from '@/lib/billing/checkout-offer'
 import { ProductCarousel } from '@/components/marketing/sections/product-carousel'
 import {
   ArrowRight,
@@ -43,7 +45,7 @@ function Navbar() {
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-ink-soft">
           <a href="#biblioteca" className="hover:text-ink transition-colors">O que você recebe</a>
           <a href="#como-funciona" className="hover:text-ink transition-colors">Como Funciona</a>
-          <Link href="/plans" className="hover:text-ink transition-colors">Planos</Link>
+          <a href="#planos" className="hover:text-ink transition-colors">Planos</a>
         </div>
 
         <div className="flex items-center gap-3">
@@ -51,7 +53,7 @@ function Navbar() {
             Entrar
           </Link>
             <Link
-              href="/plans"
+              href="/#planos"
               className="bg-terracotta text-white text-sm font-semibold px-5 py-2.5 rounded-full"
             >
               Começar
@@ -88,7 +90,7 @@ function Hero() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-12">
             <Link
-              href="/plans"
+              href="/#planos"
               className="group h-13 px-8 rounded-full bg-terracotta text-white font-semibold text-base transition-all flex items-center gap-2 shadow-lg shadow-terracotta/20"
             >
               Quero Acesso Agora
@@ -453,7 +455,97 @@ function ComoFunciona() {
 }
 
 /* ─────────────────────────────────────────────
-   7. CTA FINAL
+   7. PLANEJADOR IA
+───────────────────────────────────────────── */
+function PlanejadorIA() {
+  return (
+    <section className="py-20 lg:py-28 bg-surface-card border-y border-line/50">
+      <W>
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <div className="inline-flex items-center gap-2 rounded-full bg-terracotta-2 border border-terracotta/20 px-4 py-1.5 mb-6">
+              <Sparkles className="h-3.5 w-3.5 text-terracotta" />
+              <span className="text-terracotta text-xs font-semibold">Planejador com IA</span>
+            </div>
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-ink mb-4 leading-tight">
+              Acompanhe a construção do plano em tempo real.
+            </h2>
+            <p className="text-ink-soft text-base lg:text-lg leading-relaxed">
+              Ao criar um plano, você vê as fases reais da orquestração:
+              contexto, rascunho, revisão e refinamento, com visualização pronta para exportar em PDF e DOCX.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { title: '1. Contexto', desc: 'Leitura do recurso e das informações pedagógicas.' },
+              { title: '2. Rascunho', desc: 'Primeira versão estruturada do plano de aula.' },
+              { title: '3. Revisão', desc: 'Checagem de qualidade e aderência ao recurso.' },
+              { title: '4. Refinamento', desc: 'Ajustes finais antes de salvar e exportar.' },
+            ].map(({ title, desc }) => (
+              <div key={title} className="rounded-2xl border border-line bg-paper p-5">
+                <p className="text-sm font-semibold text-ink">{title}</p>
+                <p className="mt-2 text-sm text-ink-mute leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </W>
+    </section>
+  )
+}
+
+/* ─────────────────────────────────────────────
+   8. PLANOS
+───────────────────────────────────────────── */
+function PlanosSection({ catalog }: { catalog: CheckoutPlanCatalog }) {
+  const monthly = catalog.monthly
+  const annual = catalog.annual
+
+  return (
+    <section id="planos" className="py-20 lg:py-28 bg-paper/60 border-y border-line/40">
+      <W>
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <h2 className="text-3xl lg:text-4xl font-extrabold text-ink mb-4 leading-tight">
+            Assinatura simples, sem página separada.
+          </h2>
+          <p className="text-ink-soft text-base lg:text-lg leading-relaxed">
+            Escolha o ciclo que faz mais sentido para você e finalize em poucos passos.
+          </p>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 max-w-3xl mx-auto">
+          <article className="rounded-4 border border-line bg-surface-card p-6 shadow-1">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-ink-mute">Mensal</p>
+            <p className="mt-3 text-4xl font-black tracking-tight text-ink">{formatCheckoutCurrency(monthly.creditCardAmount)}</p>
+            <p className="mt-1 text-sm text-ink-soft">por mês no cartão</p>
+            <Link
+              href={`/checkout?plan=${monthly.id}`}
+              className="mt-5 inline-flex h-11 items-center justify-center rounded-full bg-terracotta px-5 text-sm font-semibold text-white"
+            >
+              Assinar mensal
+            </Link>
+          </article>
+
+          <article className="rounded-4 border-2 border-terracotta bg-surface-card p-6 shadow-2">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-terracotta">Anual</p>
+            <p className="mt-3 text-4xl font-black tracking-tight text-ink">{formatCheckoutCurrency(annual.creditCardAmount)}</p>
+            <p className="mt-1 text-sm text-ink-soft">cobrança anual no cartão</p>
+            <Link
+              href={`/checkout?plan=${annual.id}`}
+              className="mt-5 inline-flex h-11 items-center justify-center rounded-full bg-terracotta px-5 text-sm font-semibold text-white"
+            >
+              Assinar anual
+            </Link>
+          </article>
+        </div>
+      </W>
+    </section>
+  )
+}
+
+/* ─────────────────────────────────────────────
+   9. CTA FINAL
 ───────────────────────────────────────────── */
 function CTAFinal() {
   return (
@@ -469,7 +561,7 @@ function CTAFinal() {
             Sem perder tempo procurando, sem material que não serve.
           </p>
           <Link
-            href="/plans"
+            href="/#planos"
             className="group inline-flex items-center gap-2 h-14 px-10 rounded-full bg-terracotta text-white font-semibold text-lg transition-all shadow-lg shadow-terracotta/20"
           >
             Ver Planos e Preços
@@ -506,6 +598,7 @@ function Footer() {
 ───────────────────────────────────────────── */
 export default async function HomePage() {
   const products = await getFeaturedResources()
+  const catalog = await getBillingCheckoutCatalog()
 
   return (
     <div className="min-h-screen bg-paper antialiased paper-grain">
@@ -518,6 +611,8 @@ export default async function HomePage() {
         <FeitoPorProfessoras />
         <AtualizacaoSemanal />
         <ComoFunciona />
+        <PlanejadorIA />
+        <PlanosSection catalog={catalog} />
         <CTAFinal />
       </main>
       <Footer />

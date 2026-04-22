@@ -1,7 +1,7 @@
 export const AB_TEST_CONFIG = {
   enabled: true,
   variants: {
-    v1: { path: '/plans', label: 'Original' },
+    v1: { path: '/', label: 'Original' },
     v2: { path: '/plans2', label: 'Alternative Design' },
     v3: { path: '/plans3', label: 'Premium Landing' }
   },
