@@ -63,8 +63,8 @@ export const UpdateResourceSchema = z.object({
     .trim()
     .optional()
     .nullable(),
-  educationLevel: z.string().optional(),
-  subject: z.string().optional(),
+  educationLevel: z.string().trim().min(1, { message: 'Nível de educação é obrigatório' }).optional(),
+  subject: z.string().trim().min(1, { message: 'Matéria é obrigatória' }).optional(),
   thumbUrl: z.string()
     .url('thumbUrl deve ser uma URL válida')
     .optional()

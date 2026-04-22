@@ -112,6 +112,7 @@ export function buildCreatedResourceResponse(resource: {
   description: string | null
   educationLevel: { slug: string }
   subject: { slug: string }
+  thumbUrl?: string | null
   images?: Array<{ url: string | null }>
   createdAt: Date
   updatedAt: Date
@@ -122,7 +123,7 @@ export function buildCreatedResourceResponse(resource: {
     description: resource.description,
     educationLevel: resource.educationLevel.slug,
     subject: resource.subject.slug,
-    thumbUrl: resource.images?.[0]?.url || null,
+    thumbUrl: resource.thumbUrl ?? resource.images?.[0]?.url ?? null,
     createdAt: resource.createdAt.toISOString(),
     updatedAt: resource.updatedAt.toISOString(),
     files: [],

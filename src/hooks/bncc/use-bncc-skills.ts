@@ -11,7 +11,7 @@ interface BnccFilters {
   subject?: string
 }
 
-export function useBnccSkills(filters: BnccFilters, pageSize = 30) {
+export function useBnccSkills(filters: BnccFilters, pageSize = 30, enabled = true) {
   const query = useInfiniteQuery<BnccSkillsListResponse, Error>({
     queryKey: ['bncc-skills', filters, pageSize],
     queryFn: ({ pageParam = 1 }) =>
@@ -27,6 +27,7 @@ export function useBnccSkills(filters: BnccFilters, pageSize = 30) {
       lastPage.pagination.hasMore ? lastPage.pagination.page + 1 : undefined
     ),
     initialPageParam: 1,
+    enabled,
     staleTime: 30_000,
     gcTime: 5 * 60_000,
     refetchOnWindowFocus: false,

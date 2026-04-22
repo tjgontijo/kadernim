@@ -186,11 +186,12 @@ export function ResourceDetailsForm({
 
   React.useEffect(() => {
     if (!selectedSubject) return
+    if (!metaData?.subjects || !metaData?.grades) return
     const stillAvailable = availableSubjects.some((s: any) => s.key === selectedSubject)
     if (!stillAvailable) {
       resetSubjectWithoutValidation()
     }
-  }, [selectedSubject, availableSubjects])
+  }, [selectedSubject, availableSubjects, metaData?.subjects, metaData?.grades])
 
   // Validação dinâmica do Drive URL
   const isDriveUrlValid = useMemo(() => {
@@ -245,8 +246,33 @@ export function ResourceDetailsForm({
   }
 
   const onSubmit = (data: UpdateResourceInput) => {
+    const normalizedEducationLevel = data.educationLevel?.trim() || ''
+    const normalizedSubject = data.subject?.trim() || ''
+    const normalizedGrades = data.grades ?? []
+
+    if (!normalizedEducationLevel) {
+      form.setError('educationLevel', { type: 'manual', message: 'Selecione a etapa de ensino' })
+      toast.error('Selecione a etapa de ensino')
+      return
+    }
+
+    if (normalizedGrades.length === 0) {
+      form.setError('grades', { type: 'manual', message: 'Selecione ao menos um ano/série' })
+      toast.error('Selecione ao menos um ano/série')
+      return
+    }
+
+    if (!normalizedSubject) {
+      form.setError('subject', { type: 'manual', message: 'Selecione a disciplina' })
+      toast.error('Selecione a disciplina')
+      return
+    }
+
     saveMutation.mutate({
       ...data,
+      educationLevel: normalizedEducationLevel,
+      subject: normalizedSubject,
+      grades: normalizedGrades,
       thumbUrl: normalizeNullableString(data.thumbUrl),
       thumbPublicId: normalizeNullableString(data.thumbPublicId),
       googleDriveUrl: normalizeNullableString(data.googleDriveUrl),
@@ -797,7 +823,7 @@ export function ResourceDetailsForm({
               {/* Sessão: Base Nacional Comum Curricular (BNCC) */}
               <div className={cn(
                 "space-y-8 bg-paper p-8 rounded-4 border border-line shadow-sm relative overflow-hidden transition-all duration-300",
-                selectedGrades.length === 0 && "opacity-60 grayscale-[0.5] pointer-events-none"
+                (!selectedLevel || selectedGrades.length === 0 || !selectedSubject) && "opacity-60 grayscale-[0.5]"
               )}>
                 <div className="absolute top-0 left-0 w-1 h-full bg-[oklch(0.60_0.20_300)]/40" />
                 <div className="flex items-center gap-3 border-b border-line pb-4">
@@ -818,9 +844,9 @@ export function ResourceDetailsForm({
                           value={field.value || []}
                           onChange={field.onChange}
                           educationLevel={selectedLevel}
-                          grade={selectedGrades[0]} // Filtra preferencialmente pelo primeiro ano selecionado
+                          grades={selectedGrades}
                           subject={selectedSubject}
-                          disabled={selectedGrades.length === 0}
+                          disabled={!selectedLevel || selectedGrades.length === 0 || !selectedSubject}
                         />
                       </FormControl>
                       <FormMessage />
