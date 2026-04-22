@@ -1,81 +1,76 @@
-# CLAUDE.md
+# AGENTS.md
 
-Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
+You are a TypeScript developer experienced with the Mastra framework. You build AI agents, tools, workflows, and scorers. You follow strict TypeScript practices and always consult up-to-date Mastra documentation before making changes.
 
-**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
+## CRITICAL: Load `mastra` skill
 
-## 1. Think Before Coding
+**BEFORE doing ANYTHING with Mastra, load the `mastra` skill FIRST.** Never rely on cached knowledge as Mastra's APIs change frequently between versions. Use the skill to read up-to-date documentation from `node_modules`.
 
-**Don't assume. Don't hide confusion. Surface tradeoffs.**
+## Project Overview
 
-Before implementing:
-- State your assumptions explicitly. If uncertain, ask.
-- If multiple interpretations exist, present them - don't pick silently.
-- If a simpler approach exists, say so. Push back when warranted.
-- If something is unclear, stop. Name what's confusing. Ask.
+This is a **Mastra** project written in TypeScript. Mastra is a framework for building AI-powered applications and agents with a modern TypeScript stack. The Node.js runtime is `>=22.13.0`.
 
-## 2. Simplicity First
+## Commands
 
-**Minimum code that solves the problem. Nothing speculative.**
-
-- No features beyond what was asked.
-- No abstractions for single-use code.
-- No "flexibility" or "configurability" that wasn't requested.
-- No error handling for impossible scenarios.
-- If you write 200 lines and it could be 50, rewrite it.
-
-Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
-
-## 3. Surgical Changes
-
-**Touch only what you must. Clean up only your own mess.**
-
-When editing existing code:
-- Don't "improve" adjacent code, comments, or formatting.
-- Don't refactor things that aren't broken.
-- Match existing style, even if you'd do it differently.
-- If you notice unrelated dead code, mention it - don't delete it.
-
-When your changes create orphans:
-- Remove imports/variables/functions that YOUR changes made unused.
-- Don't remove pre-existing dead code unless asked.
-
-The test: Every changed line should trace directly to the user's request.
-
-## 4. Goal-Driven Execution
-
-**Define success criteria. Loop until verified.**
-
-Transform tasks into verifiable goals:
-- "Add validation" → "Write tests for invalid inputs, then make them pass"
-- "Fix the bug" → "Write a test that reproduces it, then make it pass"
-- "Refactor X" → "Ensure tests pass before and after"
-
-For multi-step tasks, state a brief plan:
-```
-1. [Step] → verify: [check]
-2. [Step] → verify: [check]
-3. [Step] → verify: [check]
+```bash
+npm run dev # Start Mastra Studio at localhost:4111 (long-running, use a separate terminal)
+npm run build # Build a production-ready server
 ```
 
-Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+## Project Structure
 
----
+| Folder                 | Description                                                                                                                              |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/mastra`           | Entry point for all Mastra-related code and configuration.                                                                               |
+| `src/mastra/agents`    | Define and configure your agents - their behavior, goals, and tools.                                                                     |
+| `src/mastra/workflows` | Define multi-step workflows that orchestrate agents and tools together.                                                                  |
+| `src/mastra/tools`     | Create reusable tools that your agents can call                                                                                          |
+| `src/mastra/mcp`       | (Optional) Implement custom MCP servers to share your tools with external agents                                                         |
+| `src/mastra/scorers`   | (Optional) Define scorers for evaluating agent performance over time                                                                     |
+| `src/mastra/public`    | (Optional) Contents are copied into the `.build/output` directory during the build process, making them available for serving at runtime |
 
-**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+### Top-level files
 
+Top-level files define how your Mastra project is configured, built, and connected to its environment.
+
+| File                  | Description                                                                                                       |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `src/mastra/index.ts` | Central entry point where you configure and initialize Mastra.                                                    |
+| `.env.example`        | Template for environment variables - copy and rename to `.env` to add your secret [model provider](/models) keys. |
+| `package.json`        | Defines project metadata, dependencies, and available npm scripts.                                                |
+| `tsconfig.json`       | Configures TypeScript options such as path aliases, compiler settings, and build output.                          |
+
+## Boundaries
+
+### Always do
+
+- Load the `mastra` skill before any Mastra-related work
+- Register new agents, tools, workflows, and scorers in `src/mastra/index.ts`
+- Use schemas for tool inputs and outputs
+- Run `npm run build` to verify changes compile
+
+### Never do
+
+- Never commit `.env` files or secrets
+- Never modify `node_modules` or Mastra's database files directly
+- Never hardcode API keys (always use environment variables)
+
+## Resources
+
+- [Mastra Documentation](https://mastra.ai/llms.txt)
+- [Mastra .well-known skills discovery](https://mastra.ai/.well-known/skills/index.json)
 
 
 <claude-mem-context>
 # Memory Context
 
-# [kadernim] recent context, 2026-04-21 8:51pm GMT-3
+# [kadernim] recent context, 2026-04-22 1:27pm GMT-3
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision
 Format: ID TIME TYPE TITLE
 Fetch details: get_observations([IDs]) | Search: mem-search skill
 
-Stats: 38 obs (12,733t read) | 258,477t work | 95% savings
+Stats: 44 obs (14,812t read) | 591,727t work | 97% savings
 
 ### Apr 20, 2026
 164 12:50p 🔵 scripts/clear-r2.ts Not Found in Git History — Kadernim
@@ -117,6 +112,13 @@ Stats: 38 obs (12,733t read) | 258,477t work | 95% savings
 231 9:18a 🔵 Kadernim Env File Layout — CLOUDINARY_URL Confirmed in .env
 234 9:20a 🔵 Resource thumbUrl Architecture — Upload Route Feeds resource-details-form.tsx
 235 " 🟣 Thumbnail Removal — Now Uses DeleteConfirmDialog Instead of Instant X Button
+### Apr 22, 2026
+303 1:13p ⚖️ Kadernim — Nova Feature: Tela de Diretrizes com Consulta BNCC
+304 " 🔵 Kadernim Prisma Schema — BnccSkill Já Conectada a EducationLevel, Grade e Subject
+308 1:14p 🔵 Kadernim BnccSkill — Modelo Completo com Campos Pedagógicos Ricos
+309 " 🔵 Kadernim AppSidebar — Menu Atual Não Tem Item "Diretrizes"
+315 1:15p 🔵 Kadernim BNCC Search API — Endpoint Atual é Admin-Only, Bloqueio para Diretrizes
+316 " 🔵 Kadernim Dashboard — Rotas Existentes e Padrões de Página Confirmados para Diretrizes
 
-Access 258k tokens of past work via get_observations([IDs]) or mem-search skill.
+Access 592k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>

@@ -97,6 +97,24 @@ Padronização de loading no dashboard com foco em skeleton 1:1, eliminação de
 
 ---
 
+### 5. **Diretrizes - Consulta BNCC para Professoras**
+Status: **Draft**  
+Prioridade: **Alta**  
+Timeline: **14-24h em 4 fases**
+
+Nova tela no dashboard para professoras consultarem habilidades BNCC por código, texto, etapa, ano/faixa e componente/campo.
+
+**Arquivos:**
+- [`diretrizes-bncc-consulta.md`](./diretrizes-bncc-consulta.md) - PRD principal com escopo, UX, API e plano técnico
+
+**Resumo:**
+- ❌ **Problema:** BNCC só aparece vinculada a recursos ou no seletor admin
+- ✅ **Solução:** menu `Diretrizes` + rota `/diretrizes` + API autenticada fora de `admin`
+- 🧭 **Base:** reaproveitar `BnccSkill`, taxonomia e seeds atuais
+- 🎯 **Resultado Esperado:** consulta curricular rápida sem depender de abrir um material
+
+---
+
 ## 🎯 Roadmap de Implementação
 
 ```
@@ -157,6 +175,7 @@ Cada PRD é um documento independente que pode ser:
 | PIX Checkout UX | Draft | Média | Design |
 | **Resource Details** | **Pronto para Implementação** | **Alta** | **Fase 1** |
 | Dashboard Loading UX Standardization | Draft | Alta | Planejamento |
+| Diretrizes - Consulta BNCC | Draft | Alta | Planejamento |
 
 ---
 

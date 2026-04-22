@@ -21,6 +21,10 @@ import {
   ShieldCheck,
   Layers,
   RefreshCw,
+  Clock,
+  FileText,
+  LayoutList,
+  ClipboardCheck,
 } from 'lucide-react'
 import { Logo } from '@/components/ui/logo'
 
@@ -78,14 +82,15 @@ function Hero() {
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold text-ink leading-[1.1] tracking-tight mb-6">
-            Materiais pedagógicos <br className="hidden sm:block" />
-            <span className="text-terracotta">prontos, validados e organizados.</span>
+            Pare de gastar o fim de semana{' '}
+            <br className="hidden sm:block" />
+            <span className="text-terracotta">preparando aula do zero.</span>
           </h1>
 
           <p className="text-ink-soft text-lg lg:text-xl leading-relaxed max-w-2xl mx-auto mb-10">
-            Uma biblioteca feita por professoras que estão em sala de aula todos os dias. 
-            Cada material é testado, organizado por série e disciplina, e pronto para imprimir. 
-            Sem bagunça, sem achismo.
+            Uma biblioteca feita por professoras que estão em sala de aula todos os dias.
+            Organizada por série e disciplina, pronta para baixar e usar.
+            Sem horas desperdiçadas, sem material que não funciona.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-12">
@@ -123,7 +128,54 @@ function Hero() {
 }
 
 /* ─────────────────────────────────────────────
-   2. CONTRASTE: Não é mais um pack genérico
+   2. COMO FUNCIONA
+───────────────────────────────────────────── */
+function ComoFunciona() {
+  const steps = [
+    {
+      num: '1',
+      icon: Search,
+      title: 'Encontre',
+      desc: 'Busque por série, disciplina ou tema. A organização da biblioteca faz o trabalho por você.',
+    },
+    {
+      num: '2',
+      icon: Download,
+      title: 'Baixe o PDF',
+      desc: 'Todo material já está formatado e pronto para imprimir. Sem precisar editar nada.',
+    },
+    {
+      num: '3',
+      icon: GraduationCap,
+      title: 'Leve para a sala',
+      desc: 'Use com confiança. Cada atividade foi testada e validada por professoras como você.',
+    },
+  ]
+
+  return (
+    <section id="como-funciona" className="py-16 lg:py-20 bg-surface-card border-y border-line/40">
+      <W>
+        <div className="grid sm:grid-cols-3 gap-8 max-w-4xl mx-auto">
+          {steps.map(({ num, icon: Icon, title, desc }) => (
+            <div key={num} className="text-center">
+              <div className="relative inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-mustard-2 border border-mustard-2 mb-5">
+                <Icon className="h-7 w-7 text-terracotta" />
+                <span className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-terracotta text-white text-xs font-bold flex items-center justify-center border-2 border-surface-card">
+                  {num}
+                </span>
+              </div>
+              <h3 className="text-lg font-semibold text-ink mb-2">{title}</h3>
+              <p className="text-sm text-ink-mute leading-relaxed">{desc}</p>
+            </div>
+          ))}
+        </div>
+      </W>
+    </section>
+  )
+}
+
+/* ─────────────────────────────────────────────
+   3. CONTRASTE: Não é mais um pack genérico
 ───────────────────────────────────────────── */
 function Contraste() {
   return (
@@ -134,7 +186,7 @@ function Contraste() {
             Não é mais um pack com milhares de arquivos.
           </h2>
           <p className="text-ink-soft text-base lg:text-lg leading-relaxed">
-            Você já conhece: compra um pacote enorme, não encontra nada, metade não serve 
+            Você já conhece: compra um pacote enorme, não encontra nada, metade não serve
             para a sua turma. No Kadernim é diferente.
           </p>
         </div>
@@ -184,7 +236,7 @@ function Contraste() {
 }
 
 /* ─────────────────────────────────────────────
-   3. A BIBLIOTECA
+   4. A BIBLIOTECA
 ───────────────────────────────────────────── */
 function Biblioteca() {
   const categorias = [
@@ -206,7 +258,7 @@ function Biblioteca() {
             Tudo o que você precisa em um só lugar.
           </h2>
           <p className="text-ink-soft text-base lg:text-lg leading-relaxed">
-            Tudo organizado por série, disciplina e tema. Você encontra o que precisa 
+            Tudo organizado por série, disciplina e tema. Você encontra o que precisa
             em segundos, não em horas.
           </p>
         </div>
@@ -226,7 +278,7 @@ function Biblioteca() {
 
         <div className="mt-10 text-center">
           <p className="text-sm text-ink-mute">
-            <span className="font-semibold text-ink">248+ materiais</span> disponíveis hoje, 
+            <span className="font-semibold text-ink">248+ materiais</span> disponíveis hoje,
             com novos adicionados toda semana.
           </p>
         </div>
@@ -236,7 +288,67 @@ function Biblioteca() {
 }
 
 /* ─────────────────────────────────────────────
-   4. FEITO POR PROFESSORAS
+   6. PLANEJADOR IA
+───────────────────────────────────────────── */
+function PlanejadorIA() {
+  return (
+    <section className="py-20 lg:py-28 bg-paper/60 border-y border-line/50">
+      <W>
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <div className="inline-flex items-center gap-2 rounded-full bg-terracotta-2 border border-terracotta/20 px-4 py-1.5 mb-6">
+              <Sparkles className="h-3.5 w-3.5 text-terracotta" />
+              <span className="text-terracotta text-xs font-semibold">Planejador com IA</span>
+            </div>
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-ink mb-4 leading-tight">
+              Em minutos, um plano de aula completo — pronto para aplicar.
+            </h2>
+            <p className="text-ink-soft text-base lg:text-lg leading-relaxed">
+              Escolha um material da biblioteca. A IA gera o planejamento com objetivo,
+              sequência didática, avaliação e adaptações — tudo alinhado ao recurso e à BNCC.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              {
+                icon: FileText,
+                title: 'Objetivo claro',
+                desc: 'Derivado da BNCC e do material. Sem vagueza, sem copiar e colar.',
+              },
+              {
+                icon: LayoutList,
+                title: 'Sequência com tempo',
+                desc: 'Abertura, desenvolvimento e fechamento com duração definida para cada etapa.',
+              },
+              {
+                icon: ClipboardCheck,
+                title: 'Avaliação formativa',
+                desc: 'O que observar durante a aula e uma verificação rápida para o final.',
+              },
+              {
+                icon: Clock,
+                title: 'Adaptações práticas',
+                desc: 'Para menos tempo, alunos avançados e trabalho em grupo — tudo no mesmo plano.',
+              },
+            ].map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="rounded-2xl border border-line bg-surface-card p-5">
+                <div className="h-10 w-10 rounded-xl bg-mustard-2 border border-mustard-2 flex items-center justify-center mb-4">
+                  <Icon className="h-5 w-5 text-terracotta" />
+                </div>
+                <p className="text-sm font-semibold text-ink mb-2">{title}</p>
+                <p className="text-sm text-ink-mute leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </W>
+    </section>
+  )
+}
+
+/* ─────────────────────────────────────────────
+   7. FEITO POR PROFESSORAS
 ───────────────────────────────────────────── */
 function FeitoPorProfessoras() {
   return (
@@ -254,8 +366,8 @@ function FeitoPorProfessoras() {
             </h2>
 
             <p className="text-ink-soft text-base lg:text-lg leading-relaxed mb-8">
-              Todo material do Kadernim é criado e revisado por professoras que estão em sala 
-              de aula todos os dias. Não é conteúdo genérico gerado em massa. É experiência 
+              Todo material do Kadernim é criado e revisado por professoras que estão em sala
+              de aula todos os dias. Não é conteúdo genérico gerado em massa. É experiência
               real transformada em recurso pedagógico.
             </p>
 
@@ -341,203 +453,84 @@ function FeitoPorProfessoras() {
 }
 
 /* ─────────────────────────────────────────────
-   5. ATUALIZAÇÃO SEMANAL
-───────────────────────────────────────────── */
-function AtualizacaoSemanal() {
-  return (
-    <section className="py-20 lg:py-28 bg-mustard-2/40">
-      <W>
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-14">
-            <div className="inline-flex items-center gap-2 rounded-full bg-surface-card border border-mustard-2 px-4 py-1.5 mb-6">
-              <CalendarDays className="h-3.5 w-3.5 text-mustard" />
-              <span className="text-mustard text-xs font-semibold">Biblioteca viva</span>
-            </div>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-ink mb-4 leading-tight">
-              Toda semana tem material novo.
-            </h2>
-            <p className="text-ink-soft text-base lg:text-lg leading-relaxed max-w-2xl mx-auto">
-              A biblioteca do Kadernim não é estática. Toda semana adicionamos novos materiais 
-              acompanhando o calendário escolar, datas comemorativas e necessidades reais das professoras.
-            </p>
-          </div>
-
-          <div className="grid sm:grid-cols-3 gap-4">
-            {[
-              {
-                icon: CalendarDays,
-                color: 'text-terracotta bg-mustard-2 border-mustard-2',
-                title: 'Calendário escolar',
-                desc: 'Materiais alinhados com o que você precisa para cada período do ano letivo.',
-              },
-              {
-                icon: Star,
-                color: 'text-mustard bg-mustard-2 border-mustard-2',
-                title: 'Datas comemorativas',
-                desc: 'Atividades temáticas prontas para Páscoa, Dia das Mães, Folclore e muito mais.',
-              },
-              {
-                icon: RefreshCw,
-                color: 'text-sage bg-sage-2 border-sage-2',
-                title: 'Conteúdo fresco',
-                desc: 'Novas ideias e abordagens que funcionam, direto da experiência em sala.',
-              },
-            ].map(({ icon: Icon, color, title, desc }) => (
-              <div key={title} className="bg-surface-card rounded-2xl border border-line/60 p-6 text-center">
-                <div className={`inline-flex items-center justify-center h-12 w-12 rounded-xl border mb-4 ${color}`}>
-                  <Icon className="h-5 w-5" />
-                </div>
-                <h3 className="text-base font-semibold text-ink mb-2">{title}</h3>
-                <p className="text-sm text-ink-mute leading-relaxed">{desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </W>
-    </section>
-  )
-}
-
-/* ─────────────────────────────────────────────
-   6. COMO FUNCIONA
-───────────────────────────────────────────── */
-function ComoFunciona() {
-  const steps = [
-    {
-      num: '1',
-      icon: Search,
-      title: 'Encontre',
-      desc: 'Busque por série, disciplina ou tema. A organização da biblioteca faz o trabalho por você.',
-    },
-    {
-      num: '2',
-      icon: Download,
-      title: 'Baixe o PDF',
-      desc: 'Todo material já está formatado e pronto para imprimir. Sem precisar editar nada.',
-    },
-    {
-      num: '3',
-      icon: GraduationCap,
-      title: 'Leve para a sala',
-      desc: 'Use com confiança. Cada atividade foi testada e validada por professoras como você.',
-    },
-  ]
-
-  return (
-    <section id="como-funciona" className="py-20 lg:py-28 bg-surface-card">
-      <W>
-        <div className="text-center max-w-2xl mx-auto mb-14">
-          <h2 className="text-3xl lg:text-4xl font-extrabold text-ink mb-4 leading-tight">
-            Simples como deveria ser.
-          </h2>
-          <p className="text-ink-soft text-base lg:text-lg">
-            Sem complicação, sem curva de aprendizado. Funciona do jeito que você espera.
-          </p>
-        </div>
-
-        <div className="grid sm:grid-cols-3 gap-8 max-w-4xl mx-auto">
-          {steps.map(({ num, icon: Icon, title, desc }) => (
-            <div key={num} className="text-center">
-              <div className="relative inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-mustard-2 border border-mustard-2 mb-5">
-                <Icon className="h-7 w-7 text-terracotta" />
-                <span className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-terracotta text-white text-xs font-bold flex items-center justify-center border-2 border-surface-card">
-                  {num}
-                </span>
-              </div>
-              <h3 className="text-lg font-semibold text-ink mb-2">{title}</h3>
-              <p className="text-sm text-ink-mute leading-relaxed">{desc}</p>
-            </div>
-          ))}
-        </div>
-      </W>
-    </section>
-  )
-}
-
-/* ─────────────────────────────────────────────
-   7. PLANEJADOR IA
-───────────────────────────────────────────── */
-function PlanejadorIA() {
-  return (
-    <section className="py-20 lg:py-28 bg-surface-card border-y border-line/50">
-      <W>
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <div className="inline-flex items-center gap-2 rounded-full bg-terracotta-2 border border-terracotta/20 px-4 py-1.5 mb-6">
-              <Sparkles className="h-3.5 w-3.5 text-terracotta" />
-              <span className="text-terracotta text-xs font-semibold">Planejador com IA</span>
-            </div>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-ink mb-4 leading-tight">
-              Acompanhe a construção do plano em tempo real.
-            </h2>
-            <p className="text-ink-soft text-base lg:text-lg leading-relaxed">
-              Ao criar um plano, você vê as fases reais da orquestração:
-              contexto, rascunho, revisão e refinamento, com visualização pronta para exportar em PDF e DOCX.
-            </p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { title: '1. Contexto', desc: 'Leitura do recurso e das informações pedagógicas.' },
-              { title: '2. Rascunho', desc: 'Primeira versão estruturada do plano de aula.' },
-              { title: '3. Revisão', desc: 'Checagem de qualidade e aderência ao recurso.' },
-              { title: '4. Refinamento', desc: 'Ajustes finais antes de salvar e exportar.' },
-            ].map(({ title, desc }) => (
-              <div key={title} className="rounded-2xl border border-line bg-paper p-5">
-                <p className="text-sm font-semibold text-ink">{title}</p>
-                <p className="mt-2 text-sm text-ink-mute leading-relaxed">{desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </W>
-    </section>
-  )
-}
-
-/* ─────────────────────────────────────────────
    8. PLANOS
 ───────────────────────────────────────────── */
 function PlanosSection({ catalog }: { catalog: CheckoutPlanCatalog }) {
   const monthly = catalog.monthly
   const annual = catalog.annual
+  const annualSavings = Math.max(0, monthly.creditCardAmount * 12 - annual.creditCardAmount)
+  const annualEquivalent = annual.creditCardAmount / 12
+  const planIncludes = [
+    'Biblioteca completa de materiais pedagógicos',
+    'Novos materiais adicionados toda semana',
+    'Busca por série, disciplina e tema',
+    'PDFs prontos para imprimir',
+    'Planejador de aula com IA',
+  ]
 
   return (
     <section id="planos" className="py-20 lg:py-28 bg-paper/60 border-y border-line/40">
       <W>
         <div className="text-center max-w-2xl mx-auto mb-12">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-ink mb-4 leading-tight">
-            Assinatura simples, sem página separada.
+            Escolha como quer acessar o Kadernim.
           </h2>
           <p className="text-ink-soft text-base lg:text-lg leading-relaxed">
-            Escolha o ciclo que faz mais sentido para você e finalize em poucos passos.
+            O acesso é completo nos dois ciclos. O anual é para quem quer garantir o ano letivo com o melhor valor.
           </p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 max-w-3xl mx-auto">
+        <div className="grid gap-5 lg:grid-cols-[1fr_1fr_0.9fr] max-w-5xl mx-auto items-stretch">
           <article className="rounded-4 border border-line bg-surface-card p-6 shadow-1">
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-ink-mute">Mensal</p>
-            <p className="mt-3 text-4xl font-black tracking-tight text-ink">{formatCheckoutCurrency(monthly.creditCardAmount)}</p>
-            <p className="mt-1 text-sm text-ink-soft">por mês no cartão</p>
+            <p className="mt-4 text-4xl font-black tracking-tight text-ink">{formatCheckoutCurrency(monthly.creditCardAmount)}</p>
+            <p className="mt-1 text-sm text-ink-soft">por mês</p>
+            <p className="mt-4 text-sm text-ink-mute">
+              Ideal para experimentar o Kadernim com acesso completo à biblioteca e ao planejador.
+            </p>
             <Link
               href={`/checkout?plan=${monthly.id}`}
-              className="mt-5 inline-flex h-11 items-center justify-center rounded-full bg-terracotta px-5 text-sm font-semibold text-white"
+              className="mt-6 inline-flex h-11 items-center justify-center rounded-full border border-line bg-paper px-5 text-sm font-semibold text-ink hover:bg-paper-2"
             >
               Assinar mensal
             </Link>
           </article>
 
           <article className="rounded-4 border-2 border-terracotta bg-surface-card p-6 shadow-2">
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-terracotta">Anual</p>
-            <p className="mt-3 text-4xl font-black tracking-tight text-ink">{formatCheckoutCurrency(annual.creditCardAmount)}</p>
-            <p className="mt-1 text-sm text-ink-soft">cobrança anual no cartão</p>
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-terracotta">Anual</p>
+              {annualSavings > 0 && (
+                <span className="rounded-full bg-sage-2 px-2.5 py-1 text-[11px] font-bold text-sage">
+                  Economize {formatCheckoutCurrency(annualSavings)}
+                </span>
+              )}
+            </div>
+            <p className="mt-4 text-4xl font-black tracking-tight text-ink">{formatCheckoutCurrency(annual.creditCardAmount)}</p>
+            <p className="mt-1 text-sm text-ink-soft">
+              equivalente a {formatCheckoutCurrency(annualEquivalent)}/mês
+            </p>
+            <p className="mt-4 text-sm text-ink-mute">
+              A melhor escolha para professoras que querem usar o Kadernim durante todo o ano letivo pagando menos.
+            </p>
             <Link
               href={`/checkout?plan=${annual.id}`}
-              className="mt-5 inline-flex h-11 items-center justify-center rounded-full bg-terracotta px-5 text-sm font-semibold text-white"
+              className="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-terracotta px-5 text-sm font-semibold text-white hover:bg-terracotta-hover"
             >
               Assinar anual
             </Link>
           </article>
+
+          <aside className="rounded-4 border border-line bg-surface-card p-6 shadow-1">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-ink-mute">Inclui no plano</p>
+            <ul className="mt-4 space-y-3">
+              {planIncludes.map((item) => (
+                <li key={item} className="flex gap-2 text-sm text-ink-soft">
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-sage" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </aside>
         </div>
       </W>
     </section>
@@ -553,12 +546,12 @@ function CTAFinal() {
       <W>
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-ink mb-5 leading-tight">
-            Pronta para ter acesso <br className="hidden sm:block" />
-            a tudo o que você precisa?
+            Sua próxima aula pode ser preparada <br className="hidden sm:block" />
+            em minutos, não em horas.
           </h2>
           <p className="text-ink-soft text-base lg:text-lg mb-10 leading-relaxed">
-            Materiais validados, organizados e prontos para usar. 
-            Sem perder tempo procurando, sem material que não serve.
+            Material testado em sala, organizado por série e disciplina, com planejador de aula incluído.
+            Sem achismo, sem desperdício de tempo.
           </p>
           <Link
             href="/#planos"
@@ -568,7 +561,7 @@ function CTAFinal() {
             <ArrowRight className="h-5 w-5 group-hover:translate-x-0.5 transition-transform" />
           </Link>
           <p className="mt-5 text-sm text-ink-mute">
-            Garantia de 7 dias. Cancele quando quiser
+            Garantia de 7 dias. Cancele quando quiser.
           </p>
         </div>
       </W>
@@ -605,13 +598,12 @@ export default async function HomePage() {
       <Navbar />
       <main>
         <Hero />
+        <ComoFunciona />
         <Contraste />
         <Biblioteca />
         <ProductCarousel products={products} dark={false} />
-        <FeitoPorProfessoras />
-        <AtualizacaoSemanal />
-        <ComoFunciona />
         <PlanejadorIA />
+        <FeitoPorProfessoras />
         <PlanosSection catalog={catalog} />
         <CTAFinal />
       </main>
