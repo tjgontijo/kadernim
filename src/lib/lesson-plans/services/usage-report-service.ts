@@ -115,27 +115,100 @@ export async function getPlannerUsageReport(period: Period) {
 
   const byModel = logs.reduce<Record<string, {
     calls: number
+    inputTokens: number
+    outputTokens: number
     totalTokens: number
+    inputCostUsd: number
+    outputCostUsd: number
     totalCostUsd: number
   }>>((acc, log) => {
     const key = log.model
     if (!acc[key]) {
-      acc[key] = { calls: 0, totalTokens: 0, totalCostUsd: 0 }
+      acc[key] = {
+        calls: 0,
+        inputTokens: 0,
+        outputTokens: 0,
+        totalTokens: 0,
+        inputCostUsd: 0,
+        outputCostUsd: 0,
+        totalCostUsd: 0,
+      }
     }
 
     acc[key].calls += 1
+    acc[key].inputTokens += log.usage.inputTokens
+    acc[key].outputTokens += log.usage.outputTokens
     acc[key].totalTokens += log.usage.totalTokens
+    acc[key].inputCostUsd += log.usage.inputCostUsd
+    acc[key].outputCostUsd += log.usage.outputCostUsd
     acc[key].totalCostUsd += log.usage.totalCostUsd
     return acc
   }, {})
 
-  const daily = logs.reduce<Record<string, { calls: number; totalTokens: number; totalCostUsd: number }>>((acc, log) => {
+  const byUser = logs.reduce<Record<string, {
+    userId: string
+    name: string | null
+    email: string | null
+    calls: number
+    inputTokens: number
+    outputTokens: number
+    totalTokens: number
+    inputCostUsd: number
+    outputCostUsd: number
+    totalCostUsd: number
+  }>>((acc, log) => {
+    const key = log.user.id
+    if (!acc[key]) {
+      acc[key] = {
+        userId: log.user.id,
+        name: log.user.name,
+        email: log.user.email,
+        calls: 0,
+        inputTokens: 0,
+        outputTokens: 0,
+        totalTokens: 0,
+        inputCostUsd: 0,
+        outputCostUsd: 0,
+        totalCostUsd: 0,
+      }
+    }
+    acc[key].calls += 1
+    acc[key].inputTokens += log.usage.inputTokens
+    acc[key].outputTokens += log.usage.outputTokens
+    acc[key].totalTokens += log.usage.totalTokens
+    acc[key].inputCostUsd += log.usage.inputCostUsd
+    acc[key].outputCostUsd += log.usage.outputCostUsd
+    acc[key].totalCostUsd += log.usage.totalCostUsd
+    return acc
+  }, {})
+
+  const daily = logs.reduce<Record<string, {
+    calls: number
+    inputTokens: number
+    outputTokens: number
+    totalTokens: number
+    inputCostUsd: number
+    outputCostUsd: number
+    totalCostUsd: number
+  }>>((acc, log) => {
     const date = log.createdAt.split('T')[0]
     if (!acc[date]) {
-      acc[date] = { calls: 0, totalTokens: 0, totalCostUsd: 0 }
+      acc[date] = {
+        calls: 0,
+        inputTokens: 0,
+        outputTokens: 0,
+        totalTokens: 0,
+        inputCostUsd: 0,
+        outputCostUsd: 0,
+        totalCostUsd: 0,
+      }
     }
     acc[date].calls += 1
+    acc[date].inputTokens += log.usage.inputTokens
+    acc[date].outputTokens += log.usage.outputTokens
     acc[date].totalTokens += log.usage.totalTokens
+    acc[date].inputCostUsd += log.usage.inputCostUsd
+    acc[date].outputCostUsd += log.usage.outputCostUsd
     acc[date].totalCostUsd += log.usage.totalCostUsd
     return acc
   }, {})
@@ -148,6 +221,7 @@ export async function getPlannerUsageReport(period: Period) {
       withUsageCount: logs.filter((log) => log.usage.totalTokens > 0 || log.usage.totalCostUsd > 0).length,
     },
     byModel,
+    byUser: Object.values(byUser).sort((a, b) => b.totalCostUsd - a.totalCostUsd),
     daily: Object.entries(daily)
       .map(([date, values]) => ({ date, ...values }))
       .sort((a, b) => a.date.localeCompare(b.date)),

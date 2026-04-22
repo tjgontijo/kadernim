@@ -22,8 +22,37 @@ type PlannerUsageResponse = {
       avgCostPerPlanUsd: number
       withUsageCount: number
     }
-    byModel: Record<string, { calls: number; totalTokens: number; totalCostUsd: number }>
-    daily: Array<{ date: string; calls: number; totalTokens: number; totalCostUsd: number }>
+    byModel: Record<string, {
+      calls: number
+      inputTokens: number
+      outputTokens: number
+      totalTokens: number
+      inputCostUsd: number
+      outputCostUsd: number
+      totalCostUsd: number
+    }>
+    byUser: Array<{
+      userId: string
+      name: string | null
+      email: string | null
+      calls: number
+      inputTokens: number
+      outputTokens: number
+      totalTokens: number
+      inputCostUsd: number
+      outputCostUsd: number
+      totalCostUsd: number
+    }>
+    daily: Array<{
+      date: string
+      calls: number
+      inputTokens: number
+      outputTokens: number
+      totalTokens: number
+      inputCostUsd: number
+      outputCostUsd: number
+      totalCostUsd: number
+    }>
     logs: Array<{
       id: string
       title: string
@@ -156,10 +185,12 @@ export function AdminAiCostsClient() {
                 <div key={model} className="rounded-3 border border-line bg-paper-2 p-3">
                   <p className="text-sm font-semibold text-ink">{model}</p>
                   <p className="text-xs text-ink-mute">{values.calls} chamadas</p>
-                  <p className="text-xs text-ink-mute">{values.totalTokens.toLocaleString('pt-BR')} tokens</p>
-                  <p className="text-sm font-semibold text-ink mt-1">{toUsd(values.totalCostUsd)}</p>
-                </div>
-              ))}
+                      <p className="text-xs text-ink-mute">
+                        in {values.inputTokens.toLocaleString('pt-BR')} · out {values.outputTokens.toLocaleString('pt-BR')}
+                      </p>
+                      <p className="text-sm font-semibold text-ink mt-1">{toUsd(values.totalCostUsd)}</p>
+                    </div>
+                  ))}
             </div>
           </CardContent>
         </Card>
@@ -178,8 +209,11 @@ export function AdminAiCostsClient() {
                   <tr className="border-b border-line text-left text-xs uppercase tracking-[0.08em] text-ink-mute">
                     <th className="py-2 pr-3">Plano</th>
                     <th className="py-2 pr-3">Modelo</th>
-                    <th className="py-2 pr-3">Tokens</th>
-                    <th className="py-2 pr-3">Custo</th>
+                    <th className="py-2 pr-3">Tokens in</th>
+                    <th className="py-2 pr-3">Tokens out</th>
+                    <th className="py-2 pr-3">Custo in</th>
+                    <th className="py-2 pr-3">Custo out</th>
+                    <th className="py-2 pr-3">Custo total</th>
                     <th className="py-2 pr-3">Latência</th>
                     <th className="py-2">Quando</th>
                   </tr>
@@ -192,7 +226,10 @@ export function AdminAiCostsClient() {
                         <p className="text-xs text-ink-mute">{log.user.email || log.user.name || 'Usuário'}</p>
                       </td>
                       <td className="py-3 pr-3 text-ink">{log.model}</td>
-                      <td className="py-3 pr-3 text-ink">{log.usage.totalTokens.toLocaleString('pt-BR')}</td>
+                      <td className="py-3 pr-3 text-ink">{log.usage.inputTokens.toLocaleString('pt-BR')}</td>
+                      <td className="py-3 pr-3 text-ink">{log.usage.outputTokens.toLocaleString('pt-BR')}</td>
+                      <td className="py-3 pr-3 text-ink">{toUsd(log.usage.inputCostUsd)}</td>
+                      <td className="py-3 pr-3 text-ink">{toUsd(log.usage.outputCostUsd)}</td>
                       <td className="py-3 pr-3 font-semibold text-ink">{toUsd(log.usage.totalCostUsd)}</td>
                       <td className="py-3 pr-3 text-ink">{log.usage.latencyMs} ms</td>
                       <td className="py-3 text-ink-mute">
@@ -202,7 +239,7 @@ export function AdminAiCostsClient() {
                   ))}
                   {(data?.logs ?? []).length === 0 && (
                     <tr>
-                      <td colSpan={6} className="py-8 text-center text-sm text-ink-mute">
+                      <td colSpan={10} className="py-8 text-center text-sm text-ink-mute">
                         Nenhuma geração encontrada para o período selecionado.
                       </td>
                     </tr>
@@ -213,6 +250,52 @@ export function AdminAiCostsClient() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Consumo por Usuário</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-line text-left text-xs uppercase tracking-[0.08em] text-ink-mute">
+                  <th className="py-2 pr-3">Usuário</th>
+                  <th className="py-2 pr-3">Chamadas</th>
+                  <th className="py-2 pr-3">Tokens in</th>
+                  <th className="py-2 pr-3">Tokens out</th>
+                  <th className="py-2 pr-3">Custo in</th>
+                  <th className="py-2 pr-3">Custo out</th>
+                  <th className="py-2">Custo total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(data?.byUser ?? []).slice(0, 20).map((user) => (
+                  <tr key={user.userId} className="border-b border-dashed border-line">
+                    <td className="py-3 pr-3">
+                      <p className="font-medium text-ink">{user.name || 'Sem nome'}</p>
+                      <p className="text-xs text-ink-mute">{user.email || user.userId}</p>
+                    </td>
+                    <td className="py-3 pr-3 text-ink">{user.calls}</td>
+                    <td className="py-3 pr-3 text-ink">{user.inputTokens.toLocaleString('pt-BR')}</td>
+                    <td className="py-3 pr-3 text-ink">{user.outputTokens.toLocaleString('pt-BR')}</td>
+                    <td className="py-3 pr-3 text-ink">{toUsd(user.inputCostUsd)}</td>
+                    <td className="py-3 pr-3 text-ink">{toUsd(user.outputCostUsd)}</td>
+                    <td className="py-3 font-semibold text-ink">{toUsd(user.totalCostUsd)}</td>
+                  </tr>
+                ))}
+                {(data?.byUser ?? []).length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-sm text-ink-mute">
+                      Sem consumo por usuário no período.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
