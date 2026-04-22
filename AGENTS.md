@@ -64,13 +64,13 @@ Top-level files define how your Mastra project is configured, built, and connect
 <claude-mem-context>
 # Memory Context
 
-# [kadernim] recent context, 2026-04-22 1:27pm GMT-3
+# [kadernim] recent context, 2026-04-22 5:11pm GMT-3
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision
 Format: ID TIME TYPE TITLE
 Fetch details: get_observations([IDs]) | Search: mem-search skill
 
-Stats: 44 obs (14,812t read) | 591,727t work | 97% savings
+Stats: 47 obs (15,901t read) | 623,566t work | 97% savings
 
 ### Apr 20, 2026
 164 12:50p 🔵 scripts/clear-r2.ts Not Found in Git History — Kadernim
@@ -119,6 +119,9 @@ Stats: 44 obs (14,812t read) | 591,727t work | 97% savings
 309 " 🔵 Kadernim AppSidebar — Menu Atual Não Tem Item "Diretrizes"
 315 1:15p 🔵 Kadernim BNCC Search API — Endpoint Atual é Admin-Only, Bloqueio para Diretrizes
 316 " 🔵 Kadernim Dashboard — Rotas Existentes e Padrões de Página Confirmados para Diretrizes
+327 1:28p 🔵 Kadernim BNCC Architecture — Full Stack Inventory for Diretrizes Feature
+328 " 🔵 updateResourceService Silent Bug — bnccCodes Ignored on Edit
+329 " ✅ PRD docs/PRD/diretrizes-bncc-consulta.md — Created with 16 Sections
 
-Access 592k tokens of past work via get_observations([IDs]) or mem-search skill.
+Access 624k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>

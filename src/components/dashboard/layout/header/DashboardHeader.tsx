@@ -27,15 +27,29 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
     : 'U'
 
   const pathSegments = pathname.split('/').filter(Boolean)
-  let isResourceDetail = pathSegments[0] === 'resources' && pathSegments.length > 1
-  let isRootResources = pathSegments[0] === 'resources' && pathSegments.length === 1
+  const isResourceDetail = pathSegments[0] === 'resources' && pathSegments.length > 1
+  const rootSegment = pathSegments[0] || 'resources'
+
+  const rootLabelMap: Record<string, string> = {
+    resources: 'Biblioteca',
+    favorites: 'Meus favoritos',
+    planner: 'Planejador',
+    diretrizes: 'Diretrizes',
+    discover: 'Descobrir',
+    admin: 'Painel Admin',
+    account: 'Conta',
+    billing: 'Assinatura',
+  }
+
+  const rootLabel = rootLabelMap[rootSegment] || rootSegment
+  const rootHref = `/${rootSegment}`
   
   return (
     <header className="sticky top-0 z-10 flex items-center gap-4 px-4 sm:px-[32px] py-[16px] border-b border-line bg-[oklch(0.975_0.012_85_/_0.92)] backdrop-blur-md">
       {isMobile && <SidebarTrigger className="-ml-2 mr-2 shrink-0" />}
       
       <nav className="flex items-center gap-[8px] text-[13px] text-ink-mute flex-1 min-w-0">
-        <Link href="/resources" className="hover:text-ink truncate transition-colors text-ink-mute">Biblioteca</Link>
+        <Link href={rootHref} className="hover:text-ink truncate transition-colors text-ink-mute">{rootLabel}</Link>
         {isResourceDetail && (
           <>
             {resourceSubject && (
@@ -57,7 +71,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
         {!isResourceDetail && pathSegments.length > 1 && pathSegments[0] !== 'resources' && (
            <>
               <span className="text-line">/</span>
-              <span className="text-ink font-medium truncate">{pathSegments[0] === 'admin' ? 'Painel Admin' : pathSegments[0]}</span>
+              <span className="text-ink font-medium truncate">{pathSegments[0] === 'admin' ? 'Painel Admin' : pathSegments[1]}</span>
            </>
         )}
       </nav>

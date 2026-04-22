@@ -12,7 +12,8 @@ import {
   Heart,
   Calendar,
   Sparkles,
-  Brain
+  Brain,
+  BookMarked
 } from 'lucide-react'
 import {
   Sidebar,
@@ -76,6 +77,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
         { title: 'Biblioteca', href: '/resources', icon: BookOpen, count: counts?.library?.toString() },
         { title: 'Meus favoritos', href: '/favorites', icon: Heart, count: counts?.favorites?.toString() },
         { title: 'Planejador', href: '/planner', icon: Calendar },
+        { title: 'Diretrizes', href: '/diretrizes', icon: BookMarked },
       ],
     },
     {

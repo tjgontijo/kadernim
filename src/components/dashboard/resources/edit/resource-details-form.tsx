@@ -148,11 +148,41 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
   const driveUrl = form.watch('googleDriveUrl')
   const resourceTitle = form.watch('title')
   
-  const showGrades = !!selectedLevel && !!selectedSubject
+  const showGrades = !!selectedLevel
   
   const availableGrades = (metaData?.grades || []).filter(
     g => !selectedLevel || g.educationLevelKey === selectedLevel
   )
+
+  const availableSubjects = useMemo(() => {
+    if (!selectedLevel || !metaData?.grades || !metaData?.subjects) return []
+
+    if (selectedGrades.length > 0) {
+      const subjectKeys = new Set<string>()
+      selectedGrades.forEach((gradeKey) => {
+        const grade = metaData.grades.find((g: any) => g.key === gradeKey)
+        grade?.subjects?.forEach((s: string) => subjectKeys.add(s))
+      })
+      return metaData.subjects.filter((s: any) => subjectKeys.has(s.key))
+    }
+
+    const gradesOfLevel = metaData.grades.filter(
+      (g: any) => g.educationLevelKey === selectedLevel
+    )
+    const subjectKeys = new Set<string>()
+    gradesOfLevel.forEach((g: any) => {
+      g.subjects?.forEach((s: string) => subjectKeys.add(s))
+    })
+    return metaData.subjects.filter((s: any) => subjectKeys.has(s.key))
+  }, [selectedLevel, selectedGrades, metaData])
+
+  React.useEffect(() => {
+    if (!selectedSubject) return
+    const stillAvailable = availableSubjects.some((s: any) => s.key === selectedSubject)
+    if (!stillAvailable) {
+      resetSubjectWithoutValidation()
+    }
+  }, [selectedSubject, availableSubjects])
 
   // Validação dinâmica do Drive URL
   const isDriveUrlValid = useMemo(() => {
@@ -210,6 +240,11 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
     saveMutation.mutate(data)
   }
 
+  const resetSubjectWithoutValidation = () => {
+    form.setValue('subject', '', { shouldValidate: false, shouldDirty: true })
+    form.clearErrors('subject')
+  }
+
   const toggleGrade = (gradeKey: string) => {
     const current = form.getValues('grades') || []
     if (current.includes(gradeKey)) {
@@ -217,6 +252,7 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
     } else {
       form.setValue('grades', [...current, gradeKey], { shouldValidate: true })
     }
+    resetSubjectWithoutValidation()
   }
 
   return (
@@ -342,58 +378,37 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
                     )}
                   />
 
-                  {/* Nível e Disciplina */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="educationLevel"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-[13px] font-medium text-ink-soft flex items-center gap-2">
-                            <GraduationCap className="h-3.5 w-3.5" /> Nível
-                          </FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value || undefined}>
-                            <FormControl>
-                              <SelectTrigger className="bg-paper-2 border-line h-12 rounded-3 text-ink">
-                                <SelectValue placeholder="Nível" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="bg-paper border-line shadow-2">
-                              {metaData?.educationLevels.map(lvl => (
-                                <SelectItem key={lvl.key} value={lvl.key} className="focus:bg-terracotta-2 focus:text-terracotta">{lvl.label}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="subject"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-[13px] font-medium text-ink-soft flex items-center gap-2">
-                            <BookOpen className="h-3.5 w-3.5" /> Disciplina
-                          </FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value || undefined}>
-                            <FormControl>
-                              <SelectTrigger className="bg-paper-2 border-line h-12 rounded-3 text-ink">
-                                <SelectValue placeholder="Disciplina" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="bg-paper border-line shadow-2">
-                              {metaData?.subjects.map(sub => (
-                                <SelectItem key={sub.key} value={sub.key} className="focus:bg-terracotta-2 focus:text-terracotta">{sub.label}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="educationLevel"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-[13px] font-medium text-ink-soft flex items-center gap-2">
+                          <GraduationCap className="h-3.5 w-3.5" /> 1. Etapa de Ensino
+                        </FormLabel>
+                        <Select
+                          onValueChange={(value) => {
+                            field.onChange(value)
+                            form.setValue('grades', [], { shouldValidate: true })
+                            resetSubjectWithoutValidation()
+                          }}
+                          value={field.value || undefined}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="bg-paper-2 border-line h-12 rounded-3 text-ink">
+                              <SelectValue placeholder="Selecione a etapa" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="bg-paper border-line shadow-2">
+                            {metaData?.educationLevels.map(lvl => (
+                              <SelectItem key={lvl.key} value={lvl.key} className="focus:bg-terracotta-2 focus:text-terracotta">{lvl.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
 
                 {/* Ano / Série */}
@@ -403,33 +418,81 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
                       <FormLabel className="text-[13px] font-medium text-ink-soft flex items-center gap-2">
-                        <Layers className="h-3.5 w-3.5" /> Anos / Séries
+                        <Layers className="h-3.5 w-3.5" /> 2. Anos / Séries
                       </FormLabel>
-                      <div className="flex-1 flex flex-wrap gap-2 p-5 bg-paper-2 border border-line rounded-3 w-full items-start min-h-[90px]">
+                      <div className="flex-1 p-5 bg-paper-2 border border-line rounded-3 w-full min-h-[90px]">
                         {showGrades ? (
-                          availableGrades.map((g) => {
-                            const isSelected = (field.value || []).includes(g.key)
-                            return (
-                              <Badge
-                                key={g.key}
-                                variant={isSelected ? "default" : "outline"}
-                                className={`cursor-pointer px-4 py-2 transition-all text-[12px] font-medium rounded-full ${
-                                  isSelected 
-                                    ? "bg-terracotta text-white hover:bg-terracotta-hover border-terracotta shadow-sm" 
-                                    : "bg-white text-ink-mute border-line hover:border-terracotta/30"
-                                }`}
-                                onClick={() => toggleGrade(g.key)}
+                          <div className="flex items-start gap-2">
+                            <div className="flex flex-wrap gap-2 flex-1">
+                              {availableGrades.map((g) => {
+                                const isSelected = (field.value || []).includes(g.key)
+                                return (
+                                  <Badge
+                                    key={g.key}
+                                    variant={isSelected ? "default" : "outline"}
+                                    className={`cursor-pointer px-4 py-2 transition-all text-[12px] font-medium rounded-full ${
+                                      isSelected 
+                                        ? "bg-terracotta text-white hover:bg-terracotta-hover border-terracotta shadow-sm" 
+                                        : "bg-white text-ink-mute border-line hover:border-terracotta/30"
+                                    }`}
+                                    onClick={() => toggleGrade(g.key)}
+                                  >
+                                    {g.label}
+                                  </Badge>
+                                )
+                              })}
+                            </div>
+                            {selectedGrades.length > 0 && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 rounded-lg text-ink-mute hover:text-ink shrink-0"
+                                onClick={() => {
+                                  form.setValue('grades', [], { shouldValidate: true })
+                                  resetSubjectWithoutValidation()
+                                }}
+                                aria-label="Limpar anos/séries"
                               >
-                                {g.label}
-                              </Badge>
-                            )
-                          })
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
                         ) : (
                           <div className="flex items-center gap-2 text-ink-mute/40 text-[11px] italic py-2">
-                             Selecione Nível e Disciplina para visualizar...
+                             Selecione a etapa para visualizar os anos/séries...
                           </div>
                         )}
                       </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="subject"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[13px] font-medium text-ink-soft flex items-center gap-2">
+                        <BookOpen className="h-3.5 w-3.5" /> 3. Disciplina
+                      </FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value || undefined}
+                        disabled={!selectedLevel || selectedGrades.length === 0}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="bg-paper-2 border-line h-12 rounded-3 text-ink">
+                            <SelectValue placeholder={!selectedLevel || selectedGrades.length === 0 ? "Selecione ano/série primeiro" : "Selecione a disciplina"} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="bg-paper border-line shadow-2">
+                          {availableSubjects.map((sub: any) => (
+                            <SelectItem key={sub.key} value={sub.key} className="focus:bg-terracotta-2 focus:text-terracotta">{sub.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
