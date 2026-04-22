@@ -233,6 +233,58 @@ export async function deleteResourceFile(resourceId: string, fileId: string): Pr
   await parseJsonResponse<null>(response)
 }
 
+export async function deleteResourceFilePreview(
+  resourceId: string,
+  fileId: string,
+  imageId: string
+): Promise<void> {
+  const response = await fetch(
+    `/api/v1/admin/resources/${resourceId}/files/${fileId}/images/${imageId}`,
+    {
+      method: 'DELETE',
+    }
+  )
+
+  await parseJsonResponse<null>(response)
+}
+
+export async function reorderResourceFilePreviews(
+  resourceId: string,
+  fileId: string,
+  updates: Array<{ id: string; order: number }>
+): Promise<void> {
+  const response = await fetch(
+    `/api/v1/admin/resources/${resourceId}/files/${fileId}/images/reorder`,
+    {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ updates }),
+    }
+  )
+
+  await parseJsonResponse(response)
+}
+
+export async function generateNextResourceFilePreview(
+  resourceId: string,
+  fileId: string
+): Promise<{
+  id: string
+  cloudinaryPublicId?: string
+  url: string | null
+  alt: string | null
+  order: number
+}> {
+  const response = await fetch(
+    `/api/v1/admin/resources/${resourceId}/files/${fileId}/images/generate-next`,
+    {
+      method: 'POST',
+    }
+  )
+
+  return parseJsonResponse(response)
+}
+
 export async function uploadResourceImage(
   resourceId: string,
   file: File,

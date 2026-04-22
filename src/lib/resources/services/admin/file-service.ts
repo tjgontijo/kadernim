@@ -91,6 +91,105 @@ export async function getResourceFileById(fileId: string) {
   })
 }
 
+export async function getResourceFileImageById(imageId: string) {
+  return prisma.resourceFileImage.findUnique({
+    where: { id: imageId },
+    include: {
+      file: {
+        select: {
+          id: true,
+          resourceId: true,
+        },
+      },
+    },
+  })
+}
+
+export async function deleteResourceFileImage(
+  resourceId: string,
+  fileId: string,
+  imageId: string
+): Promise<void> {
+  const image = await prisma.resourceFileImage.findUnique({
+    where: { id: imageId },
+    include: {
+      file: {
+        select: {
+          id: true,
+          resourceId: true,
+        },
+      },
+    },
+  })
+
+  if (!image) {
+    throw new Error('FILE_IMAGE_NOT_FOUND')
+  }
+
+  if (image.file.id !== fileId || image.file.resourceId !== resourceId) {
+    throw new Error('FILE_IMAGE_OWNERSHIP_MISMATCH')
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.resourceFileImage.delete({ where: { id: imageId } })
+
+    const remaining = await tx.resourceFileImage.findMany({
+      where: { fileId },
+      orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],
+      select: { id: true },
+    })
+
+    for (const [index, item] of remaining.entries()) {
+      await tx.resourceFileImage.update({
+        where: { id: item.id },
+        data: { order: index },
+      })
+    }
+  })
+}
+
+export async function reorderResourceFileImagesByUpdates(
+  resourceId: string,
+  fileId: string,
+  updates: Array<{ id: string; order: number }>
+): Promise<void> {
+  const ids = updates.map((update) => update.id)
+  if (ids.length === 0) {
+    return
+  }
+
+  const images = await prisma.resourceFileImage.findMany({
+    where: {
+      id: { in: ids },
+      fileId,
+    },
+    include: {
+      file: {
+        select: {
+          resourceId: true,
+        },
+      },
+    },
+  })
+
+  if (images.length !== ids.length) {
+    throw new Error('FILE_IMAGE_NOT_FOUND')
+  }
+
+  if (images.some((image) => image.file.resourceId !== resourceId)) {
+    throw new Error('FILE_IMAGE_OWNERSHIP_MISMATCH')
+  }
+
+  await prisma.$transaction(
+    updates.map((update) =>
+      prisma.resourceFileImage.update({
+        where: { id: update.id },
+        data: { order: update.order },
+      })
+    )
+  )
+}
+
 /**
  * Validate file before upload
  */

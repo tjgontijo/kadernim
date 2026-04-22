@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { deleteFileService, getResourceFileById } from '@/lib/resources/services/admin'
 import { requirePermission } from '@/server/auth/middleware'
-import { checkRateLimit } from '@/server/utils/rate-limit'
 import { deleteAsset } from '@/lib/storage/cloudinary'
+import { deleteFromR2 } from '@/lib/storage/r2'
 
 /**
  * DELETE /api/v1/admin/resources/:id/files/:fileId
@@ -44,12 +44,14 @@ export async function DELETE(
       )
     }
 
-    // Delete from Cloudinary
-    try {
-      await deleteAsset(file.cloudinaryPublicId, 'raw')
-    } catch (cloudinaryError) {
+    // Remove from R2 (new storage) and keep Cloudinary fallback for legacy files.
+    await deleteFromR2(file.cloudinaryPublicId).catch((r2Error) => {
+      console.error('[DELETE FILE] R2 deletion error:', r2Error)
+    })
+
+    await deleteAsset(file.cloudinaryPublicId, 'raw').catch((cloudinaryError) => {
       console.error('[DELETE FILE] Cloudinary deletion error:', cloudinaryError)
-    }
+    })
 
     // Delete file record from database
     await deleteFileService(fileId, resourceId, userId)

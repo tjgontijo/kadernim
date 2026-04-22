@@ -145,6 +145,19 @@ export const ResourceDetailResponseSchema = z.object({
   estimatedDurationMinutes: z.number().nullable().optional(),
   googleDriveUrl: z.string().nullable().optional(),
   bnccCodes: z.array(z.string()).default([]),
+  objectives: z.array(z.object({
+    id: z.string(),
+    text: z.string(),
+    order: z.number(),
+  })).default([]),
+  steps: z.array(z.object({
+    id: z.string(),
+    type: z.string(),
+    title: z.string(),
+    duration: z.string().nullable(),
+    content: z.string(),
+    order: z.number(),
+  })).default([]),
   createdAt: z.string(),
   updatedAt: z.string(),
   files: z.array(z.object({
@@ -155,6 +168,13 @@ export const ResourceDetailResponseSchema = z.object({
     fileType: z.string().nullable(),
     sizeBytes: z.number().nullable(),
     createdAt: z.string(),
+    images: z.array(z.object({
+      id: z.string(),
+      cloudinaryPublicId: z.string().optional(),
+      url: z.string().nullable(),
+      alt: z.string().nullable(),
+      order: z.number(),
+    })).default([]),
   })),
   images: z.array(z.object({
     id: z.string(),

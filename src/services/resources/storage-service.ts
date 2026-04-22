@@ -109,6 +109,45 @@ export async function generatePreviewImagesFromPdf(options: {
   return results
 }
 
+/**
+ * Gera apenas uma página de preview do PDF e envia para o Cloudinary.
+ */
+export async function generateSinglePreviewImageFromPdf(options: {
+  resourceSlug: string
+  resourceTitle: string
+  driveFolderId: string
+  driveFileId: string
+  pdfFileName: string
+  pdfBuffer: Buffer
+  fileDisplayName: string
+  pageNumber: number
+  previewOrder: number
+}) {
+  const pageBuffers = await extractPdfPages(options.pdfBuffer, [options.pageNumber], options.pdfFileName)
+
+  if (pageBuffers.length === 0) {
+    throw new Error('PREVIEW_PAGE_NOT_AVAILABLE')
+  }
+
+  const previewFileSlug = slugifyStorageName(stripExtension(options.pdfFileName), 'arquivo')
+  const basePath = `resources/${options.resourceSlug}/images`
+
+  const uploaded = await uploadImage(pageBuffers[0], {
+    folder: `${basePath}/preview/${previewFileSlug}`,
+    publicId: `page-${options.previewOrder}`,
+    context: { alt: `${options.resourceTitle} - ${options.fileDisplayName} - página ${options.pageNumber}` },
+    tags: ['resource', 'preview', options.resourceSlug, options.driveFolderId]
+  })
+
+  const uploadedContext = uploaded.context as { custom?: { alt?: string } } | undefined
+
+  return {
+    cloudinaryPublicId: uploaded.public_id,
+    url: uploaded.secure_url,
+    alt: uploadedContext?.custom?.alt ?? options.resourceTitle,
+  }
+}
+
 export function buildResourcePdfObjectKey(options: { resourceSlug: string; driveFileId: string; fileName: string }) {
   const safeName = slugifyStorageName(options.fileName, 'material')
   return `resources/${options.resourceSlug}/files/${options.driveFileId}/${safeName}`
@@ -212,4 +251,3 @@ export async function uploadImageFromUrlToCloudinary(options: {
     format: upload.format,
   }
 }
-

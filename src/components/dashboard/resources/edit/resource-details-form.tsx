@@ -88,6 +88,8 @@ interface ResourceDetailsFormProps {
     steps?: { id?: string; type: string; title: string; duration?: string | null; content: string; order: number }[]
   }
   onSuccess?: (resource: any) => void
+  hideSecondarySectionsUntilSaved?: boolean
+  extraSections?: React.ReactNode
 }
 
 const STEP_TYPES = [
@@ -103,11 +105,17 @@ const STEP_TYPES = [
 // Regex para validar pastas do Google Drive
 const DRIVE_FOLDER_REGEX = /^https:\/\/drive\.google\.com\/(drive\/folders\/|open\?id=)([a-zA-Z0-9-_]+)/
 
-export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsFormProps) {
+export function ResourceDetailsForm({
+  resource,
+  onSuccess,
+  hideSecondarySectionsUntilSaved = false,
+  extraSections,
+}: ResourceDetailsFormProps) {
   const queryClient = useQueryClient()
   const { data: metaData } = useResourceMeta()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const isEditing = !!resource.id
+  const showSecondarySections = !hideSecondarySectionsUntilSaved || isEditing
   const [isUploadingThumb, setIsUploadingThumb] = useState(false)
   const [isDeleteThumbDialogOpen, setIsDeleteThumbDialogOpen] = useState(false)
 
@@ -120,9 +128,9 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
       subject: resource.subject || '',
       grades: resource.grades || [],
       bnccCodes: resource.bnccCodes || [],
-      thumbUrl: resource.thumbUrl || '',
-      thumbPublicId: resource.thumbPublicId || '',
-      googleDriveUrl: resource.googleDriveUrl || '',
+      thumbUrl: resource.thumbUrl ?? null,
+      thumbPublicId: resource.thumbPublicId ?? null,
+      googleDriveUrl: resource.googleDriveUrl ?? null,
       objectives: resource.objectives || [],
       steps: resource.steps || [],
     },
@@ -237,7 +245,12 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
   }
 
   const onSubmit = (data: UpdateResourceInput) => {
-    saveMutation.mutate(data)
+    saveMutation.mutate({
+      ...data,
+      thumbUrl: normalizeNullableString(data.thumbUrl),
+      thumbPublicId: normalizeNullableString(data.thumbPublicId),
+      googleDriveUrl: normalizeNullableString(data.googleDriveUrl),
+    })
   }
 
   const resetSubjectWithoutValidation = () => {
@@ -312,8 +325,8 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
                                    console.error('Erro ao remover no Cloudinary', err)
                                  }
                                }
-                               form.setValue('thumbUrl', '', { shouldValidate: true })
-                               form.setValue('thumbPublicId', '', { shouldValidate: true })
+                               form.setValue('thumbUrl', null, { shouldValidate: true })
+                               form.setValue('thumbPublicId', null, { shouldValidate: true })
                                setIsDeleteThumbDialogOpen(false)
                              }}
                              title="Remover capa?"
@@ -514,6 +527,12 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
                             className="w-full bg-paper-2 border-line focus-visible:ring-terracotta h-12 text-sm px-4 rounded-3 pr-10"
                             {...field}
                             value={field.value || ''}
+                            onBlur={(event) => {
+                              field.onBlur()
+                              if (event.target.value.trim() === '') {
+                                form.setValue('googleDriveUrl', null, { shouldValidate: true })
+                              }
+                            }}
                           />
                           <div className="absolute right-3 top-1/2 -translate-y-1/2">
                              <TooltipProvider>
@@ -553,260 +572,266 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
             </div>
           </div>
 
-          {/* Sessão: Base Nacional Comum Curricular (BNCC) */}
-          <div className={cn(
-            "space-y-8 bg-paper p-8 rounded-4 border border-line shadow-sm relative overflow-hidden transition-all duration-300",
-            selectedGrades.length === 0 && "opacity-60 grayscale-[0.5] pointer-events-none"
-          )}>
-            <div className="absolute top-0 left-0 w-1 h-full bg-[oklch(0.60_0.20_300)]/40" />
-            <div className="flex items-center gap-3 border-b border-line pb-4">
-              <div className="w-8 h-8 rounded-full bg-[oklch(0.60_0.20_300)]/10 flex items-center justify-center">
-                <Hash className="h-4 w-4 text-[oklch(0.60_0.20_300)]" />
-              </div>
-              <h2 className="font-display text-xl text-ink">Base Nacional Comum Curricular (BNCC)</h2>
-            </div>
-
-            <FormField
-              control={form.control}
-              name="bnccCodes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[13px] font-medium text-ink-soft">Habilidades Vinculadas</FormLabel>
-                  <FormControl>
-                    <BnccSelector
-                      value={field.value || []}
-                      onChange={field.onChange}
-                      educationLevel={selectedLevel}
-                      grade={selectedGrades[0]} // Filtra preferencialmente pelo primeiro ano selecionado
-                      subject={selectedSubject}
-                      disabled={selectedGrades.length === 0}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          {/* Sessão 2: Conteúdo Principal */}
-          <div className="space-y-8 bg-paper p-8 rounded-4 border border-line shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-1 h-full bg-mustard/40" />
-            <div className="flex items-center gap-3 border-b border-line pb-4">
-              <div className="w-8 h-8 rounded-full bg-mustard-2 flex items-center justify-center">
-                <Type className="h-4 w-4 text-[oklch(0.50_0.13_82)]" />
-              </div>
-              <h2 className="font-display text-xl text-ink">Apresentação Editorial</h2>
-            </div>
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[13px] font-medium text-ink-soft">Descrição Detalhada do Material</FormLabel>
-                  <FormControl>
-                    <RichTextEditor
-                      value={field.value ?? ''}
-                      onChange={field.onChange}
-                      placeholder="Descreva o propósito deste material..."
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          {/* Sessão 3: Objetivos de Aprendizagem */}
-          <div className="space-y-8 bg-paper p-8 rounded-4 border border-line shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-1 h-full bg-sage/40" />
-            <div className="flex items-center justify-between border-b border-line pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-sage-2 flex items-center justify-center">
-                  <Target className="h-4 w-4 text-sage" />
-                </div>
-                <h2 className="font-display text-xl text-ink">Objetivos de Aprendizagem</h2>
-              </div>
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="sm" 
-                onClick={() => appendObjective({ text: '', order: objectives.length + 1 })}
-                className="rounded-full border-line text-ink-soft hover:text-sage text-xs h-9"
-              >
-                <PlusCircle className="mr-2 h-4 w-4" /> Add Objetivo
-              </Button>
-            </div>
-
-            <div className="space-y-4">
-              {objectives.map((field, index) => (
-                <div key={field.id} className="flex gap-4 items-start group animate-in fade-in slide-in-from-right-4 duration-300">
-                  <div className="text-[10px] font-mono text-ink-mute mt-4 bg-paper-2 w-6 h-6 rounded-full flex items-center justify-center shrink-0">
-                    {index + 1}
+          {showSecondarySections && (
+            <>
+              {/* Sessão 2: Conteúdo Principal */}
+              <div className="space-y-8 bg-paper p-8 rounded-4 border border-line shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full bg-mustard/40" />
+                <div className="flex items-center gap-3 border-b border-line pb-4">
+                  <div className="w-8 h-8 rounded-full bg-mustard-2 flex items-center justify-center">
+                    <Type className="h-4 w-4 text-[oklch(0.50_0.13_82)]" />
                   </div>
-                  <FormField
-                    control={form.control}
-                    name={`objectives.${index}.text`}
-                    render={({ field }) => (
-                      <FormItem className="flex-1">
-                        <FormControl>
-                          <Input 
-                            {...field} 
-                            placeholder="Ex: Identificar as propriedades dos materiais no cotidiano."
-                            className="bg-paper-2 border-line-soft focus-visible:ring-sage h-11 rounded-3"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button 
-                    type="button" 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => removeObjective(index)}
-                    className="text-ink-mute hover:text-berry mt-1"
+                  <h2 className="font-display text-xl text-ink">Apresentação Editorial</h2>
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[13px] font-medium text-ink-soft">Descrição Detalhada do Material</FormLabel>
+                      <FormControl>
+                        <RichTextEditor
+                          value={field.value ?? ''}
+                          onChange={field.onChange}
+                          placeholder="Descreva o propósito deste material..."
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Sessão 3: Objetivos de Aprendizagem */}
+              <div className="space-y-8 bg-paper p-8 rounded-4 border border-line shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full bg-sage/40" />
+                <div className="flex items-center justify-between border-b border-line pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-sage-2 flex items-center justify-center">
+                      <Target className="h-4 w-4 text-sage" />
+                    </div>
+                    <h2 className="font-display text-xl text-ink">Objetivos de Aprendizagem</h2>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => appendObjective({ text: '', order: objectives.length + 1 })}
+                    className="rounded-full border-line text-ink-soft hover:text-sage text-xs h-9"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <PlusCircle className="mr-2 h-4 w-4" /> Add Objetivo
                   </Button>
                 </div>
-              ))}
-              {objectives.length === 0 && (
-                <div className="text-center py-6 text-ink-mute italic text-sm opacity-60">
-                   Nenhum objetivo adicionado. Descreva o que o aluno deve aprender.
-                </div>
-              )}
-            </div>
-          </div>
 
-          {/* Sessão 4: Passo a Passo */}
-          <div className="space-y-8 bg-paper p-8 rounded-4 border border-line shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-1 h-full bg-terracotta/40" />
-            <div className="flex items-center justify-between border-b border-line pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-terracotta-2 flex items-center justify-center">
-                  <Footprints className="h-4 w-4 text-terracotta" />
-                </div>
-                <h2 className="font-display text-xl text-ink">Passo a Passo do Uso</h2>
-              </div>
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="sm" 
-                onClick={() => appendStep({ type: 'ACTIVITY', title: '', content: '', order: steps.length + 1 })}
-                className="rounded-full border-line text-ink-soft hover:text-terracotta text-xs h-9"
-              >
-                <PlusCircle className="mr-2 h-4 w-4" /> Add Etapa
-              </Button>
-            </div>
-
-            <div className="space-y-6">
-              {steps.map((field, index) => (
-                <div key={field.id} className="p-6 bg-paper-2 border border-line-soft rounded-4 space-y-6 relative animate-in fade-in slide-in-from-bottom-4 duration-400 group">
-                  <div className="absolute -left-3 top-6 w-6 h-6 rounded-full bg-terracotta text-white flex items-center justify-center text-[10px] font-bold shadow-sm">
-                    {index + 1}
-                  </div>
-                  
-                  <div className="flex flex-col md:flex-row gap-6">
-                    <FormField
-                      control={form.control}
-                      name={`steps.${index}.type`}
-                      render={({ field }) => (
-                        <FormItem className="md:w-1/3">
-                          <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-ink-mute">Tipo</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
+                <div className="space-y-4">
+                  {objectives.map((field, index) => (
+                    <div key={field.id} className="flex gap-4 items-start group animate-in fade-in slide-in-from-right-4 duration-300">
+                      <div className="text-[10px] font-mono text-ink-mute mt-4 bg-paper-2 w-6 h-6 rounded-full flex items-center justify-center shrink-0">
+                        {index + 1}
+                      </div>
+                      <FormField
+                        control={form.control}
+                        name={`objectives.${index}.text`}
+                        render={({ field }) => (
+                          <FormItem className="flex-1">
                             <FormControl>
-                              <SelectTrigger className="bg-paper border-line h-10 rounded-3">
-                                <SelectValue />
-                              </SelectTrigger>
+                              <Input
+                                {...field}
+                                placeholder="Ex: Identificar as propriedades dos materiais no cotidiano."
+                                className="bg-paper-2 border-line-soft focus-visible:ring-sage h-11 rounded-3"
+                              />
                             </FormControl>
-                            <SelectContent className="bg-paper border-line">
-                              {STEP_TYPES.map(type => (
-                                <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`steps.${index}.title`}
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-ink-mute">Título da Etapa</FormLabel>
-                          <FormControl>
-                            <Input {...field} placeholder="Ex: Preparação Inicial" className="bg-paper border-line h-10 rounded-3" />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`steps.${index}.duration`}
-                      render={({ field }) => (
-                        <FormItem className="md:w-1/4">
-                          <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-ink-mute flex items-center gap-1">
-                            <Clock className="h-3 w-3" /> Duração
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              value={field.value ?? ''}
-                              placeholder="Ex: 15 min"
-                              className="bg-paper border-line h-10 rounded-3"
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <FormField
-                    control={form.control}
-                    name={`steps.${index}.content`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-ink-mute">Instruções Práticas</FormLabel>
-                        <FormControl>
-                          <RichTextEditor
-                            value={field.value ?? ''}
-                            onChange={field.onChange}
-                            placeholder="Explique o que deve ser feito nesta etapa..."
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="flex justify-between items-center pt-2 border-t border-line-soft">
-                    <div className="flex gap-2">
-                       <Button type="button" variant="ghost" size="sm" onClick={() => moveStep(index, index - 1)} disabled={index === 0}>
-                         <ChevronUp className="h-4 w-4" />
-                       </Button>
-                       <Button type="button" variant="ghost" size="sm" onClick={() => moveStep(index, index + 1)} disabled={index === steps.length - 1}>
-                         <ChevronDown className="h-4 w-4" />
-                       </Button>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeObjective(index)}
+                        className="text-ink-mute hover:text-berry mt-1"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
-                    <Button 
-                      type="button" 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => removeStep(index)}
-                      className="text-berry/70 hover:text-berry hover:bg-berry-2 transition-colors"
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" /> Excluir Etapa
-                    </Button>
+                  ))}
+                  {objectives.length === 0 && (
+                    <div className="text-center py-6 text-ink-mute italic text-sm opacity-60">
+                       Nenhum objetivo adicionado. Descreva o que o aluno deve aprender.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Sessão 4: Passo a Passo */}
+              <div className="space-y-8 bg-paper p-8 rounded-4 border border-line shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full bg-terracotta/40" />
+                <div className="flex items-center justify-between border-b border-line pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-terracotta-2 flex items-center justify-center">
+                      <Footprints className="h-4 w-4 text-terracotta" />
+                    </div>
+                    <h2 className="font-display text-xl text-ink">Passo a Passo do Uso</h2>
                   </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => appendStep({ type: 'ACTIVITY', title: '', content: '', order: steps.length + 1 })}
+                    className="rounded-full border-line text-ink-soft hover:text-terracotta text-xs h-9"
+                  >
+                    <PlusCircle className="mr-2 h-4 w-4" /> Add Etapa
+                  </Button>
                 </div>
-              ))}
-              {steps.length === 0 && (
-                <div className="text-center py-6 text-ink-mute italic text-sm opacity-60">
-                   Nenhuma etapa adicionada. Guie o professor no uso do material.
+
+                <div className="space-y-6">
+                  {steps.map((field, index) => (
+                    <div key={field.id} className="p-6 bg-paper-2 border border-line-soft rounded-4 space-y-6 relative animate-in fade-in slide-in-from-bottom-4 duration-400 group">
+                      <div className="absolute -left-3 top-6 w-6 h-6 rounded-full bg-terracotta text-white flex items-center justify-center text-[10px] font-bold shadow-sm">
+                        {index + 1}
+                      </div>
+
+                      <div className="flex flex-col md:flex-row gap-6">
+                        <FormField
+                          control={form.control}
+                          name={`steps.${index}.type`}
+                          render={({ field }) => (
+                            <FormItem className="md:w-1/3">
+                              <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-ink-mute">Tipo</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger className="bg-paper border-line h-10 rounded-3">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent className="bg-paper border-line">
+                                  {STEP_TYPES.map(type => (
+                                    <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`steps.${index}.title`}
+                          render={({ field }) => (
+                            <FormItem className="flex-1">
+                              <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-ink-mute">Título da Etapa</FormLabel>
+                              <FormControl>
+                                <Input {...field} placeholder="Ex: Preparação Inicial" className="bg-paper border-line h-10 rounded-3" />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`steps.${index}.duration`}
+                          render={({ field }) => (
+                            <FormItem className="md:w-1/4">
+                              <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-ink-mute flex items-center gap-1">
+                                <Clock className="h-3 w-3" /> Duração
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  value={field.value ?? ''}
+                                  placeholder="Ex: 15 min"
+                                  className="bg-paper border-line h-10 rounded-3"
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <FormField
+                        control={form.control}
+                        name={`steps.${index}.content`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-[11px] font-bold uppercase tracking-wider text-ink-mute">Instruções Práticas</FormLabel>
+                            <FormControl>
+                              <RichTextEditor
+                                value={field.value ?? ''}
+                                onChange={field.onChange}
+                                placeholder="Explique o que deve ser feito nesta etapa..."
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="flex justify-between items-center pt-2 border-t border-line-soft">
+                        <div className="flex gap-2">
+                           <Button type="button" variant="ghost" size="sm" onClick={() => moveStep(index, index - 1)} disabled={index === 0}>
+                             <ChevronUp className="h-4 w-4" />
+                           </Button>
+                           <Button type="button" variant="ghost" size="sm" onClick={() => moveStep(index, index + 1)} disabled={index === steps.length - 1}>
+                             <ChevronDown className="h-4 w-4" />
+                           </Button>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeStep(index)}
+                          className="text-berry/70 hover:text-berry hover:bg-berry-2 transition-colors"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" /> Excluir Etapa
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                  {steps.length === 0 && (
+                    <div className="text-center py-6 text-ink-mute italic text-sm opacity-60">
+                       Nenhuma etapa adicionada. Guie o professor no uso do material.
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
+              </div>
+
+              {/* Sessão: Base Nacional Comum Curricular (BNCC) */}
+              <div className={cn(
+                "space-y-8 bg-paper p-8 rounded-4 border border-line shadow-sm relative overflow-hidden transition-all duration-300",
+                selectedGrades.length === 0 && "opacity-60 grayscale-[0.5] pointer-events-none"
+              )}>
+                <div className="absolute top-0 left-0 w-1 h-full bg-[oklch(0.60_0.20_300)]/40" />
+                <div className="flex items-center gap-3 border-b border-line pb-4">
+                  <div className="w-8 h-8 rounded-full bg-[oklch(0.60_0.20_300)]/10 flex items-center justify-center">
+                    <Hash className="h-4 w-4 text-[oklch(0.60_0.20_300)]" />
+                  </div>
+                  <h2 className="font-display text-xl text-ink">Base Nacional Comum Curricular (BNCC)</h2>
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="bnccCodes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[13px] font-medium text-ink-soft">Habilidades Vinculadas</FormLabel>
+                      <FormControl>
+                        <BnccSelector
+                          value={field.value || []}
+                          onChange={field.onChange}
+                          educationLevel={selectedLevel}
+                          grade={selectedGrades[0]} // Filtra preferencialmente pelo primeiro ano selecionado
+                          subject={selectedSubject}
+                          disabled={selectedGrades.length === 0}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </>
+          )}
+
+          {extraSections}
 
           {/* Botões de Ação Finais */}
           <div className="flex items-center justify-end gap-6 border-t border-line pt-10">
@@ -827,4 +852,11 @@ export function ResourceDetailsForm({ resource, onSuccess }: ResourceDetailsForm
       </form>
     </Form>
   )
+}
+
+function normalizeNullableString(value: string | null | undefined) {
+  if (value === undefined) return undefined
+  if (value === null) return null
+  const trimmed = value.trim()
+  return trimmed.length === 0 ? null : trimmed
 }

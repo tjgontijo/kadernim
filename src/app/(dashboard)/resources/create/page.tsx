@@ -1,13 +1,14 @@
 'use client'
 
 import React from 'react'
-import { useRouter } from 'next/navigation'
 import { ResourceDetailsForm } from '@/components/dashboard/resources/edit/resource-details-form'
+import { ResourceFilesManager } from '@/components/dashboard/resources/edit/resource-files-manager'
 import { useResource } from '@/hooks/resources/use-resource-context'
 
 export default function CreateResourcePage() {
-  const router = useRouter()
   const { setResourceTitle } = useResource()
+  const [createdResourceId, setCreatedResourceId] = React.useState<string | null>(null)
+  const [createdFiles, setCreatedFiles] = React.useState<any[]>([])
 
   // Seta um título genérico pro breadcrumb
   React.useEffect(() => {
@@ -16,6 +17,7 @@ export default function CreateResourcePage() {
   }, [setResourceTitle])
 
   const emptyResource = {
+    id: createdResourceId || undefined,
     title: '',
     description: '',
     educationLevel: '',
@@ -43,13 +45,28 @@ export default function CreateResourcePage() {
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 delay-150">
             <ResourceDetailsForm
               resource={emptyResource as any}
+              hideSecondarySectionsUntilSaved
               onSuccess={(data) => {
-                if (data?.id) {
-                  router.push(`/resources`)
+                if (data?.id && !createdResourceId) {
+                  setCreatedResourceId(data.id)
+                  setCreatedFiles(data.files ?? [])
                 }
               }}
             />
           </div>
+
+          {createdResourceId && (
+            <div className="space-y-8 bg-paper p-8 rounded-4 border border-line shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-1 h-full bg-ink/20" />
+              <div className="flex items-center gap-3 border-b border-line pb-4">
+                <h2 className="font-display text-xl text-ink uppercase tracking-tight">Arquivos e Documentos</h2>
+              </div>
+              <ResourceFilesManager
+                resourceId={createdResourceId}
+                initialFiles={createdFiles}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

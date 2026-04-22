@@ -30,6 +30,16 @@ export async function getAdminResourceDetail(resourceId: string): Promise<Resour
           fileType: true,
           sizeBytes: true,
           createdAt: true,
+          images: {
+            select: {
+              id: true,
+              cloudinaryPublicId: true,
+              url: true,
+              alt: true,
+              order: true,
+            },
+            orderBy: { order: 'asc' },
+          },
         },
       },
       images: {
@@ -62,6 +72,34 @@ export async function getAdminResourceDetail(resourceId: string): Promise<Resour
           },
         },
       },
+      bnccSkills: {
+        select: {
+          bnccSkill: {
+            select: {
+              code: true,
+            },
+          },
+        },
+      },
+      objectives: {
+        select: {
+          id: true,
+          text: true,
+          order: true,
+        },
+        orderBy: { order: 'asc' },
+      },
+      steps: {
+        select: {
+          id: true,
+          type: true,
+          title: true,
+          duration: true,
+          content: true,
+          order: true,
+        },
+        orderBy: { order: 'asc' },
+      },
     },
   })
 
@@ -77,12 +115,26 @@ export async function getAdminResourceDetail(resourceId: string): Promise<Resour
     subject: resource.subject?.slug,
     thumbUrl: resource.thumbUrl,
     thumbPublicId: resource.thumbPublicId,
+    googleDriveUrl: resource.googleDriveUrl,
     grades: resource.grades.map((grade) => grade.grade?.slug).filter(Boolean),
+    bnccCodes: resource.bnccSkills.map((item) => item.bnccSkill.code),
+    objectives: resource.objectives,
+    steps: resource.steps.map((step) => ({
+      ...step,
+      duration: step.duration ?? null,
+    })),
     createdAt: resource.createdAt.toISOString(),
     updatedAt: resource.updatedAt.toISOString(),
     files: resource.files.map((file) => ({
       ...file,
       createdAt: file.createdAt.toISOString(),
+      images: file.images.map((image) => ({
+        id: image.id,
+        cloudinaryPublicId: image.cloudinaryPublicId,
+        url: image.url ?? null,
+        alt: image.alt,
+        order: image.order,
+      })),
     })),
     images: resource.images.map((image) => ({
       ...image,

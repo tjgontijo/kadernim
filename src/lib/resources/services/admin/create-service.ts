@@ -2,6 +2,7 @@ import { prisma } from '@/server/db'
 import type { Resource, EducationLevel, Subject } from '@db/client'
 import { CreateResourceInput } from '@/lib/resources/schemas/admin-resource-schemas'
 import { slugify } from '@/lib/utils/string'
+import { syncResourceFilesFromGoogleDrive } from './drive-sync-service'
 
 export interface CreateResourceServiceInput extends CreateResourceInput {
   adminId: string
@@ -117,6 +118,23 @@ export async function createResourceService(
       images: true
     }
   })
+
+  if (googleDriveUrl) {
+    try {
+      const syncSummary = await syncResourceFilesFromGoogleDrive({
+        resourceId: resource.id,
+        resourceSlug: resource.slug || slug,
+        resourceTitle: resource.title,
+        googleDriveUrl,
+      })
+      console.info('[GOOGLE_DRIVE_SYNC][CREATE]', {
+        resourceId: resource.id,
+        ...syncSummary,
+      })
+    } catch (error) {
+      console.error(`[GOOGLE_DRIVE_SYNC][CREATE] Falha no recurso ${resource.id}:`, error)
+    }
+  }
 
   return resource
 }

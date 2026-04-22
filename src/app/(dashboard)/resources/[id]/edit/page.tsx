@@ -1,20 +1,17 @@
 'use client'
 
 import React, { use } from 'react'
-import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { fetchResourceDetail } from '@/lib/resources/api-client'
+import { fetchAdminResourceDetail } from '@/lib/resources/api-client'
 import { ResourceDetailsForm } from '@/components/dashboard/resources/edit/resource-details-form'
 import { ResourceFilesManager } from '@/components/dashboard/resources/edit/resource-files-manager'
-import { ResourceImagesManager } from '@/components/dashboard/resources/edit/resource-images-manager'
 import { useResource } from '@/hooks/resources/use-resource-context'
 
 export default function EditResourcePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
-  const router = useRouter()
   const { setResourceTitle } = useResource()
 
   const {
@@ -22,8 +19,8 @@ export default function EditResourcePage({ params }: { params: Promise<{ id: str
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['resource-detail', id],
-    queryFn: () => fetchResourceDetail(id),
+    queryKey: ['admin-resource-detail', id],
+    queryFn: () => fetchAdminResourceDetail(id),
   })
 
   // Seta o título pro breadcrumb
@@ -84,6 +81,21 @@ export default function EditResourcePage({ params }: { params: Promise<{ id: str
           <section className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <ResourceDetailsForm
               resource={resource as any}
+              extraSections={
+                <div className="grid grid-cols-1 gap-12 pt-12 border-t border-line">
+                  <div className="space-y-8 bg-paper p-8 rounded-4 border border-line shadow-sm relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-ink/20" />
+                    <div className="flex items-center gap-3 border-b border-line pb-4">
+                      <h2 className="font-display text-xl text-ink uppercase tracking-tight">Arquivos e Documentos</h2>
+                    </div>
+                    <ResourceFilesManager
+                      resourceId={resource.id}
+                      initialFiles={resource.files as any}
+                      allowGenerateNextPreview={Boolean(resource.googleDriveUrl)}
+                    />
+                  </div>
+                </div>
+              }
               onSuccess={() => {
                 // Ao salvar o formulário principal, mantemos na página 
                 // para permitir edição de arquivos/imagens se necessário
@@ -91,32 +103,6 @@ export default function EditResourcePage({ params }: { params: Promise<{ id: str
               }}
             />
           </section>
-
-          {/* Seção de Mídia e Arquivos */}
-          <div className="grid grid-cols-1 gap-12 pt-12 border-t border-line">
-            <div className="space-y-8 bg-paper p-8 rounded-4 border border-line shadow-sm relative overflow-hidden">
-               <div className="absolute top-0 left-0 w-1 h-full bg-ink/20" />
-               <div className="flex items-center gap-3 border-b border-line pb-4">
-                  <h2 className="font-display text-xl text-ink uppercase tracking-tight">Arquivos e Documentos</h2>
-               </div>
-               <ResourceFilesManager 
-                  resourceId={resource.id} 
-                  initialFiles={resource.files as any} 
-               />
-            </div>
-
-            <div className="space-y-8 bg-paper p-8 rounded-4 border border-line shadow-sm relative overflow-hidden">
-               <div className="absolute top-0 left-0 w-1 h-full bg-ink/20" />
-               <div className="flex items-center gap-3 border-b border-line pb-4">
-                  <h2 className="font-display text-xl text-ink uppercase tracking-tight">Galeria de Imagens</h2>
-               </div>
-               <ResourceImagesManager 
-                  resourceId={resource.id} 
-                  initialImages={resource.images as any} 
-                  currentThumbUrl={resource.thumbUrl || null}
-               />
-            </div>
-          </div>
         </div>
       </div>
     </div>
