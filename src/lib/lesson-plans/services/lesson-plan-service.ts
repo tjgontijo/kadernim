@@ -219,6 +219,9 @@ export async function listLessonPlansByUser(params: {
   userId: string
   includeArchived: boolean
   q?: string
+  educationLevelSlug?: string
+  gradeSlug?: string
+  subjectSlug?: string
   gradeId?: string
   subjectId?: string
   sourceResourceId?: string
@@ -227,14 +230,53 @@ export async function listLessonPlansByUser(params: {
     where: {
       userId: params.userId,
       archivedAt: params.includeArchived ? undefined : null,
-      gradeId: params.gradeId,
-      subjectId: params.subjectId,
+      educationLevel: params.educationLevelSlug
+        ? { slug: params.educationLevelSlug }
+        : undefined,
+      grade: params.gradeSlug
+        ? { slug: params.gradeSlug }
+        : params.gradeId
+          ? { id: params.gradeId }
+          : undefined,
+      subject: params.subjectSlug
+        ? { slug: params.subjectSlug }
+        : params.subjectId
+          ? { id: params.subjectId }
+          : undefined,
       sourceResourceId: params.sourceResourceId,
-      title: params.q
-        ? {
-            contains: params.q,
-            mode: 'insensitive',
-          }
+      OR: params.q
+        ? [
+            {
+              title: {
+                contains: params.q,
+                mode: 'insensitive',
+              },
+            },
+            {
+              sourceResource: {
+                title: {
+                  contains: params.q,
+                  mode: 'insensitive',
+                },
+              },
+            },
+            {
+              subject: {
+                name: {
+                  contains: params.q,
+                  mode: 'insensitive',
+                },
+              },
+            },
+            {
+              grade: {
+                name: {
+                  contains: params.q,
+                  mode: 'insensitive',
+                },
+              },
+            },
+          ]
         : undefined,
     },
     orderBy: { createdAt: 'desc' },

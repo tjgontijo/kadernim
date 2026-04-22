@@ -68,6 +68,7 @@ import { useResourceMeta } from '@/hooks/resources/use-resources'
 import { cn } from '@/lib/utils/index'
 import { BnccSelector } from './bncc-selector'
 import { DeleteConfirmDialog } from '@/components/dashboard/crud/delete-confirm-dialog'
+import { ResourceDetailsFormSkeleton } from './resource-details-form-skeleton'
 
 interface ResourceDetailsFormProps {
   resource: {
@@ -112,7 +113,7 @@ export function ResourceDetailsForm({
   extraSections,
 }: ResourceDetailsFormProps) {
   const queryClient = useQueryClient()
-  const { data: metaData } = useResourceMeta()
+  const { data: metaData, isLoading: isMetaLoading } = useResourceMeta()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const isEditing = !!resource.id
   const showSecondarySections = !hideSecondarySectionsUntilSaved || isEditing
@@ -292,6 +293,10 @@ export function ResourceDetailsForm({
       form.setValue('grades', [...current, gradeKey], { shouldValidate: true })
     }
     resetSubjectWithoutValidation()
+  }
+
+  if (isMetaLoading && !metaData) {
+    return <ResourceDetailsFormSkeleton showSecondarySections={showSecondarySections} />
   }
 
   return (

@@ -3,13 +3,13 @@
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Calendar, Clock3, Search, Archive, BookOpen } from 'lucide-react'
+import { Calendar, Clock3, Archive, BookOpen } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { PageScaffold } from '@/components/dashboard/shared/page-scaffold'
-import { Input } from '@/components/ui/input'
 import { fetchLessonPlans } from '@/lib/lesson-plans/api-client'
 import type { LessonPlanListItem } from '@/lib/lesson-plans/schemas'
+import { PlannerFilters, type PlannerFiltersValue } from '@/components/dashboard/planner/planner-filters'
 
 function modeLabel(mode: LessonPlanListItem['mode']) {
   if (mode === 'FULL_LESSON') return 'Aula completa'
@@ -20,29 +20,21 @@ function modeLabel(mode: LessonPlanListItem['mode']) {
 }
 
 export default function PlannerPage() {
-  const [search, setSearch] = useState('')
+  const [filters, setFilters] = useState<PlannerFiltersValue>({})
   const [showArchived, setShowArchived] = useState(false)
 
   const { data, isLoading } = useQuery({
-    queryKey: ['planner-list', showArchived],
-    queryFn: () => fetchLessonPlans({ includeArchived: showArchived }),
+    queryKey: ['planner-list', showArchived, filters],
+    queryFn: () => fetchLessonPlans({
+      includeArchived: showArchived,
+      q: filters.q,
+      educationLevel: filters.educationLevel,
+      grade: filters.grade,
+      subject: filters.subject,
+    }),
   })
 
-  const items = useMemo(() => {
-    const source = data ?? []
-    const normalized = search.trim().toLowerCase()
-
-    if (!normalized) return source
-
-    return source.filter((item) => {
-      return (
-        item.title.toLowerCase().includes(normalized)
-        || (item.sourceResourceTitle ?? '').toLowerCase().includes(normalized)
-        || (item.subjectName ?? '').toLowerCase().includes(normalized)
-        || (item.gradeName ?? '').toLowerCase().includes(normalized)
-      )
-    })
-  }, [data, search])
+  const items = useMemo(() => data ?? [], [data])
 
   return (
     <PageScaffold className="pt-4 sm:pt-6">
@@ -65,15 +57,7 @@ export default function PlannerPage() {
       />
 
       <PageScaffold.Controls>
-        <div className="relative w-full max-w-xl">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-mute" />
-          <Input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Buscar por título, recurso ou disciplina"
-            className="h-11 rounded-3 border-line bg-card pl-9"
-          />
-        </div>
+        <PlannerFilters value={filters} onChange={setFilters} />
       </PageScaffold.Controls>
 
       <section className="px-4 sm:px-0">

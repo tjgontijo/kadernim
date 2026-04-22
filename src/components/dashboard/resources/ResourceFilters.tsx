@@ -1,6 +1,6 @@
 'use client'
 
-import { useDeferredValue, useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -10,14 +10,14 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from '@/components/ui/drawer'
-import { Filter } from 'lucide-react'
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import { Filter, Trash2 } from 'lucide-react'
 import { SearchInput } from '../shared/search-input'
 import {
   useEducationLevels,
@@ -41,7 +41,6 @@ export function ResourceFilters({ onFiltersChange }: ResourceFiltersProps) {
   const [subject, setSubject] = useState<string>('all')
   const [query, setQuery] = useState<string>('')
 
-  const deferredQuery = useDeferredValue(query)
   const { data: levels = [] } = useEducationLevels()
   const { data: grades = [] } = useGrades(level)
   const { data: subjects = [] } = useSubjects(level, grade)
@@ -56,40 +55,36 @@ export function ResourceFilters({ onFiltersChange }: ResourceFiltersProps) {
 
   const placeholder = 'Buscar materiais...'
 
-  const handleApply = () => {
+  const buildPayload = () => ({
+    q: query.trim() || undefined,
+    educationLevel: level === 'all' ? undefined : level,
+    grade: grade === 'all' ? undefined : grade,
+    subject: subject === 'all' ? undefined : subject,
+  })
+
+  const handleApply = (close = false) => {
     onFiltersChange({
-      q: query || undefined,
-      educationLevel: level === 'all' ? undefined : level,
-      grade: grade === 'all' ? undefined : grade,
-      subject: subject === 'all' ? undefined : subject,
+      ...buildPayload(),
     })
-    setIsOpen(false)
+    if (close) setIsOpen(false)
   }
 
-  const handleClear = () => {
+  const handleClear = (close = false) => {
     setLevel('all')
     setGrade('all')
     setSubject('all')
+    setQuery('')
     onFiltersChange({
-      q: query || undefined,
+      q: undefined,
       educationLevel: undefined,
       grade: undefined,
       subject: undefined,
     })
-    setIsOpen(false)
+    if (close) setIsOpen(false)
   }
 
-  useEffect(() => {
-    onFiltersChange({
-      q: deferredQuery || undefined,
-      educationLevel: level === 'all' ? undefined : level,
-      grade: grade === 'all' ? undefined : grade,
-      subject: subject === 'all' ? undefined : subject,
-    })
-  }, [deferredQuery, grade, level, onFiltersChange, subject])
-
   return (
-    <Drawer open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <div className="flex items-center gap-2 w-full">
         <SearchInput
           placeholder={placeholder}
@@ -99,14 +94,14 @@ export function ResourceFilters({ onFiltersChange }: ResourceFiltersProps) {
           aria-label="Pesquisar recursos"
         />
 
-        <DrawerTrigger asChild>
+        <DialogTrigger asChild>
           <Button
             variant="outline"
-            size="icon"
             aria-label="Abrir filtros"
-            className="h-11 sm:h-12 w-11 sm:w-12 rounded-2xl border-border/50 shrink-0 relative"
+            className="h-11 sm:h-12 rounded-2xl border-border/50 shrink-0 relative px-4 font-semibold"
           >
             <Filter className="h-4 w-4 text-foreground/70" />
+            <span className="ml-2 hidden sm:inline">Filtros</span>
             {activeFiltersCount > 0 && (
               <span
                 className="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full bg-primary text-[10px] font-black text-primary-foreground shadow-lg shadow-primary/20 ring-2 ring-background"
@@ -116,17 +111,18 @@ export function ResourceFilters({ onFiltersChange }: ResourceFiltersProps) {
               </span>
             )}
           </Button>
-        </DrawerTrigger>
+        </DialogTrigger>
       </div>
 
-      <DrawerContent className="rounded-t-[32px] p-6 max-h-[85vh]">
-        <DrawerHeader>
-          <DrawerTitle className="text-2xl font-black text-center">Filtrar Materiais</DrawerTitle>
-          <DrawerDescription className="text-center font-medium">Ajuste os filtros para encontrar o material ideal.</DrawerDescription>
-        </DrawerHeader>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Filtrar Materiais</DialogTitle>
+          <DialogDescription>
+            Escolha etapa, ano/faixa e componente nesta ordem.
+          </DialogDescription>
+        </DialogHeader>
 
-        <div className="py-6 space-y-6 overflow-y-auto">
-          <div className="space-y-4">
+        <div className="space-y-4">
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                 {level === 'educacao-infantil' ? 'Etapa' : 'Etapa de Ensino'}
@@ -178,25 +174,39 @@ export function ResourceFilters({ onFiltersChange }: ResourceFiltersProps) {
                 </SelectContent>
               </Select>
             </div>
-          </div>
 
-          <div className="flex gap-3 pt-4 pb-2">
+          <div className="pt-2 grid grid-cols-2 gap-3">
             <Button
               variant="outline"
-              className="h-14 flex-1 rounded-2xl font-bold"
-              onClick={handleClear}
+              className="h-11 rounded-2xl font-semibold"
+              onClick={() => handleClear(true)}
             >
               Limpar
             </Button>
             <Button
-              className="h-14 flex-1 rounded-2xl bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20"
-              onClick={handleApply}
+              className="h-11 rounded-2xl font-semibold"
+              onClick={() => handleApply(true)}
             >
-              Ver Materiais
+              Aplicar
+            </Button>
+          </div>
+
+          <div className="pt-1">
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full h-10 rounded-2xl text-ink-mute"
+              onClick={() => {
+                setGrade('all')
+                setSubject('all')
+              }}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Limpar ano e componente
             </Button>
           </div>
         </div>
-      </DrawerContent>
-    </Drawer>
+      </DialogContent>
+    </Dialog>
   )
 }

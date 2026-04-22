@@ -2,13 +2,13 @@
 
 import React, { use } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { fetchAdminResourceDetail } from '@/lib/resources/api-client'
 import { ResourceDetailsForm } from '@/components/dashboard/resources/edit/resource-details-form'
 import { ResourceFilesManager } from '@/components/dashboard/resources/edit/resource-files-manager'
 import { useResource } from '@/hooks/resources/use-resource-context'
+import { ResourceDetailsFormSkeleton } from '@/components/dashboard/resources/edit/resource-details-form-skeleton'
 
 export default function EditResourcePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -33,9 +33,22 @@ export default function EditResourcePage({ params }: { params: Promise<{ id: str
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <Loader2 className="h-10 w-10 animate-spin text-terracotta" />
-        <p className="text-ink-mute font-medium">Carregando dados do material...</p>
+      <div className="bg-stone-50/50 min-h-full">
+        <div className="max-w-6xl mx-auto py-12 px-6 lg:px-12">
+          <div className="space-y-12">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-line pb-8">
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-terracotta-2 text-terracotta text-[10px] font-bold uppercase tracking-widest">
+                  Modo de Edição Geral
+                </div>
+                <h1 className="text-[42px] font-display font-medium leading-tight text-ink">
+                  Editar Material
+                </h1>
+              </div>
+            </div>
+            <ResourceDetailsFormSkeleton />
+          </div>
+        </div>
       </div>
     )
   }
@@ -59,13 +72,6 @@ export default function EditResourcePage({ params }: { params: Promise<{ id: str
           {/* Header Editorial */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-line pb-8">
             <div className="space-y-2">
-              <Link
-                href={`/resources/${id}`}
-                className="inline-flex items-center gap-2 text-ink-mute hover:text-terracotta transition-colors text-sm mb-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Voltar para visualização
-              </Link>
               <div className="flex items-center gap-3">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-terracotta-2 text-terracotta text-[10px] font-bold uppercase tracking-widest">
                   Modo de Edição Geral

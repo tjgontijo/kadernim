@@ -169,6 +169,9 @@ export async function createLessonPlanFromResourceStream(
 
 export async function fetchLessonPlans(params?: {
   q?: string
+  educationLevel?: string
+  grade?: string
+  subject?: string
   gradeId?: string
   subjectId?: string
   sourceResourceId?: string
@@ -176,6 +179,9 @@ export async function fetchLessonPlans(params?: {
 }): Promise<LessonPlanListItem[]> {
   const query = buildQuery({
     q: params?.q,
+    educationLevel: params?.educationLevel,
+    grade: params?.grade,
+    subject: params?.subject,
     gradeId: params?.gradeId,
     subjectId: params?.subjectId,
     sourceResourceId: params?.sourceResourceId,

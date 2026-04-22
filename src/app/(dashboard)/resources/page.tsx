@@ -37,13 +37,8 @@ export default function ResourcesPage() {
 
   const handleFiltersChange = useCallback((next: Filters) => {
     setFilters((prev: Filters) => {
-      // Evita atualização se os filtros forem idênticos
       if (JSON.stringify(prev) === JSON.stringify(next)) return prev
-
-      return {
-        ...prev,
-        ...next,
-      }
+      return next
     })
   }, [])
 
