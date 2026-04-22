@@ -62,6 +62,12 @@ export async function getResourceSnapshotForPlanner(resourceId: string): Promise
             select: {
               code: true,
               description: true,
+              grade: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
             },
           },
         },
@@ -80,9 +86,22 @@ export async function getResourceSnapshotForPlanner(resourceId: string): Promise
     throw new Error('RESOURCE_NOT_FOUND')
   }
 
-  const grades = resource.grades
+  const linkedGrades = resource.grades
     .map((item) => item.grade)
     .filter((grade): grade is { id: string; name: string } => Boolean(grade))
+
+  // Fallback estruturado: quando o recurso não tem relação em resource_grade,
+  // usamos a(s) séries derivadas das habilidades BNCC vinculadas.
+  const bnccGradesMap = new Map<string, { id: string; name: string }>()
+  for (const item of resource.bnccSkills) {
+    const grade = item.bnccSkill.grade
+    if (grade) {
+      bnccGradesMap.set(grade.id, grade)
+    }
+  }
+  const bnccGrades = Array.from(bnccGradesMap.values())
+
+  const grades = linkedGrades.length > 0 ? linkedGrades : bnccGrades
 
   const snapshot = ResourceSnapshotSchema.parse({
     resourceId: resource.id,

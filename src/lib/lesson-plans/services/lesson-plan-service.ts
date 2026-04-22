@@ -3,6 +3,8 @@ import {
   type CreateLessonPlanInput,
   LessonPlanRecordSchema,
   LessonPlanListItemSchema,
+  type LessonPlanContent,
+  type ResourceSnapshot,
   type LessonPlanListItem,
 } from '@/lib/lesson-plans/schemas'
 import { generateLessonPlanContent } from '@/lib/lesson-plans/services/generate-content-service'
@@ -23,6 +25,90 @@ function modeLabel(mode: CreateLessonPlanInput['mode']) {
   if (mode === 'GROUP_ACTIVITY') return 'Atividade em grupo'
   if (mode === 'DIAGNOSTIC') return 'Avaliacao diagnostica'
   return 'Tarefa'
+}
+
+function buildLessonPlanTitle(resourceTitle: string) {
+  const cleaned = resourceTitle
+    .replace(/^plano\s+de\s+aula\s*[:\-]\s*/i, '')
+    .trim()
+
+  return `Plano de aula - ${cleaned || 'Sem titulo'}`
+}
+
+function normalizeFlowDurations(
+  flow: Array<{
+    title: string
+    durationMinutes: number
+    teacherActions: string[]
+    studentActions: string[]
+    useResourceStepIds: string[]
+  }>,
+  targetDuration: number
+) {
+  if (flow.length === 0) return flow
+
+  const safeTarget = Math.max(1, targetDuration)
+  const currentTotal = flow.reduce((sum, step) => sum + Math.max(1, step.durationMinutes), 0)
+
+  if (currentTotal === safeTarget) {
+    return flow
+  }
+
+  const proportional = flow.map((step) => ({
+    ...step,
+    durationMinutes: Math.max(1, Math.round((Math.max(1, step.durationMinutes) / currentTotal) * safeTarget)),
+  }))
+
+  let diff = safeTarget - proportional.reduce((sum, step) => sum + step.durationMinutes, 0)
+  let cursor = 0
+
+  while (diff !== 0 && cursor < 500) {
+    const index = cursor % proportional.length
+    if (diff > 0) {
+      proportional[index].durationMinutes += 1
+      diff -= 1
+    } else if (proportional[index].durationMinutes > 1) {
+      proportional[index].durationMinutes -= 1
+      diff += 1
+    }
+    cursor += 1
+  }
+
+  return proportional
+}
+
+function normalizeGeneratedContent(params: {
+  content: LessonPlanContent
+  snapshot: ResourceSnapshot
+  durationMinutes: number
+  teacherNote?: string
+}) {
+  const validStepIds = new Set(params.snapshot.steps.map((step) => step.id))
+  const normalizedFlow = params.content.flow.map((step) => ({
+    ...step,
+    useResourceStepIds: step.useResourceStepIds.filter((id) => validStepIds.has(id)),
+  }))
+
+  if (validStepIds.size > 0 && !normalizedFlow.some((step) => step.useResourceStepIds.length > 0)) {
+    const availableStepIds = Array.from(validStepIds)
+    normalizedFlow.forEach((step, index) => {
+      if (availableStepIds[index]) {
+        step.useResourceStepIds = [availableStepIds[index]]
+      }
+    })
+  }
+
+  const mergedTeacherNotes = [params.teacherNote?.trim(), params.content.teacherNotes]
+    .filter((value): value is string => Boolean(value))
+    .join('\n\n')
+    .trim()
+
+  return {
+    ...params.content,
+    bncc: params.snapshot.bnccSkills.length > 0 ? params.snapshot.bnccSkills : params.content.bncc,
+    flow: normalizeFlowDurations(normalizedFlow, params.durationMinutes),
+    teacherNotes: mergedTeacherNotes || 'Sem observacoes adicionais.',
+  }
 }
 
 function serializeLessonPlan(plan: LessonPlanWithRelations) {
@@ -81,11 +167,18 @@ export async function createLessonPlanFromResource(params: {
     teacherNote: params.input.teacherNote,
   })
 
+  const normalizedContent = normalizeGeneratedContent({
+    content,
+    snapshot: source.snapshot,
+    durationMinutes: params.input.durationMinutes,
+    teacherNote: params.input.teacherNote,
+  })
+
   const lessonPlan = await prisma.lessonPlan.create({
     data: {
       userId: params.userId,
       sourceResourceId: params.resourceId,
-      title: `Plano de aula: ${source.snapshot.title}`,
+      title: buildLessonPlanTitle(source.snapshot.title),
       status: 'GENERATED',
       origin: 'RESOURCE',
       mode: params.input.mode,
@@ -95,7 +188,7 @@ export async function createLessonPlanFromResource(params: {
       durationMinutes: params.input.durationMinutes,
       classCount: Math.max(1, Math.ceil(params.input.durationMinutes / 50)),
       teacherNote: params.input.teacherNote ?? null,
-      content: content as Prisma.InputJsonValue,
+      content: normalizedContent as Prisma.InputJsonValue,
       sourceSnapshot: source.snapshot as Prisma.InputJsonValue,
       generationMeta: {
         model,

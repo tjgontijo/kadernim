@@ -39,9 +39,46 @@ Parametros:
 Regras obrigatorias:
 1. Preserve objetivos e BNCC do recurso, sem inventar novos codigos.
 2. Distribua o tempo total entre etapas em flow e some ${input.durationMinutes} minutos.
-3. Use passos do recurso no flow via useResourceStepIds quando fizer sentido.
-4. Retorne texto em portugues do Brasil.
-5. Gere resposta estritamente no schema informado.`
+3. Sempre inclua useResourceStepIds em cada etapa do flow como array de strings.
+4. Se nao houver passos do recurso aplicaveis na etapa, use useResourceStepIds: [].
+5. Retorne texto em portugues do Brasil.
+6. Gere resposta estritamente no schema informado.`
+}
+
+function evaluateGeneratedContent(content: LessonPlanContent, input: {
+  resourceSnapshot: ResourceSnapshot
+  durationMinutes: number
+}) {
+  const issues: string[] = []
+
+  const totalDuration = content.flow.reduce((total, step) => total + step.durationMinutes, 0)
+  if (Math.abs(totalDuration - input.durationMinutes) > 8) {
+    issues.push(`A soma da duracao do flow (${totalDuration}) deve ficar proxima de ${input.durationMinutes}.`)
+  }
+
+  if (content.materials.length === 0) {
+    issues.push('A lista de materiais nao pode vir vazia.')
+  }
+
+  if (content.preparation.length === 0) {
+    issues.push('A lista de preparacao nao pode vir vazia.')
+  }
+
+  const snapshotStepIds = new Set(input.resourceSnapshot.steps.map((step) => step.id))
+  if (snapshotStepIds.size > 0) {
+    const usedStepIds = content.flow.flatMap((step) =>
+      step.useResourceStepIds.filter((id) => snapshotStepIds.has(id))
+    )
+    if (usedStepIds.length === 0) {
+      issues.push('Pelo menos uma etapa deve referenciar passos reais do recurso em useResourceStepIds.')
+    }
+  }
+
+  if (input.resourceSnapshot.bnccSkills.length > 0 && content.bncc.length === 0) {
+    issues.push('BNCC nao pode ficar vazia quando o recurso possui habilidades vinculadas.')
+  }
+
+  return issues
 }
 
 export async function generateLessonPlanContent(input: {
@@ -52,12 +89,29 @@ export async function generateLessonPlanContent(input: {
 }): Promise<{ content: LessonPlanContent; model: string }> {
   const model = process.env.LESSON_PLAN_MODEL || 'gpt-4o-mini'
 
-  const result = await generateObject({
+  let result = await generateObject({
     model: openai(model),
     schema: LessonPlanContentSchema,
     prompt: buildPrompt(input),
     temperature: 0.4,
   })
+
+  const issues = evaluateGeneratedContent(result.object, input)
+  if (issues.length > 0) {
+    result = await generateObject({
+      model: openai(model),
+      schema: LessonPlanContentSchema,
+      temperature: 0.3,
+      prompt: `${buildPrompt(input)}
+
+Plano anterior gerado (corrija sem mudar a base do recurso):
+${JSON.stringify(result.object)}
+
+Problemas detectados que devem ser corrigidos:
+${issues.map((issue, index) => `${index + 1}. ${issue}`).join('\n')}
+`,
+    })
+  }
 
   return {
     content: result.object,

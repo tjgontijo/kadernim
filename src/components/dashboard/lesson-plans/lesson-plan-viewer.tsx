@@ -30,7 +30,7 @@ export function LessonPlanViewer({ plan, onToggleArchive, isArchiving = false }:
 
   const handleCopy = async () => {
     const sections = [
-      `Plano de aula: ${plan.title}`,
+      `Titulo: ${plan.title}`,
       `Recurso: ${snapshot.title}`,
       `Disciplina: ${snapshot.subject.name}`,
       `Etapa: ${snapshot.educationLevel.name}`,
