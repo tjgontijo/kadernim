@@ -1,12 +1,14 @@
 import type { CreateLessonPlanInput, ResourceSnapshot, LessonPlanContent } from '@/lib/lesson-plans/schemas'
 import { estimateCostUsd, extractUsageTokens } from '@/lib/lesson-plans/services/cost-estimation-service'
 import { generateLessonPlanContentWithAgents } from '@/mastra/agents/lesson-plans'
+import type { LessonPlanBuildPhaseEvent } from '@/lib/lesson-plans/schemas'
 
 export async function generateLessonPlanContent(input: {
   resourceSnapshot: ResourceSnapshot
   durationMinutes: number
   mode: CreateLessonPlanInput['mode']
   teacherNote?: string
+  onPhase?: (event: LessonPlanBuildPhaseEvent) => void
 }): Promise<{
   content: LessonPlanContent
   model: string

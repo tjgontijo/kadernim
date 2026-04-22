@@ -1,30 +1,37 @@
 import type { CreateLessonPlanInput, LessonPlanContent, ResourceSnapshot } from '@/lib/lesson-plans/schemas'
 import { LessonPlanContentSchema } from '@/lib/lesson-plans/schemas'
+import type { LessonPlanBuildPhaseEvent } from '@/lib/lesson-plans/schemas'
 import { extractUsageTokens } from '@/lib/lesson-plans/services/cost-estimation-service'
-import {
-  lessonPlanContextAgent,
-  lessonPlanDraftAgent,
-  lessonPlanRefineAgent,
-  lessonPlanReviewAgent,
-} from '@/mastra/agents/lesson-plans/lesson-plan-agents'
-import { buildContextPrompt, buildDraftPrompt, buildRefinePrompt, buildReviewPrompt } from '@/mastra/agents/lesson-plans/prompts/lesson-plan-prompts'
+import { lessonPlanContextAgent } from '@/mastra/agents/lesson-plans/context-agent/context-agent'
+import { buildContextPrompt } from '@/mastra/agents/lesson-plans/context-agent/prompts'
+import { CONTEXT_EXTRACTION } from '@/mastra/agents/lesson-plans/context-agent/skills'
+import { lessonPlanDraftAgent } from '@/mastra/agents/lesson-plans/draft-agent/draft-agent'
+import { buildDraftPrompt } from '@/mastra/agents/lesson-plans/draft-agent/prompts'
+import { DRAFT_FIELD_RULES, DRAFT_FLOW_RULES } from '@/mastra/agents/lesson-plans/draft-agent/skills'
+import { lessonPlanRefineAgent } from '@/mastra/agents/lesson-plans/refine-agent/refine-agent'
+import { buildRefinePrompt } from '@/mastra/agents/lesson-plans/refine-agent/prompts'
+import { REFINE_RULES } from '@/mastra/agents/lesson-plans/refine-agent/skills'
+import { lessonPlanReviewAgent } from '@/mastra/agents/lesson-plans/review-agent/review-agent'
+import { buildReviewPrompt } from '@/mastra/agents/lesson-plans/review-agent/prompts'
+import { REVIEW_CHECKLIST } from '@/mastra/agents/lesson-plans/review-agent/skills'
 import {
   LessonPlanContextSchema,
   LessonPlanReviewSchema,
-} from '@/mastra/agents/lesson-plans/schemas/lesson-plan-agent-schemas'
-import {
-  JSON_OUTPUT_SKILL,
-  PEDAGOGICAL_QUALITY_SKILL,
-  RESOURCE_GROUNDING_SKILL,
-} from '@/mastra/agents/lesson-plans/skills/lesson-plan-skills'
+} from '@/mastra/agents/lesson-plans/shared/schemas'
+import { OUTPUT_CONTRACT, RESOURCE_FIDELITY } from '@/mastra/agents/lesson-plans/shared/skills'
 
-const BASE_SKILLS_BLOCK = `${RESOURCE_GROUNDING_SKILL}\n${PEDAGOGICAL_QUALITY_SKILL}\n${JSON_OUTPUT_SKILL}`
+const CONTEXT_SKILLS = [RESOURCE_FIDELITY, CONTEXT_EXTRACTION, OUTPUT_CONTRACT].join('\n\n')
+const DRAFT_SKILLS = [RESOURCE_FIDELITY, DRAFT_FLOW_RULES, DRAFT_FIELD_RULES, OUTPUT_CONTRACT].join('\n\n')
+const REVIEW_SKILLS = [REVIEW_CHECKLIST, OUTPUT_CONTRACT].join('\n\n')
+const REFINE_SKILLS = [RESOURCE_FIDELITY, REFINE_RULES, DRAFT_FLOW_RULES, OUTPUT_CONTRACT].join('\n\n')
 
 type UsageAggregate = {
   inputTokens: number
   outputTokens: number
   totalTokens: number
 }
+
+type PhaseEvent = LessonPlanBuildPhaseEvent
 
 function evaluateGeneratedContent(content: LessonPlanContent, input: {
   resourceSnapshot: ResourceSnapshot
@@ -74,6 +81,7 @@ export async function generateLessonPlanContentWithAgents(input: {
   durationMinutes: number
   mode: CreateLessonPlanInput['mode']
   teacherNote?: string
+  onPhase?: (event: PhaseEvent) => void
 }): Promise<{
   content: LessonPlanContent
   attempts: number
@@ -82,54 +90,61 @@ export async function generateLessonPlanContentWithAgents(input: {
   let attempts = 0
   const usage: UsageAggregate = { inputTokens: 0, outputTokens: 0, totalTokens: 0 }
 
+  input.onPhase?.({ phase: 'context', status: 'started' })
   const contextResult = await lessonPlanContextAgent.generate(buildContextPrompt({
     resourceSnapshot: input.resourceSnapshot,
     durationMinutes: input.durationMinutes,
     mode: input.mode,
     teacherNote: input.teacherNote,
-    skillsBlock: BASE_SKILLS_BLOCK,
+    skillsBlock: CONTEXT_SKILLS,
   }), {
     structuredOutput: { schema: LessonPlanContextSchema },
   })
   attempts += 1
   addUsage(usage, contextResult)
+  input.onPhase?.({ phase: 'context', status: 'completed' })
 
+  input.onPhase?.({ phase: 'draft', status: 'started' })
   const draftResult = await lessonPlanDraftAgent.generate(buildDraftPrompt({
     resourceSnapshot: input.resourceSnapshot,
     durationMinutes: input.durationMinutes,
     mode: input.mode,
     teacherNote: input.teacherNote,
     context: contextResult.object,
-    skillsBlock: BASE_SKILLS_BLOCK,
+    skillsBlock: DRAFT_SKILLS,
   }), {
     structuredOutput: { schema: LessonPlanContentSchema },
   })
   attempts += 1
   addUsage(usage, draftResult)
+  input.onPhase?.({ phase: 'draft', status: 'completed' })
 
   const deterministicIssues = evaluateGeneratedContent(draftResult.object, {
     resourceSnapshot: input.resourceSnapshot,
     durationMinutes: input.durationMinutes,
   })
 
+  input.onPhase?.({ phase: 'review', status: 'started' })
   const reviewResult = await lessonPlanReviewAgent.generate(buildReviewPrompt({
     resourceSnapshot: input.resourceSnapshot,
     durationMinutes: input.durationMinutes,
     draft: draftResult.object,
     deterministicIssues,
-    skillsBlock: BASE_SKILLS_BLOCK,
+    skillsBlock: REVIEW_SKILLS,
   }), {
     structuredOutput: { schema: LessonPlanReviewSchema },
   })
   attempts += 1
   addUsage(usage, reviewResult)
   const review = LessonPlanReviewSchema.parse(reviewResult.object)
+  input.onPhase?.({ phase: 'review', status: 'completed' })
 
   const shouldRefine = review.shouldRefine
     || review.issues.some((issue) => issue.severity === 'HIGH')
     || deterministicIssues.length > 0
 
   if (!shouldRefine) {
+    input.onPhase?.({ phase: 'refine', status: 'skipped', details: 'Refino não necessário.' })
     return {
       content: draftResult.object,
       attempts,
@@ -137,18 +152,20 @@ export async function generateLessonPlanContentWithAgents(input: {
     }
   }
 
+  input.onPhase?.({ phase: 'refine', status: 'started' })
   const refineResult = await lessonPlanRefineAgent.generate(buildRefinePrompt({
     resourceSnapshot: input.resourceSnapshot,
     durationMinutes: input.durationMinutes,
     previousDraft: draftResult.object,
     review,
     deterministicIssues,
-    skillsBlock: BASE_SKILLS_BLOCK,
+    skillsBlock: REFINE_SKILLS,
   }), {
     structuredOutput: { schema: LessonPlanContentSchema },
   })
   attempts += 1
   addUsage(usage, refineResult)
+  input.onPhase?.({ phase: 'refine', status: 'completed' })
 
   return {
     content: refineResult.object,

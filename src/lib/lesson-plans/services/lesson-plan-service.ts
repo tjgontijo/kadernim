@@ -6,6 +6,7 @@ import {
   type LessonPlanContent,
   type ResourceSnapshot,
   type LessonPlanListItem,
+  type LessonPlanBuildPhaseEvent,
 } from '@/lib/lesson-plans/schemas'
 import { generateLessonPlanContent } from '@/lib/lesson-plans/services/generate-content-service'
 import { getResourceSnapshotForPlanner } from '@/lib/lesson-plans/services/resource-snapshot-service'
@@ -157,14 +158,18 @@ export async function createLessonPlanFromResource(params: {
   userId: string
   resourceId: string
   input: CreateLessonPlanInput
+  onPhase?: (event: LessonPlanBuildPhaseEvent) => void
 }) {
+  params.onPhase?.({ phase: 'snapshot', status: 'started' })
   const source = await getResourceSnapshotForPlanner(params.resourceId)
+  params.onPhase?.({ phase: 'snapshot', status: 'completed' })
 
   const { content, model, metrics } = await generateLessonPlanContent({
     resourceSnapshot: source.snapshot,
     durationMinutes: params.input.durationMinutes,
     mode: params.input.mode,
     teacherNote: params.input.teacherNote,
+    onPhase: params.onPhase,
   })
 
   const normalizedContent = normalizeGeneratedContent({
@@ -174,6 +179,7 @@ export async function createLessonPlanFromResource(params: {
     teacherNote: params.input.teacherNote,
   })
 
+  params.onPhase?.({ phase: 'persist', status: 'started' })
   const lessonPlan = await prisma.lessonPlan.create({
     data: {
       userId: params.userId,
@@ -204,6 +210,7 @@ export async function createLessonPlanFromResource(params: {
       grade: { select: { name: true } },
     },
   })
+  params.onPhase?.({ phase: 'persist', status: 'completed' })
 
   return serializeLessonPlan(lessonPlan)
 }
