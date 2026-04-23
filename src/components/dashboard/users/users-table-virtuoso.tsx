@@ -225,7 +225,7 @@ export function UsersTableVirtuoso({
                             )} 
                         />
                     ),
-                    Scroller: React.forwardRef((props, ref) => (
+                    Scroller: React.forwardRef<HTMLDivElement, any>((props, ref) => (
                         <div {...props} ref={ref} className={cn(props.className, "scrollbar-hide")} />
                     )),
                 }}

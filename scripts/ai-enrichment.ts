@@ -68,10 +68,10 @@ async function main() {
           data: {
             description: pedagogicalData.description,
             authorId: curatorAuthor.id,
-            objectives: { create: pedagogicalData.objectives.map((text, idx) => ({ order: idx + 1, text })) },
-            steps: { create: pedagogicalData.steps.map((step, idx) => ({ order: idx + 1, type: step.type, title: step.title, duration: step.duration, content: step.content })) },
-            bnccSkills: { create: uniqueSkillsIds.map(id => ({ bnccSkillId: id })) },
-            grades: { create: gradesInDb.map(g => ({ gradeId: g.id })) }
+            objectives: { create: pedagogicalData.objectives.map((text: string, idx: number) => ({ order: idx + 1, text })) },
+            steps: { create: pedagogicalData.steps.map((step: any, idx: number) => ({ order: idx + 1, type: step.type, title: step.title, duration: step.duration, content: step.content })) },
+            bnccSkills: { create: uniqueSkillsIds.map((id: string) => ({ bnccSkillId: id })) },
+            grades: { create: gradesInDb.map((g: any) => ({ gradeId: g.id })) }
           }
         });
 
