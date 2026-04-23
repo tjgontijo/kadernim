@@ -3,7 +3,6 @@ import { PrismaClient } from '../prisma/generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { createPrismaPgPoolConfig } from '../src/lib/database/prisma-pg-config';
 import { orchestrateResourceEnrichment } from '../src/mastra/agents/enrichment';
-import { fakerPT_BR as faker } from '@faker-js/faker';
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg(createPrismaPgPoolConfig(process.env.DATABASE_URL!)),
@@ -41,9 +40,8 @@ async function main() {
         });
 
         const pedagogicalData = result.pedagogical;
-        const reviewsData = result.reviews;
 
-        if (!pedagogicalData || !reviewsData) continue;
+        if (!pedagogicalData) continue;
 
         // 2. PERSISTÊNCIA (Limpeza Cirúrgica)
         await prisma.$transaction([
@@ -51,7 +49,6 @@ async function main() {
           prisma.resourceGrade.deleteMany({ where: { resourceId: resource.id } }),
           prisma.resourceObjective.deleteMany({ where: { resourceId: resource.id } }),
           prisma.resourceStep.deleteMany({ where: { resourceId: resource.id } }),
-          prisma.review.deleteMany({ where: { resourceId: resource.id } }),
         ]);
 
         // Mapear Skills Únicas no Banco
@@ -76,38 +73,6 @@ async function main() {
         });
 
         console.log(`   ✅ Conteúdo e BNCC (${uniqueSkillsIds.length}) salvos.`);
-
-        // Criar Reviews e Usuários
-        for (const rev of reviewsData) {
-          const reviewDate = faker.date.between({ from: '2026-01-01T00:00:00.000Z', to: new Date() });
-          const isFemale = Math.random() < 0.9;
-          const firstName = isFemale ? faker.person.firstName('female') : faker.person.firstName('male');
-          const lastName = faker.person.lastName();
-          const email = faker.internet.email({ firstName, lastName }).toLowerCase();
-          const user = await prisma.user.upsert({
-            where: { email },
-            update: {},
-            create: { 
-              name: `${firstName} ${lastName}`, 
-              email, 
-              location: `${faker.location.city()}, ${faker.location.state({ abbreviated: true })}`, 
-              image: faker.image.avatar(),
-              createdAt: reviewDate
-            }
-          });
-
-          await prisma.review.create({
-            data: { 
-              resourceId: resource.id, 
-              userId: user.id, 
-              rating: rev.rating, 
-              comment: rev.comment, 
-              status: 'APPROVED',
-              createdAt: reviewDate
-            }
-          });
-        }
-        console.log(`   💬 ${reviewsData.length} avaliações reais criadas.`);
 
       } catch (err) {
         console.error(`   ❌ Erro ao processar "${resource.title}":`, err);
