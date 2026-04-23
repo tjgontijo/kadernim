@@ -51,38 +51,74 @@ export function ResourceDetailPageSkeleton() {
         </div>
 
         {/* RIGHT COLUMN */}
-        <aside className="sticky top-[84px] flex flex-col gap-[20px]">
-          {/* Action Sidebar Skeleton */}
-          <section className="rounded-5 border border-line bg-card p-6 space-y-6">
-            <div className="space-y-2">
-              <Skeleton className="h-8 w-4/5" />
-              <Skeleton className="h-4 w-1/3" />
+        <aside className="sticky top-[64px] flex flex-col gap-[20px]">
+          {/* Action Sidebar Skeleton (Files & Fav) */}
+          <section className="rounded-4 border border-line bg-card p-6 space-y-6 relative">
+            {/* Heart icon placeholder */}
+            <div className="absolute top-[24px] right-[24px]">
+              <Skeleton className="h-9 w-9 rounded-full" />
             </div>
-            
-            <div className="space-y-3">
-              <Skeleton className="h-14 w-full rounded-2xl" />
+
+            <div className="space-y-4">
               <div className="flex gap-2">
-                <Skeleton className="h-10 flex-1 rounded-xl" />
-                <Skeleton className="h-10 w-12 rounded-xl" />
+                <Skeleton className="h-5 w-20 rounded-full" />
+                <Skeleton className="h-5 w-24 rounded-full" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-8 w-4/5" />
+                <Skeleton className="h-4 w-1/3" />
               </div>
             </div>
-
-            <div className="pt-4 border-t border-dashed border-line space-y-2">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-2/3" />
+            
+            <div className="pt-4 border-t border-dashed border-line space-y-3">
+              <Skeleton className="h-4 w-32 mb-4" />
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-8 w-8 rounded-2" />
+                  <div className="flex-1 space-y-1">
+                    <Skeleton className="h-3 w-3/4" />
+                    <Skeleton className="h-2 w-1/4" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-8 w-8 rounded-2" />
+                  <div className="flex-1 space-y-1">
+                    <Skeleton className="h-3 w-3/4" />
+                    <Skeleton className="h-2 w-1/4" />
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
 
-          {/* Files List Skeleton */}
-          <section className="rounded-5 border border-line bg-card p-6 space-y-4">
-            <Skeleton className="h-6 w-32" />
-            <div className="space-y-2">
-              <Skeleton className="h-12 w-full rounded-xl" />
-              <Skeleton className="h-12 w-full rounded-xl" />
+          {/* Metrics Skeleton */}
+          <section className="rounded-4 border border-line bg-card p-6 space-y-4">
+            <div className="border-b border-dashed border-line pb-3 mb-2">
+              <Skeleton className="h-4 w-40" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton className="h-3 w-12" />
+                  <Skeleton className="h-4 w-20" />
+                </div>
+              ))}
             </div>
           </section>
 
-          <Skeleton className="h-40 w-full rounded-5" />
+          {/* Lesson Plan Skeleton */}
+          <section className="rounded-4 border border-line bg-card p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-10 w-10 rounded-full" />
+              <div className="space-y-1">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-3 w-32" />
+              </div>
+            </div>
+            <div className="border-t border-dashed border-line pt-4">
+              <Skeleton className="h-10 w-full rounded-full" />
+            </div>
+          </section>
         </aside>
       </div>
 
