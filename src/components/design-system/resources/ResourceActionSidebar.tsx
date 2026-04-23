@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Download, RefreshCw, Layers, Clock, Users, FileText, Bookmark, BookmarkCheck } from 'lucide-react'
+import { Download, RefreshCw, Heart, Presentation, File, FileText } from 'lucide-react'
 import type { ResourceDetail } from '@/lib/resources/types'
 import { CreateResourceLessonPlanDialog } from '@/components/dashboard/lesson-plans/create-resource-lesson-plan-dialog'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 interface ResourceActionSidebarProps {
   resource: ResourceDetail
@@ -19,27 +20,10 @@ function getInitials(name: string) {
     .slice(0, 2)
 }
 
-const RESOURCE_TYPE_LABELS: Record<string, string> = {
-  PRINTABLE_ACTIVITY: 'Atividade imprimível',
-  LESSON_PLAN: 'Plano de aula',
-  GAME: 'Jogo',
-  ASSESSMENT: 'Avaliação',
-  OTHER: 'Recurso didático',
-}
-
 export function ResourceActionSidebar({ resource, onDownload, downloadingFileId }: ResourceActionSidebarProps) {
   const [loadingAction, setLoadingAction] = useState<string | null>(null)
 
   const author = resource.author
-  const updatedDate = resource.curatedAt 
-    ? new Date(resource.curatedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
-    : 'Recentemente'
-  const schoolYearLabel =
-    resource.gradeLabels && resource.gradeLabels.length > 0
-      ? resource.gradeLabels.length <= 2
-        ? resource.gradeLabels.join(', ')
-        : `${resource.gradeLabels[0]}, ${resource.gradeLabels[1]} +${resource.gradeLabels.length - 2}`
-      : 'Não definido'
 
   const { data: interaction, refetch: refetchInteraction } = useQuery({
     queryKey: ['resource-interact', resource.id],
@@ -49,7 +33,7 @@ export function ResourceActionSidebar({ resource, onDownload, downloadingFileId 
       const json = await res.json()
       return json.data as { isSaved: boolean } | null
     },
-    staleTime: 1000 * 60 * 5, // 5 minutos
+    staleTime: 1000 * 60 * 5,
   })
 
   const isSaved = interaction?.isSaved ?? false
@@ -68,9 +52,10 @@ export function ResourceActionSidebar({ resource, onDownload, downloadingFileId 
     }
   }
 
+  const files = resource.files || []
+
   return (
       <div className="bg-card border border-line rounded-4 p-[24px] shadow-2 mb-[20px]">
-        {/* ... existing header ... */}
         <div className="flex flex-wrap gap-[6px] mb-[14px]">
           <span className="inline-flex items-center gap-[6px] px-[10px] py-[3px] text-[12px] font-semibold rounded-full leading-[1.5] whitespace-nowrap bg-[oklch(0.94_0.045_260)] text-[oklch(0.38_0.10_260)]">
             {resource.subject}
@@ -108,108 +93,78 @@ export function ResourceActionSidebar({ resource, onDownload, downloadingFileId 
           )}
         </div>
 
-        <div className="flex flex-col gap-[8px]">
-          {resource.files && resource.files.length > 0 ? (
-            <button
-              onClick={(e) => onDownload(e, resource.files[0])}
-              disabled={downloadingFileId !== null}
-              className="w-full inline-flex items-center justify-center gap-[8px] px-[20px] py-[12px] font-body text-[15px] font-semibold rounded-full bg-terracotta text-white hover:bg-[oklch(0.60_0.12_42)] disabled:opacity-70 transition-colors shadow-1"
-              style={{ boxShadow: '0 1px 0 oklch(0.45 0.10 42), var(--shadow-1)' }}
-            >
-              {downloadingFileId === resource.files[0].id ? (
-                  <RefreshCw className="h-[16px] w-[16px] animate-spin" />
-              ) : (
-                  <Download className="h-[16px] w-[16px]" strokeWidth={2} />
-              )}
-              Baixar material completo
-            </button>
+
+        <button 
+          onClick={handleToggleSave}
+          disabled={loadingAction === 'save'}
+          className={`absolute top-[24px] right-[24px] w-[36px] h-[36px] flex items-center justify-center rounded-full transition-all border ${
+            isSaved 
+              ? 'bg-terracotta/5 border-terracotta/20 text-terracotta' 
+              : 'bg-card border-line text-ink-mute hover:text-terracotta hover:bg-paper-2'
+          }`}
+          aria-label={isSaved ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+        >
+          {loadingAction === 'save' ? (
+            <RefreshCw className="h-[16px] w-[16px] animate-spin" />
           ) : (
-            <button className="w-full inline-flex items-center justify-center gap-[8px] px-[20px] py-[12px] font-body text-[15px] font-semibold rounded-full bg-card border border-line text-ink-mute opacity-50 cursor-not-allowed">
-              Sem arquivos
-            </button>
+            <Heart className={`h-[18px] w-[18px] ${isSaved ? 'fill-current' : ''}`} strokeWidth={isSaved ? 2.5 : 2} />
           )}
-          
-          <div className="grid grid-cols-1 gap-[8px]">
-            <button 
-              onClick={handleToggleSave}
-              disabled={loadingAction === 'save'}
-              className={`w-full inline-flex items-center justify-center gap-[8px] px-[20px] py-[12px] font-body text-[15px] font-semibold rounded-full border transition-all shadow-1 ${
-                isSaved 
-                  ? 'bg-sage-2 border-sage text-sage' 
-                  : 'bg-card border-line text-ink hover:bg-paper-2'
-              }`}
-            >
-              {loadingAction === 'save' ? (
-                <RefreshCw className="h-[16px] w-[16px] animate-spin" />
-              ) : isSaved ? (
-                <BookmarkCheck className="h-[16px] w-[16px]" strokeWidth={2} />
-              ) : (
-                <Bookmark className="h-[16px] w-[16px]" strokeWidth={1.8} />
-              )}
-              {isSaved ? 'Salvo' : 'Salvar'}
-            </button>
-          </div>
+        </button>
 
-          <CreateResourceLessonPlanDialog resourceId={resource.id} />
-        </div>
-
-        <hr className="border-0 border-t border-dashed border-line my-[20px]" />
-
-        <div className="grid grid-cols-2 gap-y-[16px] gap-x-[20px]">
-          {/* ... existing footer metrics ... */}
-          <div className="flex flex-col gap-[2px]">
-            <div className="flex items-center gap-[5px] text-[11px] text-ink-mute uppercase tracking-[0.1em] font-semibold">
-              <Layers className="h-[12px] w-[12px]" strokeWidth={2} />
-              páginas
+        {files.length > 0 && (
+          <div className="pt-[16px] border-t border-dashed border-line">
+            <div className="flex items-center gap-[8px] font-display text-[14px] font-semibold mb-[12px] text-ink/80">
+              Arquivos para baixar
             </div>
-            <div className="text-[14px] font-medium text-ink">
-              {resource.pagesCount ? `${resource.pagesCount} páginas` : '--'}
-            </div>
-          </div>
-          <div className="flex flex-col gap-[2px]">
-            <div className="flex items-center gap-[5px] text-[11px] text-ink-mute uppercase tracking-[0.1em] font-semibold">
-              <Clock className="h-[12px] w-[12px]" strokeWidth={2} />
-              duração
-            </div>
-            <div className="text-[14px] font-medium text-ink">
-              {resource.estimatedDurationMinutes ? `~ ${resource.estimatedDurationMinutes} min` : '--'}
-            </div>
-          </div>
-          <div className="flex flex-col gap-[2px]">
-            <div className="flex items-center gap-[5px] text-[11px] text-ink-mute uppercase tracking-[0.1em] font-semibold">
-              <Users className="h-[12px] w-[12px]" strokeWidth={2} />
-              ano escolar
-            </div>
-            <div className="text-[14px] font-medium text-ink">{schoolYearLabel}</div>
-          </div>
-          <div className="flex flex-col gap-[2px]">
-            <div className="flex items-center gap-[5px] text-[11px] text-ink-mute uppercase tracking-[0.1em] font-semibold">
-              <FileText className="h-[12px] w-[12px]" strokeWidth={2} />
-              tipo
-            </div>
-            <div className="text-[14px] font-medium text-ink">
-              {RESOURCE_TYPE_LABELS[resource.resourceType] || 'Material'}
-            </div>
-          </div>
-          <div className="flex flex-col gap-[2px]">
-            <div className="flex items-center gap-[5px] text-[11px] text-ink-mute uppercase tracking-[0.1em] font-semibold">
-              <RefreshCw className="h-[12px] w-[12px]" strokeWidth={2} />
-              atualizado
-            </div>
-            <div className="text-[14px] font-medium text-ink">
-              {updatedDate}
-            </div>
-          </div>
-          <div className="flex flex-col gap-[2px]">
-            <div className="flex items-center gap-[5px] text-[11px] text-ink-mute uppercase tracking-[0.1em] font-semibold">
-              <Download className="h-[12px] w-[12px]" strokeWidth={2} />
-              downloads
-            </div>
-            <div className="text-[14px] font-medium text-ink">
-              {resource.downloadCount}
+            <div className="flex flex-col">
+              {files.map((f, i) => (
+                <button
+                  key={f.id}
+                  onClick={(e) => onDownload(e, f)}
+                  disabled={downloadingFileId === f.id}
+                  className={`flex items-center gap-[12px] py-[10px] text-left transition-colors group ${
+                    i > 0 ? 'border-t border-line-soft/50' : ''
+                  }`}
+                >
+                  <div className={`w-[32px] h-[32px] rounded-2 flex items-center justify-center shrink-0 ${
+                    f.name.endsWith('.pdf') ? 'bg-terracotta/10 text-terracotta' :
+                    'bg-paper-2 text-ink-soft'
+                  }`}>
+                    {f.name.endsWith('.pdf') ? <FileText className="h-[16px] w-[16px]" /> : 
+                      f.name.endsWith('.pptx') ? <Presentation className="h-[16px] w-[16px]" /> :
+                      <File className="h-[16px] w-[16px]" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="text-[13px] font-medium text-ink group-hover:text-terracotta transition-colors truncate cursor-help">
+                          {f.name}
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">
+                        {f.name}
+                      </TooltipContent>
+                    </Tooltip>
+                    <div className="text-[10px] text-ink-mute font-mono tracking-[0.02em] flex items-center gap-[6px]">
+                      {(f as any).pageCount > 0 && (
+                        <span className="text-terracotta/70 font-semibold">
+                          {(f as any).pageCount} {(f as any).pageCount === 1 ? 'página' : 'páginas'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-ink-mute p-[4px] disabled:opacity-50">
+                    {downloadingFileId === f.id ? (
+                      <RefreshCw className="h-[14px] w-[14px] animate-spin text-terracotta" />
+                    ) : (
+                      <Download className="h-[14px] w-[14px] group-hover:text-terracotta transition-colors" strokeWidth={2} />
+                    )}
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
-        </div>
+        )}
       </div>
   )
 }

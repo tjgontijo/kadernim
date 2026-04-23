@@ -40,8 +40,12 @@ export function ResourceFilesList({ files, onDownload, downloadingFileId }: any)
                   {f.name}
                 </TooltipContent>
               </Tooltip>
-              <div className="text-[11px] text-ink-mute font-mono tracking-[0.02em]">
-                Clique para baixar
+              <div className="text-[11px] text-ink-mute font-mono tracking-[0.02em] flex items-center gap-[6px]">
+                {f.name.endsWith('.pdf') && f.pageCount > 0 && (
+                  <span className="flex items-center gap-[3px] text-terracotta/70 font-semibold">
+                    {f.pageCount} {f.pageCount === 1 ? 'página' : 'páginas'}
+                  </span>
+                )}
               </div>
             </div>
             <div className="text-ink-mute p-[6px] disabled:opacity-50">

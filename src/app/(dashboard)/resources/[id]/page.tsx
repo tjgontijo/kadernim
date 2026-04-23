@@ -20,9 +20,9 @@ import { ResourceTimeline } from '@/components/design-system/resources/ResourceT
 import { ResourceBNCC } from '@/components/design-system/resources/ResourceBNCC'
 import { ResourceReviews } from '@/components/design-system/resources/ResourceReviews'
 import { ResourceActionSidebar } from '@/components/design-system/resources/ResourceActionSidebar'
-import { ResourceFilesList } from '@/components/design-system/resources/ResourceFilesList'
 import { ResourceRelatedStrip } from '@/components/design-system/resources/ResourceRelatedStrip'
-import { ResourceShareCard } from '@/components/design-system/resources/ResourceShareCard'
+import { ResourceMetrics } from '@/components/design-system/resources/ResourceMetrics'
+import { CreateResourceLessonPlanDialog } from '@/components/dashboard/lesson-plans/create-resource-lesson-plan-dialog'
 import { useSessionQuery } from '@/hooks/auth/use-session'
 import { useRouter } from 'next/navigation'
 import { Switch } from '@/components/ui/switch'
@@ -232,10 +232,50 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
         </div>
 
         {/* RIGHT: sticky sidebar */}
-        <aside className="sticky top-[84px] flex flex-col gap-[20px]">
+        <aside className="sticky top-[64px] flex flex-col gap-[20px]">
+          <ResourceActionSidebar 
+             resource={resource}
+             onDownload={handleDownload}
+             downloadingFileId={downloadingFileId}
+          />
+
+          <ResourceMetrics resource={resource} />
+          
+          {downloadFeedback && (
+            <div
+              className={`rounded-4 border p-[16px] text-[14px] font-semibold flex items-center gap-[12px] animate-in fade-in slide-in-from-top-2 duration-300 ${
+                downloadFeedback.type === 'error'
+                  ? 'border-destructive/20 bg-destructive/5 text-destructive'
+                  : 'border-sage/20 bg-sage/5 text-sage'
+              }`}
+            >
+              {downloadFeedback.type === 'error' ? (
+                <AlertTriangle className="h-5 w-5 shrink-0" />
+              ) : (
+                <Info className="h-5 w-5 shrink-0" />
+              )}
+              {downloadFeedback.text}
+            </div>
+          )}
+
+          <div className="bg-card border border-line rounded-4 p-[24px] shadow-sm space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-sage/10 text-sage flex items-center justify-center">
+                <FileText className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-ink">Plano de Aula</h3>
+                <p className="text-[11px] text-ink-mute">Crie um plano baseado neste material</p>
+              </div>
+            </div>
+            <div className="border-t border-dashed border-line pt-4">
+              <CreateResourceLessonPlanDialog resourceId={resource.id} />
+            </div>
+          </div>
+
           {isAdmin && (
             <div className="bg-card border border-line rounded-5 p-6 shadow-sm space-y-5">
-              <div className="text-center border-b border-line-soft pb-4">
+              <div className="text-center border-b border-dashed border-line pb-4">
                 <Label className="text-[10px] uppercase tracking-[0.2em] font-black text-ink-mute/60">Controle do Editor</Label>
               </div>
               
@@ -266,37 +306,6 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
               </div>
             </div>
           )}
-
-          <ResourceActionSidebar 
-             resource={resource}
-             onDownload={handleDownload}
-             downloadingFileId={downloadingFileId}
-          />
-          
-          <ResourceFilesList 
-             files={resource.files}
-             onDownload={handleDownload}
-             downloadingFileId={downloadingFileId}
-          />
-          
-          {downloadFeedback && (
-            <div
-              className={`rounded-4 border p-[16px] text-[14px] font-semibold flex items-center gap-[12px] animate-in fade-in slide-in-from-top-2 duration-300 ${
-                downloadFeedback.type === 'error'
-                  ? 'border-destructive/20 bg-destructive/5 text-destructive'
-                  : 'border-sage/20 bg-sage/5 text-sage'
-              }`}
-            >
-              {downloadFeedback.type === 'error' ? (
-                <AlertTriangle className="h-5 w-5 shrink-0" />
-              ) : (
-                <Info className="h-5 w-5 shrink-0" />
-              )}
-              {downloadFeedback.text}
-            </div>
-          )}
-
-          <ResourceShareCard />
         </aside>
       </div>
 

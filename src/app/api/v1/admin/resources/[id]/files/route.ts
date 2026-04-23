@@ -93,6 +93,7 @@ export async function POST(
       url: uploadResult.url,
       fileType: inferredMimeType,
       sizeBytes: uploadResult.sizeBytes,
+      pageCount: 'pageCount' in uploadResult ? (uploadResult as any).pageCount : undefined,
       adminId: authResult.userId,
     })
 

@@ -1,5 +1,6 @@
 import { uploadToR2, getR2PublicUrl } from '@/lib/storage/r2'
 import { uploadVideoChunked, uploadImage, uploadFromUrl, getCloudinaryUrl } from '@/lib/storage/cloudinary'
+import { countPdfPagesFromBuffer } from '@/lib/storage/pdf-utils'
 import {
   optimizePdf,
   optimizeVideo,
@@ -20,6 +21,9 @@ export async function uploadPdfToR2(
   const optDuration = ((performance.now() - startOpt) / 1000).toFixed(1)
   console.log(`  ⚙️ Otimização PDF: ${optDuration}s`)
 
+  // Contagem de páginas
+  const pageCount = await countPdfPagesFromBuffer(optimizedBuffer)
+
   const startUpload = performance.now()
   const key = buildResourcePdfObjectKey(options)
   const contentDisposition = buildSafeContentDisposition(options.fileName)
@@ -33,7 +37,10 @@ export async function uploadPdfToR2(
   const uploadDuration = ((performance.now() - startUpload) / 1000).toFixed(1)
   console.log(`  ☁️ Upload R2: ${uploadDuration}s`)
 
-  return result
+  return {
+    ...result,
+    pageCount
+  }
 }
 
 /**

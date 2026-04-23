@@ -79,6 +79,7 @@ async function main() {
 
         // Criar Reviews e Usuários
         for (const rev of reviewsData) {
+          const reviewDate = faker.date.between({ from: '2026-01-01T00:00:00.000Z', to: new Date() });
           const isFemale = Math.random() < 0.9;
           const firstName = isFemale ? faker.person.firstName('female') : faker.person.firstName('male');
           const lastName = faker.person.lastName();
@@ -90,12 +91,20 @@ async function main() {
               name: `${firstName} ${lastName}`, 
               email, 
               location: `${faker.location.city()}, ${faker.location.state({ abbreviated: true })}`, 
-              image: faker.image.avatar() 
+              image: faker.image.avatar(),
+              createdAt: reviewDate
             }
           });
 
           await prisma.review.create({
-            data: { resourceId: resource.id, userId: user.id, rating: rev.rating, comment: rev.comment, status: 'APPROVED' }
+            data: { 
+              resourceId: resource.id, 
+              userId: user.id, 
+              rating: rev.rating, 
+              comment: rev.comment, 
+              status: 'APPROVED',
+              createdAt: reviewDate
+            }
           });
         }
         console.log(`   💬 ${reviewsData.length} avaliações reais criadas.`);

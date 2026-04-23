@@ -109,6 +109,7 @@ export async function getResourceDetailForUser(params: {
           id: true,
           name: true,
           createdAt: true,
+          pageCount: true,
           images: {
             select: {
               id: true,
@@ -180,6 +181,7 @@ export async function getResourceDetailForUser(params: {
       id: file.id,
       name: file.name,
       createdAt: file.createdAt.toISOString(),
+      pageCount: file.pageCount ?? 0,
       images: (file.images || []).map((img) => ({
         id: img.id,
         url: img.url,

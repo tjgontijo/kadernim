@@ -21,6 +21,7 @@ export interface CreateFileInput {
   url?: string
   fileType?: string
   sizeBytes?: number
+  pageCount?: number
   adminId: string
 }
 
@@ -31,7 +32,7 @@ export interface CreateFileInput {
 export async function createFileService(
   input: CreateFileInput
 ) {
-  const { resourceId, name, cloudinaryPublicId, url, fileType, sizeBytes } = input
+  const { resourceId, name, cloudinaryPublicId, url, fileType, sizeBytes, pageCount } = input
 
   // Check if resource exists
   const resource = await prisma.resource.findUnique({
@@ -42,19 +43,33 @@ export async function createFileService(
     throw new Error(`Resource with id ${resourceId} not found`)
   }
 
-  // Create file record
-  const file = await prisma.resourceFile.create({
-    data: {
-      name,
-      cloudinaryPublicId,
-      url,
-      fileType,
-      sizeBytes,
-      resourceId,
-    },
-  })
+  // Create file record and update resource pages count
+  return await prisma.$transaction(async (tx) => {
+    const file = await tx.resourceFile.create({
+      data: {
+        name,
+        cloudinaryPublicId,
+        url,
+        fileType,
+        sizeBytes,
+        pageCount,
+        resourceId,
+      },
+    })
 
-  return file
+    if (pageCount && pageCount > 0) {
+      await tx.resource.update({
+        where: { id: resourceId },
+        data: {
+          pagesCount: {
+            increment: pageCount
+          }
+        }
+      })
+    }
+
+    return file
+  })
 }
 
 /**
@@ -79,9 +94,22 @@ export async function deleteFileService(
     throw new Error('File does not belong to this resource')
   }
 
-  // Delete file record
-  await prisma.resourceFile.delete({
-    where: { id: fileId },
+  // Delete file record and update resource pages count
+  await prisma.$transaction(async (tx) => {
+    await tx.resourceFile.delete({
+      where: { id: fileId },
+    })
+
+    if (file.pageCount && file.pageCount > 0) {
+      await tx.resource.update({
+        where: { id: resourceId },
+        data: {
+          pagesCount: {
+            decrement: file.pageCount
+          }
+        }
+      })
+    }
   })
 }
 

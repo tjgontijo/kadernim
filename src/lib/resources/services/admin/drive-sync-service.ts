@@ -7,6 +7,7 @@ import {
   uploadPdfToR2,
   uploadVideoToCloudinary,
 } from '@/services/resources/storage-service'
+import { createFileService } from './file-service'
 
 export interface GoogleDriveSyncInput {
   resourceId: string
@@ -121,15 +122,15 @@ export async function syncResourceFilesFromGoogleDrive(
         })
         summary.uploadedPdfsToR2 += 1
 
-        const created = await prisma.resourceFile.create({
-          data: {
-            name: downloaded.fileName,
-            cloudinaryPublicId: upload.key,
-            url: upload.url,
-            fileType: downloaded.mimeType,
-            sizeBytes: upload.sizeBytes,
-            resourceId: input.resourceId,
-          },
+        const created = await createFileService({
+          resourceId: input.resourceId,
+          name: downloaded.fileName,
+          cloudinaryPublicId: upload.key,
+          url: upload.url,
+          fileType: downloaded.mimeType,
+          sizeBytes: upload.sizeBytes,
+          pageCount: upload.pageCount,
+          adminId: 'system',
         })
 
         try {

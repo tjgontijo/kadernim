@@ -343,6 +343,7 @@ model ResourceFile {
   url                String?
   fileType           String?
   sizeBytes          Int?
+  pageCount          Int?
   createdAt          DateTime            @default(now())
   resource           Resource            @relation(fields: [resourceId], references: [id], onDelete: Cascade)
   images             ResourceFileImage[]

@@ -46,6 +46,7 @@ export const ResourceFileMetadataSchema = z.object({
   id: z.string(),
   name: z.string(),
   createdAt: z.string(),
+  pageCount: z.number().int().optional(),
   images: z.array(ResourceImageSchema).default([]),
 })
 
