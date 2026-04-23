@@ -92,23 +92,6 @@ export function SubjectForm({ initialData, levels, onSubmit, isLoading, formId =
         defaultValues: initialData || defaultValues,
     })
 
-    const initialLevelKey = (initialData?.educationLevelSlugs ?? []).join('|')
-
-    useEffect(() => {
-        if (initialData) {
-            form.reset(initialData)
-            return
-        }
-
-        form.reset(defaultValues)
-    }, [
-        form,
-        initialData?.name,
-        initialData?.color,
-        initialData?.textColor,
-        initialLevelKey,
-    ])
-
     const previewBg = form.watch('color') || DEFAULT_SUBJECT_COLOR
     const previewFg = form.watch('textColor') || DEFAULT_SUBJECT_TEXT_COLOR
     const bgPickerValue = cssColorToHex(previewBg, '#E8D2C4')

@@ -1,12 +1,11 @@
 'use client'
 
-import { Suspense, useEffect, useState, useRef } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Clock, Edit3 } from 'lucide-react'
 import { authClient } from '@/lib/auth/auth-client'
 import { Spinner } from '@/components/shared/spinner'
-
 import { toast } from 'sonner'
 
 interface VerifyState {
@@ -20,35 +19,22 @@ type ResendState = 'idle' | 'sending'
 function OTPSentContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [form, setForm] = useState<VerifyState>({ email: '', otp: '' })
+  
+  // Inicialização direta do estado a partir da URL (Sem useEffect!)
+  const [form, setForm] = useState<VerifyState>(() => ({
+    email: searchParams.get('email')?.trim() || '',
+    otp: ''
+  }))
+
   const [verifyStatus, setVerifyStatus] = useState<SubmissionState>('idle')
   const [resendStatus, setResendStatus] = useState<ResendState>('idle')
-  const callbackURL = searchParams.get('callbackURL')
   const [countdown, setCountdown] = useState(60)
+  const callbackURL = searchParams.get('callbackURL')
 
-  // Referência para o input de OTP
-  const otpInputRef = useRef<HTMLInputElement | null>(null)
-
+  // Countdown timer (Uso legítimo de useEffect para sincronização com o tempo)
   useEffect(() => {
-    const emailParam = searchParams.get('email')
-    if (emailParam) {
-      setForm((prev) => ({ ...prev, email: emailParam.trim() }))
-    }
-
-    // Foca no input de OTP automaticamente após o componente ser montado
-    setTimeout(() => {
-      if (otpInputRef.current) {
-        otpInputRef.current.focus()
-      }
-    }, 100) // Pequeno delay para garantir que o DOM esteja pronto
-  }, [searchParams])
-
-  // Countdown timer para o botão de reenviar
-  useEffect(() => {
-    let timer: NodeJS.Timeout
-    if (countdown > 0) {
-      timer = setTimeout(() => setCountdown(countdown - 1), 1000)
-    }
+    if (countdown <= 0) return
+    const timer = setTimeout(() => setCountdown(countdown - 1), 1000)
     return () => clearTimeout(timer)
   }, [countdown])
 
@@ -62,12 +48,6 @@ function OTPSentContent() {
 
     if (!form.email) {
       toast.error('E-mail não encontrado.')
-      return
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(form.email)) {
-      toast.error('E-mail inválido.')
       return
     }
 
@@ -104,12 +84,6 @@ function OTPSentContent() {
       return
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(form.email)) {
-      toast.error('E-mail inválido.')
-      return
-    }
-
     setResendStatus('sending')
 
     try {
@@ -124,7 +98,7 @@ function OTPSentContent() {
       }
 
       toast.success('Novo código enviado! Verifique seu email.')
-      setCountdown(60) // Reinicia o contador
+      setCountdown(60) 
     } catch (cause) {
       console.error('[otp] erro ao reenviar código', cause)
       toast.error('Erro ao reenviar código. Tente novamente mais tarde.')
@@ -147,7 +121,6 @@ function OTPSentContent() {
             ))}
           </div>
 
-          {/* Notebook spine */}
           <div className="pointer-events-none absolute inset-y-0 left-0 w-[28px] border-r border-[#e2dacf] bg-[linear-gradient(to_right,#f5f1ea,#fdfbf7)]" />
           
           <div className="mb-10 flex justify-center relative">
@@ -174,12 +147,7 @@ function OTPSentContent() {
 
           <form className="mt-8 space-y-6 relative" onSubmit={handleVerify}>
             <div>
-              <label
-                htmlFor="otp"
-                className="block text-caption mb-2 ml-1"
-              >
-                Código de Verificação
-              </label>
+              <label htmlFor="otp" className="block text-caption mb-2 ml-1">Código de Verificação</label>
               <input
                 id="otp"
                 name="otp"
@@ -190,7 +158,7 @@ function OTPSentContent() {
                 maxLength={6}
                 value={form.otp}
                 onChange={handleOtpChange}
-                ref={otpInputRef}
+                autoFocus // Foco automático nativo (Sem useEffect!)
                 className="block w-full rounded-r-3 border border-line bg-paper-2 py-4 text-center text-4xl font-display font-black tracking-[0.3em] text-ink placeholder:text-ink-faint focus:border-terracotta focus:ring-4 focus:ring-terracotta-2 transition-all shadow-sm"
                 placeholder="000000"
                 aria-label="Código de verificação"

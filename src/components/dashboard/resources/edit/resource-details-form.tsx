@@ -185,15 +185,6 @@ export function ResourceDetailsForm({
     return metaData.subjects.filter((s: any) => subjectKeys.has(s.key))
   }, [selectedLevel, selectedGrades, metaData])
 
-  React.useEffect(() => {
-    if (!selectedSubject) return
-    if (!metaData?.subjects || !metaData?.grades) return
-    const stillAvailable = availableSubjects.some((s: any) => s.key === selectedSubject)
-    if (!stillAvailable) {
-      resetSubjectWithoutValidation()
-    }
-  }, [selectedSubject, availableSubjects, metaData?.subjects, metaData?.grades])
-
   // Validação dinâmica do Drive URL
   const isDriveUrlValid = useMemo(() => {
     if (!driveUrl) return null

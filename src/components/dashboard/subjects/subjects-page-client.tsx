@@ -264,6 +264,7 @@ export function SubjectsPageClient() {
                     </DialogHeader>
 
                     <SubjectForm
+                        key={crud.itemToEdit?.id || 'new'}
                         formId={formId}
                         levels={levels}
                         initialData={
