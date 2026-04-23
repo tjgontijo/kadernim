@@ -15,8 +15,9 @@ export async function GET(request: NextRequest) {
         const page = parseInt(searchParams.get('page') || '1')
         const limit = parseInt(searchParams.get('limit') || '15')
         const q = searchParams.get('q') || undefined
+        const educationLevelSlug = searchParams.get('educationLevelSlug') || undefined
 
-        const result = await TaxonomyService.listSubjectsAdmin({ page, limit, search: q })
+        const result = await TaxonomyService.listSubjectsAdmin({ page, limit, search: q, educationLevelSlug })
 
         return NextResponse.json({
             data: result.subjects,

@@ -32,7 +32,7 @@ export default function LessonPlanDetailPage({ params }: { params: Promise<{ id:
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-7xl w-full px-4 sm:px-0 py-8 space-y-4">
+      <div className="dashboard-page-container py-8 space-y-4">
         <div className="h-9 w-40 animate-pulse rounded-3 bg-paper-2" />
         <div className="h-72 animate-pulse rounded-4 bg-paper-2" />
       </div>
@@ -41,7 +41,8 @@ export default function LessonPlanDetailPage({ params }: { params: Promise<{ id:
 
   if (!plan) {
     return (
-      <div className="mx-auto max-w-3xl px-4 sm:px-0 py-8">
+      <div className="dashboard-page-container py-8">
+        <div className="mx-auto max-w-3xl">
         <Link href="/planner">
           <Button variant="outline" className="rounded-full border-line">
             <ArrowLeft className="h-4 w-4" />
@@ -51,12 +52,13 @@ export default function LessonPlanDetailPage({ params }: { params: Promise<{ id:
         <div className="mt-6 rounded-4 border border-line bg-card p-8 text-center text-ink-soft">
           Plano de aula não encontrado.
         </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="mx-auto max-w-7xl w-full px-4 sm:px-0 py-8">
+    <div className="dashboard-page-container py-8">
       <Link href="/planner">
         <Button variant="outline" className="mb-5 rounded-full border-line">
           <ArrowLeft className="h-4 w-4" />

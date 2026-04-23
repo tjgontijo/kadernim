@@ -20,7 +20,7 @@ export function ResourcesPageSkeleton({ cardCount = 9 }: ResourcesPageSkeletonPr
         </div>
       </PageScaffold.Controls>
 
-      <section className="px-4 sm:px-0 min-h-[400px]">
+      <section className="px-0 min-h-[400px]">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: cardCount }).map((_, index) => (
             <ResourceCardSkeleton key={index} />

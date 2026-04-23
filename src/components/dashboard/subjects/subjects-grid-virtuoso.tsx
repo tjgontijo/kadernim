@@ -7,15 +7,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { PermissionGuard } from '@/components/auth/permission-guard'
 import { cn } from '@/lib/utils/index'
-
-type Subject = {
-    id: string
-    name: string
-    slug: string
-    _count?: {
-        resources: number
-    }
-}
+import { type Subject } from '@/lib/taxonomy/types'
+import { getSubjectColor, hexToRgba } from './subject-colors'
 
 interface SubjectsGridVirtuosoProps {
     subjects: Subject[]
@@ -74,13 +67,22 @@ export function SubjectsGridVirtuoso({
                     >
                         <div className="flex p-4 gap-4 flex-1">
                             <div className="relative w-14 h-14 shrink-0">
-                                <div className="aspect-square w-full bg-primary/5 rounded-xl border border-primary/10 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                                    <Hash className="h-6 w-6 text-primary/40 group-hover:text-primary/60 transition-colors" />
+                                <div
+                                    className="aspect-square w-full rounded-xl flex items-center justify-center transition-colors"
+                                    style={{
+                                        backgroundColor: hexToRgba(getSubjectColor(subject.color), 0.1),
+                                        border: `1px solid ${hexToRgba(getSubjectColor(subject.color), 0.28)}`
+                                    }}
+                                >
+                                    <Hash
+                                        className="h-6 w-6 transition-colors"
+                                        style={{ color: hexToRgba(getSubjectColor(subject.color), 0.88) }}
+                                    />
                                 </div>
                             </div>
 
                             <div className="flex-1 min-w-0 pr-8">
-                                <h3 className="font-bold text-[15px] text-foreground truncate leading-tight mb-1.5 group-hover:text-primary transition-colors">
+                                <h3 className="font-bold text-[15px] text-foreground truncate leading-tight mb-1.5 transition-colors">
                                     {subject.name}
                                 </h3>
                                 <div className="flex items-center gap-2">
@@ -88,7 +90,10 @@ export function SubjectsGridVirtuoso({
                                         {subject.slug}
                                     </code>
                                     <span className="text-muted-foreground/30">•</span>
-                                    <span className="text-[10px] font-bold text-primary uppercase tracking-widest">
+                                    <span
+                                        className="text-[10px] font-bold uppercase tracking-widest"
+                                        style={{ color: getSubjectColor(subject.color) }}
+                                    >
                                         {subject._count?.resources ?? 0} {(subject._count?.resources ?? 0) === 1 ? 'material' : 'materiais'}
                                     </span>
                                 </div>
@@ -122,7 +127,14 @@ export function SubjectsGridVirtuoso({
                         </div>
 
                         <div className="border-t border-border/40 px-4 py-2.5 bg-muted/5 flex items-center justify-between">
-                            <Badge variant="outline" className="text-[10px] border-none bg-muted/50 text-muted-foreground/60 font-medium px-2 h-5">
+                            <Badge
+                                variant="outline"
+                                className="text-[10px] border-none font-medium px-2 h-5"
+                                style={{
+                                    backgroundColor: hexToRgba(getSubjectColor(subject.color), 0.12),
+                                    color: getSubjectColor(subject.color)
+                                }}
+                            >
                                 Disciplina
                             </Badge>
                             <span className="text-[10px] text-muted-foreground/30 font-mono italic">#{subject.id.slice(-4)}</span>

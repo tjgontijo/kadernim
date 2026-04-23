@@ -174,7 +174,8 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
 
   if (error || !resource) {
     return (
-      <div className="mx-auto max-w-3xl space-y-6 px-4 py-8">
+      <div className="dashboard-page-container py-8">
+        <div className="mx-auto max-w-3xl space-y-6">
         <Link href="/resources">
           <Button variant="ghost" className="gap-2 -ml-2 text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-4 w-4" />
@@ -192,12 +193,13 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
             <Link href="/resources">Explorar outros materiais</Link>
           </Button>
         </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="mx-auto max-w-[1280px] w-full px-4 sm:px-8 py-8 sm:py-16">
+    <div className="dashboard-page-container py-8 sm:py-16">
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px] gap-[48px] items-start tracking-tight">
         {/* LEFT COLUMN */}
         <div>

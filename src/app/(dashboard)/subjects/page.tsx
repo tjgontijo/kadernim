@@ -1,10 +1,10 @@
 import { SubjectsPageClient } from '@/components/dashboard/subjects/subjects-page-client'
 
 export const metadata = {
-    title: 'Disciplinas | Admin',
+    title: 'Disciplinas',
     description: 'Gerencie as disciplinas e áreas de conhecimento',
 }
 
-export default function AdminSubjectsPage() {
+export default function SubjectsPage() {
     return <SubjectsPageClient />
 }

@@ -22,7 +22,7 @@ export function DashPageShell({
 }: DashPageShellProps) {
   return (
     <section className="flex-1 overflow-y-auto bg-background paper-grain pb-20">
-      <div className={cn('flex flex-col gap-8', padded ? 'p-6 md:p-10' : 'p-0')}>
+      <div className={cn('dashboard-page-container flex flex-col gap-8', padded ? 'py-6 md:py-10' : 'py-0')}>
         {(title || subtitle || actions) && (
           <header className="flex flex-col gap-4 border-b border-dashed border-line pb-6">
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">

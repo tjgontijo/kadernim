@@ -60,7 +60,7 @@ export default function PlannerPage() {
         <PlannerFilters value={filters} onChange={setFilters} />
       </PageScaffold.Controls>
 
-      <section className="px-4 sm:px-0">
+      <section className="px-0">
         {isLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 6 }).map((_, index) => (

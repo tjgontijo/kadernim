@@ -62,7 +62,7 @@ export default function ResourcesPage() {
       </PageScaffold.Controls>
 
       {/* Listagem de Grid ou Skeleton */}
-      <section className="px-4 sm:px-0 min-h-[400px]">
+      <section className="px-0 min-h-[400px]">
         <ResourceGrid
           items={items}
           fetchNextPage={fetchNextPage}

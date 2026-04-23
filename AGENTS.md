@@ -64,26 +64,15 @@ Top-level files define how your Mastra project is configured, built, and connect
 <claude-mem-context>
 # Memory Context
 
-# [kadernim] recent context, 2026-04-22 5:11pm GMT-3
+# [kadernim] recent context, 2026-04-23 1:08pm GMT-3
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision
 Format: ID TIME TYPE TITLE
 Fetch details: get_observations([IDs]) | Search: mem-search skill
 
-Stats: 47 obs (15,901t read) | 623,566t work | 97% savings
+Stats: 50 obs (17,414t read) | 698,130t work | 98% savings
 
 ### Apr 20, 2026
-164 12:50p 🔵 scripts/clear-r2.ts Not Found in Git History — Kadernim
-165 12:51p 🔵 Kadernim scripts/ Directory — clear-r2.ts Missing but Referenced in reset-db.sh
-166 " 🔵 Kadernim R2 Client Architecture — Full Inventory for clear-r2.ts Creation
-168 " 🟣 scripts/clear-r2.ts Created — Cloudflare R2 Bucket Cleanup Script
-170 12:52p 🔴 Fix TypeScript Import Errors in scripts/clear-r2.ts — node:fs and node:path
-172 " ✅ scripts/clear-r2.ts Passes TypeScript Check — Ready to Commit
-174 12:54p 🔵 Kadernim Build Failure — TypeScript Error in BNCC Search Route
-175 " 🔴 Fix TypeScript Role Check in BNCC Search Route
-177 12:55p 🔵 Build Failure — `createResourceService` Input Type Mismatch: Missing `bnccCodes`
-179 12:56p 🔵 Root Cause: `createAdminResourceCollectionHandlers` Input Type Missing `bnccCodes`, `googleDriveUrl`, `pedagogicalContent`
-181 " 🔴 Fix Handler Config Types in `route-support.ts` — Replace Inline Types with Schema-Derived Types
 185 12:59p 🔵 Kadernim UUID Generation — Client-Side, Not Database-Generated
 187 1:02p 🔵 Kadernim pedagogicalContent — Full Codebase Usage Map
 188 " 🔵 detail-service.ts — Hybrid Relational + JSON Fallback for pedagogicalContent
@@ -122,6 +111,21 @@ Stats: 47 obs (15,901t read) | 623,566t work | 97% savings
 327 1:28p 🔵 Kadernim BNCC Architecture — Full Stack Inventory for Diretrizes Feature
 328 " 🔵 updateResourceService Silent Bug — bnccCodes Ignored on Edit
 329 " ✅ PRD docs/PRD/diretrizes-bncc-consulta.md — Created with 16 Sections
+330 6:02p 🔵 Kadernim — googleDriveUrl Field Exists in Both Create and Edit Forms
+331 " 🔴 TypeScript Build Error Fixed — optionalNullableUrl z.preprocess Broke Resolver Type
+332 " 🟣 ResourceFilesManager — PDF Preview Images Now Shown Inline in File Cards
+333 " 🔄 Edit Page Restructured — ResourceFilesManager Moved Inside ResourceDetailsForm via extraSections Prop
+334 " 🟣 File Service — Per-File-Image CRUD Functions Added
+335 " ✅ resource-details-form.tsx — Nullable URL Fields Default to null Instead of Empty String
+342 6:08p 🔵 Kadernim — `seedResourceFiles` Architecture Confirmed — Drive → R2 + Cloudinary Pipeline
+343 6:16p 🟣 ResourceFilesManager — `allowGenerateNextPreview` Prop Gates "Generate Next Preview" Button
+### Apr 23, 2026
+347 10:27a 🔵 Kadernim — Subjects Admin Page Architecture Confirmed
+349 " 🔵 Kadernim — Subject Color Field Already in Prisma Schema, Missing in App Layer
+350 10:29a 🔵 Kadernim — Subject Color/TextColor Fields Confirmed in Prisma; Full Change Scope Mapped
+351 " 🟣 Subject Color Field Added to Schema and Type Layer
+353 " 🟣 Subject Color Utility Layer Added — Service Selects Color, Color Helpers Created
+356 " 🟣 SubjectForm — Color Picker Added with Native Input + HEX Text Input
 
-Access 624k tokens of past work via get_observations([IDs]) or mem-search skill.
+Access 698k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>

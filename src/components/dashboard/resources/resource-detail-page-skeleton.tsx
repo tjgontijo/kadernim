@@ -2,7 +2,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 export function ResourceDetailPageSkeleton() {
   return (
-    <div className="mx-auto max-w-[1280px] w-full px-4 sm:px-8 py-8 sm:py-16">
+    <div className="dashboard-page-container py-8 sm:py-16">
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px] gap-[48px] items-start tracking-tight">
         {/* LEFT COLUMN */}
         <div className="space-y-6">

@@ -57,7 +57,7 @@ export default function DiretrizesPage() {
         <BnccFilters value={filters} onChange={handleFiltersChange} />
       </PageScaffold.Controls>
 
-      <section className="px-4 sm:px-0 min-h-[420px]">
+      <section className="px-0 min-h-[420px]">
         {error ? (
           <div className="rounded-4 border border-destructive/20 bg-destructive/5 p-6 text-center">
             <AlertTriangle className="mx-auto h-6 w-6 text-destructive" />

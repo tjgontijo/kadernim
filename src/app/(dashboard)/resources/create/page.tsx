@@ -27,7 +27,7 @@ export default function CreateResourcePage() {
 
   return (
     <div className="bg-stone-50/50 min-h-full">
-      <div className="max-w-6xl mx-auto py-12 px-6 lg:px-12">
+      <div className="dashboard-page-container py-12">
         <div className="space-y-8">
           {/* Header Editorial - Limpo, sem o botão redundante */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-line pb-8">

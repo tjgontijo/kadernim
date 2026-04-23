@@ -119,6 +119,7 @@ export function useInfiniteDataTable<T>({
         data: items,
         pagination: lastPagination,
         isLoading: query.isLoading,
+        isFetching: query.isFetching,
         isFetchingNextPage: query.isFetchingNextPage,
         hasNextPage: query.hasNextPage,
         fetchNextPage: query.fetchNextPage,

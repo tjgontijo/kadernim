@@ -44,7 +44,7 @@ export function PageScaffoldSkeleton({
             </PageScaffold.Controls>
 
             {/* Content Skeleton */}
-            <div className="px-4 sm:px-0 mt-6">
+            <div className="px-0 mt-6">
                 <div className={cn(
                     "grid gap-6",
                     columns?.mobile ? `grid-cols-${columns.mobile}` : "grid-cols-1",
@@ -60,5 +60,4 @@ export function PageScaffoldSkeleton({
         </PageScaffold>
     )
 }
-
 

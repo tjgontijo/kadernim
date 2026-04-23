@@ -10,7 +10,7 @@ interface PageScaffoldProps {
 
 export function PageScaffold({ children, className }: PageScaffoldProps) {
     return (
-        <div className={cn("w-full max-w-7xl mx-auto space-y-5 sm:space-y-6 pb-20", className)}>
+        <div className={cn("dashboard-page-container space-y-5 sm:space-y-6 pb-20", className)}>
             {children}
         </div>
     );
@@ -25,7 +25,7 @@ interface ScaffoldHeaderProps {
 
 function ScaffoldHeader({ title, action, className }: ScaffoldHeaderProps) {
     return (
-        <header className={cn("flex items-center justify-between gap-4 px-4 sm:px-0 pt-4 sm:pt-6", className)}>
+        <header className={cn("flex items-center justify-between gap-4 px-0 pt-4 sm:pt-6", className)}>
             <div className="min-w-0 flex-1">
                 <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground leading-tight">
                     {title}
@@ -48,7 +48,7 @@ interface ScaffoldHighlightProps {
 
 function ScaffoldHighlight({ children, className }: ScaffoldHighlightProps) {
     return (
-        <section className={cn("px-4 sm:px-0", className)}>
+        <section className={cn("px-0", className)}>
             {children}
         </section>
     );
@@ -62,7 +62,7 @@ interface ScaffoldControlsProps {
 
 function ScaffoldControls({ children, className }: ScaffoldControlsProps) {
     return (
-        <section className={cn("flex items-center gap-2 px-4 sm:px-0", className)}>
+        <section className={cn("flex items-center gap-2 px-0", className)}>
             {children}
         </section>
     );

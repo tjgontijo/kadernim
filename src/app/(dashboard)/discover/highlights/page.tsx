@@ -110,7 +110,7 @@ export default function HighlightsPage() {
         </div>
       </PageScaffold.Highlight>
 
-      <section className="px-4 sm:px-0 min-h-[360px]">
+      <section className="px-0 min-h-[360px]">
         {isLoading ? (
           <RankingRowsSkeleton />
         ) : items.length === 0 ? (

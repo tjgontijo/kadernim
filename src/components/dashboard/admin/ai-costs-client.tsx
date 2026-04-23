@@ -7,6 +7,7 @@ import { ptBR } from 'date-fns/locale'
 import { Brain, RefreshCw, Table2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 
 type PlannerUsageResponse = {
   success: boolean
@@ -96,6 +97,81 @@ export function AdminAiCostsClient() {
     () => Object.entries(data?.byModel ?? {}).sort((a, b) => b[1].totalCostUsd - a[1].totalCostUsd),
     [data]
   )
+
+  if (isLoading && !data) {
+    return (
+      <div className="flex-1 space-y-6 p-4 pt-6 md:p-8">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="space-y-2">
+            <Skeleton className="h-9 w-52" />
+            <Skeleton className="h-4 w-80" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-10 w-44 rounded-full" />
+            <Skeleton className="h-10 w-10 rounded-full" />
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Card key={index}>
+              <CardHeader className="pb-2">
+                <Skeleton className="h-4 w-24" />
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Skeleton className="h-8 w-28" />
+                <Skeleton className="h-3 w-40" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-3">
+          <Card className="lg:col-span-1">
+            <CardHeader>
+              <Skeleton className="h-5 w-28" />
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {Array.from({ length: 5 }).map((_, index) => (
+                <div key={index} className="rounded-3 border border-line bg-paper-2 p-3 space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-24" />
+                  <Skeleton className="h-3 w-28" />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <Skeleton className="h-5 w-36" />
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <Skeleton className="h-9 w-full rounded-2" />
+                {Array.from({ length: 7 }).map((_, index) => (
+                  <Skeleton key={index} className="h-11 w-full rounded-2" />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-5 w-40" />
+          </CardHeader>
+          <CardContent>
+            <div className="max-h-[420px] overflow-auto rounded-3 border border-line/60 p-3 space-y-3">
+              {Array.from({ length: 9 }).map((_, index) => (
+                <Skeleton key={index} className="h-11 w-full rounded-2" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   return (
     <div className="flex-1 space-y-6 p-4 pt-6 md:p-8">
@@ -256,23 +332,23 @@ export function AdminAiCostsClient() {
           <CardTitle className="text-base">Consumo por Usuário</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
+          <div className="max-h-[420px] overflow-auto rounded-3 border border-line/60">
             <table className="w-full text-sm">
-              <thead>
+              <thead className="sticky top-0 z-10 bg-card">
                 <tr className="border-b border-line text-left text-xs uppercase tracking-[0.08em] text-ink-mute">
-                  <th className="py-2 pr-3">Usuário</th>
+                  <th className="py-2 pr-3 pl-3">Usuário</th>
                   <th className="py-2 pr-3">Chamadas</th>
                   <th className="py-2 pr-3">Tokens in</th>
                   <th className="py-2 pr-3">Tokens out</th>
                   <th className="py-2 pr-3">Custo in</th>
                   <th className="py-2 pr-3">Custo out</th>
-                  <th className="py-2">Custo total</th>
+                  <th className="py-2 pr-3">Custo total</th>
                 </tr>
               </thead>
               <tbody>
-                {(data?.byUser ?? []).slice(0, 20).map((user) => (
+                {(data?.byUser ?? []).map((user) => (
                   <tr key={user.userId} className="border-b border-dashed border-line">
-                    <td className="py-3 pr-3">
+                    <td className="py-3 pr-3 pl-3">
                       <p className="font-medium text-ink">{user.name || 'Sem nome'}</p>
                       <p className="text-xs text-ink-mute">{user.email || user.userId}</p>
                     </td>
@@ -281,7 +357,7 @@ export function AdminAiCostsClient() {
                     <td className="py-3 pr-3 text-ink">{user.outputTokens.toLocaleString('pt-BR')}</td>
                     <td className="py-3 pr-3 text-ink">{toUsd(user.inputCostUsd)}</td>
                     <td className="py-3 pr-3 text-ink">{toUsd(user.outputCostUsd)}</td>
-                    <td className="py-3 font-semibold text-ink">{toUsd(user.totalCostUsd)}</td>
+                    <td className="py-3 pr-3 font-semibold text-ink">{toUsd(user.totalCostUsd)}</td>
                   </tr>
                 ))}
                 {(data?.byUser ?? []).length === 0 && (
@@ -297,15 +373,6 @@ export function AdminAiCostsClient() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Leitura dos dados</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm text-ink-mute space-y-1">
-          <p>Os valores são estimativas em USD com base no preço por 1M tokens do modelo salvo no metadata.</p>
-          <p>Você pode sobrescrever preços por modelo via env: <code>LLM_PRICE_&lt;MODEL&gt;_INPUT_PER_1M_USD</code> e <code>...OUTPUT...</code>.</p>
-        </CardContent>
-      </Card>
     </div>
   )
 }

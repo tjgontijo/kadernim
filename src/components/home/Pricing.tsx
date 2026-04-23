@@ -22,7 +22,7 @@ export const Pricing: React.FC = () => {
 
         <div className="flex flex-col justify-center items-center max-w-xl mx-auto">
           {/* Plano Pro - Single Focus */}
-          <div className="w-full bg-surface-card rounded-r-5 p-8 border-2 border-terracotta shadow-3 flex flex-col relative focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-terracotta paper-grain">
+          <div className="w-full bg-surface-card rounded-5 p-8 border-2 border-terracotta shadow-3 flex flex-col relative focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-terracotta paper-grain">
             <div className="absolute top-0 right-0 left-0 bg-terracotta text-white text-center text-[11px] font-bold uppercase py-2 rounded-t-[22px] tracking-widest">
               Oferta de Lançamento
             </div>
@@ -81,7 +81,7 @@ export const Pricing: React.FC = () => {
         </div>
 
         <div className="mt-16 text-center">
-          <div className="inline-block bg-paper-2 rounded-r-4 p-6 border border-line shadow-1">
+          <div className="inline-block bg-paper-2 rounded-4 p-6 border border-line shadow-1">
             <h4 className="font-bold text-ink mb-2">Garantia Incondicional de 7 dias</h4>
             <p className="text-ink-soft text-sm">
               Experimente a plataforma sem risco. Se em até 7 dias você sentir que o Kadernim<br />

@@ -139,7 +139,7 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
     },
     {
       title: 'Disciplinas',
-      href: '/admin/subjects',
+      href: '/subjects',
       icon: 'Hash',
       permission: { action: 'read', subject: 'Subject' },
       count: stats?.totalSubjects
