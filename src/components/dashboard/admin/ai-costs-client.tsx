@@ -8,6 +8,7 @@ import { Brain, RefreshCw, Table2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 
 type PlannerUsageResponse = {
   success: boolean
@@ -74,8 +75,13 @@ type PlannerUsageResponse = {
   }
 }
 
-function toUsd(value: number) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
+function toUsd(value: number, fractionDigits = 2) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
+  }).format(value)
 }
 
 export function AdminAiCostsClient() {
@@ -97,6 +103,14 @@ export function AdminAiCostsClient() {
     () => Object.entries(data?.byModel ?? {}).sort((a, b) => b[1].totalCostUsd - a[1].totalCostUsd),
     [data]
   )
+  const hasCostByModel = modelRows.some(([, values]) => values.totalCostUsd > 0)
+  const modelPieData = modelRows.map(([model, values]) => ({
+    name: model,
+    value: hasCostByModel ? values.totalCostUsd : values.calls,
+    totalCostUsd: values.totalCostUsd,
+    calls: values.calls,
+  }))
+  const pieColors = ['#B2633F', '#6BAF72', '#4D8CE8', '#A87CCC', '#DD9A3E', '#60B9C0', '#B66B86', '#7D7D7D']
 
   if (isLoading && !data) {
     return (
@@ -174,7 +188,7 @@ export function AdminAiCostsClient() {
   }
 
   return (
-    <div className="flex-1 space-y-6 p-4 pt-6 md:p-8">
+    <div className="flex-1 min-h-[calc(100vh-88px)] space-y-6 p-4 pt-6 md:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Custos de IA</h2>
@@ -208,7 +222,7 @@ export function AdminAiCostsClient() {
             <CardTitle className="text-sm font-medium">Custo Total</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{toUsd(data?.totals.totalCostUsd ?? 0)}</div>
+            <div className="text-2xl font-bold">{toUsd(data?.totals.totalCostUsd ?? 0, 3)}</div>
             <p className="text-xs text-ink-mute">Apenas planos com métricas</p>
           </CardContent>
         </Card>
@@ -240,7 +254,7 @@ export function AdminAiCostsClient() {
             <CardTitle className="text-sm font-medium">Média por Plano</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{toUsd(data?.totals.avgCostPerPlanUsd ?? 0)}</div>
+            <div className="text-2xl font-bold">{toUsd(data?.totals.avgCostPerPlanUsd ?? 0, 3)}</div>
             <p className="text-xs text-ink-mute">Latência média: {data?.totals.avgLatencyMs ?? 0} ms</p>
           </CardContent>
         </Card>
@@ -255,19 +269,58 @@ export function AdminAiCostsClient() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              {modelRows.length === 0 && <p className="text-sm text-ink-mute">Sem dados no período.</p>}
-              {modelRows.map(([model, values]) => (
-                <div key={model} className="rounded-3 border border-line bg-paper-2 p-3">
-                  <p className="text-sm font-semibold text-ink">{model}</p>
-                  <p className="text-xs text-ink-mute">{values.calls} chamadas</p>
-                      <p className="text-xs text-ink-mute">
-                        in {values.inputTokens.toLocaleString('pt-BR')} · out {values.outputTokens.toLocaleString('pt-BR')}
-                      </p>
-                      <p className="text-sm font-semibold text-ink mt-1">{toUsd(values.totalCostUsd)}</p>
+            {modelRows.length === 0 ? (
+              <p className="text-sm text-ink-mute">Sem dados no período.</p>
+            ) : (
+              <div className="space-y-4">
+                <div className="h-[240px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={modelPieData}
+                        dataKey="value"
+                        nameKey="name"
+                        innerRadius={58}
+                        outerRadius={92}
+                        stroke="none"
+                      >
+                        {modelPieData.map((entry, index) => (
+                          <Cell key={entry.name} fill={pieColors[index % pieColors.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(value: number, _name, payload) => {
+                          const item = payload?.payload as { totalCostUsd: number; calls: number } | undefined
+                          if (!item) return [String(value), hasCostByModel ? 'Custo' : 'Chamadas']
+                          return [
+                            hasCostByModel ? toUsd(item.totalCostUsd, 3) : `${item.calls} chamadas`,
+                            hasCostByModel ? 'Custo' : 'Chamadas',
+                          ]
+                        }}
+                        labelFormatter={(label) => `Modelo: ${String(label)}`}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="space-y-2">
+                  {modelRows.map(([model, values], index) => (
+                    <div key={model} className="flex items-center justify-between gap-3 text-sm">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span
+                          className="h-2.5 w-2.5 rounded-full shrink-0"
+                          style={{ backgroundColor: pieColors[index % pieColors.length] }}
+                        />
+                        <span className="font-medium text-ink truncate">{model}</span>
+                      </div>
+                      <span className="text-xs font-semibold text-ink-mute shrink-0">
+                        {hasCostByModel ? toUsd(values.totalCostUsd, 3) : `${values.calls} chamadas`}
+                      </span>
                     </div>
                   ))}
-            </div>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -304,9 +357,9 @@ export function AdminAiCostsClient() {
                       <td className="py-3 pr-3 text-ink">{log.model}</td>
                       <td className="py-3 pr-3 text-ink">{log.usage.inputTokens.toLocaleString('pt-BR')}</td>
                       <td className="py-3 pr-3 text-ink">{log.usage.outputTokens.toLocaleString('pt-BR')}</td>
-                      <td className="py-3 pr-3 text-ink">{toUsd(log.usage.inputCostUsd)}</td>
-                      <td className="py-3 pr-3 text-ink">{toUsd(log.usage.outputCostUsd)}</td>
-                      <td className="py-3 pr-3 font-semibold text-ink">{toUsd(log.usage.totalCostUsd)}</td>
+                      <td className="py-3 pr-3 text-ink">{toUsd(log.usage.inputCostUsd, 3)}</td>
+                      <td className="py-3 pr-3 text-ink">{toUsd(log.usage.outputCostUsd, 3)}</td>
+                      <td className="py-3 pr-3 font-semibold text-ink">{toUsd(log.usage.totalCostUsd, 3)}</td>
                       <td className="py-3 pr-3 text-ink">{log.usage.latencyMs} ms</td>
                       <td className="py-3 text-ink-mute">
                         {format(new Date(log.createdAt), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
@@ -327,37 +380,37 @@ export function AdminAiCostsClient() {
         </Card>
       </div>
 
-      <Card>
+      <Card className="min-h-[420px]">
         <CardHeader>
           <CardTitle className="text-base">Consumo por Usuário</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="max-h-[420px] overflow-auto rounded-3 border border-line/60">
+        <CardContent className="h-[calc(100vh-520px)] min-h-[320px]">
+          <div className="h-full overflow-auto">
             <table className="w-full text-sm">
-              <thead className="sticky top-0 z-10 bg-card">
+              <thead>
                 <tr className="border-b border-line text-left text-xs uppercase tracking-[0.08em] text-ink-mute">
-                  <th className="py-2 pr-3 pl-3">Usuário</th>
+                  <th className="py-2 pr-3">Usuário</th>
                   <th className="py-2 pr-3">Chamadas</th>
                   <th className="py-2 pr-3">Tokens in</th>
                   <th className="py-2 pr-3">Tokens out</th>
                   <th className="py-2 pr-3">Custo in</th>
                   <th className="py-2 pr-3">Custo out</th>
-                  <th className="py-2 pr-3">Custo total</th>
+                  <th className="py-2">Custo total</th>
                 </tr>
               </thead>
               <tbody>
                 {(data?.byUser ?? []).map((user) => (
-                  <tr key={user.userId} className="border-b border-dashed border-line">
-                    <td className="py-3 pr-3 pl-3">
+                  <tr key={user.userId} className="border-b border-dashed border-line align-top">
+                    <td className="py-3 pr-3">
                       <p className="font-medium text-ink">{user.name || 'Sem nome'}</p>
                       <p className="text-xs text-ink-mute">{user.email || user.userId}</p>
                     </td>
                     <td className="py-3 pr-3 text-ink">{user.calls}</td>
                     <td className="py-3 pr-3 text-ink">{user.inputTokens.toLocaleString('pt-BR')}</td>
                     <td className="py-3 pr-3 text-ink">{user.outputTokens.toLocaleString('pt-BR')}</td>
-                    <td className="py-3 pr-3 text-ink">{toUsd(user.inputCostUsd)}</td>
-                    <td className="py-3 pr-3 text-ink">{toUsd(user.outputCostUsd)}</td>
-                    <td className="py-3 pr-3 font-semibold text-ink">{toUsd(user.totalCostUsd)}</td>
+                    <td className="py-3 pr-3 text-ink">{toUsd(user.inputCostUsd, 3)}</td>
+                    <td className="py-3 pr-3 text-ink">{toUsd(user.outputCostUsd, 3)}</td>
+                    <td className="py-3 font-semibold text-ink">{toUsd(user.totalCostUsd, 3)}</td>
                   </tr>
                 ))}
                 {(data?.byUser ?? []).length === 0 && (

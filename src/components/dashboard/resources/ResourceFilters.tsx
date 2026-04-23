@@ -36,6 +36,8 @@ interface ResourceFiltersProps {
 
 export function ResourceFilters({ onFiltersChange }: ResourceFiltersProps) {
   const [isOpen, setIsOpen] = useState(false)
+  
+  // Estado local para os inputs
   const [level, setLevel] = useState<string>('all')
   const [grade, setGrade] = useState<string>('all')
   const [subject, setSubject] = useState<string>('all')
@@ -53,44 +55,77 @@ export function ResourceFilters({ onFiltersChange }: ResourceFiltersProps) {
     return count;
   }, [level, grade, subject])
 
-  const placeholder = 'Buscar materiais...'
+  // Função para compor o payload de filtros
+  const getPayload = (overrides: { q?: string; l?: string; g?: string; s?: string } = {}) => {
+    const q = overrides.q !== undefined ? overrides.q : query;
+    const l = overrides.l !== undefined ? overrides.l : level;
+    const g = overrides.g !== undefined ? overrides.g : grade;
+    const s = overrides.s !== undefined ? overrides.s : subject;
 
-  const buildPayload = () => ({
-    q: query.trim() || undefined,
-    educationLevel: level === 'all' ? undefined : level,
-    grade: grade === 'all' ? undefined : grade,
-    subject: subject === 'all' ? undefined : subject,
-  })
+    return {
+      q: q.trim() || undefined,
+      educationLevel: l === 'all' ? undefined : l,
+      grade: g === 'all' ? undefined : g,
+      subject: s === 'all' ? undefined : s,
+    };
+  };
 
-  const handleApply = (close = false) => {
-    onFiltersChange({
-      ...buildPayload(),
-    })
-    if (close) setIsOpen(false)
-  }
+  // Debounce para a busca (Event Handler)
+  const debouncedSearch = useMemo(() => {
+    let timeoutId: NodeJS.Timeout;
+    return (val: string) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        onFiltersChange(getPayload({ q: val }));
+      }, 500);
+    };
+  }, [onFiltersChange, level, grade, subject]);
 
-  const handleClear = (close = false) => {
-    setLevel('all')
-    setGrade('all')
-    setSubject('all')
-    setQuery('')
+  const handleQueryChange = (val: string) => {
+    setQuery(val);
+    debouncedSearch(val);
+  };
+
+  const handleLevelChange = (val: string) => {
+    setLevel(val);
+    setGrade('all');
+    setSubject('all');
+    onFiltersChange(getPayload({ l: val, g: 'all', s: 'all' }));
+  };
+
+  const handleGradeChange = (val: string) => {
+    setGrade(val);
+    setSubject('all');
+    onFiltersChange(getPayload({ g: val, s: 'all' }));
+  };
+
+  const handleSubjectChange = (val: string) => {
+    setSubject(val);
+    onFiltersChange(getPayload({ s: val }));
+  };
+
+  const handleClear = () => {
+    setLevel('all');
+    setGrade('all');
+    setSubject('all');
+    setQuery('');
     onFiltersChange({
       q: undefined,
       educationLevel: undefined,
       grade: undefined,
       subject: undefined,
-    })
-    if (close) setIsOpen(false)
-  }
+    });
+    setIsOpen(false);
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <div className="flex items-center gap-2 w-full">
         <SearchInput
-          placeholder={placeholder}
+          placeholder="Buscar materiais..."
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onClear={() => setQuery('')}
+          onChange={(e) => handleQueryChange(e.target.value)}
+          onClear={() => handleQueryChange('')}
           aria-label="Pesquisar recursos"
         />
 
@@ -105,7 +140,6 @@ export function ResourceFilters({ onFiltersChange }: ResourceFiltersProps) {
             {activeFiltersCount > 0 && (
               <span
                 className="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full bg-primary text-[10px] font-black text-primary-foreground shadow-lg shadow-primary/20 ring-2 ring-background"
-                aria-label={`${activeFiltersCount} filtros ativos`}
               >
                 {activeFiltersCount}
               </span>
@@ -123,86 +157,57 @@ export function ResourceFilters({ onFiltersChange }: ResourceFiltersProps) {
         </DialogHeader>
 
         <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                {level === 'educacao-infantil' ? 'Etapa' : 'Etapa de Ensino'}
-              </label>
-              <Select value={level} onValueChange={(value) => {
-                setLevel(value)
-                setGrade('all')
-                setSubject('all')
-              }}>
-                <SelectTrigger className="h-14 w-full bg-muted/30 border-border/50 rounded-2xl text-sm font-bold">
-                  <SelectValue placeholder="Todas as Etapas" />
-                </SelectTrigger>
-                <SelectContent className="rounded-2xl border-border/50">
-                  <SelectItem value="all">Todas as Etapas</SelectItem>
-                  {levels.map((l: FilterOption) => <SelectItem key={l.slug} value={l.slug}>{l.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                {level === 'educacao-infantil' ? 'Faixa Etária' : 'Ano / Série'}
-              </label>
-              <Select value={grade} onValueChange={(value) => {
-                setGrade(value)
-                setSubject('all')
-              }} disabled={level === 'all'}>
-                <SelectTrigger className="h-14 w-full bg-muted/30 border-border/50 rounded-2xl text-sm font-bold">
-                  <SelectValue placeholder={level === 'educacao-infantil' ? 'Faixa Etária' : 'Ano/Série'} />
-                </SelectTrigger>
-                <SelectContent className="rounded-2xl border-border/50">
-                  <SelectItem value="all">Todos os Anos</SelectItem>
-                  {grades.map((g: FilterOption) => <SelectItem key={g.slug} value={g.slug}>{g.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                {level === 'educacao-infantil' ? 'Campo de Experiência' : 'Componente / Matéria'}
-              </label>
-              <Select value={subject} onValueChange={setSubject} disabled={level === 'all'}>
-                <SelectTrigger className="h-14 w-full bg-muted/30 border-border/50 rounded-2xl text-sm font-bold">
-                  <SelectValue placeholder={level === 'educacao-infantil' ? 'Campo de Exp.' : 'Componente'} />
-                </SelectTrigger>
-                <SelectContent className="rounded-2xl border-border/50">
-                  <SelectItem value="all">Todos os Componentes</SelectItem>
-                  {subjects.map((s: FilterOption) => <SelectItem key={s.slug} value={s.slug}>{s.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-
-          <div className="pt-2 grid grid-cols-2 gap-3">
-            <Button
-              variant="outline"
-              className="h-11 rounded-2xl font-semibold"
-              onClick={() => handleClear(true)}
-            >
-              Limpar
-            </Button>
-            <Button
-              className="h-11 rounded-2xl font-semibold"
-              onClick={() => handleApply(true)}
-            >
-              Aplicar
-            </Button>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+              Etapa de Ensino
+            </label>
+            <Select value={level} onValueChange={handleLevelChange}>
+              <SelectTrigger className="h-14 w-full bg-muted/30 border-border/50 rounded-2xl text-sm font-bold">
+                <SelectValue placeholder="Todas as Etapas" />
+              </SelectTrigger>
+              <SelectContent className="rounded-2xl border-border/50">
+                <SelectItem value="all">Todas as Etapas</SelectItem>
+                {levels.map((l: FilterOption) => <SelectItem key={l.slug} value={l.slug}>{l.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
 
-          <div className="pt-1">
-            <Button
-              type="button"
-              variant="ghost"
-              className="w-full h-10 rounded-2xl text-ink-mute"
-              onClick={() => {
-                setGrade('all')
-                setSubject('all')
-              }}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Limpar ano e componente
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+              {level === 'educacao-infantil' ? 'Faixa Etária' : 'Ano / Série'}
+            </label>
+            <Select value={grade} onValueChange={handleGradeChange} disabled={level === 'all'}>
+              <SelectTrigger className="h-14 w-full bg-muted/30 border-border/50 rounded-2xl text-sm font-bold">
+                <SelectValue placeholder="Todos os Anos" />
+              </SelectTrigger>
+              <SelectContent className="rounded-2xl border-border/50">
+                <SelectItem value="all">Todos os Anos</SelectItem>
+                {grades.map((g: FilterOption) => <SelectItem key={g.slug} value={g.slug}>{g.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+              Componente / Matéria
+            </label>
+            <Select value={subject} onValueChange={handleSubjectChange} disabled={level === 'all'}>
+              <SelectTrigger className="h-14 w-full bg-muted/30 border-border/50 rounded-2xl text-sm font-bold">
+                <SelectValue placeholder="Todos os Componentes" />
+              </SelectTrigger>
+              <SelectContent className="rounded-2xl border-border/50">
+                <SelectItem value="all">Todos os Componentes</SelectItem>
+                {subjects.map((s: FilterOption) => <SelectItem key={s.slug} value={s.slug}>{s.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="pt-2 grid grid-cols-2 gap-3">
+            <Button variant="outline" className="h-11 rounded-2xl font-semibold" onClick={handleClear}>
+              Limpar Tudo
+            </Button>
+            <Button className="h-11 rounded-2xl font-semibold" onClick={() => setIsOpen(false)}>
+              Fechar
             </Button>
           </div>
         </div>

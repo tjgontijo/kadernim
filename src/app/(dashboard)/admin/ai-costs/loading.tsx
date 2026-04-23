@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 export default function AdminAiCostsLoading() {
   return (
-    <div className="flex-1 space-y-6 p-4 pt-6 md:p-8">
+    <div className="flex-1 min-h-[calc(100vh-88px)] space-y-6 p-4 pt-6 md:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-2">
           <Skeleton className="h-9 w-52" />
@@ -29,12 +29,12 @@ export default function AdminAiCostsLoading() {
         ))}
       </div>
 
-      <Card>
+      <Card className="min-h-[420px]">
         <CardHeader>
           <Skeleton className="h-5 w-40" />
         </CardHeader>
-        <CardContent>
-          <div className="max-h-[420px] overflow-auto rounded-3 border border-line/60 p-3 space-y-3">
+        <CardContent className="h-[calc(100vh-520px)] min-h-[320px]">
+          <div className="h-full overflow-auto rounded-3 border border-line/60 p-3 space-y-3">
             {Array.from({ length: 9 }).map((_, index) => (
               <Skeleton key={index} className="h-11 w-full rounded-2" />
             ))}

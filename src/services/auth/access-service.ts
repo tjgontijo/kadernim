@@ -21,9 +21,14 @@ export function buildHasAccessConditionSql(
   ctx: UserAccessContext,
   subscription: SubscriptionContext
 ): Prisma.Sql {
-  void ctx
-  void subscription
-  return PrismaNamespace.sql`TRUE`
+  // Se for admin, sempre tem acesso. Caso contrário, depende da assinatura ativa.
+  if (ctx.isAdmin) {
+    return PrismaNamespace.sql`TRUE`
+  }
+
+  return subscription.hasActiveSubscription 
+    ? PrismaNamespace.sql`TRUE` 
+    : PrismaNamespace.sql`FALSE`
 }
 
 /**
@@ -34,7 +39,6 @@ export async function computeHasAccessForResource(
   subscription: SubscriptionContext,
   _resource: ResourceAccessInput
 ): Promise<boolean> {
-  void ctx
-  void subscription
-  return true
+  // Se for admin, sempre tem acesso. Caso contrário, depende da assinatura ativa.
+  return ctx.isAdmin || subscription.hasActiveSubscription
 }

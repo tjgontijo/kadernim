@@ -307,6 +307,11 @@ export function createAdminUserAvatarHandler(config: {
 }
 
 export function createAdminUserCrudHandlers(config: {
+  getUser: (userId: string) => Promise<{
+    createdAt: Date
+    updatedAt: Date
+    subscription?: { expiresAt: Date | null } | null
+  }>
   updateUser: (userId: string, data: UpdateUserInput) => Promise<{
     createdAt: Date
     updatedAt: Date
@@ -315,6 +320,30 @@ export function createAdminUserCrudHandlers(config: {
   deleteUser: (userId: string) => Promise<unknown>
 }) {
   return {
+    GET: async function GET(
+      request: NextRequest,
+      { params }: { params: Promise<{ id: string }> }
+    ) {
+      try {
+        const authResult = await authorizeAdminUserRequest(request, {
+          permission: 'manage:users',
+          key: 'admin:users:get',
+          limit: 60,
+        })
+        if (authResult instanceof NextResponse) {
+          return authResult
+        }
+
+        const { id } = await params
+        const user = await config.getUser(id)
+        return NextResponse.json(serializeAdminUser(user))
+      } catch (error) {
+        if (error instanceof Error && error.message === 'USER_NOT_FOUND') {
+          return NextResponse.json({ error: 'Usuário não encontrado.' }, { status: 404 })
+        }
+        return adminUsersServerError('[GET /api/v1/admin/users/[id]]', error)
+      }
+    },
     PATCH: async function PATCH(
       request: NextRequest,
       { params }: { params: Promise<{ id: string }> }

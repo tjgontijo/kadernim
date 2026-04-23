@@ -41,14 +41,16 @@ export const UserListResponseSchema = z.object({
     email: z.string(),
     phone: z.string().nullable(),
     image: z.string().nullable(),
-    role: z.enum(['user', 'subscriber', 'admin']),
+    role: z.enum(['user', 'subscriber', 'editor', 'manager', 'admin']),
     emailVerified: z.boolean(),
     banned: z.boolean(),
     subscription: z.object({
       isActive: z.boolean(),
       expiresAt: z.string().nullable(),
     }).nullable(),
-    resourceAccessCount: z.number(),
+    _count: z.object({
+      resourceAccess: z.number(),
+    }),
     createdAt: z.string(),
     updatedAt: z.string(),
   })),

@@ -29,6 +29,9 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
   const pathSegments = pathname.split('/').filter(Boolean)
   const isResourceDetail = pathSegments[0] === 'resources' && pathSegments.length > 1
   const rootSegment = pathSegments[0] || 'resources'
+  
+  const isUserForm = rootSegment === 'admin' && pathSegments[1] === 'users' && pathSegments.length > 2
+  const showBackButton = isResourceDetail || isUserForm
 
   const rootLabelMap: Record<string, string> = {
     resources: 'Biblioteca',
@@ -36,13 +39,35 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
     planner: 'Planejador',
     diretrizes: 'Diretrizes',
     discover: 'Descobrir',
-    admin: 'Painel Admin',
+    admin: 'Administração',
     account: 'Conta',
     billing: 'Assinatura',
   }
 
   const rootLabel = rootLabelMap[rootSegment] || rootSegment
   const rootHref = `/${rootSegment}`
+
+  const formatSegmentLabel = (segment: string) =>
+    segment
+      .split('-')
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ')
+
+  const nestedLabelMap: Record<string, Record<string, string>> = {
+    admin: {
+      resources: 'Gestão de Recursos',
+      subjects: 'Disciplinas',
+      users: 'Usuários',
+      'ai-costs': 'Custos IA',
+      billing: 'Faturamento',
+    },
+  }
+
+  const nestedSegment = pathSegments[1]
+  const nestedLabel =
+    nestedSegment
+      ? nestedLabelMap[rootSegment]?.[nestedSegment] || formatSegmentLabel(nestedSegment)
+      : null
   
   return (
     <header className="sticky top-0 z-10 flex items-center gap-4 px-4 sm:px-[32px] py-[16px] border-b border-line bg-[oklch(0.975_0.012_85_/_0.92)] backdrop-blur-md">
@@ -71,16 +96,16 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
         {!isResourceDetail && pathSegments.length > 1 && pathSegments[0] !== 'resources' && (
            <>
               <span className="text-line">/</span>
-              <span className="text-ink font-medium truncate">{pathSegments[0] === 'admin' ? 'Painel Admin' : pathSegments[1]}</span>
+              <span className="text-ink font-medium truncate">{nestedLabel}</span>
            </>
         )}
       </nav>
 
       <div className="shrink-0 flex items-center gap-[16px]">
-        {isResourceDetail && (
+        {showBackButton && (
           <button 
             onClick={() => router.back()} 
-            className="hidden sm:inline-flex items-center justify-center gap-[8px] px-[14px] py-[8px] font-body text-[13px] font-semibold text-ink-soft bg-transparent border-none hover:bg-paper-2 hover:text-ink rounded-full transition-colors shrink-0"
+            className="inline-flex items-center justify-center gap-[8px] px-[14px] py-[8px] font-body text-[13px] font-semibold text-ink-soft bg-transparent border-none hover:bg-paper-2 hover:text-ink rounded-full transition-colors shrink-0"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className="w-[16px] h-[16px]"><path d="M15 6l-6 6 6 6"/></svg>
             Voltar

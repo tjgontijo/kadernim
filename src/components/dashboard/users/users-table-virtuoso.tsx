@@ -82,41 +82,33 @@ export function UsersTableVirtuoso({
         )
     }
 
-    const [scrollParent, setScrollParent] = React.useState<HTMLElement | undefined>(undefined)
-
-    React.useEffect(() => {
-        const el = document.getElementById('crud-scroll-container')
-        if (el) setScrollParent(el)
-    }, [])
-
     return (
-        <div className="rounded-xl border border-border bg-card shadow-sm h-full min-h-[500px] flex flex-col">
+        <div className="rounded-xl border border-border bg-card shadow-sm h-full flex flex-col overflow-hidden">
             <TableVirtuoso
                 data={users}
                 endReached={onEndReached}
-                customScrollParent={scrollParent}
                 increaseViewportBy={200}
                 fixedHeaderContent={() => (
-                    <tr className="bg-muted/80 backdrop-blur-sm border-b border-border z-10">
-                        <th className="px-4 py-3 text-left text-[11px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/80">
+                    <tr className="bg-muted/80 backdrop-blur-sm border-b border-border/40 z-10">
+                        <th className="px-4 py-3 text-left text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
                             Usuário
                         </th>
-                        <th className="px-4 py-3 text-left text-[11px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/80">
+                        <th className="px-4 py-3 text-left text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
                             Cargo
                         </th>
-                        <th className="px-4 py-3 text-left text-[11px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/80">
+                        <th className="px-4 py-3 text-left text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
                             Assinatura
                         </th>
-                        <th className="px-4 py-3 text-center text-[11px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/80">
+                        <th className="px-4 py-3 text-center text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
                             E-mail
                         </th>
-                        <th className="px-4 py-3 text-center text-[11px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/80">
+                        <th className="px-4 py-3 text-center text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
                             Acessos
                         </th>
-                        <th className="px-4 py-3 text-left text-[11px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/80">
+                        <th className="px-4 py-3 text-left text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
                             Criado em
                         </th>
-                        <th className="w-28 bg-muted/80"></th>
+                        <th className="w-28"></th>
                     </tr>
                 )}
                 itemContent={(index, user) => (
@@ -181,7 +173,7 @@ export function UsersTableVirtuoso({
                         </td>
 
                         <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                            <div className="flex items-center justify-end gap-1">
+                            <div className="flex items-center justify-end gap-1 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-150">
                                 <PermissionGuard action="update" subject="User">
                                     <Button
                                         variant="ghost"
@@ -233,6 +225,9 @@ export function UsersTableVirtuoso({
                             )} 
                         />
                     ),
+                    Scroller: React.forwardRef((props, ref) => (
+                        <div {...props} ref={ref} className={cn(props.className, "scrollbar-hide")} />
+                    )),
                 }}
             />
             

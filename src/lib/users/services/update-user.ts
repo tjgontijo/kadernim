@@ -38,6 +38,46 @@ export async function updateUserService(userId: string, data: UpdateUserInput) {
   }
 }
 
+export async function getUserByIdService(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: {
+      subscription: {
+        select: {
+          isActive: true,
+          expiresAt: true,
+        },
+      },
+      _count: {
+        select: {
+          userInteractions: true,
+        },
+      },
+    },
+  })
+
+  if (!user) {
+    throw new Error('USER_NOT_FOUND')
+  }
+
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    image: user.image,
+    role: user.role,
+    emailVerified: user.emailVerified,
+    banned: user.banned,
+    subscription: user.subscription,
+    _count: {
+      resourceAccess: user._count.userInteractions,
+    },
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+  }
+}
+
 export async function createAdminUserService(data: CreateAdminUserInput) {
   let user = await prisma.user.findUnique({ where: { email: data.email } })
 

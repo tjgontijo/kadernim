@@ -64,32 +64,16 @@ Top-level files define how your Mastra project is configured, built, and connect
 <claude-mem-context>
 # Memory Context
 
-# [kadernim] recent context, 2026-04-23 1:08pm GMT-3
+# [kadernim] recent context, 2026-04-23 2:40pm GMT-3
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision
 Format: ID TIME TYPE TITLE
 Fetch details: get_observations([IDs]) | Search: mem-search skill
 
-Stats: 50 obs (17,414t read) | 698,130t work | 98% savings
+Stats: 50 obs (17,170t read) | 1,131,716t work | 98% savings
 
 ### Apr 20, 2026
-185 12:59p 🔵 Kadernim UUID Generation — Client-Side, Not Database-Generated
-187 1:02p 🔵 Kadernim pedagogicalContent — Full Codebase Usage Map
-188 " 🔵 detail-service.ts — Hybrid Relational + JSON Fallback for pedagogicalContent
-191 1:03p 🔵 Schema Mismatch — admin-resource-schemas vs pedagogical-schemas Incompatibility
-196 " 🔴 Pedagogical Schema — id Field Made Optional Across All Schemas and Components
-197 " 🔴 create-service.ts — pedagogicalContent Written to Relational Tables Instead of JSONB
-199 1:04p 🔴 update-service.ts — Added pedagogicalContent Handling via Relational Delete-and-Recreate
-200 " 🔄 pedagogy-service.ts — Legacy JSONB Fallback and Materials JSONB Write Removed
-203 " 🔴 detail-service.ts — JSONB Fallback Removed, Relational-Only pedagogicalContent Assembly
-206 1:06p 🔵 Build Error — `selectedGrades` Possibly Undefined in resource-details-form.tsx:462
-207 1:07p 🔄 pedagogical-schemas.ts — Materials Schema Removed to Match Relational-Only Architecture
-210 " 🔴 Materials UI Fully Removed from ResourcePedagogyEditor
-211 " 🔴 resource-details-form.tsx — selectedGrades Nullish Coalescing Fix
-212 1:09p 🔴 resource-details-form.tsx — Two More TypeScript Build Errors Fixed
-213 " 🔴 create-service.ts — Stale `externalId` Destructure Removed
-216 1:10p 🔴 create-service.ts — thumbUrl Removed (Field Not in Prisma ResourceCreateInput)
-220 " 🔵 Build Error — Seed File `@db` Module Alias Not Resolvable by Next.js TypeScript Build
+220 1:10p 🔵 Build Error — Seed File `@db` Module Alias Not Resolvable by Next.js TypeScript Build
 221 1:12p 🔴 pedagogy-service.ts — Step Type Enum Narrowing and null→undefined Duration Fix
 222 " 🔴 Seed Files Fixed — `@db` Import Alias Changed to `@db/client`
 223 " 🔴 Email Templates — Missing `Font` Import Added to otp-email.tsx; pix-failure-email.tsx Also Affected
@@ -126,6 +110,22 @@ Stats: 50 obs (17,414t read) | 698,130t work | 98% savings
 351 " 🟣 Subject Color Field Added to Schema and Type Layer
 353 " 🟣 Subject Color Utility Layer Added — Service Selects Color, Color Helpers Created
 356 " 🟣 SubjectForm — Color Picker Added with Native Input + HEX Text Input
+358 2:03p 🔴 AI Costs Page — "Consumo por Usuário" Table Now Fills Available Vertical Space
+359 " 🟣 AI Costs — "Por Modelo" Section Replaced with Recharts Donut Chart
+360 " 🔄 toUsd Helper — Configurable Decimal Precision Added
+361 " 🔄 DashboardHeader Breadcrumb — Smart Nested Label Resolution
+362 " ✅ Subjects Page Moved to /admin/subjects Route
+363 " 🔵 Build Error — `resourceAccess` Missing from Prisma UserCountOutputTypeSelect
+366 2:04p ✅ Old /subjects Route Deleted — Disciplinas Exclusively at /admin/subjects
+367 " 🔵 Kadernim Users System — resourceAccess Count Field Architecture Confirmed
+368 2:06p 🟣 useInfiniteDataTable — replaceFilters Method Added
+369 " 🔄 Admin Users Page — Full Rewrite to PageScaffold + Dialog Filter Pattern
+370 " 🔄 UsersTableVirtuoso — Window Scroll + Hover-Reveal Action Buttons
+375 2:07p 🔄 Admin Users Loading Skeleton — Replaced CrudPageSkeleton with Column-Matched Custom Skeleton
+377 2:09p 🔵 Kadernim Users System — Full Architecture Confirmed
+379 2:11p 🟣 GET /api/v1/admin/users/[id] — New Single-User Endpoint Added
+380 " 🔵 Prisma Relation Name Mismatch — resourceAccess vs userInteractions
+382 2:14p 🔄 user-create-page-client.tsx — PageScaffold Replaced with Brand-Styled Custom Layout
 
-Access 698k tokens of past work via get_observations([IDs]) or mem-search skill.
+Access 1132k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>

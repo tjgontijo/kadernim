@@ -1,6 +1,6 @@
 import { Skeleton } from '@/components/ui/skeleton'
 
-export default function SubjectsLoading() {
+export default function AdminSubjectsLoading() {
   return (
     <div className="dashboard-page-container space-y-5 sm:space-y-6 pb-20 pt-4 sm:pt-6">
       <header className="flex items-center justify-between gap-4 px-0 pt-4 sm:pt-6">

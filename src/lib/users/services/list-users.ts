@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db'
 import { Prisma } from '@db/client'
 import type { ListUsersFilter } from '@/lib/users/schemas'
+import type { UserRoleType } from '@/types/users/user-role'
 
 interface ListUsersResponse {
   data: Array<{
@@ -9,13 +10,16 @@ interface ListUsersResponse {
     email: string
     phone: string | null
     image: string | null
-    role: 'user' | 'subscriber' | 'admin'
+    role: UserRoleType
     emailVerified: boolean
     banned: boolean
     subscription: {
       isActive: boolean
       expiresAt: Date | null
     } | null
+    _count: {
+      resourceAccess: number
+    }
     createdAt: Date
     updatedAt: Date
   }>
@@ -92,6 +96,11 @@ export async function listUsersService(filters: ListUsersFilter): Promise<ListUs
           expiresAt: true,
         },
       },
+      _count: {
+        select: {
+          userInteractions: true,
+        },
+      },
     },
   })
 
@@ -101,10 +110,13 @@ export async function listUsersService(filters: ListUsersFilter): Promise<ListUs
     email: user.email,
     phone: user.phone,
     image: user.image,
-    role: user.role as 'user' | 'subscriber' | 'admin',
+    role: user.role as UserRoleType,
     emailVerified: user.emailVerified,
     banned: user.banned,
     subscription: user.subscription,
+    _count: {
+      resourceAccess: user._count.userInteractions,
+    },
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   }))

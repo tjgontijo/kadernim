@@ -36,6 +36,11 @@ export async function updateAdminUser(userId: string, input: UpdateUserInput) {
   return parseResponse(response)
 }
 
+export async function fetchAdminUser(userId: string) {
+  const response = await fetch(`/api/v1/admin/users/${userId}`)
+  return parseResponse(response)
+}
+
 export async function deleteAdminUser(userId: string) {
   const response = await fetch(`/api/v1/admin/users/${userId}`, {
     method: 'DELETE',

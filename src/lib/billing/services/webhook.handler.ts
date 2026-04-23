@@ -10,6 +10,7 @@ import { PaymentService } from './payment.service'
 import { mapPixAutomaticFailureReason } from './pix-failure.helper'
 import { authDeliveryService } from '@/services/delivery/auth-delivery'
 import { isValidBrazilianPhone } from '@/lib/utils/phone'
+import { onSubscriptionChange } from '@/services/auth/role-sync-service'
 
 function mapInvoiceStatus(status: string): InvoiceStatus {
     switch (status) {
@@ -131,12 +132,19 @@ export class WebhookHandler {
         const invoice = await this.upsertInvoiceFromWebhook(payment, planId)
 
         if (invoice.subscriptionId) {
-            await PaymentService.activateSubscriptionForPayment(
+            const updatedSubscription = await PaymentService.activateSubscriptionForPayment(
                 invoice.subscriptionId,
                 payment.description,
                 payment.value,
                 invoice.paidAt ?? new Date()
             )
+            
+            if (updatedSubscription) {
+                await onSubscriptionChange(invoice.userId, {
+                    isActive: updatedSubscription.isActive,
+                    expiresAt: updatedSubscription.expiresAt
+                })
+            }
         }
 
         await BillingAuditService.log({
@@ -235,7 +243,43 @@ export class WebhookHandler {
     }
 
     private static async handleSubscriptionEvent(payload: any) {
-        // ... logic for subscriptions
+        const eventName = payload.event
+        const subscription = payload.subscription
+        const asaasId = subscription.id
+
+        billingLog('info', `Handling Subscription Event: ${eventName}`, { asaasId })
+
+        if (eventName === 'SUBSCRIPTION_DELETED') {
+            const localSub = await prisma.subscription.findUnique({
+                where: { asaasId },
+                select: { userId: true }
+            })
+
+            if (localSub) {
+                const updated = await prisma.subscription.update({
+                    where: { asaasId },
+                    data: { 
+                        status: 'CANCELED', 
+                        isActive: false, 
+                        canceledAt: new Date() 
+                    }
+                })
+
+                await onSubscriptionChange(localSub.userId, {
+                    isActive: false,
+                    expiresAt: updated.expiresAt
+                })
+            }
+        }
+
+        await BillingAuditService.log({
+            actor: AuditActor.SYSTEM,
+            action: eventName,
+            entity: 'Subscription',
+            entityId: asaasId,
+            asaasEventId: payload.id,
+            newState: subscription,
+        })
     }
 
     private static getPixAutomaticAuthorization(payload: any) {
@@ -267,18 +311,30 @@ export class WebhookHandler {
         billingLog('info', 'Handling Pix Automático Authorized', { authorizationId: authorization.id })
 
         // 1. Atualizar Subscription que aguardava essa autorização
-        await prisma.subscription.updateMany({
+        const sub = await prisma.subscription.findFirst({
             where: {
                 asaasId: authorization.id,
                 paymentMethod: 'PIX_AUTOMATIC'
             },
-            data: {
-                status: 'ACTIVE',
-                isActive: true,
-                purchaseDate: new Date(),
-                expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-            }
+            select: { id: true, userId: true }
         })
+
+        if (sub) {
+            const updated = await prisma.subscription.update({
+                where: { id: sub.id },
+                data: {
+                    status: 'ACTIVE',
+                    isActive: true,
+                    purchaseDate: new Date(),
+                    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                }
+            })
+
+            await onSubscriptionChange(sub.userId, {
+                isActive: true,
+                expiresAt: updated.expiresAt
+            })
+        }
 
         // TODO: In a more robust flow, we also manually create the first invoice local record
         // since Asaas generates an immediateQrCode that technically acted as the first invoice.

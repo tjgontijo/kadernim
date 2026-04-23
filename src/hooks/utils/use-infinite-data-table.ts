@@ -105,6 +105,10 @@ export function useInfiniteDataTable<T>({
         setFilters(prev => ({ ...prev, ...newFilters }))
     }, [])
 
+    const replaceFilters = useCallback((newFilters: Record<string, any>) => {
+        setFilters(newFilters)
+    }, [])
+
     const clearFilters = useCallback(() => {
         setFilters({})
         setSearchInput('')
@@ -132,6 +136,7 @@ export function useInfiniteDataTable<T>({
         setSearchInput: handleSearchChange,
         filters,
         handleFilterChange,
+        replaceFilters,
         clearFilters,
 
         // Pagination (limit only, page is internal to useInfiniteQuery)

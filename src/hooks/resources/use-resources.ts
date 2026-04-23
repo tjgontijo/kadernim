@@ -64,7 +64,7 @@ export function useResourcesSummaryQuery({
                 page: Number(pageParam),
                 limit: pageSize,
                 tab,
-                q: filters.q?.trim().length && filters.q.trim().length >= 2 ? filters.q.trim() : undefined,
+                q: filters.q?.trim() || undefined,
                 educationLevel: filters.educationLevel,
                 grade: filters.grade,
                 subject: filters.subject,
@@ -77,7 +77,7 @@ export function useResourcesSummaryQuery({
         },
 
         initialPageParam: 1,
-
+        placeholderData: (prev) => prev,
         staleTime: 30_000,
         gcTime: 5 * 60_000,
         refetchOnWindowFocus: false,

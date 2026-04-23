@@ -272,7 +272,7 @@ async function activateSubscription(
     return
   }
 
-  await prisma.subscription.update({
+  return prisma.subscription.update({
     where: { id: subscriptionId },
     data: {
       isActive: true,
@@ -280,6 +280,11 @@ async function activateSubscription(
       purchaseDate: referenceDate,
       expiresAt: buildCheckoutExpirationDate(plan.accessDays, referenceDate),
       canceledAt: null,
+      user: {
+        update: {
+          role: 'subscriber',
+        },
+      },
     },
   })
 }
@@ -753,6 +758,6 @@ export class PaymentService {
   ) {
     const planId = await inferPlanId(description, value)
     const billingMode = extractCheckoutBillingMode(description)
-    await activateSubscription(subscriptionId, planId, paidAt, { billingMode })
+    return activateSubscription(subscriptionId, planId, paidAt, { billingMode })
   }
 }

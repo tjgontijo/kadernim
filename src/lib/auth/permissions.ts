@@ -1,6 +1,6 @@
 import { UserRoleType } from "@/types/users/user-role";
 
-export type PermissionAction = 'create' | 'read' | 'update' | 'delete' | 'manage';
+export type PermissionAction = 'create' | 'read' | 'update' | 'delete' | 'manage' | 'download';
 export type PermissionSubject = 'Resource' | 'User' | 'Subject' | 'Organization' | 'Analytics' | 'all';
 
 export interface Ability {
@@ -12,18 +12,18 @@ const ROLES_PERMISSIONS: Record<string, Partial<Record<PermissionSubject, Permis
         all: ['manage'],
     },
     manager: {
-        Resource: ['create', 'read', 'update', 'delete'],
+        Resource: ['create', 'read', 'update', 'delete', 'download'],
         User: ['create', 'read', 'update'], // No delete
         Subject: ['create', 'read', 'update', 'delete'],
         Organization: ['read'],
         Analytics: ['read'],
     },
     editor: {
-        Resource: ['create', 'read', 'update'],
+        Resource: ['create', 'read', 'update', 'download'],
         Subject: ['read'],
     },
     subscriber: {
-        Resource: ['read'],
+        Resource: ['read', 'download'],
     },
     user: {
         Resource: ['read'],

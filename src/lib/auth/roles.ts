@@ -136,12 +136,12 @@ export function getHighestRole(
   currentRole: UserRoleType | null | undefined,
   hasActiveSubscription: boolean
 ): UserRoleType {
-  // Admin sempre mantém admin
-  if (currentRole === UserRole.admin) {
-    return UserRole.admin
+  // Staff sempre mantém sua role (Admin, Manager, Editor)
+  if (currentRole === UserRole.admin || currentRole === UserRole.manager || currentRole === UserRole.editor) {
+    return currentRole
   }
 
   // Se tem subscription ativa, é subscriber
-  // Se não tem, é user
+  // Se não tem, é user (lead)
   return hasActiveSubscription ? UserRole.subscriber : UserRole.user
 }
