@@ -37,7 +37,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
     resources: 'Biblioteca',
     favorites: 'Meus favoritos',
     planner: 'Planejador',
-    diretrizes: 'Diretrizes',
+    guidelines: 'Diretrizes',
     discover: 'Descobrir',
     admin: 'Administração',
     account: 'Conta',

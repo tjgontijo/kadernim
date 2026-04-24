@@ -129,3 +129,6 @@ Stats: 50 obs (17,170t read) | 1,131,716t work | 98% savings
 
 Access 1132k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>
+
+
+nextjs 16+ utiliza o src/proxy.ts ao inves de src/middleware.ts
