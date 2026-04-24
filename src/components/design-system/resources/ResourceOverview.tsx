@@ -7,8 +7,9 @@ export function ResourceOverview({ description }: ResourceOverviewProps) {
 
   // Função simples para converter **bold** em <strong>
   const renderDescription = (text: string) => {
-    const boldRegex = /\*\*(.*?)\*\*/g
-    const html = text.replace(boldRegex, '<strong>$1</strong>')
+    let html = text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
     return { __html: html }
   }
 

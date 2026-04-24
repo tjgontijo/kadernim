@@ -122,9 +122,14 @@ export function ResourceCard({
               {title}
             </h3>
 
-            <p className="line-clamp-2 text-body-s min-h-[2.5rem]">
-              {description || ''}
-            </p>
+            <div 
+              className="line-clamp-2 text-body-s min-h-[2.5rem] whitespace-pre-wrap"
+              dangerouslySetInnerHTML={{
+                __html: (description || '')
+                  .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                  .replace(/\*(.*?)\*/g, '<em>$1</em>')
+              }}
+            />
           </div>
 
           <div className="mt-4 flex items-center justify-between pt-3 border-t border-dashed border-line">

@@ -1,26 +1,20 @@
-import { Layers, Clock, Users, FileText, RefreshCw, Download } from 'lucide-react'
+import { Layers, Clock, Users, RefreshCw, Download, GraduationCap, BookOpen } from 'lucide-react'
+import { formatDistanceToNow } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
 import type { ResourceDetail } from '@/lib/resources/types'
 
 interface ResourceMetricsProps {
   resource: ResourceDetail
 }
 
-const RESOURCE_TYPE_LABELS: Record<string, string> = {
-  PRINTABLE_ACTIVITY: 'Atividade imprimível',
-  LESSON_PLAN: 'Plano de aula',
-  GAME: 'Jogo',
-  ASSESSMENT: 'Avaliação',
-  OTHER: 'Recurso didático',
-}
-
 export function ResourceMetrics({ resource }: ResourceMetricsProps) {
   const updatedDate = resource.curatedAt 
-    ? new Date(resource.curatedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
+    ? formatDistanceToNow(new Date(resource.curatedAt), { addSuffix: true, locale: ptBR })
     : 'Recentemente'
     
   const schoolYearLabel =
     resource.gradeLabels && resource.gradeLabels.length > 0
-      ? resource.gradeLabels.length <= 2
+      ? resource.gradeLabels.length <= 3
         ? resource.gradeLabels.join(', ')
         : `${resource.gradeLabels[0]}, ${resource.gradeLabels[1]} +${resource.gradeLabels.length - 2}`
       : 'Não definido'
@@ -31,6 +25,40 @@ export function ResourceMetrics({ resource }: ResourceMetricsProps) {
         Informações do material
       </div>
       <div className="grid grid-cols-2 gap-y-[16px] gap-x-[20px]">
+        {/* Etapa */}
+        <div className="flex flex-col gap-[2px]">
+          <div className="flex items-center gap-[5px] text-[11px] text-ink-mute uppercase tracking-[0.1em] font-semibold">
+            <GraduationCap className="h-[12px] w-[12px]" strokeWidth={2} />
+            Etapa
+          </div>
+          <div className="text-[14px] font-medium text-ink">
+            {resource.educationLevel || '--'}
+          </div>
+        </div>
+
+        {/* Componente */}
+        <div className="flex flex-col gap-[2px]">
+          <div className="flex items-center gap-[5px] text-[11px] text-ink-mute uppercase tracking-[0.1em] font-semibold">
+            <BookOpen className="h-[12px] w-[12px]" strokeWidth={2} />
+            Componente
+          </div>
+          <div className="text-[14px] font-medium text-ink">
+            {resource.subject || '--'}
+          </div>
+        </div>
+
+        {/* Ano / Série */}
+        <div className="flex flex-col gap-[2px] col-span-2">
+          <div className="flex items-center gap-[5px] text-[11px] text-ink-mute uppercase tracking-[0.1em] font-semibold">
+            <Users className="h-[12px] w-[12px]" strokeWidth={2} />
+            Ano / Série
+          </div>
+          <div className="text-[14px] font-medium text-ink">{schoolYearLabel}</div>
+        </div>
+
+        <div className="border-t border-dashed border-line col-span-2 my-1" />
+
+        {/* Páginas */}
         <div className="flex flex-col gap-[2px]">
           <div className="flex items-center gap-[5px] text-[11px] text-ink-mute uppercase tracking-[0.1em] font-semibold">
             <Layers className="h-[12px] w-[12px]" strokeWidth={2} />
@@ -41,6 +69,7 @@ export function ResourceMetrics({ resource }: ResourceMetricsProps) {
           </div>
         </div>
         
+        {/* Duração */}
         <div className="flex flex-col gap-[2px]">
           <div className="flex items-center gap-[5px] text-[11px] text-ink-mute uppercase tracking-[0.1em] font-semibold">
             <Clock className="h-[12px] w-[12px]" strokeWidth={2} />
@@ -59,24 +88,7 @@ export function ResourceMetrics({ resource }: ResourceMetricsProps) {
           </div>
         </div>
 
-        <div className="flex flex-col gap-[2px]">
-          <div className="flex items-center gap-[5px] text-[11px] text-ink-mute uppercase tracking-[0.1em] font-semibold">
-            <Users className="h-[12px] w-[12px]" strokeWidth={2} />
-            ano escolar
-          </div>
-          <div className="text-[14px] font-medium text-ink">{schoolYearLabel}</div>
-        </div>
-
-        <div className="flex flex-col gap-[2px]">
-          <div className="flex items-center gap-[5px] text-[11px] text-ink-mute uppercase tracking-[0.1em] font-semibold">
-            <FileText className="h-[12px] w-[12px]" strokeWidth={2} />
-            tipo
-          </div>
-          <div className="text-[14px] font-medium text-ink">
-            {RESOURCE_TYPE_LABELS[resource.resourceType] || 'Material'}
-          </div>
-        </div>
-
+        {/* Atualizado */}
         <div className="flex flex-col gap-[2px]">
           <div className="flex items-center gap-[5px] text-[11px] text-ink-mute uppercase tracking-[0.1em] font-semibold">
             <RefreshCw className="h-[12px] w-[12px]" strokeWidth={2} />
@@ -87,6 +99,7 @@ export function ResourceMetrics({ resource }: ResourceMetricsProps) {
           </div>
         </div>
 
+        {/* Downloads */}
         <div className="flex flex-col gap-[2px]">
           <div className="flex items-center gap-[5px] text-[11px] text-ink-mute uppercase tracking-[0.1em] font-semibold">
             <Download className="h-[12px] w-[12px]" strokeWidth={2} />

@@ -198,8 +198,10 @@ export function ResourceDetailsForm({
       toast.success(isEditing ? 'Alterações salvas' : 'Recurso criado')
       if (isEditing) {
         queryClient.invalidateQueries({ queryKey: ['admin-resource-detail', resource.id] })
+        queryClient.invalidateQueries({ queryKey: ['resource-detail', resource.id] })
       }
       queryClient.invalidateQueries({ queryKey: ['admin-resources'] })
+      queryClient.invalidateQueries({ queryKey: ['resources'] })
       onSuccess?.(data)
     },
     onError: (error) => {

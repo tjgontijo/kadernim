@@ -12,6 +12,13 @@ interface ResourceTimelineProps {
 export function ResourceTimeline({ steps }: ResourceTimelineProps) {
   if (!steps || steps.length === 0) return null
 
+  const renderContent = (text: string) => {
+    let html = text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    return { __html: html }
+  }
+
   return (
     <div className="mt-[24px] bg-card border border-line rounded-4 p-[32px] shadow-1">
       <h3 className="font-display font-semibold text-[20px] mb-[20px] text-ink flex items-center gap-[8px]">
@@ -27,7 +34,10 @@ export function ResourceTimeline({ steps }: ResourceTimelineProps) {
              <div className="text-[12px] font-mono text-ink-mute tracking-[0.02em] mb-[10px] uppercase">
                 {step.duration || 'Duração variável'}
              </div>
-             <div className="text-[14px] leading-[1.6] text-ink-soft whitespace-pre-wrap">{step.content}</div>
+             <div 
+               className="text-[14px] leading-[1.6] text-ink-soft whitespace-pre-wrap"
+               dangerouslySetInnerHTML={renderContent(step.content)}
+             />
            </div>
         ))}
       </div>
