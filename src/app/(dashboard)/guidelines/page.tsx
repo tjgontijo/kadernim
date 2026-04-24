@@ -17,7 +17,7 @@ interface Filters {
   subject?: string
 }
 
-export default function DiretrizesPage() {
+export default function BnccPage() {
   const [filters, setFilters] = useState<Filters>({})
   const [detailId, setDetailId] = useState<string | undefined>(undefined)
   const [isDetailOpen, setIsDetailOpen] = useState(false)
@@ -51,7 +51,7 @@ export default function DiretrizesPage() {
 
   return (
     <PageScaffold className="pt-4 sm:pt-6">
-      <PageScaffold.Header title="Diretrizes" />
+      <PageScaffold.Header title="BNCC" />
 
       <PageScaffold.Controls>
         <BnccFilters value={filters} onChange={handleFiltersChange} />

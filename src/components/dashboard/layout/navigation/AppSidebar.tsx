@@ -61,7 +61,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
   const { isMobile, state, setOpenMobile } = useSidebar()
   const { data: counts } = useResourceCounts()
   const collapsed = state === 'collapsed'
-  
+
   const userRole = (user.role || 'user') as UserRoleType
   const ability = defineAbilitiesFor(userRole)
 
@@ -77,7 +77,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
         { title: 'Biblioteca', href: '/resources', icon: BookOpen, count: counts?.library?.toString() },
         { title: 'Meus favoritos', href: '/favorites', icon: Heart, count: counts?.favorites?.toString() },
         { title: 'Planejador', href: '/planner', icon: Calendar },
-        { title: 'Diretrizes', href: '/guidelines', icon: BookMarked },
+        { title: 'BNCC', href: '/guidelines', icon: BookMarked },
       ],
     },
     {
@@ -96,13 +96,13 @@ export function AppSidebar({ user }: AppSidebarProps) {
 
   if (userRole === 'admin' || userRole === 'manager' || userRole === 'editor') {
     navGroups.push({
-      label: 'Plataforma (Admin)',
+      label: 'Administração',
       items: [
         { title: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-        { title: 'Gestão de Recursos', href: '/admin/resources', icon: ShieldCheck, permission: { action: 'read', subject: 'Resource' } },
+        { title: 'Recursos', href: '/admin/resources', icon: ShieldCheck, permission: { action: 'read', subject: 'Resource' } },
         { title: 'Disciplinas', href: '/admin/subjects', icon: Hash, permission: { action: 'read', subject: 'Subject' } },
         { title: 'Usuários', href: '/admin/users', icon: Users, permission: { action: 'read', subject: 'User' } },
-        { title: 'Custos IA', href: '/admin/ai-costs', icon: Brain },
+        { title: 'IA', href: '/admin/ai-costs', icon: Brain },
       ],
     })
   }
@@ -117,13 +117,13 @@ export function AppSidebar({ user }: AppSidebarProps) {
 
     return (
       <SidebarMenuItem key={item.title}>
-        <SidebarMenuButton 
-          asChild 
+        <SidebarMenuButton
+          asChild
           tooltip={item.title}
           className={cn(
             "flex items-center gap-[10px] px-[12px] py-[9px] rounded-3 font-medium text-[14px] transition-all relative border outline-none ring-0",
-            isActive 
-              ? "bg-card text-ink shadow-1 border-line before:absolute before:left-[-2px] before:top-1/2 before:-translate-y-1/2 before:w-[3px] before:h-[20px] before:bg-terracotta before:rounded-sm hover:bg-card hover:text-ink" 
+            isActive
+              ? "bg-card text-ink shadow-1 border-line before:absolute before:left-[-2px] before:top-1/2 before:-translate-y-1/2 before:w-[3px] before:h-[20px] before:bg-terracotta before:rounded-sm hover:bg-card hover:text-ink"
               : "border-transparent text-ink-soft hover:bg-paper-2 hover:text-ink hover:border-transparent active:bg-paper-2"
           )}
         >
@@ -148,9 +148,9 @@ export function AppSidebar({ user }: AppSidebarProps) {
   const SidebarContentInternal = (
     <div className="flex flex-col h-full w-full px-[14px] py-[20px]">
       <div className="pb-[24px] mb-[24px] border-b border-dashed border-line shrink-0">
-        <Logo 
-          href="/resources" 
-          showText={!collapsed} 
+        <Logo
+          href="/resources"
+          showText={!collapsed}
         />
       </div>
       <SidebarContent className="gap-0 py-0 scrollbar-hide px-0 pb-8">

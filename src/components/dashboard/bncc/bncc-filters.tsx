@@ -133,7 +133,7 @@ export function BnccFilters({ value, onChange }: BnccFiltersProps) {
 
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Filtrar Diretrizes</DialogTitle>
+            <DialogTitle>Filtrar BNCC</DialogTitle>
             <DialogDescription>
               Escolha etapa, ano/faixa e componente nesta ordem.
             </DialogDescription>
