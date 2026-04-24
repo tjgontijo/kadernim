@@ -52,7 +52,7 @@ export function BnccSkillList({
               </span>
               <div className="flex items-center gap-1.5 shrink-0">
                 <span className="text-[11px] text-ink-mute">
-                  {item.relatedResourcesCount} materiais
+                  {item.relatedResourcesCount} {item.relatedResourcesCount === 1 ? 'material' : 'materiais'}
                 </span>
                 <Button
                   type="button"

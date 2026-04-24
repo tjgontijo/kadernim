@@ -77,7 +77,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
         { title: 'Biblioteca', href: '/resources', icon: BookOpen, count: counts?.library?.toString() },
         { title: 'Meus favoritos', href: '/favorites', icon: Heart, count: counts?.favorites?.toString() },
         { title: 'Planejador', href: '/planner', icon: Calendar },
-        { title: 'BNCC', href: '/guidelines', icon: BookMarked },
+        { title: 'BNCC', href: '/bncc', icon: BookMarked },
       ],
     },
     {
