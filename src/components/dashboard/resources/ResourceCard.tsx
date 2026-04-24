@@ -75,7 +75,7 @@ export function ResourceCard({
 
       <Card className="flex h-full flex-col transition-all hover:shadow-3 border-line bg-card rounded-5 p-[16px]">
         {/* Image Container with Border and Padding */}
-        <div className="relative aspect-[4/5] bg-paper-2 rounded-4 border border-line-soft overflow-hidden shrink-0">
+        <div className="relative aspect-square bg-paper-2 rounded-4 border border-line-soft overflow-hidden shrink-0">
           {/* Subtle Paper Texture Overlay - Shared by all */}
           <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,transparent,transparent_10px,oklch(0.88_0.02_75_/_0.3)_10px,oklch(0.88_0.02_75_/_0.3)_11px)] opacity-50 z-20 pointer-events-none" />
 

@@ -28,7 +28,7 @@ export async function proxy(request: NextRequest) {
   }
 
   const AUTH_ROUTES = ['/dashboard', '/account']
-  const PUBLIC_ROUTES = ['/login', '/checkout']
+  const PUBLIC_ROUTES = ['/login', '/checkout', '/render']
 
   const matchesRoute = (route: string) =>
     pathname === route || pathname.startsWith(`${route}/`)

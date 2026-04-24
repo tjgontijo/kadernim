@@ -7,7 +7,7 @@ export function ResourceCardSkeleton() {
       <div className="absolute -top-[12px] left-1/2 -translate-x-1/2 -rotate-2 w-[100px] h-[24px] bg-[#dfd6cd] shadow-tape border-x border-dashed border-x-[#c2b6ab] z-30 opacity-90" />
 
       <Card className="flex h-full flex-col transition-all border-line bg-card rounded-5 p-[16px]">
-        <div className="relative aspect-[4/5] bg-paper-2 rounded-4 border border-line-soft overflow-hidden shrink-0">
+        <div className="relative aspect-square bg-paper-2 rounded-4 border border-line-soft overflow-hidden shrink-0">
           <Skeleton className="h-full w-full rounded-none" />
           <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,transparent,transparent_10px,oklch(0.88_0.02_75_/_0.5)_10px,oklch(0.88_0.02_75_/_0.5)_11px)] opacity-30 z-10" />
         </div>
