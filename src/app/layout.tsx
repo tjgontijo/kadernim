@@ -27,21 +27,28 @@ const caveat = Caveat({
 
 // Env vars com valores padrão (evita erro de prerender)
 const appName = process.env.NEXT_PUBLIC_APP_NAME || 'Kadernim'
-const appDescription = process.env.NEXT_PUBLIC_APP_DESCRIPTION || 'App de bolso para toda professora moderna.'
+const appDescription = process.env.NEXT_PUBLIC_APP_DESCRIPTION || 'Biblioteca de materiais pedagógicos feitos por quem vive a sala de aula. Planos de aula e atividades prontas para baixar e usar, tudo alinhado à BNCC.'
 
 export const metadata: Metadata = {
-  title: appName,
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://kadernim.com.br'),
+  title: {
+    default: appName,
+    template: `%s | ${appName}`,
+  },
   description: appDescription,
   applicationName: appName,
-
-  icons: {
-    icon: [
-      { url: '/images/icons/apple-icon.png', sizes: '1024x1024', type: 'image/png' }
-    ],
-    apple: [
-      { url: "/images/icons/apple-icon.png", sizes: '1024x1024', type: 'image/png' }
-    ],
+  authors: [{ name: 'Kadernim Team' }],
+  generator: 'Next.js',
+  keywords: ['educação', 'professores', 'materiais didáticos', 'planos de aula', 'BNCC', 'recursos pedagógicos'],
+  referrer: 'origin-when-cross-origin',
+  creator: 'Kadernim',
+  publisher: 'Kadernim',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
   },
+
   // Configurações de OpenGraph para compartilhamento em redes sociais
   openGraph: {
     type: 'website',
@@ -66,12 +73,26 @@ export const metadata: Metadata = {
     description: appDescription,
     images: [`${process.env.NEXT_PUBLIC_APP_URL}/images/system/og-kadernim.jpg`],
   },
+  // Metadados adicionais de robôs e canônicos
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  alternates: {
+    canonical: process.env.NEXT_PUBLIC_APP_URL,
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
-  maximumScale: 1,
-  userScalable: false,
+  initialScale: 1,
   themeColor: "#ffffff",
 };
 
