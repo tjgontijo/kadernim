@@ -630,22 +630,13 @@ export function ResourceDetailsForm({
               {/* Sessão 3: Objetivos de Aprendizagem */}
               <div className="space-y-8 bg-paper p-8 rounded-4 border border-line shadow-sm relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-1 h-full bg-sage/40" />
-                <div className="flex items-center justify-between border-b border-line pb-4">
+                <div className="flex items-center gap-3 border-b border-line pb-4">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-sage-2 flex items-center justify-center">
                       <Target className="h-4 w-4 text-sage" />
                     </div>
                     <h2 className="font-display text-xl text-ink">Objetivos de Aprendizagem</h2>
                   </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => appendObjective({ text: '', order: objectives.length + 1 })}
-                    className="rounded-full border-line text-ink-soft hover:text-sage text-xs h-9"
-                  >
-                    <PlusCircle className="mr-2 h-4 w-4" /> Add Objetivo
-                  </Button>
                 </div>
 
                 <div className="space-y-4">
@@ -687,27 +678,30 @@ export function ResourceDetailsForm({
                     </div>
                   )}
                 </div>
+
+                <div className="flex justify-center pt-4 border-t border-line-soft">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => appendObjective({ text: '', order: objectives.length + 1 })}
+                    className="rounded-full border-line text-ink-soft hover:text-sage text-xs h-10 px-6 group transition-all hover:bg-sage-2 hover:border-sage"
+                  >
+                    <PlusCircle className="mr-2 h-4 w-4 text-sage group-hover:scale-110 transition-transform" /> Add Objetivo
+                  </Button>
+                </div>
               </div>
 
               {/* Sessão 4: Passo a Passo */}
               <div className="space-y-8 bg-paper p-8 rounded-4 border border-line shadow-sm relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-1 h-full bg-terracotta/40" />
-                <div className="flex items-center justify-between border-b border-line pb-4">
+                <div className="flex items-center gap-3 border-b border-line pb-4">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-terracotta-2 flex items-center justify-center">
                       <Footprints className="h-4 w-4 text-terracotta" />
                     </div>
                     <h2 className="font-display text-xl text-ink">Passo a Passo do Uso</h2>
                   </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => appendStep({ type: 'ACTIVITY', title: '', content: '', order: steps.length + 1 })}
-                    className="rounded-full border-line text-ink-soft hover:text-terracotta text-xs h-9"
-                  >
-                    <PlusCircle className="mr-2 h-4 w-4" /> Add Etapa
-                  </Button>
                 </div>
 
                 <div className="space-y-6">
@@ -815,6 +809,18 @@ export function ResourceDetailsForm({
                        Nenhuma etapa adicionada. Guie o professor no uso do material.
                     </div>
                   )}
+                </div>
+
+                <div className="flex justify-center pt-4 border-t border-line-soft">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => appendStep({ type: 'ACTIVITY', title: '', content: '', order: steps.length + 1 })}
+                    className="rounded-full border-line text-ink-soft hover:text-terracotta text-xs h-10 px-6 group transition-all hover:bg-terracotta-2 hover:border-terracotta"
+                  >
+                    <PlusCircle className="mr-2 h-4 w-4 text-terracotta group-hover:scale-110 transition-transform" /> Add Etapa
+                  </Button>
                 </div>
               </div>
 
