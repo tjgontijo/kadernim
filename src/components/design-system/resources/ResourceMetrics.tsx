@@ -8,8 +8,10 @@ interface ResourceMetricsProps {
 }
 
 export function ResourceMetrics({ resource }: ResourceMetricsProps) {
-  const updatedDate = resource.curatedAt 
-    ? formatDistanceToNow(new Date(resource.curatedAt), { addSuffix: true, locale: ptBR })
+  const displayDate = resource.curatedAt || resource.updatedAt
+  
+  const updatedDate = displayDate
+    ? formatDistanceToNow(new Date(displayDate), { addSuffix: true, locale: ptBR })
     : 'Recentemente'
     
   const schoolYearLabel =

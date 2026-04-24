@@ -118,6 +118,7 @@ export const ResourceDetailSchema = ResourceSchema.extend({
   slug: z.string().nullable(),
   isCurated: z.boolean(),
   curatedAt: z.string().nullable(),
+  updatedAt: z.string().nullable().optional(),
   archivedAt: z.string().nullable().optional(),
   resourceType: z.string(),
   pagesCount: z.number().nullable(),
