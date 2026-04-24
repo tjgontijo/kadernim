@@ -113,7 +113,7 @@ export function BnccSkillDetailPanel({ skill, isLoading }: BnccSkillDetailProps)
                 rel="noopener noreferrer"
                 className="group block rounded-3 border border-line bg-paper-2 p-1.5 transition-colors hover:bg-paper"
               >
-                <div className="relative w-full aspect-[3/4] rounded-2 overflow-hidden border border-line-soft bg-paper">
+                <div className="relative w-full aspect-square rounded-2 overflow-hidden border border-line-soft bg-paper">
                   {resource.thumbUrl ? (
                     <LazyImage
                       src={resource.thumbUrl}

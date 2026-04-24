@@ -80,7 +80,7 @@ export function ResourcesGridVirtuoso({
 
             {/* Thumbnail Container with Border */}
             <div 
-              className="relative aspect-[4/5] w-full overflow-hidden bg-paper-2 rounded-1 border border-line-soft cursor-pointer shrink-0"
+              className="relative aspect-square w-full overflow-hidden bg-paper-2 rounded-1 border border-line-soft cursor-pointer shrink-0"
               onClick={() => onEdit?.(resource.id)}
             >
               {resource.thumbUrl ? (

@@ -63,7 +63,7 @@ function RankingRowsSkeleton() {
       {Array.from({ length: TOP_LIMIT }).map((_, index) => (
         <div key={index} className="flex items-center gap-4 border-b border-dashed border-line px-4 py-4 last:border-b-0">
           <div className="h-12 w-14 animate-pulse rounded-3 bg-paper-2" />
-          <div className="h-16 w-12 animate-pulse rounded-3 bg-paper-2" />
+          <div className="h-16 w-16 animate-pulse rounded-3 bg-paper-2" />
           <div className="min-w-0 flex-1 space-y-3">
             <div className="h-4 w-2/5 animate-pulse rounded bg-paper-2" />
             <div className="h-3 w-3/5 animate-pulse rounded bg-paper-2" />
@@ -136,7 +136,7 @@ export default function HighlightsPage() {
                       )}
                     </div>
 
-                    <div className="relative h-20 w-16 shrink-0 overflow-hidden rounded-3 border border-line-soft bg-paper-2">
+                    <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-3 border border-line-soft bg-paper-2">
                       {item.thumbUrl ? (
                         <LazyImage
                           src={item.thumbUrl}
@@ -146,7 +146,7 @@ export default function HighlightsPage() {
                           sizes="64px"
                         />
                       ) : (
-                        <div className="absolute inset-0 flex items-center justify-center bg-[repeating-linear-gradient(-45deg,transparent_0,transparent_10px,oklch(0.88_0.02_75_/_0.55)_10px,oklch(0.88_0.02_75_/_0.55)_11px)]">
+                        <div className="absolute inset-0 flex items-center justify-center bg-paper-2">
                           <FileText className="h-6 w-6 text-ink-mute" strokeWidth={1.6} />
                         </div>
                       )}

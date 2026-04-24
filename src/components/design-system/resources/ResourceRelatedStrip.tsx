@@ -51,9 +51,8 @@ export function ResourceRelatedStrip({ resourceId }: ResourceRelatedStripProps) 
               <div className="absolute -top-[10px] left-1/2 -translate-x-1/2 -rotate-2 w-[86px] h-[22px] bg-[#dfd6cd] shadow-tape border-x border-dashed border-x-[#c2b6ab] z-20 opacity-90" />
 
               <Card className="flex h-full flex-col border-line bg-card rounded-5 p-[14px] shadow-1">
-                <div className="relative aspect-[4/5] bg-paper-2 rounded-4 border border-line-soft overflow-hidden shrink-0">
+                <div className="relative aspect-square bg-paper-2 rounded-4 border border-line-soft overflow-hidden shrink-0">
                   <Skeleton className="h-full w-full rounded-none" />
-                  <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,transparent,transparent_10px,oklch(0.88_0.02_75_/_0.5)_10px,oklch(0.88_0.02_75_/_0.5)_11px)] opacity-30 z-10" />
                 </div>
 
                 <div className="flex flex-1 flex-col pt-4">
@@ -78,8 +77,7 @@ export function ResourceRelatedStrip({ resourceId }: ResourceRelatedStripProps) 
               <div className="absolute -top-[10px] left-1/2 -translate-x-1/2 -rotate-2 w-[86px] h-[22px] bg-[#dfd6cd] shadow-tape border-x border-dashed border-x-[#c2b6ab] z-20 opacity-90" />
 
               <Card className="flex h-full flex-col border-line bg-card rounded-5 p-[14px] shadow-1 hover:shadow-3 transition-shadow">
-                <div className="relative aspect-[4/5] bg-paper-2 rounded-4 border border-line-soft overflow-hidden shrink-0">
-                  <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,transparent,transparent_10px,oklch(0.88_0.02_75_/_0.5)_10px,oklch(0.88_0.02_75_/_0.5)_11px)] opacity-35 z-10" />
+                <div className="relative aspect-square bg-paper-2 rounded-4 border border-line-soft overflow-hidden shrink-0">
 
                   {item.thumbUrl ? (
                     <LazyImage

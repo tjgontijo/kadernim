@@ -40,7 +40,11 @@ async function batchProcess() {
         educationLevel: true,
         files: {
           include: {
-            images: { orderBy: { order: 'desc' }, take: 3 }
+            images: {
+              where: { order: { gt: 0 } },
+              orderBy: { order: 'desc' },
+              take: 3
+            }
           },
           take: 1
         }
@@ -62,9 +66,9 @@ async function batchProcess() {
         continue;
       }
 
-      // SORTEIO DE LAYOUT E BACKGROUND
-      const layout: CoverLayout = Math.random() > 0.5 ? 'booklet' : 'fan';
-      const bgFile = availableBgs[Math.floor(Math.random() * availableBgs.length)];
+      // LAYOUT FIXO (3 FOLHAS SOLTAS) E BACKGROUND FIXO
+      const layout: CoverLayout = 'fan';
+      const bgFile = 'desk-bg-v2.png';
       const bgSrc = `file://${path.join(BG_DIR, bgFile)}`;
 
       console.log(`${progress} 🎨 Gerando ${layout.toUpperCase()} para: ${resource.title}`);
@@ -89,11 +93,11 @@ async function batchProcess() {
         if (element) {
           // Captura como Buffer para upload direto
           const buffer = await element.screenshot({ type: 'png' });
-          
+
           console.log(`   ☁️  Fazendo upload para Cloudinary...`);
           const oldPublicId = resource.thumbPublicId;
           const newPublicId = `resources/${resource.slug}/images/cover`;
-          
+
           const upload = await uploadImage(buffer, {
             folder: `resources/${resource.slug}/images`,
             publicId: 'cover',
@@ -121,8 +125,8 @@ async function batchProcess() {
               }
             }),
             prisma.resourceImage.upsert({
-              where: { 
-                resourceId_order: { resourceId: resource.id, order: 0 } 
+              where: {
+                resourceId_order: { resourceId: resource.id, order: 0 }
               },
               update: {
                 url: upload.secure_url,

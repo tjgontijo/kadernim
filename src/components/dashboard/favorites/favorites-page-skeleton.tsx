@@ -24,7 +24,6 @@ function FavoriteCardSkeleton({ index }: { index: number }) {
         {/* Square image area */}
         <div className="relative aspect-square bg-paper-2 overflow-hidden border border-line-soft rounded-[12px]">
           <Skeleton className="h-full w-full rounded-none" />
-          <div className="absolute inset-0 bg-[repeating-linear-gradient(-45deg,transparent,transparent_10px,oklch(0.88_0.02_75_/_0.5)_10px,oklch(0.88_0.02_75_/_0.5)_11px)] opacity-20 z-10" />
         </div>
 
         {/* Content */}

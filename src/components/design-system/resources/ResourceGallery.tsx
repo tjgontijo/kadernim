@@ -43,9 +43,7 @@ function SimulatedCover({ fileName, index, isVideo = false }: { fileName: string
   const PATTERNS = [
     {
       bg: 'bg-paper-2',
-      style: {
-        backgroundImage: 'repeating-linear-gradient(-45deg, transparent 0, transparent 10px, var(--line) 10px, var(--line) 11px)'
-      }
+      style: {}
     },
     {
       bg: 'bg-paper-2',
@@ -202,7 +200,7 @@ export function ResourceGallery({ files = [], videos = [], title = 'Material' }:
                         className="group flex flex-col items-center gap-[8px] text-left w-full transition-all focus:outline-none"
                       >
                         <div
-                          className={`relative w-full [aspect-ratio:3/4] rounded-2 overflow-hidden transition-all ${isSelected
+                          className={`relative w-full aspect-square rounded-2 overflow-hidden transition-all ${isSelected
                             ? 'ring-2 ring-terracotta ring-offset-2 ring-offset-card shadow-2 border-transparent'
                             : 'border border-line shadow-1 group-hover:border-ink-lighter group-hover:shadow-2'
                             }`}
@@ -244,7 +242,7 @@ export function ResourceGallery({ files = [], videos = [], title = 'Material' }:
               )}
 
               {/* Image OR Video Thumbnail - A4 Aspect Ratio */}
-              <div className="[aspect-ratio:7/10] bg-paper-2 rounded-4 border border-line-soft overflow-hidden relative flex-1 shadow-3">
+              <div className="aspect-square bg-paper-2 rounded-4 border border-line-soft overflow-hidden relative flex-1 shadow-3">
                 {isVideo ? (
                   <div className="relative w-full h-full group cursor-pointer">
                     <LazyImage
@@ -310,7 +308,7 @@ export function ResourceGallery({ files = [], videos = [], title = 'Material' }:
   return (
     <div className="bg-card border border-line rounded-5 p-[16px] relative shadow-2 transition-shadow hover:shadow-3">
       <div className="absolute -top-[12px] left-1/2 -translate-x-1/2 -rotate-2 w-[120px] h-[28px] bg-[#dfd6cd] shadow-tape border-x border-dashed border-x-[#c2b6ab] z-10 opacity-90" />
-      <div className="flex [aspect-ratio:7/10] items-center justify-center rounded-4 bg-paper-2 border border-line-soft">
+      <div className="flex aspect-square items-center justify-center rounded-4 bg-paper-2 border border-line-soft">
         <div className="text-center space-y-[8px]">
           <span className="text-[32px]">🖼️</span>
           <p className="text-[13px] font-medium text-ink-mute">Sem materiais disponíveis</p>

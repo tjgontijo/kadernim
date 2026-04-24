@@ -314,7 +314,7 @@ export function ResourceDetailsForm({
                  <FormLabel className="text-[13px] font-medium text-ink-soft mb-3">Capa do Material</FormLabel>
                  <div 
                    className={cn(
-                     "w-full aspect-[4/5] relative group rounded-4 border-2 border-dashed border-line overflow-hidden bg-paper-2 flex flex-col items-center justify-center transition-all cursor-pointer",
+                     "w-full aspect-square relative group rounded-4 border-2 border-dashed border-line overflow-hidden bg-paper-2 flex flex-col items-center justify-center transition-all cursor-pointer",
                      currentThumbUrl ? "border-solid border-terracotta/20 shadow-sm" : "hover:border-terracotta/40",
                      isUploadingThumb && "opacity-50 pointer-events-none"
                    )}

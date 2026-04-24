@@ -24,7 +24,13 @@ async function testRandom() {
     where: { archivedAt: null },
     include: {
       files: {
-        include: { images: { orderBy: { order: 'desc' }, take: 3 } },
+        include: { 
+          images: { 
+            where: { order: { gt: 0 } },
+            orderBy: { order: 'desc' }, 
+            take: 3 
+          } 
+        },
         take: 1
       }
     },

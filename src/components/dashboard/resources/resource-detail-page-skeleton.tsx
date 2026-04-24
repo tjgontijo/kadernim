@@ -13,14 +13,14 @@ export function ResourceDetailPageSkeleton() {
             <div className="flex gap-[16px] items-stretch">
               {/* Sidebar Skeletons */}
               <div className="w-[124px] flex-shrink-0 flex flex-col gap-[16px]">
-                <Skeleton className="w-full aspect-[3/4] rounded-2 bg-muted/40" />
-                <Skeleton className="w-full aspect-[3/4] rounded-2 bg-muted/40" />
-                <Skeleton className="w-full aspect-[3/4] rounded-2 bg-muted/40" />
+                <Skeleton className="w-full aspect-square rounded-2 bg-muted/40" />
+                <Skeleton className="w-full aspect-square rounded-2 bg-muted/40" />
+                <Skeleton className="w-full aspect-square rounded-2 bg-muted/40" />
               </div>
 
               {/* Main Image Skeleton */}
               <div className="flex-1">
-                <div className="aspect-[7/10] bg-paper-2 rounded-4 border border-line-soft overflow-hidden relative shadow-3">
+                <div className="aspect-square bg-paper-2 rounded-4 border border-line-soft overflow-hidden relative shadow-3">
                   <Skeleton className="h-full w-full rounded-none bg-muted/40" />
                 </div>
               </div>
@@ -152,7 +152,7 @@ export function ResourceDetailPageSkeleton() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {Array.from({ length: 4 }).map((_, index) => (
             <div key={index} className="space-y-4 bg-card border border-line rounded-5 p-4 shadow-sm">
-              <Skeleton className="aspect-[4/5] w-full rounded-4 bg-muted/30" />
+              <Skeleton className="aspect-square w-full rounded-4 bg-muted/30" />
               <div className="space-y-2">
                 <Skeleton className="h-4 w-full bg-muted/40" />
                 <Skeleton className="h-4 w-[60%] bg-muted/40" />
