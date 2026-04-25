@@ -177,14 +177,14 @@ export function ResourceGallery({ files = [], videos = [], title = 'Material' }:
     const isVideo = selectedItem.galleryType === 'video'
 
     return (
-      <div className="bg-card border border-line rounded-5 p-[16px] relative shadow-2 transition-shadow hover:shadow-3">
+      <div className="mx-auto w-full max-w-[720px] bg-card border border-line rounded-5 p-[12px] relative shadow-2 transition-shadow hover:shadow-3">
         <div className="absolute -top-[18px] left-1/2 -translate-x-1/2 -rotate-2 w-[120px] h-[28px] bg-[#dfd6cd] shadow-tape border-x border-dashed border-x-[#c2b6ab] z-10 opacity-90" />
 
         {/* Main Container: Sidebar + Gallery */}
         <div className="flex gap-[16px] items-stretch">
           {/* Sidebar with File Covers - Scrollable */}
           {allItems.length > 0 && (
-            <div className="relative flex-shrink-0 w-[124px] -ml-[6px]">
+            <div className="relative flex-shrink-0 w-[100px] -ml-[4px]">
               <ScrollArea className="absolute inset-0">
                 <div ref={scrollContainerRef} className="flex flex-col gap-[16px] pb-[40px] pt-[4px] px-[6px]">
                   {allItems.map((item, idx) => {
@@ -205,21 +205,11 @@ export function ResourceGallery({ files = [], videos = [], title = 'Material' }:
                             : 'border border-line shadow-1 group-hover:border-ink-lighter group-hover:shadow-2'
                             }`}
                         >
-                          {item.galleryType === 'file' && (item as any).images?.[0]?.url ? (
-                            <LazyImage
-                              src={(item as any).images[0].url}
-                              alt={item.name}
-                              fill
-                              className="object-cover"
-                              sizes="124px"
-                            />
-                          ) : (
-                            <SimulatedCover
-                              fileName={item.name}
-                              index={idx}
-                              isVideo={item.galleryType === 'video'}
-                            />
-                          )}
+                          <SimulatedCover
+                            fileName={item.name}
+                            index={idx}
+                            isVideo={item.galleryType === 'video'}
+                          />
                         </div>
                       </button>
                     )
@@ -251,8 +241,8 @@ export function ResourceGallery({ files = [], videos = [], title = 'Material' }:
                 </button>
               )}
 
-              {/* Image OR Video Thumbnail - Responsive Container */}
-              <div className="aspect-[7/10] bg-muted/20 rounded-4 overflow-hidden relative flex-1">
+              {/* Image OR Video Thumbnail - A4 Aspect Ratio */}
+              <div className="aspect-[7/10] bg-paper-2 rounded-4 border border-line-soft overflow-hidden relative flex-1 shadow-3">
                 {isVideo ? (
                   <div className="relative w-full h-full group cursor-pointer">
                     <LazyImage
@@ -280,7 +270,7 @@ export function ResourceGallery({ files = [], videos = [], title = 'Material' }:
                       src={selectedImage.url}
                       alt={selectedImage.alt || `${selectedItem.name} - página ${activeImageIndex + 1}`}
                       fill
-                      className="object-contain"
+                      className="object-contain scale-105"
                       sizes="(max-width: 768px) 100vw, 60vw"
                     />
                   ) : (
