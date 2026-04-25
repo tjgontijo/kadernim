@@ -28,7 +28,9 @@ export function ResourceRelatedStrip({ resourceId }: ResourceRelatedStripProps) 
       const res = await fetch(`/api/v1/resources/${resourceId}/related`)
       if (!res.ok) throw new Error('Failed to load related')
       const json = await res.json()
-      return (json.data as RelatedResource[]) || []
+      const data = (json.data as RelatedResource[]) || []
+      // Dedup by ID
+      return Array.from(new Map(data.map(item => [item.id, item])).values())
     },
     staleTime: 1000 * 60 * 5, // 5 minutos de cache
   })
