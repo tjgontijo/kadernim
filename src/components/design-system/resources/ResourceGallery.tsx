@@ -181,10 +181,10 @@ export function ResourceGallery({ files = [], videos = [], title = 'Material' }:
         <div className="absolute -top-[18px] left-1/2 -translate-x-1/2 -rotate-2 w-[120px] h-[28px] bg-[#dfd6cd] shadow-tape border-x border-dashed border-x-[#c2b6ab] z-10 opacity-90" />
 
         {/* Main Container: Sidebar + Gallery */}
-        <div className="flex gap-[16px] items-stretch">
+        <div className="flex gap-[16px] items-start">
           {/* Sidebar with File Covers - Scrollable */}
           {allItems.length > 0 && (
-            <div className="relative flex-shrink-0 w-[100px] -ml-[4px]">
+            <div className="relative flex-shrink-0 w-[100px] -ml-[4px] self-stretch">
               <ScrollArea className="absolute inset-0">
                 <div ref={scrollContainerRef} className="flex flex-col gap-[16px] pb-[40px] pt-[4px] px-[6px]">
                   {allItems.map((item, idx) => {
