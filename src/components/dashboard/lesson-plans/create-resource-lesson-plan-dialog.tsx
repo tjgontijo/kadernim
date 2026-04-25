@@ -208,11 +208,11 @@ export function CreateResourceLessonPlanDialog({ resourceId }: CreateResourceLes
           )}
         </div>
 
-        <DialogFooter className="px-6 pb-6">
+        <DialogFooter className="px-8 pb-6">
           <Button
             onClick={() => createMutation.mutate()}
             disabled={createMutation.isPending}
-            className="rounded-full bg-terracotta text-white hover:bg-[oklch(0.60_0.12_42)]"
+            className="rounded-full bg-terracotta mb-6 mr-4 text-white hover:bg-[oklch(0.60_0.12_42)]"
           >
             {createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
             {createMutation.isPending ? 'Gerando plano...' : 'Gerar plano de aula'}
