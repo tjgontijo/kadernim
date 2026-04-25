@@ -12,6 +12,72 @@ const OUTPUT_DIR = path.join(process.cwd(), 'public/resources/covers');
 const BG_DIR = path.join(process.cwd(), 'public/resources/background');
 const BG_FILES = ['desk-bg-v1.png', 'desk-bg-v2.png', 'desk-bg-v3.png'];
 
+type FileWithPreviewImages = {
+  name: string
+  fileType: string | null
+  images: Array<{ url: string | null; order: number }>
+}
+
+function shuffle<T>(items: T[]): T[] {
+  const list = [...items]
+  for (let i = list.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[list[i], list[j]] = [list[j], list[i]]
+  }
+  return list
+}
+
+function randomItem<T>(items: T[]): T {
+  return items[Math.floor(Math.random() * items.length)]
+}
+
+function isPdfFile(file: Pick<FileWithPreviewImages, 'name' | 'fileType'>) {
+  if (file.fileType?.toLowerCase().includes('pdf')) return true
+  return file.name.toLowerCase().endsWith('.pdf')
+}
+
+function pickRandomPreviewImages(files: FileWithPreviewImages[], count: number) {
+  const pdfFiles = files.filter((file) => isPdfFile(file))
+
+  const preferredByFile = pdfFiles
+    .map((file) => ({
+      ...file,
+      images: file.images
+        .filter((image) => image.order >= 1 && Boolean(image.url))
+        .map((image) => image.url as string),
+    }))
+    .filter((file) => file.images.length > 0)
+
+  const fallbackPool = pdfFiles
+    .flatMap((file) => file.images)
+    .filter((image) => Boolean(image.url))
+    .map((image) => image.url as string)
+
+  const chosen: string[] = []
+  const shuffledFiles = shuffle(preferredByFile)
+
+  // Prioriza variedade: tenta pegar uma imagem por PDF aleatório antes de repetir.
+  for (const file of shuffledFiles) {
+    if (chosen.length >= count) break
+    chosen.push(randomItem(file.images))
+  }
+
+  const preferredPool = preferredByFile.flatMap((file) => file.images)
+  while (chosen.length < count) {
+    if (preferredPool.length > 0) {
+      chosen.push(randomItem(preferredPool))
+      continue
+    }
+    if (fallbackPool.length > 0) {
+      chosen.push(randomItem(fallbackPool))
+      continue
+    }
+    break
+  }
+
+  return chosen
+}
+
 async function batchProcess() {
   console.log('🚀 Iniciando Processamento em Lote (Standalone HTML, sem servidor)...');
 
@@ -41,12 +107,11 @@ async function batchProcess() {
         files: {
           include: {
             images: {
-              where: { order: { gt: 0 } },
-              orderBy: { order: 'desc' },
-              take: 3
+              orderBy: { order: 'asc' },
+              take: 20
             }
           },
-          take: 1
+          take: 10
         }
       },
       orderBy: { createdAt: 'desc' }
@@ -74,9 +139,16 @@ async function batchProcess() {
       console.log(`${progress} 🎨 Gerando ${layout.toUpperCase()} para: ${resource.title}`);
 
       try {
-        const images = resource.files[0]?.images
-          .map(img => img.url)
-          .filter((url): url is string => !!url) || [resource.thumbUrl || ''];
+        const images = pickRandomPreviewImages(resource.files as FileWithPreviewImages[], 3)
+
+        if (images.length === 0 && resource.thumbUrl) {
+          images.push(resource.thumbUrl)
+        }
+
+        if (images.length === 0) {
+          console.warn(`${progress} ⚠️ Sem previews válidos para gerar capa: ${resource.title}`);
+          continue
+        }
 
         const html = generateCoverHtml({ layout, bgSrc, images });
         const tmpFile = path.join(os.tmpdir(), `kadernim-cover-${resource.slug}.html`);

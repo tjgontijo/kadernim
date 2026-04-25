@@ -217,7 +217,6 @@ export async function createLessonPlanFromResource(params: {
 
 export async function listLessonPlansByUser(params: {
   userId: string
-  includeArchived: boolean
   q?: string
   educationLevelSlug?: string
   gradeSlug?: string
@@ -229,7 +228,7 @@ export async function listLessonPlansByUser(params: {
   const plans = await prisma.lessonPlan.findMany({
     where: {
       userId: params.userId,
-      archivedAt: params.includeArchived ? undefined : null,
+      archivedAt: null,
       educationLevel: params.educationLevelSlug
         ? { slug: params.educationLevelSlug }
         : undefined,
@@ -317,11 +316,10 @@ export async function getLessonPlanById(params: {
   return serializeLessonPlan(plan)
 }
 
-export async function setLessonPlanArchived(params: {
+export async function deleteLessonPlan(params: {
   id: string
   userId: string
   isAdmin: boolean
-  archived: boolean
 }) {
   const current = await prisma.lessonPlan.findFirst({
     where: {
@@ -335,19 +333,7 @@ export async function setLessonPlanArchived(params: {
     throw new Error('LESSON_PLAN_NOT_FOUND')
   }
 
-  const updated = await prisma.lessonPlan.update({
+  await prisma.lessonPlan.delete({
     where: { id: params.id },
-    data: {
-      archivedAt: params.archived ? new Date() : null,
-      status: params.archived ? 'ARCHIVED' : 'GENERATED',
-    },
-    include: {
-      sourceResource: { select: { title: true } },
-      educationLevel: { select: { name: true } },
-      subject: { select: { name: true } },
-      grade: { select: { name: true } },
-    },
   })
-
-  return serializeLessonPlan(updated)
 }

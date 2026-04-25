@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useQuery } from '@tanstack/react-query'
 import {
   LayoutDashboard,
   BookOpen,
@@ -31,6 +32,7 @@ import { UserRoleType } from '@/types/users/user-role'
 import { cn } from '@/lib/utils/index'
 import { Logo } from '@/components/ui/logo'
 import { useResourceCounts } from '@/hooks/resources/use-resources'
+import { fetchPlannerCounts } from '@/lib/lesson-plans/api-client'
 
 interface AppSidebarProps {
   user: {
@@ -60,6 +62,11 @@ export function AppSidebar({ user }: AppSidebarProps) {
   const pathname = usePathname()
   const { isMobile, state, setOpenMobile } = useSidebar()
   const { data: counts } = useResourceCounts()
+  const { data: plannerCounts } = useQuery({
+    queryKey: ['planner-counts'],
+    queryFn: fetchPlannerCounts,
+    staleTime: 1000 * 60 * 5, // 5 min
+  })
   const collapsed = state === 'collapsed'
 
   const userRole = (user.role || 'user') as UserRoleType
@@ -76,7 +83,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
       items: [
         { title: 'Biblioteca', href: '/resources', icon: BookOpen, count: counts?.library?.toString() },
         { title: 'Meus favoritos', href: '/favorites', icon: Heart, count: counts?.favorites?.toString() },
-        { title: 'Planejador', href: '/planner', icon: Calendar },
+        { title: 'Planos de Aula', href: '/planner', icon: Calendar, count: plannerCounts?.plans?.toString() },
         { title: 'BNCC', href: '/bncc', icon: BookMarked },
       ],
     },

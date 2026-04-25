@@ -8,15 +8,15 @@ datasource db {
 }
 
 model EducationLevel {
-  id         String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name       String      @unique
-  slug       String      @unique
-  order      Int         @default(0)
-  grades     Grade[]
-  resources  Resource[]
+  id             String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String                   @unique
+  slug           String                   @unique
+  order          Int                      @default(0)
+  grades         Grade[]
+  resources      Resource[]
   resourceLevels ResourceEducationLevel[]
-  bnccSkills BnccSkill[]
-  lessonPlans LessonPlan[]
+  bnccSkills     BnccSkill[]
+  lessonPlans    LessonPlan[]
 
   @@map("education_level")
 }
@@ -38,17 +38,17 @@ model Grade {
 }
 
 model Subject {
-  id   String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name String @unique
-  slug String @unique
+  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String  @unique
+  slug      String  @unique
   color     String?
   textColor String?
 
-  grades     GradeSubject[]
-  resources  Resource[]
+  grades           GradeSubject[]
+  resources        Resource[]
   resourceSubjects ResourceSubject[]
-  bnccSkills BnccSkill[]
-  lessonPlans LessonPlan[]
+  bnccSkills       BnccSkill[]
+  lessonPlans      LessonPlan[]
 
   @@map("subject")
 }
@@ -336,8 +336,8 @@ model ResourceEducationLevel {
 }
 
 model ResourceSubject {
-  resourceId String  @db.Uuid
-  subjectId  String  @db.Uuid
+  resourceId String   @db.Uuid
+  subjectId  String   @db.Uuid
   resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
   subject    Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
 
@@ -362,17 +362,18 @@ model ResourceImage {
 }
 
 model ResourceFile {
-  id                 String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  resourceId         String              @db.Uuid
+  id                 String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  resourceId         String                 @db.Uuid
   name               String
-  cloudinaryPublicId String   @unique
+  cloudinaryPublicId String                 @unique
   url                String?
   fileType           String?
   sizeBytes          Int?
   pageCount          Int?
-  createdAt          DateTime            @default(now())
-  resource           Resource            @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  createdAt          DateTime               @default(now())
+  resource           Resource               @relation(fields: [resourceId], references: [id], onDelete: Cascade)
   images             ResourceFileImage[]
+  knowledgeDocuments PdfKnowledgeDocument[]
 
   @@index([resourceId])
   @@map("resource_file")
@@ -381,7 +382,7 @@ model ResourceFile {
 model ResourceFileImage {
   id                 String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   fileId             String       @db.Uuid
-  cloudinaryPublicId String   @unique
+  cloudinaryPublicId String       @unique
   url                String?
   alt                String?
   order              Int          @default(0)
@@ -408,13 +409,12 @@ model ResourceVideo {
   @@map("resource_video")
 }
 
-
 model Resource {
   id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title            String
   description      String?
-  educationLevelId String?    @db.Uuid
-  subjectId        String?    @db.Uuid
+  educationLevelId String?   @db.Uuid
+  subjectId        String?   @db.Uuid
   isUniversal      Boolean   @default(false)
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
@@ -435,32 +435,33 @@ model Resource {
   averageRating Float @default(0)
   downloadCount Int   @default(0)
 
-  thumbUrl       String?
-  thumbPublicId  String?
+  thumbUrl      String?
+  thumbPublicId String?
 
   googleDriveUrl String?
-  externalId     Int?      @unique
+  externalId     Int?    @unique
 
   archivedAt DateTime?
 
-  reviews          Review[]
-  userInteractions UserResourceInteraction[]
-  sourceRelations  RelatedResource[]         @relation("source")
-  targetRelations  RelatedResource[]         @relation("target")
-  lessonPlans      LessonPlan[]
+  reviews               Review[]
+  userInteractions      UserResourceInteraction[]
+  sourceRelations       RelatedResource[]         @relation("source")
+  targetRelations       RelatedResource[]         @relation("target")
+  lessonPlans           LessonPlan[]
+  pdfKnowledgeDocuments PdfKnowledgeDocument[]
 
-  educationLevel EducationLevel?       @relation(fields: [educationLevelId], references: [id])
-  subject        Subject?              @relation(fields: [subjectId], references: [id])
-  
+  educationLevel EducationLevel? @relation(fields: [educationLevelId], references: [id])
+  subject        Subject?        @relation(fields: [subjectId], references: [id])
+
   educationLevels ResourceEducationLevel[]
   subjects        ResourceSubject[]
-  files          ResourceFile[]
-  grades         ResourceGrade[]
-  images         ResourceImage[]
-  videos         ResourceVideo[]
-  bnccSkills     ResourceBnccSkill[]
-  objectives    ResourceObjective[]
-  steps         ResourceStep[]
+  files           ResourceFile[]
+  grades          ResourceGrade[]
+  images          ResourceImage[]
+  videos          ResourceVideo[]
+  bnccSkills      ResourceBnccSkill[]
+  objectives      ResourceObjective[]
+  steps           ResourceStep[]
 
   @@index([educationLevelId])
   @@index([subjectId])
@@ -477,8 +478,8 @@ model ResourceObjective {
   resourceId String   @map("resource_id") @db.Uuid
   text       String
   order      Int      @default(0)
-  createdAt  DateTime @map("created_at") @default(now())
-  updatedAt  DateTime @map("updated_at") @updatedAt
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
   resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
 
   @@index([resourceId, order])
@@ -493,8 +494,8 @@ model ResourceStep {
   duration   String?
   content    String   @db.Text
   order      Int      @default(0)
-  createdAt  DateTime @map("created_at") @default(now())
-  updatedAt  DateTime @map("updated_at") @updatedAt
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
   resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
 
   @@index([resourceId, order])
@@ -776,37 +777,72 @@ enum LessonPlanMode {
   HOMEWORK
 }
 
+enum PdfKnowledgeSourceType {
+  LOCAL_FILE
+  RESOURCE_FILE
+}
+
+model PdfKnowledgeDocument {
+  id               String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sourceType       PdfKnowledgeSourceType
+  sourceKey        String
+  sourcePath       String?
+  resourceName     String?
+  pdfName          String
+  resourceId       String?                @db.Uuid
+  resourceFileId   String?                @db.Uuid
+  pageCount        Int                    @default(0)
+  extractorVersion String
+  contentHash      String
+  contentMarkdown  String                 @db.Text
+  contentRaw       String?                @db.Text
+  metadata         Json?
+  extractedAt      DateTime               @default(now())
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+
+  resource     Resource?     @relation(fields: [resourceId], references: [id], onDelete: SetNull)
+  resourceFile ResourceFile? @relation(fields: [resourceFileId], references: [id], onDelete: SetNull)
+
+  @@unique([sourceType, sourceKey])
+  @@index([resourceId])
+  @@index([resourceFileId])
+  @@index([pdfName])
+  @@index([extractedAt])
+  @@map("pdf_knowledge_document")
+}
+
 model LessonPlan {
-  id               String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId           String           @db.Uuid
-  sourceResourceId String?          @db.Uuid
+  id               String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId           String  @db.Uuid
+  sourceResourceId String? @db.Uuid
 
-  title            String
-  status           LessonPlanStatus @default(GENERATED)
-  origin           LessonPlanOrigin @default(RESOURCE)
-  mode             LessonPlanMode
+  title  String
+  status LessonPlanStatus @default(GENERATED)
+  origin LessonPlanOrigin @default(RESOURCE)
+  mode   LessonPlanMode
 
-  educationLevelId String?          @db.Uuid
-  subjectId        String?          @db.Uuid
-  gradeId          String?          @db.Uuid
+  educationLevelId String? @db.Uuid
+  subjectId        String? @db.Uuid
+  gradeId          String? @db.Uuid
 
-  durationMinutes  Int
-  classCount       Int?
-  teacherNote      String?          @db.Text
+  durationMinutes Int
+  classCount      Int?
+  teacherNote     String? @db.Text
 
-  content          Json
-  sourceSnapshot   Json
-  generationMeta   Json?
+  content        Json
+  sourceSnapshot Json
+  generationMeta Json?
 
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-  archivedAt       DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  archivedAt DateTime?
 
-  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sourceResource   Resource?        @relation(fields: [sourceResourceId], references: [id], onDelete: SetNull)
-  educationLevel   EducationLevel?  @relation(fields: [educationLevelId], references: [id], onDelete: SetNull)
-  subject          Subject?         @relation(fields: [subjectId], references: [id], onDelete: SetNull)
-  grade            Grade?           @relation(fields: [gradeId], references: [id], onDelete: SetNull)
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sourceResource Resource?       @relation(fields: [sourceResourceId], references: [id], onDelete: SetNull)
+  educationLevel EducationLevel? @relation(fields: [educationLevelId], references: [id], onDelete: SetNull)
+  subject        Subject?        @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  grade          Grade?          @relation(fields: [gradeId], references: [id], onDelete: SetNull)
 
   @@index([userId, createdAt])
   @@index([userId, archivedAt])

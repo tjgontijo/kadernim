@@ -29,7 +29,7 @@ const PHASE_LABELS: Record<LessonPlanBuildPhase, string> = {
   draft: 'Gerando rascunho do plano',
   review: 'Revisando qualidade do plano',
   refine: 'Refinando versão final',
-  persist: 'Salvando plano no planejador',
+  persist: 'Salvando plano de aula',
 }
 
 const DURATIONS = [

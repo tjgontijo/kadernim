@@ -2,9 +2,11 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { useQuery } from '@tanstack/react-query'
 import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar'
 import { UserDropdownMenuGlobal } from '@/components/dashboard/users/user-dropdown-menu-global'
 import { useResource } from '@/hooks/resources/use-resource-context'
+import { fetchLessonPlanById } from '@/lib/lesson-plans/api-client'
 
 interface DashboardHeaderProps {
   user: {
@@ -28,15 +30,25 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
 
   const pathSegments = pathname.split('/').filter(Boolean)
   const isResourceDetail = pathSegments[0] === 'resources' && pathSegments.length > 1
+  const isPlannerDetail = pathSegments[0] === 'planner' && pathSegments.length > 1
   const rootSegment = pathSegments[0] || 'resources'
   
   const isUserForm = rootSegment === 'admin' && pathSegments[1] === 'users' && pathSegments.length > 2
-  const showBackButton = isResourceDetail || isUserForm
+  const showBackButton = isResourceDetail || isUserForm || isPlannerDetail
+
+  const plannerId = isPlannerDetail ? pathSegments[1] : undefined
+  const { data: plannerDetail } = useQuery({
+    queryKey: ['planner-detail', plannerId],
+    queryFn: () => fetchLessonPlanById(plannerId as string),
+    enabled: Boolean(plannerId),
+    staleTime: 1000 * 60 * 5,
+    retry: false,
+  })
 
   const rootLabelMap: Record<string, string> = {
     resources: 'Biblioteca',
     favorites: 'Meus favoritos',
-    planner: 'Planejador',
+    planner: 'Planos de Aula',
     bncc: 'BNCC',
     discover: 'Descobrir',
     admin: 'Administração',
@@ -96,7 +108,9 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
         {!isResourceDetail && pathSegments.length > 1 && pathSegments[0] !== 'resources' && (
            <>
               <span className="text-line">/</span>
-              <span className="text-ink font-medium truncate">{nestedLabel}</span>
+              <span className="text-ink font-medium truncate">
+                {isPlannerDetail ? (plannerDetail?.sourceSnapshot.title || 'Plano de Aula') : nestedLabel}
+              </span>
            </>
         )}
       </nav>

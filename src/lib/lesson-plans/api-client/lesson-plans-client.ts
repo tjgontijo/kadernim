@@ -1,11 +1,9 @@
 import {
   CreateLessonPlanInputSchema,
-  LessonPlanArchiveInputSchema,
   LessonPlanCreateResponseSchema,
   LessonPlanListResponseSchema,
   LessonPlanRecordSchema,
   type CreateLessonPlanInput,
-  type LessonPlanArchiveInput,
   type LessonPlanBuildPhase,
   type LessonPlanBuildPhaseStatus,
   type LessonPlanCreateResponse,
@@ -175,7 +173,6 @@ export async function fetchLessonPlans(params?: {
   gradeId?: string
   subjectId?: string
   sourceResourceId?: string
-  includeArchived?: boolean
 }): Promise<LessonPlanListItem[]> {
   const query = buildQuery({
     q: params?.q,
@@ -185,7 +182,6 @@ export async function fetchLessonPlans(params?: {
     gradeId: params?.gradeId,
     subjectId: params?.subjectId,
     sourceResourceId: params?.sourceResourceId,
-    includeArchived: params?.includeArchived,
   })
 
   const response = await fetch(`/api/v1/planner${query ? `?${query}` : ''}`)
@@ -194,21 +190,21 @@ export async function fetchLessonPlans(params?: {
   return parsed.data
 }
 
+export async function fetchPlannerCounts(): Promise<{ plans: number }> {
+  const response = await fetch('/api/v1/planner/counts')
+  return readJson<{ plans: number }>(response)
+}
+
 export async function fetchLessonPlanById(id: string): Promise<LessonPlanRecord> {
   const response = await fetch(`/api/v1/planner/${id}`)
   const json = await readJson<unknown>(response)
   return LessonPlanRecordSchema.parse(json)
 }
 
-export async function archiveLessonPlan(id: string, input: LessonPlanArchiveInput): Promise<LessonPlanRecord> {
-  const payload = LessonPlanArchiveInputSchema.parse(input)
-
+export async function deleteLessonPlan(id: string): Promise<void> {
   const response = await fetch(`/api/v1/planner/${id}`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+    method: 'DELETE',
   })
 
-  const json = await readJson<unknown>(response)
-  return LessonPlanRecordSchema.parse(json)
+  await readJson<unknown>(response)
 }

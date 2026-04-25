@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import {
-  LessonPlanArchiveInputSchema,
-} from '@/lib/lesson-plans/schemas'
-import {
+  deleteLessonPlan,
   getLessonPlanById,
   getPlannerAccess,
   hasPlannerAccess,
-  setLessonPlanArchived,
 } from '@/lib/lesson-plans/services'
 
 export async function GET(
@@ -42,7 +39,7 @@ export async function GET(
   }
 }
 
-export async function PATCH(
+export async function DELETE(
   request: NextRequest,
   ctx: { params: Promise<{ id: string }> }
 ) {
@@ -57,27 +54,20 @@ export async function PATCH(
       return NextResponse.json({ error: 'Assinatura necessária' }, { status: 403 })
     }
 
-    const parsed = LessonPlanArchiveInputSchema.safeParse(await request.json())
-
-    if (!parsed.success) {
-      return NextResponse.json({ error: 'Dados inválidos', details: parsed.error.format() }, { status: 400 })
-    }
-
     const { id } = await ctx.params
-    const updated = await setLessonPlanArchived({
+    await deleteLessonPlan({
       id,
       userId: access.userId,
       isAdmin: access.isAdmin,
-      archived: parsed.data.archived,
     })
 
-    return NextResponse.json(updated)
+    return NextResponse.json({ success: true })
   } catch (error) {
     if (error instanceof Error && error.message === 'LESSON_PLAN_NOT_FOUND') {
       return NextResponse.json({ error: 'Plano de aula não encontrado' }, { status: 404 })
     }
 
-    console.error('Archive lesson plan error:', error)
-    return NextResponse.json({ error: 'Erro ao atualizar plano de aula' }, { status: 500 })
+    console.error('Delete lesson plan error:', error)
+    return NextResponse.json({ error: 'Erro ao excluir plano de aula' }, { status: 500 })
   }
 }

@@ -1,16 +1,17 @@
 'use client'
 
-import { Calendar, Clock3, Download, FileText, Archive, ArchiveRestore, Copy, CheckCircle2, Target, ClipboardList, BookMarked, Sparkles } from 'lucide-react'
+import { Calendar, Clock3, Download, FileText, Copy, CheckCircle2, Target, ClipboardList, BookMarked, Sparkles } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import type { LessonPlanRecord } from '@/lib/lesson-plans/schemas'
 import { Button } from '@/components/ui/button'
 import { useDownloadFile } from '@/hooks/utils/use-download-file'
+import { DeleteConfirmDialog } from '@/components/dashboard/crud/delete-confirm-dialog'
 
 interface LessonPlanViewerProps {
   plan: LessonPlanRecord
-  onToggleArchive?: (archived: boolean) => void
-  isArchiving?: boolean
+  onDelete?: () => void
+  isDeleting?: boolean
 }
 
 function modeLabel(mode: LessonPlanRecord['mode']) {
@@ -30,12 +31,11 @@ function formatStepIds(plan: LessonPlanRecord, ids: string[]) {
     .filter((title): title is string => Boolean(title))
 }
 
-export function LessonPlanViewer({ plan, onToggleArchive, isArchiving = false }: LessonPlanViewerProps) {
+export function LessonPlanViewer({ plan, onDelete, isDeleting = false }: LessonPlanViewerProps) {
   const { downloadFile, downloading } = useDownloadFile()
   const content = plan.content
   const snapshot = plan.sourceSnapshot
   const createdAt = format(new Date(plan.createdAt), "d 'de' MMMM 'de' yyyy", { locale: ptBR })
-  const isArchived = Boolean(plan.archivedAt)
   const totalFlowMinutes = content.flow.reduce((total, step) => total + step.durationMinutes, 0)
 
   const handleCopy = async () => {
@@ -109,17 +109,19 @@ export function LessonPlanViewer({ plan, onToggleArchive, isArchiving = false }:
               <Copy className="h-4 w-4" />
               Copiar
             </Button>
-            {onToggleArchive && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-full"
-                disabled={isArchiving}
-                onClick={() => onToggleArchive(!isArchived)}
-              >
-                {isArchived ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
-                {isArchived ? 'Desarquivar' : 'Arquivar'}
-              </Button>
+            {onDelete && (
+              <DeleteConfirmDialog
+                onConfirm={onDelete}
+                isLoading={isDeleting}
+                title="Excluir plano de aula?"
+                description="Essa ação é permanente e remove este plano de aula do banco de dados."
+                confirmText="Excluir permanentemente"
+                trigger={
+                  <Button variant="outline" size="sm" className="rounded-full text-destructive border-destructive/30 hover:bg-destructive/10">
+                    Excluir
+                  </Button>
+                }
+              />
             )}
           </div>
         </div>

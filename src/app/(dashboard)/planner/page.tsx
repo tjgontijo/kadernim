@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Calendar, Clock3, Archive, BookOpen } from 'lucide-react'
+import { Calendar, Clock3, BookOpen } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { PageScaffold } from '@/components/dashboard/shared/page-scaffold'
@@ -21,12 +21,10 @@ function modeLabel(mode: LessonPlanListItem['mode']) {
 
 export default function PlannerPage() {
   const [filters, setFilters] = useState<PlannerFiltersValue>({})
-  const [showArchived, setShowArchived] = useState(false)
 
   const { data, isLoading } = useQuery({
-    queryKey: ['planner-list', showArchived, filters],
+    queryKey: ['planner-list', filters],
     queryFn: () => fetchLessonPlans({
-      includeArchived: showArchived,
       q: filters.q,
       educationLevel: filters.educationLevel,
       grade: filters.grade,
@@ -38,23 +36,7 @@ export default function PlannerPage() {
 
   return (
     <PageScaffold className="pt-4 sm:pt-6">
-      <PageScaffold.Header
-        title="Planejador"
-        action={
-          <button
-            type="button"
-            onClick={() => setShowArchived((value) => !value)}
-            className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
-              showArchived
-                ? 'border-sage bg-sage-2 text-sage'
-                : 'border-line bg-card text-ink hover:bg-paper-2'
-            }`}
-          >
-            <Archive className="mr-1 inline h-4 w-4" />
-            {showArchived ? 'Mostrando arquivados' : 'Mostrar arquivados'}
-          </button>
-        }
-      />
+      <PageScaffold.Header title="Planos de Aula" />
 
       <PageScaffold.Controls>
         <PlannerFilters value={filters} onChange={setFilters} />
@@ -97,9 +79,6 @@ export default function PlannerPage() {
                       <Calendar className="h-4 w-4" />
                       {format(new Date(item.createdAt), 'dd/MM/yyyy', { locale: ptBR })}
                     </div>
-                    {item.archivedAt && (
-                      <div className="text-xs font-semibold text-sage">Arquivado</div>
-                    )}
                   </div>
                 </article>
               </Link>

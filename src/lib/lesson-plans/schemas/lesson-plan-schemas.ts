@@ -159,9 +159,3 @@ export const LessonPlanCreateResponseSchema = z.object({
 })
 
 export type LessonPlanCreateResponse = z.infer<typeof LessonPlanCreateResponseSchema>
-
-export const LessonPlanArchiveInputSchema = z.object({
-  archived: z.boolean(),
-})
-
-export type LessonPlanArchiveInput = z.infer<typeof LessonPlanArchiveInputSchema>

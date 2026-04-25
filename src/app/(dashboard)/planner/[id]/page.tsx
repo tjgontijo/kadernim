@@ -1,16 +1,15 @@
 'use client'
 
-import Link from 'next/link'
 import { use } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
 import { LessonPlanViewer } from '@/components/dashboard/lesson-plans/lesson-plan-viewer'
-import { archiveLessonPlan, fetchLessonPlanById } from '@/lib/lesson-plans/api-client'
+import { deleteLessonPlan, fetchLessonPlanById } from '@/lib/lesson-plans/api-client'
 
 export default function LessonPlanDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
+  const router = useRouter()
   const queryClient = useQueryClient()
 
   const { data: plan, isLoading } = useQuery({
@@ -18,15 +17,17 @@ export default function LessonPlanDetailPage({ params }: { params: Promise<{ id:
     queryFn: () => fetchLessonPlanById(id),
   })
 
-  const archiveMutation = useMutation({
-    mutationFn: (archived: boolean) => archiveLessonPlan(id, { archived }),
-    onSuccess: (updated) => {
-      queryClient.setQueryData(['planner-detail', id], updated)
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteLessonPlan(id),
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: ['planner-detail', id] })
       queryClient.invalidateQueries({ queryKey: ['planner-list'] })
-      toast.success(updated.archivedAt ? 'Plano arquivado' : 'Plano desarquivado')
+      queryClient.invalidateQueries({ queryKey: ['planner-counts'] })
+      toast.success('Plano de aula excluído')
+      router.push('/planner')
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Erro ao atualizar plano')
+      toast.error(error instanceof Error ? error.message : 'Erro ao excluir plano de aula')
     },
   })
 
@@ -43,12 +44,6 @@ export default function LessonPlanDetailPage({ params }: { params: Promise<{ id:
     return (
       <div className="dashboard-page-container py-8">
         <div className="mx-auto max-w-3xl">
-        <Link href="/planner">
-          <Button variant="outline" className="rounded-full border-line">
-            <ArrowLeft className="h-4 w-4" />
-            Voltar para o planejador
-          </Button>
-        </Link>
         <div className="mt-6 rounded-4 border border-line bg-card p-8 text-center text-ink-soft">
           Plano de aula não encontrado.
         </div>
@@ -59,17 +54,10 @@ export default function LessonPlanDetailPage({ params }: { params: Promise<{ id:
 
   return (
     <div className="dashboard-page-container py-8">
-      <Link href="/planner">
-        <Button variant="outline" className="mb-5 rounded-full border-line">
-          <ArrowLeft className="h-4 w-4" />
-          Voltar para o planejador
-        </Button>
-      </Link>
-
       <LessonPlanViewer
         plan={plan}
-        onToggleArchive={(archived) => archiveMutation.mutate(archived)}
-        isArchiving={archiveMutation.isPending}
+        onDelete={() => deleteMutation.mutate()}
+        isDeleting={deleteMutation.isPending}
       />
     </div>
   )

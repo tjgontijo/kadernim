@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPlannerAccess, hasPlannerAccess, listLessonPlansByUser } from '@/lib/lesson-plans/services'
 
-function asBool(value: string | null) {
-  if (!value) return false
-  return value === '1' || value === 'true'
-}
-
 export async function GET(request: NextRequest) {
   try {
     const access = await getPlannerAccess(request)
@@ -20,7 +15,6 @@ export async function GET(request: NextRequest) {
 
     const plans = await listLessonPlansByUser({
       userId: access.userId,
-      includeArchived: asBool(request.nextUrl.searchParams.get('includeArchived')),
       q: request.nextUrl.searchParams.get('q') ?? undefined,
       educationLevelSlug: request.nextUrl.searchParams.get('educationLevel') ?? undefined,
       gradeSlug: request.nextUrl.searchParams.get('grade') ?? undefined,
