@@ -205,11 +205,21 @@ export function ResourceGallery({ files = [], videos = [], title = 'Material' }:
                             : 'border border-line shadow-1 group-hover:border-ink-lighter group-hover:shadow-2'
                             }`}
                         >
-                          <SimulatedCover
-                            fileName={item.name}
-                            index={idx}
-                            isVideo={item.galleryType === 'video'}
-                          />
+                          {item.galleryType === 'file' && (item as any).images?.[0]?.url ? (
+                            <LazyImage
+                              src={(item as any).images[0].url}
+                              alt={item.name}
+                              fill
+                              className="object-cover"
+                              sizes="124px"
+                            />
+                          ) : (
+                            <SimulatedCover
+                              fileName={item.name}
+                              index={idx}
+                              isVideo={item.galleryType === 'video'}
+                            />
+                          )}
                         </div>
                       </button>
                     )
@@ -241,8 +251,8 @@ export function ResourceGallery({ files = [], videos = [], title = 'Material' }:
                 </button>
               )}
 
-              {/* Image OR Video Thumbnail - A4 Aspect Ratio */}
-              <div className="aspect-[7/10] bg-paper-2 rounded-4 border border-line-soft overflow-hidden relative flex-1 shadow-3">
+              {/* Image OR Video Thumbnail - Responsive Container */}
+              <div className="aspect-[7/10] bg-muted/20 rounded-4 overflow-hidden relative flex-1">
                 {isVideo ? (
                   <div className="relative w-full h-full group cursor-pointer">
                     <LazyImage
@@ -270,7 +280,7 @@ export function ResourceGallery({ files = [], videos = [], title = 'Material' }:
                       src={selectedImage.url}
                       alt={selectedImage.alt || `${selectedItem.name} - página ${activeImageIndex + 1}`}
                       fill
-                      className="object-contain scale-105"
+                      className="object-contain"
                       sizes="(max-width: 768px) 100vw, 60vw"
                     />
                   ) : (
