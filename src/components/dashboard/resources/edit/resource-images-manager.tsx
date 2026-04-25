@@ -264,7 +264,7 @@ export function ResourceImagesManager({
                                 if (!img) return null;
                                 return (
                                     <Card className="overflow-hidden border bg-background shadow-xl">
-                                        <div className="aspect-square relative overflow-hidden bg-muted/50 flex items-center justify-center">
+                                        <div className="aspect-[7/10] relative overflow-hidden bg-muted/50 flex items-center justify-center">
                                             {img.url ? (
                                                 <img
                                                     src={img.url}
@@ -334,7 +334,7 @@ function SortableImageItem({
                 <div
                     {...attributes}
                     {...listeners}
-                    className="aspect-square relative overflow-hidden bg-muted/50 flex items-center justify-center cursor-grab active:cursor-grabbing"
+                    className="aspect-[7/10] relative overflow-hidden bg-muted/50 flex items-center justify-center cursor-grab active:cursor-grabbing"
                 >
                     <div
                         className="absolute inset-0 bg-cover bg-center blur-xl opacity-20 scale-110"

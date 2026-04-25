@@ -52,13 +52,13 @@ export function ResourceImageCarousel({
 
     if (!mounted) {
         return (
-            <div className="relative aspect-square w-full bg-muted animate-pulse rounded-2xl" />
+            <div className="relative aspect-[7/10] w-full bg-muted animate-pulse rounded-2xl" />
         )
     }
 
     if (validImages.length === 0) {
         return (
-            <div className="flex aspect-square w-full items-center justify-center rounded-2xl bg-muted border border-dashed border-border/50">
+            <div className="flex aspect-[7/10] w-full items-center justify-center rounded-2xl bg-muted border border-dashed border-border/50">
                 <div className="text-center space-y-2">
                     <span className="text-3xl">🖼️</span>
                     <p className="text-sm font-medium text-muted-foreground/60">Sem imagem disponível</p>
@@ -78,11 +78,11 @@ export function ResourceImageCarousel({
                     zoom={zoom ? { maxRatio: 3 } : false}
                     onSwiper={setSwiperInstance}
                     onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
-                    className="aspect-square"
+                    className="aspect-[7/10]"
                 >
                     {validImages.map((img, index) => (
                         <SwiperSlide key={img.id}>
-                            <div className="relative aspect-square w-full">
+                            <div className="relative aspect-[7/10] w-full">
                                 <LazyImage
                                     src={img.url!}
                                     alt={img.alt || `${title} - Imagem ${index + 1}`}
@@ -90,7 +90,7 @@ export function ResourceImageCarousel({
                                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
                                     priority={index === 0}
                                     loading={index === 0 ? 'eager' : 'lazy'}
-                                    className="object-cover"
+                                    className="object-contain"
                                 />
                             </div>
                         </SwiperSlide>

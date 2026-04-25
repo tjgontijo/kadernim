@@ -13,14 +13,14 @@ export function ResourceDetailPageSkeleton() {
             <div className="flex gap-[16px] items-stretch">
               {/* Sidebar Skeletons */}
               <div className="w-[124px] flex-shrink-0 flex flex-col gap-[16px]">
-                <Skeleton className="w-full aspect-square rounded-2 bg-muted/40" />
-                <Skeleton className="w-full aspect-square rounded-2 bg-muted/40" />
-                <Skeleton className="w-full aspect-square rounded-2 bg-muted/40" />
+                <Skeleton className="w-full aspect-[7/10] rounded-2 bg-muted/40" />
+                <Skeleton className="w-full aspect-[7/10] rounded-2 bg-muted/40" />
+                <Skeleton className="w-full aspect-[7/10] rounded-2 bg-muted/40" />
               </div>
 
               {/* Main Image Skeleton */}
               <div className="flex-1">
-                <div className="aspect-square bg-paper-2 rounded-4 border border-line-soft overflow-hidden relative shadow-3">
+                <div className="aspect-[7/10] bg-paper-2 rounded-4 border border-line-soft overflow-hidden relative shadow-3">
                   <Skeleton className="h-full w-full rounded-none bg-muted/40" />
                 </div>
               </div>
