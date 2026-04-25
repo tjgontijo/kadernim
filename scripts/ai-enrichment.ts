@@ -34,8 +34,8 @@ async function main() {
         // 1. RODAR ORQUESTRADOR DE AGENTES (Seguindo o padrão lesson-plans)
         const result = await orchestrateResourceEnrichment({
           resourceTitle: resource.title,
-          subjectName: resource.subject.name,
-          educationLevelName: resource.educationLevel.name,
+          subjectName: resource.subject?.name || 'Geral',
+          educationLevelName: resource.educationLevel?.name || 'Geral',
           availableGrades: gradeSlugs
         });
 

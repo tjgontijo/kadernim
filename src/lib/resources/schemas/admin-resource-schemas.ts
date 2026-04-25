@@ -28,8 +28,11 @@ export const CreateResourceSchema = z.object({
     .trim()
     .optional()
     .nullable(),
-  educationLevel: z.string().min(1, { message: 'Nível de educação é obrigatório' }),
-  subject: z.string().min(1, { message: 'Matéria é obrigatória' }),
+  educationLevel: z.string().optional().nullable(),
+  subject: z.string().optional().nullable(),
+  educationLevels: z.array(z.string()).default([]),
+  subjects: z.array(z.string()).default([]),
+  isUniversal: z.boolean().default(false),
   thumbUrl: z.string()
     .url('thumbUrl deve ser uma URL válida')
     .optional()
@@ -63,8 +66,11 @@ export const UpdateResourceSchema = z.object({
     .trim()
     .optional()
     .nullable(),
-  educationLevel: z.string().trim().min(1, { message: 'Nível de educação é obrigatório' }).optional(),
-  subject: z.string().trim().min(1, { message: 'Matéria é obrigatória' }).optional(),
+  educationLevel: z.string().trim().optional().nullable(),
+  subject: z.string().trim().optional().nullable(),
+  educationLevels: z.array(z.string()).optional(),
+  subjects: z.array(z.string()).optional(),
+  isUniversal: z.boolean().optional(),
   thumbUrl: z.string()
     .url('thumbUrl deve ser uma URL válida')
     .optional()
@@ -135,8 +141,11 @@ export const ResourceDetailResponseSchema = z.object({
   id: z.string(),
   title: z.string(),
   description: z.string().nullable(),
-  educationLevel: z.string(),
-  subject: z.string(),
+  educationLevel: z.string().nullable(),
+  subject: z.string().nullable(),
+  educationLevels: z.array(z.string()).default([]),
+  subjects: z.array(z.string()).default([]),
+  isUniversal: z.boolean().default(false),
   thumbUrl: z.string().nullable(),
   thumbPublicId: z.string().nullable().optional(),
   grades: z.array(z.string()),
@@ -208,8 +217,9 @@ export const ResourceListResponseSchema = z.object({
     id: z.string(),
     title: z.string(),
     description: z.string().nullable().optional(),
-    educationLevel: z.string(),
-    subject: z.string(),
+    educationLevel: z.string().nullable(),
+    subject: z.string().nullable(),
+    isUniversal: z.boolean().default(false),
     thumbUrl: z.string().nullable(),
     fileCount: z.number(),
     grades: z.array(z.string()),

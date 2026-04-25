@@ -38,6 +38,7 @@ type ResourceRow = {
   subjectTextColor: string | null
   hasAccess: boolean
   isFavorite: boolean
+  isUniversal: boolean
 }
 
 /**
@@ -66,18 +67,32 @@ export async function getResourceList({
 
   if (educationLevel) {
     whereConditions.push(
-      PrismaNamespace.sql`el.slug = ${educationLevel}`
+      PrismaNamespace.sql`(r."isUniversal" = TRUE OR r."educationLevelId" = (SELECT id FROM "education_level" WHERE slug = ${educationLevel}) OR EXISTS (
+        SELECT 1 FROM "resource_education_level" rel
+        JOIN "education_level" el2 ON el2.id = rel."educationLevelId"
+        WHERE rel."resourceId" = r.id AND el2.slug = ${educationLevel}
+      ))`
     )
   }
 
   if (grade) {
-    joins.push(PrismaNamespace.sql`JOIN "resource_grade" rg ON rg."resourceId" = r.id`)
-    joins.push(PrismaNamespace.sql`JOIN "grade" g ON g.id = rg."gradeId"`)
-    whereConditions.push(PrismaNamespace.sql`g.slug = ${grade}`)
+    whereConditions.push(
+      PrismaNamespace.sql`(r."isUniversal" = TRUE OR EXISTS (
+        SELECT 1 FROM "resource_grade" rg 
+        JOIN "grade" g ON g.id = rg."gradeId" 
+        WHERE rg."resourceId" = r.id AND g.slug = ${grade}
+      ))`
+    )
   }
 
   if (subject) {
-    whereConditions.push(PrismaNamespace.sql`s.slug = ${subject}`)
+    whereConditions.push(
+      PrismaNamespace.sql`(r."isUniversal" = TRUE OR r."subjectId" = (SELECT id FROM "subject" WHERE slug = ${subject}) OR EXISTS (
+        SELECT 1 FROM "resource_subject" rs
+        JOIN "subject" s2 ON s2.id = rs."subjectId"
+        WHERE rs."resourceId" = r.id AND s2.slug = ${subject}
+      ))`
+    )
   }
 
   const hasAccessCondition = buildHasAccessConditionSql(user, subscription)
@@ -106,8 +121,8 @@ export async function getResourceList({
       r.title,
       r.description AS description,
       (SELECT ri.url FROM "resource_image" ri WHERE ri."resourceId" = r.id ORDER BY ri."order" ASC LIMIT 1) AS "thumbUrl",
-      el.slug AS "educationLevel",
-      s.slug AS "subject",
+      COALESCE(el.slug, 'universal') AS "educationLevel",
+      COALESCE(s.slug, 'interdisciplinar') AS "subject",
       s."color" AS "subjectColor",
       s."textColor" AS "subjectTextColor",
       ${hasAccessCondition} AS "hasAccess",
@@ -116,10 +131,11 @@ export async function getResourceList({
         WHERE uri."resourceId" = r.id 
         AND uri."userId" = ${user.userId || ''}::uuid 
         AND uri."isSaved" = TRUE
-      ) AS "isFavorite"
+      ) AS "isFavorite",
+      r."isUniversal"
     FROM "resource" r
-    JOIN "education_level" el ON r."educationLevelId" = el.id
-    JOIN "subject" s ON r."subjectId" = s.id
+    LEFT JOIN "education_level" el ON r."educationLevelId" = el.id
+    LEFT JOIN "subject" s ON r."subjectId" = s.id
     ${joins.length ? PrismaNamespace.join(joins, ' ') : PrismaNamespace.sql``}
     WHERE ${whereClause}
     ORDER BY
@@ -145,6 +161,7 @@ export async function getResourceList({
       subjectTextColor: row.subjectTextColor,
       hasAccess: row.hasAccess,
       isFavorite: Boolean(row.isFavorite),
+      isUniversal: Boolean(row.isUniversal),
     })
   )
 

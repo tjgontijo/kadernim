@@ -35,23 +35,31 @@ function buildBaseWhereSql(filters: Pick<ResourceFilter, 'q' | 'educationLevel' 
 
   if (educationLevel) {
     whereConditions.push(
-      PrismaNamespace.sql`EXISTS (SELECT 1 FROM education_level el WHERE el.id = r."educationLevelId" AND el.slug = ${educationLevel})`
+      PrismaNamespace.sql`(r."isUniversal" = TRUE OR r."educationLevelId" = (SELECT id FROM "education_level" WHERE slug = ${educationLevel}) OR EXISTS (
+        SELECT 1 FROM "resource_education_level" rel
+        JOIN "education_level" el2 ON el2.id = rel."educationLevelId"
+        WHERE rel."resourceId" = r.id AND el2.slug = ${educationLevel}
+      ))`
     )
   }
 
   if (grade) {
     whereConditions.push(
-      PrismaNamespace.sql`EXISTS (
+      PrismaNamespace.sql`(r."isUniversal" = TRUE OR EXISTS (
         SELECT 1 FROM "resource_grade" rg 
         JOIN "grade" g ON g.id = rg."gradeId" 
         WHERE rg."resourceId" = r.id AND g.slug = ${grade}
-      )`
+      ))`
     )
   }
 
   if (subject) {
     whereConditions.push(
-      PrismaNamespace.sql`EXISTS (SELECT 1 FROM subject s WHERE s.id = r."subjectId" AND s.slug = ${subject})`
+      PrismaNamespace.sql`(r."isUniversal" = TRUE OR r."subjectId" = (SELECT id FROM "subject" WHERE slug = ${subject}) OR EXISTS (
+        SELECT 1 FROM "resource_subject" rs
+        JOIN "subject" s2 ON s2.id = rs."subjectId"
+        WHERE rs."resourceId" = r.id AND s2.slug = ${subject}
+      ))`
     )
   }
 
@@ -75,7 +83,7 @@ export async function getResourceCounts({
     prisma.$queryRaw<{ count: bigint }[]>(PrismaNamespace.sql`
       SELECT COUNT(*)::bigint AS count
       FROM "resource" r
-      JOIN "subject" s ON r."subjectId" = s.id
+      LEFT JOIN "subject" s ON r."subjectId" = s.id
       WHERE ${baseWhere}
     `),
 
@@ -83,7 +91,7 @@ export async function getResourceCounts({
     prisma.$queryRaw<{ count: bigint }[]>(PrismaNamespace.sql`
       SELECT COUNT(*)::bigint AS count
       FROM "resource" r
-      JOIN "subject" s ON r."subjectId" = s.id
+      LEFT JOIN "subject" s ON r."subjectId" = s.id
       WHERE ${baseWhere}
         AND ${hasAccessCondition}
     `),

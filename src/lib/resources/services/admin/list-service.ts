@@ -59,11 +59,33 @@ export async function listResourcesService(
   }
 
   if (educationLevel) {
-    whereConditions.educationLevel = { slug: educationLevel }
+    whereConditions.OR = [
+      { isUniversal: true },
+      { educationLevel: { slug: educationLevel } },
+      { educationLevels: { some: { educationLevel: { slug: educationLevel } } } }
+    ]
   }
 
   if (subject) {
-    whereConditions.subject = { slug: subject }
+    if (whereConditions.OR) {
+      // Se já houver OR (de level), precisamos garantir que ambos os filtros sejam aplicados
+      // Mas a lógica é: (Universal OR Level) AND (Universal OR Subject)
+      whereConditions.AND = [
+        { OR: whereConditions.OR },
+        { OR: [
+          { isUniversal: true },
+          { subject: { slug: subject } },
+          { subjects: { some: { subject: { slug: subject } } } }
+        ]}
+      ]
+      delete whereConditions.OR
+    } else {
+      whereConditions.OR = [
+        { isUniversal: true },
+        { subject: { slug: subject } },
+        { subjects: { some: { subject: { slug: subject } } } }
+      ]
+    }
   }
 
 
@@ -123,8 +145,9 @@ export async function listResourcesService(
     id: resource.id,
     title: resource.title,
     description: resource.description,
-    educationLevel: resource.educationLevel.name,
-    subject: resource.subject.name,
+    educationLevel: resource.educationLevel?.name || (resource.isUniversal ? 'Universal' : 'N/A'),
+    subject: resource.subject?.name || (resource.isUniversal ? 'Interdisciplinar' : 'N/A'),
+    isUniversal: resource.isUniversal,
     thumbUrl: buildThumbUrl(resource.images[0]),
     fileCount: resource._count.files,
     grades: resource.grades.map(rg => rg.grade.name),

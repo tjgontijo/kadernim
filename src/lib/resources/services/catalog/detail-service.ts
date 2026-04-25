@@ -56,6 +56,7 @@ export async function getResourceDetailForUser(params: {
         },
       },
       slug: true,
+      isUniversal: true,
       isCurated: true,
       curatedAt: true,
       updatedAt: true,
@@ -156,12 +157,12 @@ export async function getResourceDetailForUser(params: {
 
   return ResourceDetailSchema.parse({
     ...resource,
-    educationLevel: resource.educationLevel.name,
-    subject: resource.subject.name,
-    subjectColor: resource.subject.color,
-    subjectTextColor: resource.subject.textColor,
-    educationLevelSlug: resource.educationLevel.slug,
-    subjectSlug: resource.subject.slug,
+    educationLevel: resource.educationLevel?.name ?? (resource.isUniversal ? 'Universal' : 'Etapa de Ensino'),
+    subject: resource.subject?.name ?? 'Interdisciplinar',
+    subjectColor: resource.subject?.color ?? null,
+    subjectTextColor: resource.subject?.textColor ?? null,
+    educationLevelSlug: resource.educationLevel?.slug ?? null,
+    subjectSlug: resource.subject?.slug ?? null,
     grades: resource.grades
       .map((rg) => rg.grade?.slug)
       .filter((slug): slug is string => Boolean(slug)),

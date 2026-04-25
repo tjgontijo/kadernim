@@ -16,6 +16,7 @@ type Resource = {
   educationLevel?: string | null
   thumbUrl?: string | null
   grades: string[]
+  isUniversal?: boolean
   createdAt: Date
   updatedAt: Date
 }
@@ -132,10 +133,15 @@ export function ResourcesGridVirtuoso({
             </div>
 
             <CardContent className="flex flex-1 flex-col p-3 pt-4">
-              <div className="mb-2">
+              <div className="mb-2 flex items-center justify-between gap-2">
                  <span className="text-[9px] font-bold text-primary uppercase tracking-[0.2em]">
                     {resource.subject || 'Geral'}
                  </span>
+                 {resource.isUniversal && (
+                   <Badge variant="secondary" className="bg-terracotta-2 text-terracotta border-terracotta/20 text-[8px] h-4 px-1 font-bold uppercase tracking-tighter">
+                     Universal
+                   </Badge>
+                 )}
               </div>
               <h3 className="line-clamp-1 font-bold text-[14px] text-foreground mb-1 leading-tight group-hover:text-primary transition-colors cursor-pointer" onClick={() => onEdit?.(resource.id)}>
                 {resource.title}

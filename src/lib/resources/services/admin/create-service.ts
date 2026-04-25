@@ -20,6 +20,9 @@ export async function createResourceService(
     description,
     educationLevel,
     subject,
+    educationLevels,
+    subjects,
+    isUniversal,
     resourceType,
     pagesCount,
     estimatedDurationMinutes,
@@ -43,26 +46,9 @@ export async function createResourceService(
  
   // Resolve slugs to IDs
   const [level, sub] = await Promise.all([
-    prisma.educationLevel.findUnique({ where: { slug: educationLevel } }),
-    prisma.subject.findUnique({ where: { slug: subject } })
+    educationLevel ? prisma.educationLevel.findUnique({ where: { slug: educationLevel } }) : null,
+    subject ? prisma.subject.findUnique({ where: { slug: subject } }) : null
   ])
- 
-  if (!level) throw new Error(`Education level ${educationLevel} not found`)
-  if (!sub) throw new Error(`Subject ${subject} not found`)
- 
-  // Validate that all grades belong to the specified education level
-  if (input.grades && input.grades.length > 0) {
-    const gradesInDb = await prisma.grade.findMany({
-      where: {
-        slug: { in: input.grades },
-        educationLevelId: level.id
-      }
-    })
- 
-    if (gradesInDb.length !== input.grades.length) {
-      throw new Error(`One or more grades do not belong to the selected education level (${educationLevel})`)
-    }
-  }
  
   // Create the resource
   const resource = await prisma.resource.create({
@@ -70,8 +56,9 @@ export async function createResourceService(
       title,
       slug,
       description: description || null,
-      educationLevelId: level.id,
-      subjectId: sub.id,
+      educationLevelId: level?.id ?? null,
+      subjectId: sub?.id ?? null,
+      isUniversal: isUniversal ?? false,
       resourceType: resourceType as any,
       pagesCount: pagesCount ?? null,
       estimatedDurationMinutes: estimatedDurationMinutes ?? null,
@@ -102,6 +89,26 @@ export async function createResourceService(
           grade: { connect: { slug: gradeSlug } }
         }))
       },
+      educationLevels: educationLevels && educationLevels.length > 0 ? {
+        create: (await prisma.educationLevel.findMany({
+          where: { slug: { in: educationLevels } },
+          select: { id: true }
+        })).map(lvl => ({
+          educationLevel: { connect: { id: lvl.id } }
+        }))
+      } : (level ? {
+        create: [{ educationLevel: { connect: { id: level.id } } }]
+      } : undefined),
+      subjects: subjects && subjects.length > 0 ? {
+        create: (await prisma.subject.findMany({
+          where: { slug: { in: subjects } },
+          select: { id: true }
+        })).map(s => ({
+          subject: { connect: { id: s.id } }
+        }))
+      } : (sub ? {
+        create: [{ subject: { connect: { id: sub.id } } }]
+      } : undefined),
       bnccSkills: bnccCodes && bnccCodes.length > 0 ? {
         create: (await prisma.bnccSkill.findMany({
           where: { code: { in: bnccCodes } },
@@ -110,12 +117,13 @@ export async function createResourceService(
           bnccSkill: { connect: { id: skill.id } }
         }))
       } : undefined
-      // Handle images creation if input has them (logic tbd based on input schema)
     },
     include: {
       educationLevel: true,
       subject: true,
-      images: true
+      images: true,
+      educationLevels: true,
+      subjects: true
     }
   })
 

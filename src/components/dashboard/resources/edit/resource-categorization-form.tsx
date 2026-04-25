@@ -203,7 +203,7 @@ export function ResourceCategorizationForm({
                     <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">
                       1. Etapa de Ensino
                     </FormLabel>
-                    <Select value={field.value} onValueChange={handleEducationLevelChange}>
+                    <Select value={field.value ?? undefined} onValueChange={handleEducationLevelChange}>
                       <FormControl>
                         <SelectTrigger className={SELECT_TRIGGER_CLASS}>
                           <SelectValue placeholder="Selecione a etapa" />
@@ -333,7 +333,7 @@ export function ResourceCategorizationForm({
                       3. {isEI ? 'Campo de Experiência' : 'Disciplina'}
                     </FormLabel>
                     <Select
-                      value={field.value}
+                      value={field.value ?? undefined}
                       onValueChange={(val) => {
                         field.onChange(val)
                         handleAutoSave({ subject: val })

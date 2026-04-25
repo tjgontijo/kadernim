@@ -29,6 +29,7 @@ import {
 import { slugify } from '@/lib/utils/string'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
 import {
   Form,
   FormControl,
@@ -77,6 +78,9 @@ interface ResourceDetailsFormProps {
     description: string | null
     educationLevel: string
     subject: string
+    educationLevels?: string[]
+    subjects?: string[]
+    isUniversal?: boolean
     grades: string[]
     bnccCodes?: string[]
     thumbUrl?: string | null
@@ -127,6 +131,9 @@ export function ResourceDetailsForm({
       description: resource.description || '',
       educationLevel: resource.educationLevel || '',
       subject: resource.subject || '',
+      educationLevels: resource.educationLevels || (resource.educationLevel ? [resource.educationLevel] : []),
+      subjects: resource.subjects || (resource.subject ? [resource.subject] : []),
+      isUniversal: resource.isUniversal ?? false,
       grades: resource.grades || [],
       bnccCodes: resource.bnccCodes || [],
       thumbUrl: resource.thumbUrl ?? null,
@@ -150,21 +157,25 @@ export function ResourceDetailsForm({
 
   // Watchers
   const selectedLevel = form.watch('educationLevel')
+  const selectedLevels = form.watch('educationLevels') || []
   const selectedSubject = form.watch('subject')
+  const selectedSubjects = form.watch('subjects') || []
+  const isUniversal = form.watch('isUniversal')
   const selectedGrades = form.watch('grades') ?? []
   const currentThumbUrl = form.watch('thumbUrl')
   const currentThumbPublicId = form.watch('thumbPublicId')
   const driveUrl = form.watch('googleDriveUrl')
   const resourceTitle = form.watch('title')
   
-  const showGrades = !!selectedLevel
+  const showGrades = !isUniversal && !!selectedLevels.length
   
   const availableGrades = (metaData?.grades || []).filter(
-    g => !selectedLevel || g.educationLevelKey === selectedLevel
+    g => isUniversal || selectedLevels.includes(g.educationLevelKey)
   )
 
   const availableSubjects = useMemo(() => {
-    if (!selectedLevel || !metaData?.grades || !metaData?.subjects) return []
+    if (isUniversal) return metaData?.subjects || []
+    if (!selectedLevels.length || !metaData?.grades || !metaData?.subjects) return []
 
     if (selectedGrades.length > 0) {
       const subjectKeys = new Set<string>()
@@ -175,15 +186,15 @@ export function ResourceDetailsForm({
       return metaData.subjects.filter((s: any) => subjectKeys.has(s.key))
     }
 
-    const gradesOfLevel = metaData.grades.filter(
-      (g: any) => g.educationLevelKey === selectedLevel
+    const gradesOfLevels = metaData.grades.filter(
+      (g: any) => selectedLevels.includes(g.educationLevelKey)
     )
     const subjectKeys = new Set<string>()
-    gradesOfLevel.forEach((g: any) => {
+    gradesOfLevels.forEach((g: any) => {
       g.subjects?.forEach((s: string) => subjectKeys.add(s))
     })
     return metaData.subjects.filter((s: any) => subjectKeys.has(s.key))
-  }, [selectedLevel, selectedGrades, metaData])
+  }, [isUniversal, selectedLevels, selectedGrades, metaData])
 
   // Validação dinâmica do Drive URL
   const isDriveUrlValid = useMemo(() => {
@@ -240,32 +251,37 @@ export function ResourceDetailsForm({
   }
 
   const onSubmit = (data: UpdateResourceInput) => {
-    const normalizedEducationLevel = data.educationLevel?.trim() || ''
-    const normalizedSubject = data.subject?.trim() || ''
+    const normalizedEducationLevels = data.educationLevels ?? []
+    const normalizedSubjects = data.subjects ?? []
     const normalizedGrades = data.grades ?? []
+    const isUniversal = data.isUniversal ?? false
 
-    if (!normalizedEducationLevel) {
-      form.setError('educationLevel', { type: 'manual', message: 'Selecione a etapa de ensino' })
-      toast.error('Selecione a etapa de ensino')
-      return
-    }
+    if (!isUniversal) {
+      if (normalizedEducationLevels.length === 0) {
+        form.setError('educationLevels', { type: 'manual', message: 'Selecione ao menos uma etapa de ensino' })
+        toast.error('Selecione ao menos uma etapa de ensino')
+        return
+      }
 
-    if (normalizedGrades.length === 0) {
-      form.setError('grades', { type: 'manual', message: 'Selecione ao menos um ano/série' })
-      toast.error('Selecione ao menos um ano/série')
-      return
-    }
+      if (normalizedGrades.length === 0) {
+        form.setError('grades', { type: 'manual', message: 'Selecione ao menos um ano/série' })
+        toast.error('Selecione ao menos um ano/série')
+        return
+      }
 
-    if (!normalizedSubject) {
-      form.setError('subject', { type: 'manual', message: 'Selecione a disciplina' })
-      toast.error('Selecione a disciplina')
-      return
+      if (normalizedSubjects.length === 0) {
+        form.setError('subjects', { type: 'manual', message: 'Selecione ao menos uma disciplina' })
+        toast.error('Selecione ao menos uma disciplina')
+        return
+      }
     }
 
     saveMutation.mutate({
       ...data,
-      educationLevel: normalizedEducationLevel,
-      subject: normalizedSubject,
+      educationLevel: normalizedEducationLevels[0] || null,
+      subject: normalizedSubjects[0] || null,
+      educationLevels: normalizedEducationLevels,
+      subjects: normalizedSubjects,
       grades: normalizedGrades,
       thumbUrl: normalizeNullableString(data.thumbUrl),
       thumbPublicId: normalizeNullableString(data.thumbPublicId),
@@ -276,6 +292,36 @@ export function ResourceDetailsForm({
   const resetSubjectWithoutValidation = () => {
     form.setValue('subject', '', { shouldValidate: false, shouldDirty: true })
     form.clearErrors('subject')
+    form.clearErrors('subjects')
+  }
+
+  const toggleLevel = (levelKey: string) => {
+    const current = form.getValues('educationLevels') || []
+    let next: string[]
+    if (current.includes(levelKey)) {
+      next = current.filter(l => l !== levelKey)
+    } else {
+      next = [...current, levelKey]
+    }
+    form.setValue('educationLevels', next, { shouldValidate: true })
+    
+    // Auto-remove grades that no longer belong to any selected level
+    const currentGrades = form.getValues('grades') || []
+    const nextGrades = currentGrades.filter(gKey => {
+      const g = metaData?.grades.find(grade => grade.key === gKey)
+      return g && next.includes(g.educationLevelKey)
+    })
+    form.setValue('grades', nextGrades, { shouldValidate: true })
+    resetSubjectWithoutValidation()
+  }
+
+  const toggleSubject = (subjectKey: string) => {
+    const current = form.getValues('subjects') || []
+    if (current.includes(subjectKey)) {
+      form.setValue('subjects', current.filter(s => s !== subjectKey), { shouldValidate: true })
+    } else {
+      form.setValue('subjects', [...current, subjectKey], { shouldValidate: true })
+    }
   }
 
   const toggleGrade = (gradeKey: string) => {
@@ -300,11 +346,31 @@ export function ResourceDetailsForm({
           {/* Identificação do Recurso */}
           <div className="space-y-8 bg-paper p-8 rounded-4 border border-line shadow-sm relative overflow-hidden">
             <div className="absolute top-0 left-0 w-1 h-full bg-terracotta/40" />
-            <div className="flex items-center gap-3 border-b border-line pb-4">
-              <div className="w-8 h-8 rounded-full bg-terracotta-2 flex items-center justify-center">
-                <Info className="h-4 w-4 text-terracotta" />
+            <div className="flex items-center justify-between border-b border-line pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-terracotta-2 flex items-center justify-center">
+                  <Info className="h-4 w-4 text-terracotta" />
+                </div>
+                <h2 className="font-display text-xl text-ink">Identificação do Recurso</h2>
               </div>
-              <h2 className="font-display text-xl text-ink">Identificação do Recurso</h2>
+              
+              <FormField
+                control={form.control}
+                name="isUniversal"
+                render={({ field }) => (
+                  <FormItem className="flex items-center gap-3 space-y-0 bg-paper-2 px-4 py-2 rounded-full border border-line">
+                    <FormLabel className="text-xs font-bold uppercase tracking-wider text-ink-soft cursor-pointer">
+                      Recurso Universal
+                    </FormLabel>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-stretch">
@@ -417,31 +483,32 @@ export function ResourceDetailsForm({
 
                   <FormField
                     control={form.control}
-                    name="educationLevel"
+                    name="educationLevels"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className={cn("transition-all duration-300", isUniversal && "opacity-50 pointer-events-none")}>
                         <FormLabel className="text-[13px] font-medium text-ink-soft flex items-center gap-2">
-                          <GraduationCap className="h-3.5 w-3.5" /> 1. Etapa de Ensino
+                          <GraduationCap className="h-3.5 w-3.5" /> 1. Etapa de Ensino {isUniversal && "(Universal)"}
                         </FormLabel>
-                        <Select
-                          onValueChange={(value) => {
-                            field.onChange(value)
-                            form.setValue('grades', [], { shouldValidate: true })
-                            resetSubjectWithoutValidation()
-                          }}
-                          value={field.value || undefined}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="bg-paper-2 border-line h-12 rounded-3 text-ink">
-                              <SelectValue placeholder="Selecione a etapa" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="bg-paper border-line shadow-2">
-                            {metaData?.educationLevels.map(lvl => (
-                              <SelectItem key={lvl.key} value={lvl.key} className="focus:bg-terracotta-2 focus:text-terracotta">{lvl.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <div className="p-4 bg-paper-2 border border-line rounded-3 flex flex-wrap gap-2">
+                          {metaData?.educationLevels.map(lvl => {
+                            const isSelected = (field.value || []).includes(lvl.key)
+                            return (
+                              <Badge
+                                key={lvl.key}
+                                variant={isSelected ? "default" : "outline"}
+                                className={cn(
+                                  "cursor-pointer px-4 py-2 transition-all text-[11px] font-bold uppercase tracking-wider rounded-full",
+                                  isSelected 
+                                    ? "bg-terracotta text-white border-terracotta" 
+                                    : "bg-white text-ink-mute border-line hover:border-terracotta/30"
+                                )}
+                                onClick={() => !isUniversal && toggleLevel(lvl.key)}
+                              >
+                                {lvl.label}
+                              </Badge>
+                            )
+                          })}
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -508,28 +575,37 @@ export function ResourceDetailsForm({
 
                 <FormField
                   control={form.control}
-                  name="subject"
+                  name="subjects"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="transition-all duration-300">
                       <FormLabel className="text-[13px] font-medium text-ink-soft flex items-center gap-2">
-                        <BookOpen className="h-3.5 w-3.5" /> 3. Disciplina
+                        <BookOpen className="h-3.5 w-3.5" /> 3. Disciplinas {isUniversal && "(Universal - Sugestão)"}
                       </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value || undefined}
-                        disabled={!selectedLevel || selectedGrades.length === 0}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="bg-paper-2 border-line h-12 rounded-3 text-ink">
-                            <SelectValue placeholder={!selectedLevel || selectedGrades.length === 0 ? "Selecione ano/série primeiro" : "Selecione a disciplina"} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="bg-paper border-line shadow-2">
-                          {availableSubjects.map((sub: any) => (
-                            <SelectItem key={sub.key} value={sub.key} className="focus:bg-terracotta-2 focus:text-terracotta">{sub.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="p-4 bg-paper-2 border border-line rounded-3 flex flex-wrap gap-2 min-h-[60px]">
+                        {availableSubjects.map((sub: any) => {
+                          const isSelected = (field.value || []).includes(sub.key)
+                          return (
+                            <Badge
+                              key={sub.key}
+                              variant={isSelected ? "default" : "outline"}
+                              className={cn(
+                                "cursor-pointer px-4 py-2 transition-all text-[11px] font-bold uppercase tracking-wider rounded-full",
+                                isSelected 
+                                  ? "bg-terracotta text-white border-terracotta" 
+                                  : "bg-white text-ink-mute border-line hover:border-terracotta/30"
+                              )}
+                              onClick={() => toggleSubject(sub.key)}
+                            >
+                              {sub.label}
+                            </Badge>
+                          )
+                        })}
+                        {availableSubjects.length === 0 && (
+                          <div className="text-[11px] italic text-ink-mute/50 py-2">
+                            Selecione etapa e ano primeiro...
+                          </div>
+                        )}
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -847,10 +923,10 @@ export function ResourceDetailsForm({
                         <BnccSelector
                           value={field.value || []}
                           onChange={field.onChange}
-                          educationLevel={selectedLevel}
-                          grades={selectedGrades}
-                          subject={selectedSubject}
-                          disabled={!selectedLevel || selectedGrades.length === 0 || !selectedSubject}
+                          educationLevel={isUniversal ? undefined : selectedLevels[0]}
+                          grades={isUniversal ? undefined : selectedGrades}
+                          subject={isUniversal ? undefined : selectedSubjects[0]}
+                          disabled={!isUniversal && (selectedLevels.length === 0 || selectedGrades.length === 0 || selectedSubjects.length === 0)}
                         />
                       </FormControl>
                       <FormMessage />

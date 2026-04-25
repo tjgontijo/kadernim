@@ -28,6 +28,7 @@ export const ResourceSchema = z.object({
   subjectTextColor: z.string().nullable().optional(),
   hasAccess: z.boolean(),
   isFavorite: z.boolean().default(false),
+  isUniversal: z.boolean().default(false),
 })
 
 export type Resource = z.infer<typeof ResourceSchema>
@@ -111,8 +112,8 @@ export const ResourceDetailSchema = ResourceSchema.extend({
   videos: z.array(ResourceVideoSchema),
   
   // NOVOS CAMPOS
-  educationLevelSlug: z.string(),
-  subjectSlug: z.string(),
+  educationLevelSlug: z.string().nullable().optional(),
+  subjectSlug: z.string().nullable().optional(),
   grades: z.array(z.string()).default([]),
   gradeLabels: z.array(z.string()).default([]),
   slug: z.string().nullable(),

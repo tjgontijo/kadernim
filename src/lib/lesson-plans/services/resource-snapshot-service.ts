@@ -3,8 +3,8 @@ import { ResourceSnapshotSchema, type ResourceSnapshot } from '@/lib/lesson-plan
 
 export type ResourcePlanSource = {
   snapshot: ResourceSnapshot
-  educationLevelId: string
-  subjectId: string
+  educationLevelId: string | null
+  subjectId: string | null
   gradeId: string | null
 }
 
@@ -122,8 +122,8 @@ export async function getResourceSnapshotForPlanner(resourceId: string): Promise
 
   return {
     snapshot,
-    educationLevelId: resource.educationLevelId,
-    subjectId: resource.subjectId,
+    educationLevelId: resource.educationLevelId ?? null,
+    subjectId: resource.subjectId ?? null,
     gradeId: grades[0]?.id ?? null,
   }
 }

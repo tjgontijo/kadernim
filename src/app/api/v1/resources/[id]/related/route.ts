@@ -20,8 +20,8 @@ export async function GET(
     const formatted = related.map((r) => ({
       ...r,
       thumbUrl: r.images?.[0]?.url || null,
-      subject: r.subject.name,
-      educationLevel: r.educationLevel.name,
+      subject: r.subject?.name || (r.isUniversal ? 'Interdisciplinar' : 'Geral'),
+      educationLevel: r.educationLevel?.name || (r.isUniversal ? 'Universal' : 'Geral'),
     }))
 
     return NextResponse.json({ data: formatted })

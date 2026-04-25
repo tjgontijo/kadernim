@@ -38,9 +38,9 @@ async function testGenerate() {
     
     const params = new URLSearchParams({
       title: resource.title,
-      subject: resource.subject.name,
-      color: resource.subject.color || '#D97757',
-      grade: resource.educationLevel.name,
+      subject: resource.subject?.name || 'Geral',
+      color: resource.subject?.color || '#D97757',
+      grade: resource.educationLevel?.name || 'Geral',
       layout: 'fan',
       images: images.join(',')
     });

@@ -21,6 +21,12 @@ export async function getAdminResourceDetail(resourceId: string): Promise<Resour
     include: {
       educationLevel: true,
       subject: true,
+      educationLevels: {
+        include: { educationLevel: true }
+      },
+      subjects: {
+        include: { subject: true }
+      },
       files: {
         select: {
           id: true,
@@ -111,8 +117,11 @@ export async function getAdminResourceDetail(resourceId: string): Promise<Resour
     id: resource.id,
     title: resource.title,
     description: resource.description,
-    educationLevel: resource.educationLevel?.slug,
-    subject: resource.subject?.slug,
+    educationLevel: resource.educationLevel?.slug ?? null,
+    subject: resource.subject?.slug ?? null,
+    educationLevels: resource.educationLevels.map(rel => rel.educationLevel.slug),
+    subjects: resource.subjects.map(rs => rs.subject.slug),
+    isUniversal: resource.isUniversal,
     thumbUrl: resource.thumbUrl,
     thumbPublicId: resource.thumbPublicId,
     googleDriveUrl: resource.googleDriveUrl,

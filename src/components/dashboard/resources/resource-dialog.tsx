@@ -110,7 +110,7 @@ export function ResourceDialog({ open, onOpenChange, resourceId, onSuccess }: Re
           <div className="space-y-2">
             <Label htmlFor="educationLevel">Nível de Educação *</Label>
             <Select
-              value={form.watch('educationLevel')}
+              value={(form.watch('educationLevel') as any) ?? undefined}
               onValueChange={value => form.setValue('educationLevel', value)}
               disabled={isSubmitting}
             >
@@ -134,7 +134,7 @@ export function ResourceDialog({ open, onOpenChange, resourceId, onSuccess }: Re
           <div className="space-y-2">
             <Label htmlFor="subject">Matéria *</Label>
             <Select
-              value={form.watch('subject')}
+              value={(form.watch('subject') as any) ?? undefined}
               onValueChange={value => form.setValue('subject', value)}
               disabled={isSubmitting}
             >

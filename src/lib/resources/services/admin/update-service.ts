@@ -22,6 +22,9 @@ export async function updateResourceService(
     description,
     educationLevel,
     subject,
+    educationLevels,
+    subjects,
+    isUniversal,
     resourceType,
     pagesCount,
     estimatedDurationMinutes,
@@ -67,22 +70,30 @@ export async function updateResourceService(
   if (description !== undefined) updateData.description = description
 
   if (educationLevel !== undefined) {
-    const level = await prisma.educationLevel.findUnique({
-      where: { slug: educationLevel }
-    })
-    if (!level) throw new Error(`Education level ${educationLevel} not found`)
-    updateData.educationLevelId = level.id
+    if (educationLevel) {
+      const level = await prisma.educationLevel.findUnique({
+        where: { slug: educationLevel }
+      })
+      if (!level) throw new Error(`Education level ${educationLevel} not found`)
+      updateData.educationLevelId = level.id
+    } else {
+      updateData.educationLevelId = null
+    }
   }
 
   if (subject !== undefined) {
-    const sub = await prisma.subject.findUnique({
-      where: { slug: subject }
-    })
-    if (!sub) throw new Error(`Subject ${subject} not found`)
-    updateData.subjectId = sub.id
+    if (subject) {
+      const sub = await prisma.subject.findUnique({
+        where: { slug: subject }
+      })
+      if (!sub) throw new Error(`Subject ${subject} not found`)
+      updateData.subjectId = sub.id
+    } else {
+      updateData.subjectId = null
+    }
   }
 
-
+  if (isUniversal !== undefined) updateData.isUniversal = isUniversal
   if (resourceType !== undefined) updateData.resourceType = resourceType
   if (pagesCount !== undefined) updateData.pagesCount = pagesCount
   if (estimatedDurationMinutes !== undefined) {
@@ -90,6 +101,48 @@ export async function updateResourceService(
   }
   if (archivedAt !== undefined) updateData.archivedAt = archivedAt
   if (googleDriveUrl !== undefined) updateData.googleDriveUrl = googleDriveUrl ?? null
+
+  if (educationLevels !== undefined) {
+    const levels = educationLevels.length > 0
+      ? await prisma.educationLevel.findMany({
+          where: { slug: { in: educationLevels } },
+          select: { id: true },
+        })
+      : []
+
+    updateData.educationLevels = {
+      deleteMany: {},
+      create: levels.map((lvl) => ({
+        educationLevel: { connect: { id: lvl.id } },
+      })),
+    }
+
+    // Backup to legacy field if not explicitly provided
+    if (educationLevel === undefined && levels.length > 0) {
+      updateData.educationLevelId = levels[0].id
+    }
+  }
+
+  if (subjects !== undefined) {
+    const subs = subjects.length > 0
+      ? await prisma.subject.findMany({
+          where: { slug: { in: subjects } },
+          select: { id: true },
+        })
+      : []
+
+    updateData.subjects = {
+      deleteMany: {},
+      create: subs.map((sub) => ({
+        subject: { connect: { id: sub.id } },
+      })),
+    }
+
+    // Backup to legacy field if not explicitly provided
+    if (subject === undefined && subs.length > 0) {
+      updateData.subjectId = subs[0].id
+    }
+  }
 
   if (objectives !== undefined) {
     updateData.objectives = {
@@ -115,44 +168,14 @@ export async function updateResourceService(
   }
   if (thumbUrl !== undefined) updateData.thumbUrl = thumbUrl ?? null
   if (thumbPublicId !== undefined) updateData.thumbPublicId = thumbPublicId ?? null
-  // 1. Determine levelId for validation
-  const levelId = updateData.educationLevelId || existingResource.educationLevelId;
 
-  // 2. Validate grades consistency
+  // Validate grades consistency (relaxed if universal or multi-level)
   if (input.grades !== undefined) {
-    // New grades provided: check if they belong to levelId
-    if (input.grades.length > 0) {
-      const gradesInDb = await prisma.grade.findMany({
-        where: {
-          slug: { in: input.grades },
-          educationLevelId: levelId
-        }
-      });
-
-      if (gradesInDb.length !== input.grades.length) {
-        throw new Error(`One or more of the selected grades do not belong to the correct education level`);
-      }
-    }
-
     updateData.grades = {
       deleteMany: {},
       create: input.grades.map(gradeSlug => ({
         grade: { connect: { slug: gradeSlug } }
       }))
-    }
-  } else if (educationLevel !== undefined) {
-    // Only educationLevel was updated: check if existing grades are still consistent
-    const resourceWithGrades = await prisma.resource.findUnique({
-      where: { id },
-      include: { grades: { include: { grade: true } } }
-    });
-
-    const inconsistentGrades = resourceWithGrades?.grades.filter(
-      rg => rg.grade.educationLevelId !== levelId
-    );
-
-    if (inconsistentGrades && inconsistentGrades.length > 0) {
-      throw new Error(`The current grades of this resource are inconsistent with the new education level. Please update the grades as well.`);
     }
   }
 

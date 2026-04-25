@@ -22,6 +22,7 @@ type Resource = {
   educationLevel?: string | null
   thumbUrl?: string | null
   grades: string[]
+  isUniversal?: boolean
   createdAt: Date
   updatedAt: Date
 }
@@ -114,9 +115,16 @@ export function ResourcesTableVirtuoso({
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col min-w-0">
-                    <span className="font-bold text-[13px] text-foreground truncate leading-tight group-hover:text-primary transition-colors">
-                      {resource.title || 'Sem título'}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-[13px] text-foreground truncate leading-tight group-hover:text-primary transition-colors">
+                        {resource.title || 'Sem título'}
+                      </span>
+                      {resource.isUniversal && (
+                        <Badge variant="secondary" className="bg-terracotta-2 text-terracotta border-terracotta/20 text-[9px] h-4 px-1.5 font-bold uppercase tracking-tighter">
+                          Universal
+                        </Badge>
+                      )}
+                    </div>
                     {resource.description && (
                       <span className="text-[10px] text-muted-foreground/60 truncate max-w-[200px]">
                         {resource.description}

@@ -103,6 +103,21 @@ export async function seedResources(prisma: PrismaClient) {
           order: 0
         }
       })
+
+      // Popula as novas tabelas N:N (Universal Architecture)
+      await Promise.all([
+        prisma.resourceEducationLevel.upsert({
+          where: { resourceId_educationLevelId: { resourceId: resource.id, educationLevelId: level.id } },
+          update: {},
+          create: { resourceId: resource.id, educationLevelId: level.id }
+        }),
+        prisma.resourceSubject.upsert({
+          where: { resourceId_subjectId: { resourceId: resource.id, subjectId: sub.id } },
+          update: {},
+          create: { resourceId: resource.id, subjectId: sub.id }
+        })
+      ])
+      
       
       summary.seeded += 1
       console.log(`✅ ${res.title}`)

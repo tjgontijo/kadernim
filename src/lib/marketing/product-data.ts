@@ -23,7 +23,7 @@ export async function getFeaturedResources(): Promise<MarketingProduct[]> {
     id: r.id,
     title: r.title,
     thumbUrl: r.images[0]?.url || null,
-    educationLevel: r.educationLevel.name,
-    subject: r.subject.name,
+    educationLevel: r.educationLevel?.name || (r.isUniversal ? 'Universal' : 'Geral'),
+    subject: r.subject?.name || (r.isUniversal ? 'Interdisciplinar' : 'Geral'),
   }))
 }

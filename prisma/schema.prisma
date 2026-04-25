@@ -14,6 +14,7 @@ model EducationLevel {
   order      Int         @default(0)
   grades     Grade[]
   resources  Resource[]
+  resourceLevels ResourceEducationLevel[]
   bnccSkills BnccSkill[]
   lessonPlans LessonPlan[]
 
@@ -45,6 +46,7 @@ model Subject {
 
   grades     GradeSubject[]
   resources  Resource[]
+  resourceSubjects ResourceSubject[]
   bnccSkills BnccSkill[]
   lessonPlans LessonPlan[]
 
@@ -321,6 +323,30 @@ model ResourceGrade {
   @@map("resource_grade")
 }
 
+model ResourceEducationLevel {
+  resourceId       String         @db.Uuid
+  educationLevelId String         @db.Uuid
+  resource         Resource       @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  educationLevel   EducationLevel @relation(fields: [educationLevelId], references: [id], onDelete: Cascade)
+
+  @@id([resourceId, educationLevelId])
+  @@index([resourceId])
+  @@index([educationLevelId])
+  @@map("resource_education_level")
+}
+
+model ResourceSubject {
+  resourceId String  @db.Uuid
+  subjectId  String  @db.Uuid
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  subject    Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@id([resourceId, subjectId])
+  @@index([resourceId])
+  @@index([subjectId])
+  @@map("resource_subject")
+}
+
 model ResourceImage {
   id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   resourceId         String   @db.Uuid
@@ -387,8 +413,9 @@ model Resource {
   id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title            String
   description      String?
-  educationLevelId String    @db.Uuid
-  subjectId        String    @db.Uuid
+  educationLevelId String?    @db.Uuid
+  subjectId        String?    @db.Uuid
+  isUniversal      Boolean   @default(false)
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   originRequestId  String?   @unique
@@ -422,8 +449,11 @@ model Resource {
   targetRelations  RelatedResource[]         @relation("target")
   lessonPlans      LessonPlan[]
 
-  educationLevel EducationLevel       @relation(fields: [educationLevelId], references: [id])
-  subject        Subject              @relation(fields: [subjectId], references: [id])
+  educationLevel EducationLevel?       @relation(fields: [educationLevelId], references: [id])
+  subject        Subject?              @relation(fields: [subjectId], references: [id])
+  
+  educationLevels ResourceEducationLevel[]
+  subjects        ResourceSubject[]
   files          ResourceFile[]
   grades         ResourceGrade[]
   images         ResourceImage[]
