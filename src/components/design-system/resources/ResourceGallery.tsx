@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ChevronDown, ChevronLeft, ChevronRight, FileText, PlayCircle, Video } from 'lucide-react'
 import { LazyImage } from '@/components/shared/lazy-image'
 
@@ -43,7 +43,9 @@ function SimulatedCover({ fileName, index, isVideo = false }: { fileName: string
   const PATTERNS = [
     {
       bg: 'bg-paper-2',
-      style: {}
+      style: {
+        backgroundImage: 'repeating-linear-gradient(-45deg, transparent 0, transparent 10px, var(--line) 10px, var(--line) 11px)'
+      }
     },
     {
       bg: 'bg-paper-2',
@@ -102,6 +104,7 @@ function SimulatedCover({ fileName, index, isVideo = false }: { fileName: string
 export function ResourceGallery({ files = [], videos = [], title = 'Material' }: ResourceGalleryProps) {
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
   const [activeImageIndex, setActiveImageIndex] = useState(0)
+  const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false)
 
   // Merge items for navigation
   const allItems = [
@@ -109,28 +112,35 @@ export function ResourceGallery({ files = [], videos = [], title = 'Material' }:
     ...videos.map(v => ({ ...v, galleryType: 'video' as const, name: v.title }))
   ]
 
+  const sidebarViewportRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
-  const [canScroll, setCanScroll] = useState(false)
+  const previewFrameRef = useRef<HTMLDivElement>(null)
+  const [showScrollHint, setShowScrollHint] = useState(false)
+  const [sidebarHeight, setSidebarHeight] = useState(0)
 
   useEffect(() => {
-    if (!scrollContainerRef.current) return
+    if (!scrollContainerRef.current || !sidebarViewportRef.current) return
     const content = scrollContainerRef.current
-    const viewport = content.closest('[data-radix-scroll-area-viewport]') || content.parentElement
+    const viewport = sidebarViewportRef.current
 
-    if (!viewport) return
-
-    const checkScroll = () => {
-      setCanScroll(content.scrollHeight > viewport.clientHeight + 2)
+    const syncScrollHint = () => {
+      const isScrollable = content.scrollHeight > viewport.clientHeight + 2
+      const isNearBottom = viewport.scrollTop + viewport.clientHeight >= content.scrollHeight - 8
+      setShowScrollHint(isScrollable && !isNearBottom)
     }
 
-    const observer = new ResizeObserver(() => checkScroll())
+    const observer = new ResizeObserver(() => syncScrollHint())
     observer.observe(content)
     observer.observe(viewport)
+    viewport.addEventListener('scroll', syncScrollHint, { passive: true })
 
-    checkScroll()
+    syncScrollHint()
 
-    return () => observer.disconnect()
-  }, [allItems])
+    return () => {
+      observer.disconnect()
+      viewport.removeEventListener('scroll', syncScrollHint)
+    }
+  }, [allItems, sidebarHeight])
 
   const selectedItem = selectedItemId ? allItems.find((i) => i.id === selectedItemId) : null
 
@@ -147,6 +157,9 @@ export function ResourceGallery({ files = [], videos = [], title = 'Material' }:
       ? ((selectedItem as ResourceFile).images ?? [])
       : []
   const selectedImage = selectedImages[activeImageIndex] ?? selectedImages[0] ?? null
+  const selectedVideoIndex = selectedItem?.galleryType === 'video'
+    ? videos.findIndex((video) => video.id === selectedItem.id)
+    : -1
 
   useEffect(() => {
     if (selectedImages.length === 0) {
@@ -158,6 +171,21 @@ export function ResourceGallery({ files = [], videos = [], title = 'Material' }:
       setActiveImageIndex(0)
     }
   }, [activeImageIndex, selectedImages.length])
+
+  useEffect(() => {
+    if (!previewFrameRef.current) return
+
+    const previewFrame = previewFrameRef.current
+    const syncSidebarHeight = () => {
+      setSidebarHeight(Math.ceil(previewFrame.getBoundingClientRect().height))
+    }
+
+    const observer = new ResizeObserver(() => syncSidebarHeight())
+    observer.observe(previewFrame)
+    syncSidebarHeight()
+
+    return () => observer.disconnect()
+  }, [selectedItemId, activeImageIndex, selectedImages.length])
 
   const handlePrevious = () => {
     if (selectedImages.length <= 1) return
@@ -175,18 +203,26 @@ export function ResourceGallery({ files = [], videos = [], title = 'Material' }:
 
   if (allItems.length > 0 && selectedItem) {
     const isVideo = selectedItem.galleryType === 'video'
+    const showPageNavigation = !isVideo && selectedImages.length > 1
 
     return (
-      <div className="mx-auto w-full max-w-[760px] bg-card border border-line rounded-5 p-[16px] relative shadow-2 transition-shadow hover:shadow-3">
+      <div className="bg-card border border-line rounded-5 p-[16px] relative shadow-2 transition-shadow hover:shadow-3">
         <div className="absolute -top-[18px] left-1/2 -translate-x-1/2 -rotate-2 w-[120px] h-[28px] bg-[#dfd6cd] shadow-tape border-x border-dashed border-x-[#c2b6ab] z-10 opacity-90" />
 
         {/* Main Container: Sidebar + Gallery */}
-        <div className="flex gap-[16px] items-start">
+        <div className="flex gap-[16px] items-stretch">
           {/* Sidebar with File Covers - Scrollable */}
           {allItems.length > 0 && (
-            <div className="relative flex-shrink-0 w-[100px] -ml-[4px] self-stretch h-0 min-h-full overflow-hidden">
-              <ScrollArea className="absolute inset-0">
-                <div ref={scrollContainerRef} className="flex flex-col gap-[16px] pb-[40px] pt-[4px] px-[6px]">
+            <div
+              className="relative flex-shrink-0 w-[124px] -ml-[6px] overflow-hidden"
+              style={{ height: sidebarHeight > 0 ? `${sidebarHeight}px` : '0px' }}
+            >
+              <div
+                ref={sidebarViewportRef}
+                className="absolute inset-0 overflow-y-auto overflow-x-hidden scrollbar-hide native-scroll"
+                onWheelCapture={(event) => event.stopPropagation()}
+              >
+                <div ref={scrollContainerRef} className="flex flex-col gap-[16px] pb-[56px] pt-[4px] px-[6px]">
                   {allItems.map((item, idx) => {
                     const isSelected = selectedItemId === item.id
 
@@ -200,7 +236,7 @@ export function ResourceGallery({ files = [], videos = [], title = 'Material' }:
                         className="group flex flex-col items-center gap-[8px] text-left w-full transition-all focus:outline-none"
                       >
                         <div
-                          className={`relative w-full aspect-[7/10] rounded-2 overflow-hidden transition-all ${isSelected
+                          className={`relative w-full [aspect-ratio:3/4] rounded-2 overflow-hidden transition-all ${isSelected
                             ? 'ring-2 ring-terracotta ring-offset-2 ring-offset-card shadow-2 border-transparent'
                             : 'border border-line shadow-1 group-hover:border-ink-lighter group-hover:shadow-2'
                             }`}
@@ -215,11 +251,10 @@ export function ResourceGallery({ files = [], videos = [], title = 'Material' }:
                     )
                   })}
                 </div>
-              </ScrollArea>
+              </div>
 
-              {/* Scroll Indicator Overlay */}
-              {canScroll && (
-                <div className="absolute bottom-0 left-[6px] right-[6px] h-[48px] bg-gradient-to-t from-card to-transparent pointer-events-none flex items-end justify-center pb-[8px]">
+              {showScrollHint && (
+                <div className="absolute bottom-0 left-[6px] right-[6px] z-20 h-[56px] bg-gradient-to-t from-card via-card/85 to-transparent pointer-events-none flex items-end justify-center pb-[10px]">
                   <ChevronDown className="w-[16px] h-[16px] text-terracotta animate-bounce opacity-80" />
                 </div>
               )}
@@ -227,24 +262,37 @@ export function ResourceGallery({ files = [], videos = [], title = 'Material' }:
           )}
 
           {/* Gallery with Carousel */}
-          <div className="flex-1 min-w-0 flex flex-col gap-[12px] items-center justify-start">
+          <div className="flex-1 flex flex-col gap-[12px]">
             {/* Image with Carousel Controls */}
-            <div className="w-full flex items-center justify-center gap-[8px] sm:gap-[12px]">
-              {/* Previous Button */}
-              {!isVideo && selectedImages.length > 1 && (
-                <button
-                  onClick={handlePrevious}
-                  className="rounded-full p-[8px] hover:bg-line transition-colors flex-shrink-0"
-                  aria-label="Página anterior"
-                >
-                  <ChevronLeft className="w-[24px] h-[24px] text-ink" />
-                </button>
-              )}
+            <div className="flex items-center justify-center gap-[12px]">
+              <div className="flex h-[40px] w-[40px] items-center justify-center flex-shrink-0">
+                {showPageNavigation && (
+                  <button
+                    onClick={handlePrevious}
+                    className="rounded-full p-[8px] hover:bg-line transition-colors"
+                    aria-label="Página anterior"
+                  >
+                    <ChevronLeft className="w-[24px] h-[24px] text-ink" />
+                  </button>
+                )}
+              </div>
 
               {/* Image OR Video Thumbnail - A4 Aspect Ratio */}
-              <div className="aspect-[7/10] bg-paper-2 rounded-4 border border-line-soft overflow-hidden relative w-full max-w-[480px] shadow-3">
+              <div
+                ref={previewFrameRef}
+                className="w-full max-w-[760px] [aspect-ratio:7/10] bg-paper-2 rounded-4 border border-line-soft overflow-hidden relative shadow-3"
+              >
                 {isVideo ? (
-                  <div className="relative w-full h-full group cursor-pointer">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if ((selectedItem as ResourceVideo).url) {
+                        setIsVideoDialogOpen(true)
+                      }
+                    }}
+                    className="relative w-full h-full group cursor-pointer text-left"
+                    aria-label={`Abrir vídeo ${(selectedItem as ResourceVideo).title}`}
+                  >
                     <LazyImage
                       src={(selectedItem as any).thumbnail || ''}
                       alt={(selectedItem as any).title}
@@ -263,7 +311,7 @@ export function ResourceGallery({ files = [], videos = [], title = 'Material' }:
                         {Math.floor((selectedItem as any).duration / 60)}:{(selectedItem as any).duration % 60 < 10 ? '0' : ''}{(selectedItem as any).duration % 60}
                       </div>
                     )}
-                  </div>
+                  </button>
                 ) : (
                   selectedImage?.url ? (
                     <LazyImage
@@ -281,26 +329,60 @@ export function ResourceGallery({ files = [], videos = [], title = 'Material' }:
                 )}
               </div>
 
-              {/* Next Button */}
-              {!isVideo && selectedImages.length > 1 && (
-                <button
-                  onClick={handleNext}
-                  className="rounded-full p-[8px] hover:bg-line transition-colors flex-shrink-0"
-                  aria-label="Próxima página"
-                >
-                  <ChevronRight className="w-[24px] h-[24px] text-ink" />
-                </button>
-              )}
+              <div className="flex h-[40px] w-[40px] items-center justify-center flex-shrink-0">
+                {showPageNavigation && (
+                  <button
+                    onClick={handleNext}
+                    className="rounded-full p-[8px] hover:bg-line transition-colors"
+                    aria-label="Próxima página"
+                  >
+                    <ChevronRight className="w-[24px] h-[24px] text-ink" />
+                  </button>
+                )}
+              </div>
             </div>
 
-            {/* Page Counter */}
-            {!isVideo && selectedImages.length > 1 && (
+            {!isVideo && (
               <div className="text-center text-[13px] font-medium text-ink-mute">
                 Página {activeImageIndex + 1} de {selectedImages.length}
               </div>
             )}
+
+            {isVideo && selectedVideoIndex >= 0 && (
+              <div className="text-center text-[13px] font-medium text-ink-mute">
+                Vídeo {selectedVideoIndex + 1} de {videos.length}
+              </div>
+            )}
           </div>
         </div>
+
+        {isVideo && (
+          <Dialog open={isVideoDialogOpen} onOpenChange={setIsVideoDialogOpen}>
+            <DialogContent className="w-[min(96vw,1600px)] md:min-w-[900px] max-w-none gap-0 border-line bg-card p-0 overflow-hidden">
+              <DialogHeader className="px-6 py-4 border-b border-line bg-card">
+                <DialogTitle className="font-display text-[22px] text-ink">
+                  {(selectedItem as ResourceVideo).title}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="flex items-center justify-center bg-card p-5 sm:p-8">
+                {(selectedItem as ResourceVideo).url ? (
+                  <video
+                    key={(selectedItem as ResourceVideo).url ?? selectedItem.id}
+                    controls
+                    autoPlay
+                    playsInline
+                    className="mx-auto block h-auto w-auto max-w-full max-h-[82vh] md:min-h-[420px] rounded-3 border border-line-soft bg-card shadow-2"
+                    src={(selectedItem as ResourceVideo).url ?? undefined}
+                  />
+                ) : (
+                  <div className="flex min-h-[320px] items-center justify-center text-paper/80">
+                    Vídeo indisponível
+                  </div>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
     )
   }
@@ -308,7 +390,7 @@ export function ResourceGallery({ files = [], videos = [], title = 'Material' }:
   return (
     <div className="bg-card border border-line rounded-5 p-[16px] relative shadow-2 transition-shadow hover:shadow-3">
       <div className="absolute -top-[12px] left-1/2 -translate-x-1/2 -rotate-2 w-[120px] h-[28px] bg-[#dfd6cd] shadow-tape border-x border-dashed border-x-[#c2b6ab] z-10 opacity-90" />
-      <div className="flex aspect-[7/10] items-center justify-center rounded-4 bg-paper-2 border border-line-soft">
+      <div className="flex [aspect-ratio:7/10] items-center justify-center rounded-4 bg-paper-2 border border-line-soft">
         <div className="text-center space-y-[8px]">
           <span className="text-[32px]">🖼️</span>
           <p className="text-[13px] font-medium text-ink-mute">Sem materiais disponíveis</p>
