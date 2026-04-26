@@ -4,6 +4,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { createPrismaPgPoolConfig } from '@/lib/database/prisma-pg-config';
 import { seedUsers } from './seed-users';
 import { seedTaxonomy } from './seed-taxonomy';
+import { seedBnccAlignment } from './seed-bncc-alignment';
 import { seedResources } from './seed-resources';
 import { seedResourceFiles } from './seed-resource-files';
 import { seedBilling } from './seed-billing';
@@ -36,6 +37,7 @@ async function cleanDatabase() {
     await prisma.grade.deleteMany()
     await prisma.subject.deleteMany()
     await prisma.educationLevel.deleteMany()
+    await prisma.knowledgeArea.deleteMany()
     await prisma.session.deleteMany()
     await prisma.account.deleteMany()
     await prisma.verification.deleteMany()
@@ -58,6 +60,7 @@ async function createInitialData() {
 
     await seedUsers(prisma);
     await seedTaxonomy(prisma);
+    await seedBnccAlignment(prisma);
     await seedResources(prisma);
     await seedResourceFiles(prisma);
     await seedBnccSkillsFundamental(prisma);

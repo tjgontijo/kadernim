@@ -7,11 +7,44 @@ datasource db {
   provider = "postgresql"
 }
 
+// BNCC-related enums
+enum EducationLevelType {
+  EF
+  EM
+}
+
+enum SubjectComponentType {
+  LINGUA_PORTUGUESA
+  ARTE
+  EDUCACAO_FISICA
+  LINGUA_INGLESA
+  MATEMATICA
+  CIENCIAS
+  HISTORIA
+  GEOGRAFIA
+  ENSINO_RELIGIOSO
+}
+
+model KnowledgeArea {
+  id    String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code  String @unique
+  name  String @unique
+  order Int    @default(0)
+
+  subjects  Subject[]
+  createdAt DateTime @default(now())
+
+  @@index([code])
+  @@map("knowledge_area")
+}
+
 model EducationLevel {
-  id             String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name           String                   @unique
-  slug           String                   @unique
-  order          Int                      @default(0)
+  id    String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type  EducationLevelType?   @unique
+  name  String                @unique
+  slug  String                @unique
+  order Int                   @default(0)
+
   grades         Grade[]
   resources      Resource[]
   resourceLevels ResourceEducationLevel[]
@@ -25,24 +58,33 @@ model Grade {
   id               String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name             String
   slug             String          @unique
+  year             Int?
   order            Int             @default(0)
   educationLevelId String          @db.Uuid
   educationLevel   EducationLevel  @relation(fields: [educationLevelId], references: [id])
-  subjects         GradeSubject[]
-  resources        ResourceGrade[]
-  bnccSkills       BnccSkill[]
-  lessonPlans      LessonPlan[]
 
+  subjects    GradeSubject[]
+  resources   ResourceGrade[]
+  bnccSkills  BnccSkill[]
+  lessonPlans LessonPlan[]
+
+  @@unique([year, educationLevelId])
   @@index([educationLevelId])
+  @@index([year])
   @@map("grade")
 }
 
 model Subject {
-  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name      String  @unique
-  slug      String  @unique
-  color     String?
-  textColor String?
+  id              String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type            SubjectComponentType?   @unique
+  name            String                  @unique
+  slug            String                  @unique
+  componentCode   String?                 @unique
+  knowledgeAreaId String?                 @db.Uuid
+  color           String?
+  textColor       String?
+
+  knowledgeArea   KnowledgeArea?          @relation(fields: [knowledgeAreaId], references: [id], onDelete: Restrict)
 
   grades           GradeSubject[]
   resources        Resource[]
@@ -50,6 +92,8 @@ model Subject {
   bnccSkills       BnccSkill[]
   lessonPlans      LessonPlan[]
 
+  @@index([knowledgeAreaId])
+  @@index([componentCode])
   @@map("subject")
 }
 
@@ -509,11 +553,11 @@ model BnccSkill {
   educationLevelId String         @db.Uuid
   educationLevel   EducationLevel @relation(fields: [educationLevelId], references: [id])
 
-  gradeId String? @db.Uuid
-  grade   Grade?  @relation(fields: [gradeId], references: [id])
+  gradeId String @db.Uuid
+  grade   Grade  @relation(fields: [gradeId], references: [id])
 
-  subjectId String?  @db.Uuid
-  subject   Subject? @relation(fields: [subjectId], references: [id])
+  subjectId String  @db.Uuid
+  subject   Subject @relation(fields: [subjectId], references: [id])
 
   unitTheme             String?
   knowledgeObject       String?
@@ -526,7 +570,7 @@ model BnccSkill {
 
   resources ResourceBnccSkill[]
 
-  @@unique([code, gradeId], name: "code_gradeId")
+  @@unique([code, gradeId])
   @@index([educationLevelId])
   @@index([gradeId])
   @@index([subjectId])
