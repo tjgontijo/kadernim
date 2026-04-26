@@ -92,30 +92,33 @@ A BNCC organiza assim: **Área → Componente → Habilidade**. O código da hab
 ```
 Frontend (Next.js)
    │
-   ├─ Formulário de input
-   ├─ Preview interativo
+   ├─ Formulário de input (BNCC code + opções)
+   ├─ Preview interativo (A4 com live switching de fase)
    └─ Botão exportar
          │
          ▼
-   API Route (Next.js)
+   API Route (/api/generate-apostila)
          │
          ▼
    Orquestrador
-   ├─ Constrói prompt (input + catálogo de componentes)
-   ├─ Chama LLM (structured output via Zod)
-   ├─ Valida resposta
+   ├─ Parse BNCC code (extrair metadados)
+   ├─ Constrói prompt para LLM
+   │  └─ Input: BNCC skill + fase pedagógica + catálogo de componentes
+   │  └─ Output: estrutura JSON com blocos de conteúdo + questões
+   ├─ Valida resposta contra schema Zod
    └─ Passa para engine
          │
          ▼
-   Layout Engine
-   ├─ AutoLayout (grid 12×18)
-   ├─ Overflow Guard
-   └─ Page Breaker
+   Compositor (Builder Pattern)
+   ├─ Converte JSON em árvore de React components
+   ├─ Respeita dimensões A4 (210mm × 297mm)
+   ├─ Aplica CSS variables da fase pedagógica
+   └─ Gerencia quebras de página
          │
          ▼
    Renderer
-   ├─ Monta HTML/CSS
-   └─ Playwright → PDF
+   ├─ Renderiza React components (server-side)
+   └─ Playwright: HTML → PDF
 ```
 
 ---
@@ -159,7 +162,176 @@ Rodapé com informações pedagógicas e número de página.
 
 ---
 
-### 7.2 Introdução e contexto
+### 7.2 Blocos de Conteúdo (Fundamental 1-2 focado)
+
+**Princípio:** Para crianças de 6-9 anos, CONTEÚDO é visual e narrativo, não textual. Aprendem por HISTÓRIAS, IMAGENS, ATIVIDADES PRÁTICAS — não por leitura de párrafos.
+
+---
+
+#### `story_block`
+Narrativa curta com personagens, usado para contextualizar conceitos em formato de história.
+
+```
+┌─────────────────────────────────────────────────┐
+│  📖  Era uma vez...                             │
+│  ─────────────────────────────────────────────  │
+│  [Ilustração: imagem central]                   │
+│                                                  │
+│  "Era uma vez uma plantinha que vivia em um     │
+│  jardim. Ela recebia luz do sol, água da chuva │
+│  e... crescia!"                                  │
+│                                                  │
+│  🌱 APRENDI: Plantas precisam de luz e água     │
+└─────────────────────────────────────────────────┘
+```
+
+- Grid: 6–12 cols × 4–6 rows
+- Conteúdo: story_text (max 300 chars, linguagem infantil), image_placeholder, learning_point
+- Fase 1: Grande, textura, emojis grandes
+- Fase 3: Normal, menos emojis
+
+---
+
+#### `visual_step`
+Sequência visual de passos (como fazer algo). Ideal para processos: metamorfose, fotossíntese, etapas de um experimento.
+
+```
+┌─────────────────────────────────────────────────┐
+│  Como a lagarta vira borboleta?                 │
+│  ─────────────────────────────────────────────  │
+│  
+│  [Imagem 1]    [Imagem 2]    [Imagem 3]    [Imagem 4]
+│   Ovo       →   Lagarta     →   Casulo    →  Borboleta
+│                                                  │
+│  1️⃣ Começa como um ovo        3️⃣ Faz um casulo
+│  2️⃣ Vira uma lagarta           4️⃣ Sai como borboleta
+└─────────────────────────────────────────────────┘
+```
+
+- Grid: 10–12 cols × 4–5 rows
+- Conteúdo: steps[] com { image_placeholder, step_number, step_text (max 80 chars) }
+- Min 2 steps, max 5 steps
+- Excelente para Fase 1 (visual dominante)
+
+---
+
+#### `image_exploration`
+Imagem GRANDE com números/setas indicando partes para aprender. Professor aponta e explica.
+
+```
+┌─────────────────────────────────────────────────┐
+│  Observe a planta:                              │
+│                                                  │
+│     ┌─────────────────────┐                     │
+│     │  1️⃣ Folha verde     │                     │
+│     │  [Grande imagem]    │                     │
+│     │  2️⃣ Caule           │                     │
+│     │  3️⃣ Raiz            │                     │
+│     └─────────────────────┘                     │
+│                                                  │
+│  As raízes buscam água na terra!                │
+└─────────────────────────────────────────────────┘
+```
+
+- Grid: 6–12 cols × 5–7 rows
+- Conteúdo: image_placeholder, annotations[] = { number, label, position }
+- Description text simples (max 150 chars)
+
+---
+
+#### `concept_story`
+Conceito ensinado como mini-narrativa visual (diferente de `concept_box` que é só definição).
+
+```
+┌─────────────────────────────────────────────────┐
+│  💧 Água: a vida das plantas                   │
+│  ─────────────────────────────────────────────  │
+│  Imagina: você sente sede e bebe água. As       │
+│  plantas TAMBÉM! Elas bebem água pelas raízes.  │
+│                                                  │
+│  [Imagem: raiz absorvendo água]                 │
+│                                                  │
+│  Sem água = sem vida ❌                         │
+│  Com água = planta feliz ✨                     │
+└─────────────────────────────────────────────────┘
+```
+
+- Grid: 5–10 cols × 4–5 rows
+- Conteúdo: concept_name, narrative_text (max 250 chars, conversacional), image_placeholder, good_bad_example
+- Fase 1: Com emojis e comparações simples
+- Fase 3: Mais técnico, menos emojis
+
+---
+
+#### `do_and_discover`
+Atividade prática DESCOBERTA (não é questão, é experiência). Criança faz e aprende.
+
+```
+┌─────────────────────────────────────────────────┐
+│  🔍 Descubra você mesmo!                        │
+│  ─────────────────────────────────────────────  │
+│  1. Pegue uma folha de uma planta               │
+│  2. Coloque contra a luz e veja...              │
+│  3. O que você vê? [Linha de descoberta]        │
+│                                                  │
+│  💡 Dica: Procure pelas nervuras!               │
+│                                                  │
+│  [Imagem: folha ao lado da lâmpada]             │
+└─────────────────────────────────────────────────┘
+```
+
+- Grid: 5–10 cols × 4–5 rows
+- Conteúdo: activity_steps[] (max 3-4 steps, linguagem de instrução), hint, image_placeholder
+- NÃO é pergunta — é guia de exploração
+- Perfeito para Fase 1 (hands-on learning)
+
+---
+
+#### `comparison_table`
+Tabela visual simples comparando 2-3 conceitos. Sem números, com emojis/cores.
+
+```
+┌──────────────────────────────┬──────────────────────────────┐
+│  Dia ☀️                      │  Noite 🌙                     │
+│─────────────────────────────┼──────────────────────────────│
+│  Claro                       │  Escuro                      │
+│  Faz calor                   │  Faz frio                    │
+│  As crianças vão à escola    │  As crianças dormem          │
+│  As flores abrem             │  As flores fecham            │
+└──────────────────────────────┴──────────────────────────────┘
+```
+
+- Grid: 6–12 cols × 3–5 rows
+- Conteúdo: headers[] (com emojis), rows[] (max 4 rows)
+- Fase 1: Muitos emojis, imagens nas células
+- Fase 3: Menos visual, mais texto
+
+---
+
+#### `connection_web`
+Diagrama visual simples mostrando como conceitos se conectam. (tipo mind map infantil)
+
+```
+┌─────────────────────────────────────────────────┐
+│                      🌱 PLANTA                  │
+│                         │                       │
+│         ┌───────────────┼───────────────┐       │
+│         │               │               │       │
+│        💧              ☀️               🌍       │
+│       ÁGUA           LUZ            TERRA       │
+│                                                  │
+│  Tudo junto a planta CRESCE! ✨                │
+└─────────────────────────────────────────────────┘
+```
+
+- Grid: 6–10 cols × 4–5 rows
+- Conteúdo: central_concept, connections[] = { label, emoji, description }
+- Max 5 conexões
+- Muito bom para Fase 1 (visual, pouco texto)
+
+---
+
+### 7.3 Introdução e contexto
 
 #### `activity_intro`
 Bloco de contextualização antes das questões. Define o cenário do exercício.
@@ -491,7 +663,198 @@ Divisor visual entre seções da apostila.
 
 ---
 
-## 8. Escala de Maturidade Visual por Faixa Etária
+## 8. Estrutura Recomendada por Fase Pedagógica
+
+A **ordem e proporção de componentes** muda drasticamente dependendo da idade. Não é só tema/cor — é ARQUITETURA.
+
+### **Fase 1 (1º–2º ano): 80% Visual, 20% Texto**
+
+```
+Proporção na apostila:
+
+1. Page Header (5%)
+   ↓
+2. Story Block OU Image Exploration (35%)
+   ↓
+3. Do and Discover (atividade prática) (25%)
+   ↓
+4. Concept Story (15%)
+   ↓
+5. Simple Question (Multiple Choice OU True/False ONLY) (15%)
+   ↓
+6. Page Footer (5%)
+```
+
+**Exemplos de composições:**
+- Ciências (Plantas): Story → Image Exploration → Do and Discover → True/False
+- Português (Letra M): Story → Visual Step → Do and Discover → Multiple Choice
+- Matemática (Contagem): Story → Image Exploration → Do and Discover → Matching simples
+
+**NUNCA em Fase 1:**
+- ❌ Open_long (texto muito pequeno não lê)
+- ❌ Fill_blank (ainda não sabe escrever bem)
+- ❌ Diagram_analysis complexo
+- ❌ Mais de 2–3 questões por página
+
+---
+
+### **Fase 3 (5º ano): 50% Visual, 50% Texto**
+
+```
+Proporção na apostila:
+
+1. Page Header (5%)
+   ↓
+2. Conceito introdutório + Image Exploration (25%)
+   ↓
+3. Activity Intro (leitura para contextualizar) (15%)
+   ↓
+4. 2–3 Questões variadas (40%)
+   ├─ Multiple Choice
+   ├─ Fill Blank
+   └─ Open Short
+   ↓
+5. Challenge/Enrichment (10%)
+   ↓
+6. Page Footer (5%)
+```
+
+**Exemplos:**
+- Ciências (Fotossíntese): Concept Story → Image Exploration → Activity Intro → 3 questões + Challenge
+- Português (Interpretação): Activity Intro (texto) → Comprehension questions → Matching
+- História (Descobrimento): Image Exploration (mapa) → Activity Intro → Multiple Choice + Ordering
+
+**PODE usar em Fase 3:**
+- ✅ Open_short/long
+- ✅ Fill_blank
+- ✅ Diagram_analysis
+- ✅ 4–5 questões por página
+
+---
+
+### **Fase 5 (8º–9º ano): 30% Visual, 70% Texto**
+
+```
+Proporção na apostila:
+
+1. Page Header (3%)
+   ↓
+2. Activity Intro (contexto, pode ser só texto) (10%)
+   ↓
+3. Conceito ou leitura (20%)
+   ↓
+4. 4–6 Questões variadas (55%)
+   ├─ Open Short/Long
+   ├─ Multiple Choice
+   ├─ Problem Creation
+   ├─ Reasoning
+   └─ Analysis (diagram, infographic, etc)
+   ↓
+5. Additional Resources (links, referências) (7%)
+   ↓
+6. Page Footer (5%)
+```
+
+**Não há restrição visual** — pode ser totalmente textual se pedagogicamente apropriado.
+
+---
+
+## 9. Disponibilidade de Componentes por Fase
+
+| Componente | Fase 1 | Fase 3 | Fase 5 |
+|---|:---:|:---:|:---:|
+| **Conteúdo** |
+| `story_block` | ✅✅✅ | ✅ | — |
+| `visual_step` | ✅✅✅ | ✅ | — |
+| `image_exploration` | ✅✅✅ | ✅✅ | ✅ |
+| `concept_story` | ✅✅✅ | ✅✅ | — |
+| `do_and_discover` | ✅✅✅ | ✅ | — |
+| `comparison_table` | ✅✅ | ✅✅ | ✅ |
+| `connection_web` | ✅✅✅ | ✅ | — |
+| `concept_box` | ✅ | ✅✅ | ✅✅ |
+| `tip_box` | ✅ | ✅ | ✅ |
+| `vocabulary_box` | — | ✅✅ | ✅✅ |
+| **Questões** |
+| `open_short` | — | ✅✅ | ✅✅✅ |
+| `open_long` | — | — | ✅✅✅ |
+| `multiple_choice` | ✅✅✅ | ✅✅✅ | ✅✅ |
+| `true_false` | ✅✅✅ | ✅ | — |
+| `fill_blank` | — | ✅✅ | ✅✅ |
+| `complete_text` | — | ✅ | ✅✅ |
+| `matching` | ✅ | ✅✅ | ✅ |
+| `ordering` | ✅ | ✅✅ | ✅ |
+| `identify` | ✅✅ | ✅ | — |
+| `classify` | — | ✅ | ✅ |
+| `comprehension` | — | ✅✅ | ✅✅✅ |
+| `creation` | ✅ | ✅ | ✅✅ |
+| `problem_creation` | — | — | ✅✅ |
+| `reasoning` | — | — | ✅✅✅ |
+| `image_interpretation` | ✅ | ✅ | ✅ |
+| `diagram_analysis` | — | ✅ | ✅✅ |
+| `infographic_reading` | — | ✅ | ✅✅ |
+| `comic_interpretation` | ✅ | ✅ | ✅ |
+| `map_reading` | — | ✅ | ✅✅ |
+
+**Legenda:** ✅✅✅ = Muito recomendado | ✅✅ = Recomendado | ✅ = Possível | — = Não recomendado
+
+---
+
+## 10. Prompt para LLM: Como Decidir Componentes
+
+A LLM recebe este contexto antes de gerar:
+
+```
+CONTEXTO DA APOSTILA:
+- BNCC Skill: EF05CI04 (Fotossíntese e cadeia alimentar)
+- Componente: Ciências
+- Fase Pedagógica: Fase 3 (5º ano, 10-11 anos)
+- Número de páginas: 2 (pode ser 4-6 páginas A4)
+
+REGRAS PARA COMPOSIÇÃO:
+1. Respeite a proporção por fase (Fase 3 = 50% visual, 50% texto)
+2. Sempre comece com conteúdo (nunca comece direto em questão)
+3. Questões devem ser VARIADAS em tipo (não repita o mesmo tipo 3x)
+4. Use `do_and_discover` para Fase 1, `image_exploration` para Fase 3+
+5. Máximo 5 questões por página em Fase 3
+6. Questões precisam ser PROGRESSIVAS (fácil → difícil)
+
+COMPONENTES DISPONÍVEIS PARA VOCÊ:
+Conteúdo: story_block, visual_step, image_exploration, concept_story, 
+          do_and_discover, comparison_table, connection_web, concept_box, tip_box
+Questões: multiple_choice, true_false, fill_blank, matching, ordering, 
+          identify, comprehension, creation, reasoning, image_interpretation
+
+ESTRUTURA ESPERADA:
+Page 1:
+  - concept_story (como plantas fazem fotossíntese)
+  - image_exploration (partes da folha)
+  - 2 questões (multiple_choice + true_false)
+
+Page 2:
+  - Continuação conceitual ou cadeia alimentar
+  - comparison_table (produtor vs consumidor)
+  - 3 questões (fill_blank + comprehension + creation)
+
+SAÍDA (JSON estruturado):
+{
+  "title": "Fotossíntese e Cadeia Alimentar",
+  "pages": [
+    {
+      "page_number": 1,
+      "blocks": [
+        { "type": "concept_story", "data": {...} },
+        { "type": "image_exploration", "data": {...} },
+        { "type": "multiple_choice", "data": {...} },
+        { "type": "true_false", "data": {...} }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+## 11. Escala de Maturidade Visual por Faixa Etária
 
 O sistema adapta automaticamente identidade visual e linguagem com base no ano escolar. A escala vai de **muito infantil** (1º ano) a **jovem-adulto** (9º ano). Não existe um estilo único — cada faixa tem sua própria personalidade.
 
