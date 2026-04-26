@@ -52,7 +52,7 @@ function mapSkill(item: {
 }
 
 export async function listBnccSkills(filters: BnccSkillFilter): Promise<ListBnccSkillsResult> {
-  const { q, educationLevel, grades, subject, page, limit } = filters
+  const { q, educationLevel, grades, knowledgeArea, subject, page, limit } = filters
 
   const where: any = {}
 
@@ -64,7 +64,9 @@ export async function listBnccSkills(filters: BnccSkillFilter): Promise<ListBncc
     where.grade = { is: { slug: { in: grades } } }
   }
 
-  if (subject) {
+  if (knowledgeArea) {
+    where.subject = { is: { knowledgeArea: { code: knowledgeArea } } }
+  } else if (subject) {
     where.subject = { is: { slug: subject } }
   }
 

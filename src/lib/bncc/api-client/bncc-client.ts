@@ -46,6 +46,7 @@ export async function fetchBnccSkills(params: {
   q?: string
   educationLevel?: string
   grade?: string[]
+  knowledgeArea?: string
   subject?: string
   page?: number
   limit?: number

@@ -8,6 +8,7 @@ interface BnccFilters {
   q?: string
   educationLevel?: string
   grades?: string[]
+  knowledgeArea?: string
   subject?: string
 }
 
@@ -21,6 +22,7 @@ export function useBnccSkills(filters: BnccFilters, pageSize = 30, enabled = tru
         q: filters.q?.trim() || undefined,
         educationLevel: filters.educationLevel,
         grade: filters.grades,
+        knowledgeArea: filters.knowledgeArea,
         subject: filters.subject,
       }),
     getNextPageParam: (lastPage) => (

@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
       q: request.nextUrl.searchParams.get('q') ?? undefined,
       educationLevel: request.nextUrl.searchParams.get('educationLevel') ?? undefined,
       grades: request.nextUrl.searchParams.getAll('grade'),
+      knowledgeArea: request.nextUrl.searchParams.get('knowledgeArea') ?? undefined,
       subject: request.nextUrl.searchParams.get('subject') ?? undefined,
       page: request.nextUrl.searchParams.get('page') ?? undefined,
       limit: request.nextUrl.searchParams.get('limit') ?? undefined,

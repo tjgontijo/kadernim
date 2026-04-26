@@ -23,12 +23,14 @@ import {
   useEducationLevels,
   useGrades,
   useSubjects,
+  useKnowledgeAreas,
 } from '@/hooks/taxonomy/use-taxonomy'
 
 interface BnccFiltersValue {
   q?: string
   educationLevel?: string
   grades?: string[]
+  knowledgeArea?: string
   subject?: string
 }
 
@@ -47,9 +49,11 @@ export function BnccFilters({ value, onChange }: BnccFiltersProps) {
   const [query, setQuery] = useState(value.q || '')
   const [level, setLevel] = useState(value.educationLevel || 'all')
   const [selectedGrades, setSelectedGrades] = useState<string[]>(value.grades || [])
+  const [knowledgeArea, setKnowledgeArea] = useState(value.knowledgeArea || 'all')
   const [subject, setSubject] = useState(value.subject || 'all')
 
   const { data: levels = [] } = useEducationLevels()
+  const { data: knowledgeAreas = [] } = useKnowledgeAreas()
   const { data: grades = [] } = useGrades(level)
   const singleGrade = selectedGrades.length === 1 ? selectedGrades[0] : undefined
   const { data: subjects = [] } = useSubjects(level, singleGrade)
@@ -58,14 +62,16 @@ export function BnccFilters({ value, onChange }: BnccFiltersProps) {
     let count = 0
     if (level !== 'all') count += 1
     if (selectedGrades.length > 0) count += 1
+    if (knowledgeArea !== 'all') count += 1
     if (subject !== 'all') count += 1
     return count
-  }, [level, selectedGrades, subject])
+  }, [level, selectedGrades, knowledgeArea, subject])
 
   const buildPayload = (): BnccFiltersValue => ({
     q: query.trim() || undefined,
     educationLevel: level === 'all' ? undefined : level,
     grades: selectedGrades.length > 0 ? selectedGrades : undefined,
+    knowledgeArea: knowledgeArea === 'all' ? undefined : knowledgeArea,
     subject: subject === 'all' ? undefined : subject,
   })
 
@@ -82,11 +88,13 @@ export function BnccFilters({ value, onChange }: BnccFiltersProps) {
     setQuery('')
     setLevel('all')
     setSelectedGrades([])
+    setKnowledgeArea('all')
     setSubject('all')
     onChange({
       q: undefined,
       educationLevel: undefined,
       grades: undefined,
+      knowledgeArea: undefined,
       subject: undefined,
     })
     if (closeDrawer) {
@@ -149,6 +157,7 @@ export function BnccFilters({ value, onChange }: BnccFiltersProps) {
                 onValueChange={(next) => {
                   setLevel(next)
                   setSelectedGrades([])
+                  setKnowledgeArea('all')
                   setSubject('all')
                 }}
               >
@@ -219,6 +228,31 @@ export function BnccFilters({ value, onChange }: BnccFiltersProps) {
                   </div>
                 )}
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                Área de Conhecimento
+              </label>
+              <Select
+                value={knowledgeArea}
+                onValueChange={(next) => {
+                  setKnowledgeArea(next)
+                  setSubject('all')
+                }}
+              >
+                <SelectTrigger className="h-12 w-full rounded-2xl text-sm font-semibold [&>span]:truncate">
+                  <SelectValue placeholder="Selecione a área" />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl border-border/50">
+                  <SelectItem value="all">Todas as Áreas</SelectItem>
+                  {knowledgeAreas.map((item: any) => (
+                    <SelectItem key={item.code} value={item.code}>
+                      {item.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">

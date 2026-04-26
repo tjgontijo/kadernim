@@ -14,6 +14,7 @@ interface Filters {
   q?: string
   educationLevel?: string
   grades?: string[]
+  knowledgeArea?: string
   subject?: string
 }
 
