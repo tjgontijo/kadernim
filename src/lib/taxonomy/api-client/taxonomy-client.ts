@@ -1,4 +1,4 @@
-import type { EducationLevel, Grade, Subject, SubjectInput } from '@/lib/taxonomy/types'
+import type { EducationLevel, Grade, Subject, SubjectInput, KnowledgeArea } from '@/lib/taxonomy/types'
 
 async function parseResponse<T>(response: Response): Promise<T> {
   const json = await response.json().catch(() => ({}))
@@ -8,6 +8,11 @@ async function parseResponse<T>(response: Response): Promise<T> {
   }
 
   return (json.data ?? json) as T
+}
+
+export async function fetchKnowledgeAreas() {
+  const response = await fetch('/api/v1/knowledge-areas')
+  return parseResponse<KnowledgeArea[]>(response)
 }
 
 export async function fetchEducationLevels() {

@@ -1,14 +1,22 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { fetchEducationLevels, fetchGrades, fetchSubjects } from '@/lib/taxonomy/api-client';
-import type { EducationLevel, Grade, Subject } from '@/lib/taxonomy/types';
+import { fetchKnowledgeAreas, fetchEducationLevels, fetchGrades, fetchSubjects } from '@/lib/taxonomy/api-client';
+import type { EducationLevel, Grade, Subject, KnowledgeArea } from '@/lib/taxonomy/types';
 
 
 
 interface TaxonomyResponse<T> {
     success: boolean;
     data: T[];
+}
+
+export function useKnowledgeAreas() {
+    return useQuery({
+        queryKey: ['taxonomy', 'knowledge-areas'],
+        queryFn: fetchKnowledgeAreas,
+        staleTime: 1000 * 60 * 60, // 1 hora de cache (dados estáticos)
+    });
 }
 
 export function useEducationLevels() {

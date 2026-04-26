@@ -23,6 +23,18 @@ export class TaxonomyService {
     }
   }
 
+  static async listKnowledgeAreas() {
+    return prisma.knowledgeArea.findMany({
+      orderBy: { order: 'asc' },
+      select: {
+        id: true,
+        code: true,
+        name: true,
+        order: true,
+      },
+    })
+  }
+
   static async listEducationLevels() {
     return prisma.educationLevel.findMany({
       orderBy: { order: 'asc' },
@@ -30,6 +42,7 @@ export class TaxonomyService {
         id: true,
         slug: true,
         name: true,
+        type: true,
         order: true,
       },
     })
@@ -42,11 +55,12 @@ export class TaxonomyService {
 
     const grades = await prisma.grade.findMany({
       where,
-      orderBy: { order: 'asc' },
+      orderBy: [{ order: 'asc' }, { year: 'asc' }],
       select: {
         id: true,
         slug: true,
         name: true,
+        year: true,
         order: true,
         educationLevel: {
           select: { slug: true },
@@ -58,6 +72,7 @@ export class TaxonomyService {
       id: grade.id,
       slug: grade.slug,
       name: grade.name,
+      year: grade.year,
       order: grade.order,
       educationLevelSlug: grade.educationLevel.slug,
     }))
@@ -69,6 +84,23 @@ export class TaxonomyService {
   }) {
     const subjectsWhere: any = {}
 
+    const subjectSelect = {
+      id: true,
+      slug: true,
+      name: true,
+      componentCode: true,
+      type: true,
+      color: true,
+      textColor: true,
+      knowledgeArea: {
+        select: {
+          id: true,
+          code: true,
+          name: true,
+          order: true,
+        },
+      },
+    }
 
     if (params.gradeSlug) {
       const gradeSubjects = await prisma.gradeSubject.findMany({
@@ -78,7 +110,7 @@ export class TaxonomyService {
         },
         include: {
           subject: {
-            select: { slug: true, name: true, color: true, textColor: true },
+            select: subjectSelect,
           },
         },
         orderBy: {
@@ -98,7 +130,7 @@ export class TaxonomyService {
         },
         include: {
           subject: {
-            select: { slug: true, name: true, color: true, textColor: true },
+            select: subjectSelect,
           },
         },
         orderBy: {
@@ -111,7 +143,7 @@ export class TaxonomyService {
 
     return prisma.subject.findMany({
       where: subjectsWhere,
-      select: { slug: true, name: true, color: true, textColor: true },
+      select: subjectSelect,
       orderBy: { name: 'asc' },
     })
   }
