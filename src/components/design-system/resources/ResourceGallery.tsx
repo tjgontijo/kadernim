@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ChevronDown, ChevronLeft, ChevronRight, FileText, PlayCircle, Video } from 'lucide-react'
 import { LazyImage } from '@/components/shared/lazy-image'
+import { useMobile } from '@/hooks/layout/use-mobile'
 
 interface ResourceImage {
   id: string
@@ -102,6 +103,7 @@ function SimulatedCover({ fileName, index, isVideo = false }: { fileName: string
 }
 
 export function ResourceGallery({ files = [], videos = [], title = 'Material' }: ResourceGalleryProps) {
+  const { isMobile } = useMobile()
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false)
@@ -210,69 +212,19 @@ export function ResourceGallery({ files = [], videos = [], title = 'Material' }:
         <div className="absolute -top-[18px] left-1/2 -translate-x-1/2 -rotate-2 w-[120px] h-[28px] bg-[#dfd6cd] shadow-tape border-x border-dashed border-x-[#c2b6ab] z-10 opacity-90" />
 
         {/* Main Container: Sidebar + Gallery */}
-        <div className="flex gap-[16px] items-stretch">
-          {/* Sidebar with File Covers - Scrollable */}
-          {allItems.length > 0 && (
-            <div
-              className="relative flex-shrink-0 w-[124px] -ml-[6px] overflow-hidden"
-              style={{ height: sidebarHeight > 0 ? `${sidebarHeight}px` : '0px' }}
-            >
-              <div
-                ref={sidebarViewportRef}
-                className="absolute inset-0 overflow-y-auto overflow-x-hidden scrollbar-hide native-scroll"
-                onWheelCapture={(event) => event.stopPropagation()}
-              >
-                <div ref={scrollContainerRef} className="flex flex-col gap-[16px] pb-[56px] pt-[4px] px-[6px]">
-                  {allItems.map((item, idx) => {
-                    const isSelected = selectedItemId === item.id
-
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => {
-                          setSelectedItemId(item.id)
-                          setActiveImageIndex(0)
-                        }}
-                        className="group flex flex-col items-center gap-[8px] text-left w-full transition-all focus:outline-none"
-                      >
-                        <div
-                          className={`relative w-full [aspect-ratio:3/4] rounded-2 overflow-hidden transition-all ${isSelected
-                            ? 'ring-2 ring-terracotta ring-offset-2 ring-offset-card shadow-2 border-transparent'
-                            : 'border border-line shadow-1 group-hover:border-ink-lighter group-hover:shadow-2'
-                            }`}
-                        >
-                          <SimulatedCover
-                            fileName={item.name}
-                            index={idx}
-                            isVideo={item.galleryType === 'video'}
-                          />
-                        </div>
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-
-              {showScrollHint && (
-                <div className="absolute bottom-0 left-[6px] right-[6px] z-20 h-[56px] bg-gradient-to-t from-card via-card/85 to-transparent pointer-events-none flex items-end justify-center pb-[10px]">
-                  <ChevronDown className="w-[16px] h-[16px] text-terracotta animate-bounce opacity-80" />
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Gallery with Carousel */}
-          <div className="flex-1 flex flex-col gap-[12px]">
+        <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-[16px] items-stretch`}>
+          {/* Main Gallery with Carousel - Top on Mobile, Right on Desktop */}
+          <div className={`${isMobile ? 'order-1' : 'order-2'} flex-1 flex flex-col gap-[12px]`}>
             {/* Image with Carousel Controls */}
-            <div className="flex items-center justify-center gap-[12px]">
-              <div className="flex h-[40px] w-[40px] items-center justify-center flex-shrink-0">
+            <div className="flex items-center justify-center gap-[6px] sm:gap-[12px]">
+              <div className="flex h-[32px] w-[32px] sm:h-[40px] sm:w-[40px] items-center justify-center flex-shrink-0">
                 {showPageNavigation && (
                   <button
                     onClick={handlePrevious}
-                    className="rounded-full p-[8px] hover:bg-line transition-colors"
+                    className="rounded-full p-[4px] sm:p-[8px] hover:bg-line transition-colors"
                     aria-label="Página anterior"
                   >
-                    <ChevronLeft className="w-[24px] h-[24px] text-ink" />
+                    <ChevronLeft className="w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] text-ink" />
                   </button>
                 )}
               </div>
@@ -301,8 +253,8 @@ export function ResourceGallery({ files = [], videos = [], title = 'Material' }:
                       sizes="(max-width: 768px) 100vw, 60vw"
                     />
                     <div className="absolute inset-0 bg-ink/10 group-hover:bg-ink/20 transition-colors flex items-center justify-center">
-                      <div className="w-[64px] h-[64px] bg-paper/90 rounded-full flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform">
-                        <PlayCircle className="w-[32px] h-[32px] text-terracotta" />
+                      <div className="w-[48px] h-[48px] sm:w-[64px] sm:h-[64px] bg-paper/90 rounded-full flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform">
+                        <PlayCircle className="w-[24px] h-[24px] sm:w-[32px] sm:h-[32px] text-terracotta" />
                       </div>
                     </div>
                     {/* Video Duration Badge */}
@@ -329,31 +281,81 @@ export function ResourceGallery({ files = [], videos = [], title = 'Material' }:
                 )}
               </div>
 
-              <div className="flex h-[40px] w-[40px] items-center justify-center flex-shrink-0">
+              <div className="flex h-[32px] w-[32px] sm:h-[40px] sm:w-[40px] items-center justify-center flex-shrink-0">
                 {showPageNavigation && (
                   <button
                     onClick={handleNext}
-                    className="rounded-full p-[8px] hover:bg-line transition-colors"
+                    className="rounded-full p-[4px] sm:p-[8px] hover:bg-line transition-colors"
                     aria-label="Próxima página"
                   >
-                    <ChevronRight className="w-[24px] h-[24px] text-ink" />
+                    <ChevronRight className="w-[20px] h-[20px] sm:w-[24px] sm:h-[24px] text-ink" />
                   </button>
                 )}
               </div>
             </div>
 
             {!isVideo && (
-              <div className="text-center text-[13px] font-medium text-ink-mute">
+              <div className="text-center text-[11px] sm:text-[13px] font-medium text-ink-mute">
                 Página {activeImageIndex + 1} de {selectedImages.length}
               </div>
             )}
 
             {isVideo && selectedVideoIndex >= 0 && (
-              <div className="text-center text-[13px] font-medium text-ink-mute">
+              <div className="text-center text-[11px] sm:text-[13px] font-medium text-ink-mute">
                 Vídeo {selectedVideoIndex + 1} de {videos.length}
               </div>
             )}
           </div>
+
+          {/* Sidebar/Horizontal List with File Covers - Bottom on Mobile, Left on Desktop */}
+          {allItems.length > 0 && (
+            <div
+              className={`${isMobile ? 'order-2 w-full mt-[8px] h-[130px]' : 'order-1 w-[124px] -ml-[6px] flex-shrink-0'} relative overflow-hidden`}
+              style={!isMobile ? { height: sidebarHeight > 0 ? `${sidebarHeight}px` : '0px' } : undefined}
+            >
+              <div
+                ref={sidebarViewportRef}
+                className={`absolute inset-0 ${isMobile ? 'overflow-x-auto overflow-y-hidden' : 'overflow-y-auto overflow-x-hidden'} scrollbar-hide native-scroll`}
+                onWheelCapture={(event) => event.stopPropagation()}
+              >
+                <div ref={scrollContainerRef} className={`flex ${isMobile ? 'flex-row' : 'flex-col'} gap-[12px] sm:gap-[16px] ${isMobile ? 'pb-[4px] pt-[4px] px-[2px]' : 'pb-[56px] pt-[4px] px-[6px]'}`}>
+                  {allItems.map((item, idx) => {
+                    const isSelected = selectedItemId === item.id
+
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          setSelectedItemId(item.id)
+                          setActiveImageIndex(0)
+                        }}
+                        className={`group flex flex-col items-center gap-[8px] text-left transition-all focus:outline-none ${isMobile ? 'w-[84px] flex-shrink-0' : 'w-full'}`}
+                      >
+                        <div
+                          className={`relative w-full [aspect-ratio:3/4] rounded-2 overflow-hidden transition-all ${isSelected
+                            ? 'ring-2 ring-terracotta ring-offset-2 ring-offset-card shadow-2 border-transparent'
+                            : 'border border-line shadow-1 group-hover:border-ink-lighter group-hover:shadow-2'
+                            }`}
+                        >
+                          <SimulatedCover
+                            fileName={item.name}
+                            index={idx}
+                            isVideo={item.galleryType === 'video'}
+                          />
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {!isMobile && showScrollHint && (
+                <div className="absolute bottom-0 left-[6px] right-[6px] z-20 h-[56px] bg-gradient-to-t from-card via-card/85 to-transparent pointer-events-none flex items-end justify-center pb-[10px]">
+                  <ChevronDown className="w-[16px] h-[16px] text-terracotta animate-bounce opacity-80" />
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {isVideo && (
