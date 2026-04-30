@@ -51,9 +51,6 @@ export function BnccSkillList({
                 <span className="truncate">{item.code}</span>
               </span>
               <div className="flex items-center gap-1.5 shrink-0">
-                <span className="text-[11px] text-ink-mute">
-                  {item.relatedResourcesCount} {item.relatedResourcesCount === 1 ? 'material' : 'materiais'}
-                </span>
                 <Button
                   type="button"
                   variant="ghost"
@@ -71,18 +68,26 @@ export function BnccSkillList({
               {item.description}
             </p>
 
-            <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-ink-soft">
-              <span className="rounded-full border border-line bg-paper px-2.5 py-1">
-                {item.educationLevel.name}
-              </span>
-              {item.grade && (
+            <div className="mt-3 flex items-end justify-between gap-2">
+              <div className="flex flex-wrap gap-2 text-[11px] text-ink-soft">
                 <span className="rounded-full border border-line bg-paper px-2.5 py-1">
-                  {item.grade.name}
+                  {item.educationLevel.name}
                 </span>
-              )}
-              {item.subject && (
-                <span className="rounded-full border border-line bg-paper px-2.5 py-1">
-                  {item.subject.name}
+                {item.grade && (
+                  <span className="rounded-full border border-line bg-paper px-2.5 py-1">
+                    {item.grade.name}
+                  </span>
+                )}
+                {item.subject && (
+                  <span className="rounded-full border border-line bg-paper px-2.5 py-1">
+                    {item.subject.name}
+                  </span>
+                )}
+              </div>
+
+              {item.relatedResourcesCount > 0 && (
+                <span className="text-[11px] text-ink-mute whitespace-nowrap pb-1">
+                  {item.relatedResourcesCount} {item.relatedResourcesCount === 1 ? 'material' : 'materiais'}
                 </span>
               )}
             </div>

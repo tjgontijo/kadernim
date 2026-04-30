@@ -17,13 +17,13 @@ export function PageScaffold({ children, className }: PageScaffoldProps) {
 }
 
 // --- LINE 1: HEADER & ACTION ---
-interface ScaffoldHeaderProps {
+export interface ScaffoldHeaderProps {
     title: React.ReactNode;
     action?: React.ReactNode;
     className?: string;
 }
 
-function ScaffoldHeader({ title, action, className }: ScaffoldHeaderProps) {
+export function ScaffoldHeader({ title, action, className }: ScaffoldHeaderProps) {
     return (
         <header className={cn("flex items-center justify-between gap-4 px-0 pt-4 sm:pt-6", className)}>
             <div className="min-w-0 flex-1">
@@ -41,12 +41,12 @@ function ScaffoldHeader({ title, action, className }: ScaffoldHeaderProps) {
 }
 
 // --- LINE 2: HIGHLIGHT (CommunityUsage, Stats, Banners) ---
-interface ScaffoldHighlightProps {
+export interface ScaffoldHighlightProps {
     children: React.ReactNode;
     className?: string;
 }
 
-function ScaffoldHighlight({ children, className }: ScaffoldHighlightProps) {
+export function ScaffoldHighlight({ children, className }: ScaffoldHighlightProps) {
     return (
         <section className={cn("px-0", className)}>
             {children}
@@ -55,12 +55,12 @@ function ScaffoldHighlight({ children, className }: ScaffoldHighlightProps) {
 }
 
 // --- LINE 3: CONTROLS (Search & Filters) ---
-interface ScaffoldControlsProps {
+export interface ScaffoldControlsProps {
     children: React.ReactNode;
     className?: string;
 }
 
-function ScaffoldControls({ children, className }: ScaffoldControlsProps) {
+export function ScaffoldControls({ children, className }: ScaffoldControlsProps) {
     return (
         <section className={cn("flex items-center gap-2 px-0", className)}>
             {children}

@@ -14,7 +14,8 @@ import {
   Calendar,
   Sparkles,
   Brain,
-  BookMarked
+  BookMarked,
+  Wand2,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -107,6 +108,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
       items: [
         { title: 'Dashboard', href: '/admin', icon: LayoutDashboard },
         { title: 'Recursos', href: '/admin/resources', icon: ShieldCheck, permission: { action: 'read', subject: 'Resource' } },
+        { title: 'Gerar Recurso', href: '/admin/generate-resource', icon: Wand2, permission: { action: 'create', subject: 'Resource' } },
         { title: 'Disciplinas', href: '/admin/subjects', icon: Hash, permission: { action: 'read', subject: 'Subject' } },
         { title: 'Usuários', href: '/admin/users', icon: Users, permission: { action: 'read', subject: 'User' } },
         { title: 'IA', href: '/admin/ai-costs', icon: Brain },

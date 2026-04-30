@@ -1,0 +1,2411 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-phase="3" data-subject="sci">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kadernim — Design System · Apostilas Pedagógicas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+
+    /* ============================================================
+       RESET
+    ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    /* ============================================================
+       PHASE TOKENS — 5 fases com personalidades distintas
+    ============================================================ */
+
+    /* Fase 1: 1º–2º ano (6–8 anos) — muito infantil */
+    [data-phase="1"] {
+      --font: 'Nunito', sans-serif;
+      --fw: 500;
+      --fw-bold: 800;
+      --fs-body: 16px;
+      --fs-sm: 13px;
+      --fs-question: 22px;
+      --fs-title: 30px;
+      --fs-meta: 14px;
+      --lh: 2.0;
+      --radius-xl: 24px;
+      --radius-lg: 20px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+      --bw: 3px;
+      --shadow: 4px 4px 0px var(--subject-shadow);
+      --shadow-sm: 3px 3px 0px var(--subject-shadow);
+      --pad: 20px;
+      --gap: 16px;
+      --answer-lh: 44px;
+    }
+
+    /* Fase 2: 3º–4º ano (8–10 anos) — infantil com estrutura */
+    [data-phase="2"] {
+      --font: 'Nunito', sans-serif;
+      --fw: 500;
+      --fw-bold: 700;
+      --fs-body: 15px;
+      --fs-sm: 12px;
+      --fs-question: 19px;
+      --fs-title: 26px;
+      --fs-meta: 13px;
+      --lh: 1.8;
+      --radius-xl: 16px;
+      --radius-lg: 14px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+      --bw: 2.5px;
+      --shadow: 3px 3px 0px var(--subject-shadow);
+      --shadow-sm: 2px 2px 0px var(--subject-shadow);
+      --pad: 18px;
+      --gap: 14px;
+      --answer-lh: 40px;
+    }
+
+    /* Fase 3: 5º ano (10–11 anos) — transição */
+    [data-phase="3"] {
+      --font: 'Nunito', sans-serif;
+      --fw: 400;
+      --fw-bold: 700;
+      --fs-body: 14px;
+      --fs-sm: 12px;
+      --fs-question: 17px;
+      --fs-title: 22px;
+      --fs-meta: 12px;
+      --lh: 1.6;
+      --radius-xl: 12px;
+      --radius-lg: 10px;
+      --radius-md: 8px;
+      --radius-sm: 6px;
+      --bw: 2px;
+      --shadow: 0 3px 10px rgba(0,0,0,.10);
+      --shadow-sm: 0 2px 6px rgba(0,0,0,.07);
+      --pad: 16px;
+      --gap: 12px;
+      --answer-lh: 34px;
+    }
+
+    /* Fase 4: 6º–7º ano (12–13 anos) — pré-adolescente */
+    [data-phase="4"] {
+      --font: 'Inter', sans-serif;
+      --fw: 400;
+      --fw-bold: 600;
+      --fs-body: 13px;
+      --fs-sm: 11px;
+      --fs-question: 15px;
+      --fs-title: 20px;
+      --fs-meta: 11px;
+      --lh: 1.5;
+      --radius-xl: 8px;
+      --radius-lg: 6px;
+      --radius-md: 5px;
+      --radius-sm: 4px;
+      --bw: 1.5px;
+      --shadow: 0 2px 6px rgba(0,0,0,.08);
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.06);
+      --pad: 14px;
+      --gap: 10px;
+      --answer-lh: 30px;
+    }
+
+    /* Fase 5: 8º–9º ano (13–15 anos) — jovem, editorial */
+    [data-phase="5"] {
+      --font: 'Inter', sans-serif;
+      --fw: 400;
+      --fw-bold: 600;
+      --fs-body: 13px;
+      --fs-sm: 11px;
+      --fs-question: 14px;
+      --fs-title: 18px;
+      --fs-meta: 11px;
+      --lh: 1.4;
+      --radius-xl: 4px;
+      --radius-lg: 4px;
+      --radius-md: 3px;
+      --radius-sm: 2px;
+      --bw: 1px;
+      --shadow: 0 1px 3px rgba(0,0,0,.06);
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.04);
+      --pad: 14px;
+      --gap: 8px;
+      --answer-lh: 28px;
+    }
+
+    /* ============================================================
+       SUBJECT PALETTES
+    ============================================================ */
+    [data-subject="sci"] {
+      --subject-primary: #059669;
+      --subject-light: #D1FAE5;
+      --subject-dark: #065F46;
+      --subject-shadow: rgba(5,150,105,.35);
+    }
+    [data-subject="math"] {
+      --subject-primary: #2563EB;
+      --subject-light: #DBEAFE;
+      --subject-dark: #1E40AF;
+      --subject-shadow: rgba(37,99,235,.35);
+    }
+    [data-subject="pt"] {
+      --subject-primary: #7C3AED;
+      --subject-light: #EDE9FE;
+      --subject-dark: #5B21B6;
+      --subject-shadow: rgba(124,58,237,.35);
+    }
+    [data-subject="hist"] {
+      --subject-primary: #D97706;
+      --subject-light: #FEF3C7;
+      --subject-dark: #92400E;
+      --subject-shadow: rgba(217,119,6,.35);
+    }
+    [data-subject="geo"] {
+      --subject-primary: #0891B2;
+      --subject-light: #CFFAFE;
+      --subject-dark: #075985;
+      --subject-shadow: rgba(8,145,178,.35);
+    }
+    [data-subject="art"] {
+      --subject-primary: #DB2777;
+      --subject-light: #FCE7F3;
+      --subject-dark: #9D174D;
+      --subject-shadow: rgba(219,39,119,.35);
+    }
+    [data-subject="ef"] {
+      --subject-primary: #16A34A;
+      --subject-light: #DCFCE7;
+      --subject-dark: #14532D;
+      --subject-shadow: rgba(22,163,74,.35);
+    }
+    [data-subject="ing"] {
+      --subject-primary: #0369A1;
+      --subject-light: #E0F2FE;
+      --subject-dark: #0C4A6E;
+      --subject-shadow: rgba(3,105,161,.35);
+    }
+    [data-subject="er"] {
+      --subject-primary: #6366F1;
+      --subject-light: #E0E7FF;
+      --subject-dark: #3730A3;
+      --subject-shadow: rgba(99,102,241,.35);
+    }
+
+    /* ============================================================
+       SHELL LAYOUT
+    ============================================================ */
+    body {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      background: #F1F5F9;
+      color: #1E293B;
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: 56px 1fr;
+      grid-template-columns: 240px 1fr;
+      grid-template-areas:
+        "topbar topbar"
+        "sidebar main";
+    }
+
+    /* Top bar */
+    .topbar {
+      grid-area: topbar;
+      background: #0F172A;
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 24px;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+    }
+    .topbar-logo {
+      font-size: 16px;
+      font-weight: 700;
+      color: white;
+      letter-spacing: -0.02em;
+      margin-right: 8px;
+    }
+    .topbar-logo span { color: #38BDF8; }
+    .topbar-sep { width: 1px; height: 24px; background: #334155; flex-shrink: 0; }
+
+    .ctrl-group { display: flex; align-items: center; gap: 8px; }
+    .ctrl-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #64748B; }
+
+    .phase-btns, .subject-btns { display: flex; gap: 3px; }
+
+    .phase-btn {
+      padding: 5px 12px;
+      border-radius: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1.5px solid #334155;
+      background: transparent;
+      color: #94A3B8;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+    .phase-btn:hover { border-color: #64748B; color: #CBD5E1; }
+    .phase-btn.active { background: white; border-color: white; color: #0F172A; }
+
+    .subject-btn {
+      padding: 5px 11px;
+      border-radius: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1.5px solid transparent;
+      cursor: pointer;
+      transition: all .15s;
+    }
+
+
+    /* Sidebar */
+    .sidebar {
+      grid-area: sidebar;
+      background: white;
+      border-right: 1px solid #E2E8F0;
+      position: sticky;
+      top: 56px;
+      height: calc(100vh - 56px);
+      overflow-y: auto;
+      padding: 20px 0;
+    }
+    .nav-group { margin-bottom: 4px; }
+    .nav-group-title {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #94A3B8;
+      padding: 10px 16px 4px;
+    }
+    .nav-link {
+      display: block;
+      padding: 5px 16px;
+      font-size: 12px;
+      color: #475569;
+      text-decoration: none;
+      border-radius: 0;
+      transition: all .1s;
+      border-left: 2px solid transparent;
+    }
+    .nav-link:hover { background: #F8FAFC; color: #0F172A; border-left-color: #CBD5E1; }
+    .nav-link.active { background: #F0F9FF; color: var(--subject-primary, #2563EB); border-left-color: var(--subject-primary, #2563EB); font-weight: 600; }
+
+    /* Main scroll area */
+    .main {
+      grid-area: main;
+      overflow-y: auto;
+      padding: 48px 56px 120px;
+    }
+
+    /* ============================================================
+       SECTION HEADERS (shell, not apostila)
+    ============================================================ */
+    .ds-section { margin-bottom: 80px; }
+    .ds-section-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #0F172A;
+      margin-bottom: 6px;
+      letter-spacing: -.02em;
+    }
+    .ds-section-desc {
+      font-size: 13px;
+      color: #64748B;
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+    .ds-component { margin-bottom: 40px; }
+    .ds-component-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #94A3B8;
+      margin-bottom: 10px;
+    }
+    .ds-component-desc {
+      font-size: 12px;
+      color: #64748B;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+    .ds-render {
+      background: white;
+      border: 1px solid #E2E8F0;
+      border-radius: 8px;
+      padding: 32px;
+    }
+    .ds-render-gray {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 8px;
+      padding: 32px;
+    }
+
+    /* Phase info card */
+    .phase-info-card {
+      background: white;
+      border: 1px solid #E2E8F0;
+      border-radius: 10px;
+      padding: 20px 24px;
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+      margin-bottom: 32px;
+    }
+    .pi-item { display: flex; flex-direction: column; gap: 3px; }
+    .pi-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #94A3B8; }
+    .pi-value { font-family: var(--font); font-size: 15px; font-weight: var(--fw-bold); color: #0F172A; }
+
+    /* Swatches */
+    .swatch-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+    .swatch-group { display: flex; flex-direction: column; gap: 6px; margin-right: 20px; }
+    .swatch-group-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #94A3B8; }
+    .swatches { display: flex; gap: 8px; }
+    .swatch { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .swatch-dot { width: 48px; height: 48px; border-radius: 8px; border: 1px solid rgba(0,0,0,.08); }
+    .swatch-txt { font-size: 10px; color: #64748B; text-align: center; line-height: 1.3; }
+
+    /* Type scale */
+    .type-scale { display: flex; flex-direction: column; gap: 20px; }
+    .type-row { display: flex; align-items: baseline; gap: 24px; }
+    .type-meta { font-size: 10px; color: #94A3B8; width: 110px; flex-shrink: 0; line-height: 1.4; font-family: 'Inter'; }
+    .type-sample { font-family: var(--font); color: #1E293B; }
+
+    /* ============================================================
+       APOSTILA COMPONENTS — variáveis aplicadas
+    ============================================================ */
+
+    /* ---- page_header ---- */
+    .pg-header {
+      border: var(--bw) solid var(--subject-primary);
+      border-radius: var(--radius-xl);
+      padding: var(--pad);
+      background: var(--subject-light);
+      box-shadow: var(--shadow);
+    }
+    .pg-header-top {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+    }
+    .pg-header-icon {
+      font-size: 22px;
+      width: 40px; height: 40px;
+      background: var(--subject-primary);
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    [data-phase="1"] .pg-header-icon { font-size: 26px; width: 48px; height: 48px; }
+    [data-phase="2"] .pg-header-icon { font-size: 24px; width: 44px; height: 44px; }
+    .pg-header-title {
+      font-family: var(--font); font-size: var(--fs-title);
+      font-weight: var(--fw-bold); color: var(--subject-dark); line-height: 1.15;
+    }
+    .pg-header-meta {
+      font-family: var(--font); font-size: var(--fs-meta);
+      color: var(--subject-primary); font-weight: 600; margin-top: 3px;
+    }
+    .pg-header-fields {
+      display: flex; gap: 20px;
+      border-top: 1.5px dashed var(--subject-primary);
+      padding-top: 10px; margin-top: 8px;
+    }
+    .hf { display: flex; align-items: center; gap: 6px; flex: 1; }
+    .hf-label { font-family: var(--font); font-size: var(--fs-meta); font-weight: 600; color: var(--subject-dark); white-space: nowrap; }
+    .hf-line { flex: 1; border-bottom: 1.5px solid var(--subject-primary); height: 14px; }
+
+    .pg-header.compact {
+      padding: 10px var(--pad);
+      margin-bottom: -10px; /* pull content up slightly */
+    }
+    .pg-header.compact .pg-header-icon { display: none; }
+    .pg-header.compact .pg-header-top { margin-bottom: 0; gap: 8px; }
+
+    /* ---- page_footer ---- */
+    .pg-footer {
+      border-top: 1.5px solid var(--subject-primary);
+      padding: 12px var(--pad) 0;
+      display: flex; justify-content: space-between; align-items: center;
+      background: transparent;
+    }
+    .pg-footer-skill { font-family: var(--font); font-size: var(--fs-sm); color: var(--subject-dark); font-weight: 600; }
+    .pg-footer-page { font-family: var(--font); font-size: var(--fs-sm); color: var(--subject-primary); font-weight: 700; }
+
+    /* ---- activity_intro ---- */
+    .act-intro {
+      border: var(--bw) solid #CBD5E1;
+      border-radius: var(--radius-lg);
+      padding: var(--pad);
+      background: #F8FAFC;
+      box-shadow: var(--shadow-sm);
+    }
+    .act-intro-instruction {
+      font-family: var(--font); font-size: var(--fs-sm);
+      font-style: italic; color: #64748B;
+      margin-bottom: 8px; font-weight: var(--fw);
+    }
+    .act-intro-body {
+      font-family: var(--font); font-size: var(--fs-body);
+      color: #1E293B; line-height: var(--lh); font-weight: var(--fw);
+    }
+    .act-intro-source {
+      font-family: var(--font); font-size: var(--fs-sm);
+      color: #94A3B8; margin-top: 8px; font-style: italic; font-weight: var(--fw);
+    }
+
+    /* ---- box base (concept, tip, vocab) ---- */
+    .box {
+      border-radius: var(--radius-lg);
+      padding: var(--pad);
+      box-shadow: var(--shadow-sm);
+    }
+    .box-concept { border: var(--bw) solid var(--subject-primary); background: var(--subject-light); }
+    .box-tip     { border: var(--bw) solid #F59E0B; background: #FFFBEB; }
+    .box-vocab   { border: var(--bw) solid #8B5CF6; background: #F5F3FF; }
+
+    .box-hd { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; }
+    .box-icon { font-size: 15px; }
+    .box-title {
+      font-family: var(--font); font-size: var(--fs-sm);
+      font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: .06em;
+    }
+    .box-concept .box-title { color: var(--subject-dark); }
+    .box-tip .box-title { color: #92400E; }
+    .box-vocab .box-title { color: #4C1D95; }
+
+    .box-divider { height: 1.5px; border-radius: 100px; opacity: .25; margin-bottom: 10px; }
+    .box-concept .box-divider { background: var(--subject-primary); }
+    .box-tip .box-divider { background: #F59E0B; }
+    .box-vocab .box-divider { background: #8B5CF6; }
+
+    .box-term {
+      font-family: var(--font); font-size: var(--fs-body);
+      font-weight: var(--fw-bold); margin-bottom: 5px;
+    }
+    .box-concept .box-term { color: var(--subject-dark); }
+    .box-def {
+      font-family: var(--font); font-size: var(--fs-body);
+      color: #374151; line-height: var(--lh); font-weight: var(--fw);
+    }
+
+    .vocab-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .vocab-item { display: flex; gap: 7px; align-items: baseline; }
+    .vocab-term { font-family: var(--font); font-size: var(--fs-body); font-weight: var(--fw-bold); color: #4C1D95; white-space: nowrap; }
+    .vocab-sep { color: #8B5CF6; flex-shrink: 0; }
+    .vocab-def { font-family: var(--font); font-size: var(--fs-body); color: #374151; line-height: var(--lh); font-weight: var(--fw); }
+
+    /* ---- question base ---- */
+    .question {
+      border: var(--bw) solid #CBD5E1;
+      border-radius: var(--radius-lg);
+      padding: var(--pad);
+      background: white;
+      box-shadow: var(--shadow-sm);
+    }
+    /* Fase 1: decoração lúdica */
+    [data-phase="1"] .question {
+      border-color: var(--subject-primary);
+      position: relative;
+      overflow: hidden;
+    }
+    [data-phase="1"] .question::after {
+      content: '';
+      position: absolute;
+      top: -20px; right: -20px;
+      width: 80px; height: 80px;
+      background: var(--subject-light);
+      border-radius: 50%;
+      z-index: 0;
+    }
+    [data-phase="2"] .question { border-color: #94A3B8; }
+
+    .q-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; position: relative; z-index: 1; }
+    .q-number {
+      font-family: var(--font); font-size: var(--fs-question);
+      font-weight: var(--fw-bold); color: var(--subject-primary);
+      line-height: 1; flex-shrink: 0; min-width: 36px;
+    }
+    .q-prompt {
+      font-family: var(--font); font-size: var(--fs-body);
+      color: #1E293B; line-height: var(--lh); font-weight: var(--fw);
+      position: relative; z-index: 1;
+    }
+    .q-instruction {
+      font-family: var(--font); font-size: var(--fs-sm);
+      color: #64748B; font-style: italic;
+      margin-bottom: 10px; font-weight: var(--fw);
+      position: relative; z-index: 1;
+    }
+
+    /* multiple choice */
+    .mc-opts { display: flex; flex-direction: column; gap: 7px; position: relative; z-index: 1; }
+    .mc-opt {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 12px;
+      border: var(--bw) solid #E2E8F0;
+      border-radius: var(--radius-sm);
+      cursor: default;
+      transition: border-color .15s;
+    }
+    [data-phase="1"] .mc-opt { padding: 10px 14px; }
+    .mc-letter { font-family: var(--font); font-size: var(--fs-body); font-weight: var(--fw-bold); color: var(--subject-primary); flex-shrink: 0; width: 22px; }
+    .mc-text { font-family: var(--font); font-size: var(--fs-body); color: #374151; font-weight: var(--fw); }
+
+    /* open */
+    .answer-lines { display: flex; flex-direction: column; margin-top: 12px; }
+    .answer-line { border-bottom: 1.5px solid #CBD5E1; height: var(--answer-lh); }
+    [data-phase="1"] .answer-line { border-bottom-width: 2px; border-bottom-color: var(--subject-primary); opacity: .5; }
+
+    /* true/false */
+    .tf-list { display: flex; flex-direction: column; gap: 6px; }
+    .tf-item { display: flex; align-items: center; gap: 12px; padding: 7px 0; border-bottom: 1px dashed #E2E8F0; }
+    .tf-item:last-child { border-bottom: none; }
+    .tf-bubble {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: var(--bw) solid #CBD5E1;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font); font-size: var(--fs-sm); font-weight: var(--fw-bold); color: #94A3B8;
+      flex-shrink: 0;
+    }
+    [data-phase="1"] .tf-bubble { width: 36px; height: 36px; font-size: 14px; }
+    .tf-text { font-family: var(--font); font-size: var(--fs-body); color: #374151; line-height: var(--lh); font-weight: var(--fw); }
+
+    /* fill blank */
+    .fb-bank { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+    .fb-word {
+      padding: 4px 10px;
+      background: var(--subject-light); border: var(--bw) solid var(--subject-primary);
+      border-radius: var(--radius-sm);
+      font-family: var(--font); font-size: var(--fs-sm); font-weight: var(--fw-bold); color: var(--subject-dark);
+    }
+    .fb-sent { font-family: var(--font); font-size: var(--fs-body); color: #1E293B; line-height: calc(var(--lh) * 1.6); font-weight: var(--fw); }
+    .fb-blank { display: inline-block; border-bottom: 2px solid var(--subject-primary); width: 90px; vertical-align: bottom; margin: 0 3px; }
+
+    /* match columns */
+    .match-grid { display: grid; grid-template-columns: 1fr 36px 1fr; gap: 8px; align-items: center; }
+    .match-col { display: flex; flex-direction: column; gap: 8px; }
+    .match-dots-col { display: flex; flex-direction: column; gap: 8px; align-items: center; }
+    .match-item-wrap { display: flex; align-items: center; gap: 7px; }
+    .match-ltr { font-family: var(--font); font-size: var(--fs-body); font-weight: var(--fw-bold); color: var(--subject-primary); width: 20px; flex-shrink: 0; }
+    .match-pill {
+      font-family: var(--font); font-size: var(--fs-body); color: #374151;
+      padding: 6px 10px;
+      background: #F8FAFC; border: 1px solid #E2E8F0;
+      border-radius: var(--radius-sm); font-weight: var(--fw);
+    }
+    .match-circle { width: 26px; height: 26px; border-radius: 50%; border: var(--bw) solid #CBD5E1; }
+
+    /* ordering */
+    .order-list { display: flex; flex-direction: column; gap: 8px; }
+    .order-item { display: flex; align-items: center; gap: 10px; }
+    .order-bubble { width: 30px; height: 30px; border-radius: 50%; border: var(--bw) solid #CBD5E1; flex-shrink: 0; }
+    [data-phase="1"] .order-bubble { width: 38px; height: 38px; }
+    .order-text { font-family: var(--font); font-size: var(--fs-body); color: #374151; font-weight: var(--fw); }
+
+    /* calculation */
+    .calc-expr {
+      font-family: var(--font); font-size: 18px; font-weight: var(--fw-bold);
+      color: var(--subject-dark);
+      padding: 10px 16px;
+      background: var(--subject-light); border: var(--bw) solid var(--subject-primary);
+      border-radius: var(--radius-md);
+      display: inline-block; margin-bottom: 12px;
+    }
+    .calc-dev-label { font-family: var(--font); font-size: var(--fs-sm); font-weight: 600; color: #64748B; margin-bottom: 4px; }
+    .calc-dev-area { border: var(--bw) solid #E2E8F0; border-radius: var(--radius-sm); height: 90px; background: #FAFAFA; margin-bottom: 10px; }
+    .calc-ans { display: flex; align-items: center; gap: 8px; }
+    .calc-ans-label { font-family: var(--font); font-size: var(--fs-body); font-weight: var(--fw-bold); color: var(--subject-dark); white-space: nowrap; }
+    .calc-ans-line { flex: 1; border-bottom: 2px solid var(--subject-primary); height: 20px; }
+
+    /* divider_section */
+    .section-divider { display: flex; align-items: center; gap: 12px; margin: 4px 0; }
+    .divider-line { flex: 1; height: 1.5px; background: var(--subject-primary); border-radius: 100px; opacity: .35; }
+    .divider-label {
+      font-family: var(--font); font-size: var(--fs-sm); font-weight: var(--fw-bold);
+      text-transform: uppercase; letter-spacing: .07em; color: var(--subject-primary); white-space: nowrap;
+    }
+
+    /* timeline */
+    .tl-track { display: flex; align-items: center; }
+    .tl-event { display: flex; flex-direction: column; align-items: center; flex: 1; }
+    .tl-dot {
+      width: 14px; height: 14px; border-radius: 50%;
+      background: var(--subject-primary);
+      border: 3px solid white;
+      outline: 2px solid var(--subject-primary);
+      z-index: 1;
+    }
+    [data-phase="1"] .tl-dot { width: 18px; height: 18px; }
+    .tl-conn { flex: 1; height: 2px; background: var(--subject-primary); opacity: .35; }
+    .tl-labels { display: flex; margin-top: 10px; }
+    .tl-label { flex: 1; text-align: center; padding: 0 4px; }
+    .tl-date { font-family: var(--font); font-size: var(--fs-sm); font-weight: var(--fw-bold); color: var(--subject-dark); }
+    .tl-text { font-family: var(--font); font-size: var(--fs-sm); color: #64748B; font-weight: var(--fw); margin-top: 2px; line-height: 1.3; }
+
+    /* data_table */
+    .data-table { width: 100%; border-collapse: collapse; font-family: var(--font); font-size: var(--fs-body); }
+    .data-table th {
+      background: var(--subject-primary); color: white;
+      padding: 8px 12px; text-align: left;
+      font-weight: var(--fw-bold); font-size: var(--fs-sm);
+    }
+    .data-table th:first-child { border-radius: var(--radius-sm) 0 0 0; }
+    .data-table th:last-child { border-radius: 0 var(--radius-sm) 0 0; }
+    .data-table td { padding: 8px 12px; border-bottom: 1px solid #E2E8F0; color: #374151; font-weight: var(--fw); }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:nth-child(even) td { background: var(--subject-light); }
+
+    /* image_placeholder */
+    .img-placeholder {
+      border: var(--bw) dashed #94A3B8;
+      border-radius: var(--radius-lg);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 36px; background: #F8FAFC; text-align: center; gap: 8px;
+    }
+    .img-ph-icon { font-size: 40px; opacity: .3; }
+    .img-ph-caption { font-family: var(--font); font-size: var(--fs-body); font-weight: var(--fw-bold); color: #64748B; }
+    .img-ph-desc { font-family: var(--font); font-size: var(--fs-sm); color: #94A3B8; font-weight: var(--fw); }
+
+    /* challenge_box */
+    .challenge {
+      border: var(--bw) solid #F59E0B;
+      border-radius: var(--radius-lg);
+      padding: var(--pad);
+      background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+      box-shadow: var(--shadow);
+    }
+
+    /* ---- reading_box (LP: textos longos para interpretação) ---- */
+    .reading-box {
+      border-left: 4px solid var(--subject-primary);
+      border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+      padding: var(--pad);
+      background: #FAFAFA;
+      box-shadow: var(--shadow-sm);
+    }
+    [data-phase="1"] .reading-box,
+    [data-phase="2"] .reading-box {
+      border-left-width: 6px;
+      border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+    }
+    .reading-box-tag {
+      display: inline-block;
+      font-family: var(--font); font-size: var(--fs-sm); font-weight: var(--fw-bold);
+      text-transform: uppercase; letter-spacing: .06em;
+      color: var(--subject-primary);
+      margin-bottom: 8px;
+    }
+    .reading-box-title {
+      font-family: var(--font); font-size: var(--fs-body); font-weight: var(--fw-bold);
+      color: #0F172A; margin-bottom: 8px; line-height: 1.3;
+    }
+    .reading-box-body {
+      font-family: var(--font); font-size: var(--fs-body);
+      color: #374151; line-height: var(--lh); font-weight: var(--fw);
+    }
+    .reading-box-source {
+      font-family: var(--font); font-size: var(--fs-sm);
+      color: #94A3B8; font-style: italic; margin-top: 10px; font-weight: var(--fw);
+    }
+
+    /* ---- dialogue_box (LP: textos dialogados/HQ) ---- */
+    .dialogue-box {
+      border: var(--bw) solid var(--subject-primary);
+      border-radius: var(--radius-lg);
+      padding: var(--pad);
+      background: white;
+      box-shadow: var(--shadow-sm);
+    }
+    .dialogue-list { display: flex; flex-direction: column; gap: 10px; }
+    .dialogue-line { display: flex; align-items: flex-start; gap: 10px; }
+    .dialogue-line.right { flex-direction: row-reverse; }
+    .dialogue-speaker {
+      font-family: var(--font); font-size: var(--fs-sm); font-weight: var(--fw-bold);
+      color: var(--subject-primary); white-space: nowrap; padding-top: 2px;
+    }
+    .dialogue-bubble {
+      background: var(--subject-light);
+      border: var(--bw) solid var(--subject-primary);
+      border-radius: var(--radius-lg);
+      padding: 8px 12px;
+      font-family: var(--font); font-size: var(--fs-body); color: #374151;
+      line-height: var(--lh); font-weight: var(--fw);
+      max-width: 80%;
+    }
+    .dialogue-line.right .dialogue-bubble {
+      background: #F1F5F9; border-color: #CBD5E1;
+    }
+
+    /* ---- graph_placeholder ---- */
+    .graph-placeholder {
+      border: var(--bw) dashed #94A3B8;
+      border-radius: var(--radius-lg);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 28px; background: #F8FAFC; text-align: center; gap: 8px;
+    }
+    .graph-ph-icon { font-size: 36px; opacity: .3; }
+    .graph-ph-caption { font-family: var(--font); font-size: var(--fs-body); font-weight: var(--fw-bold); color: #64748B; }
+    .graph-ph-desc { font-family: var(--font); font-size: var(--fs-sm); color: #94A3B8; font-weight: var(--fw); }
+    /* Eixos decorativos */
+    .graph-axes {
+      width: 80%; height: 80px;
+      position: relative;
+      border-left: 2px solid #CBD5E1;
+      border-bottom: 2px solid #CBD5E1;
+      margin: 8px auto;
+    }
+    .graph-axes::after {
+      content: '';
+      position: absolute; bottom: -1px; right: -1px;
+      width: 100%; height: 2px;
+      background: linear-gradient(to right, var(--subject-primary) 20%, transparent 20%, transparent 40%, var(--subject-primary) 40%, var(--subject-primary) 60%, transparent 60%, transparent 80%, var(--subject-primary) 80%);
+      border-radius: 1px;
+    }
+
+    /* ---- drawing_area (Arte, fases 1-2) ---- */
+    .drawing-area {
+      border: var(--bw) dashed var(--subject-primary);
+      border-radius: var(--radius-lg);
+      min-height: 120px;
+      background: white;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 6px;
+    }
+    [data-phase="1"] .drawing-area { min-height: 160px; }
+    [data-phase="2"] .drawing-area { min-height: 140px; }
+    .drawing-area-label {
+      font-family: var(--font); font-size: var(--fs-sm); color: var(--subject-primary);
+      font-weight: var(--fw-bold); opacity: .5;
+    }
+    .drawing-area-icon { font-size: 28px; opacity: .25; }
+
+    /* ---- prose (texto narrativo puro) ---- */
+    .prose {
+      font-family: var(--font); font-size: var(--fs-body);
+      color: #374151; line-height: var(--lh); font-weight: var(--fw);
+    }
+    .prose p { margin-bottom: 12px; }
+    .prose p:last-child { margin-bottom: 0; }
+
+    /* ---- call-out boxes (pedagogical highlights) ---- */
+    .callout {
+      border-left: 4px solid;
+      padding: var(--pad);
+      border-radius: var(--radius-lg);
+      background: var(--subject-light);
+      margin: var(--gap) 0;
+    }
+    .callout-icon { font-size: 24px; margin-bottom: 6px; }
+    .callout-title {
+      font-family: var(--font); font-size: var(--fs-body);
+      font-weight: var(--fw-bold); color: var(--subject-primary);
+      margin-bottom: 6px;
+    }
+    .callout-body {
+      font-family: var(--font); font-size: var(--fs-body);
+      color: #374151; line-height: var(--lh); font-weight: var(--fw);
+    }
+
+    /* Specific callout colors */
+    .callout-think {
+      border-left-color: #8B5CF6;
+      background: #F5F3FF;
+    }
+    .callout-think .callout-title { color: #7C3AED; }
+
+    .callout-didyouknow {
+      border-left-color: #F59E0B;
+      background: #FEF3C7;
+    }
+    .callout-didyouknow .callout-title { color: #92400E; }
+
+    .callout-attention {
+      border-left-color: #EF4444;
+      background: #FEE2E2;
+    }
+    .callout-attention .callout-title { color: #991B1B; }
+
+    .callout-tip {
+      border-left-color: #10B981;
+      background: #ECFDF5;
+    }
+    .callout-tip .callout-title { color: #065F46; }
+
+    .callout-quick {
+      border-left-color: #F59E0B;
+      background: #FFFBEB;
+    }
+    .callout-quick .callout-title { color: #92400E; }
+
+    .callout-pause {
+      border-left-color: #06B6D4;
+      background: #ECFDFD;
+    }
+    .callout-pause .callout-title { color: #0C4A6E; }
+
+    /* ---- story_block (narrativa para F1/F2) ---- */
+    .story-block {
+      border: var(--bw) solid var(--subject-primary);
+      border-radius: var(--radius-lg);
+      padding: var(--pad);
+      background: var(--subject-light);
+      box-shadow: var(--shadow-sm);
+    }
+    .story-block-emoji { font-size: 32px; margin-bottom: 8px; }
+    .story-block-title {
+      font-family: var(--font); font-size: var(--fs-title); font-weight: var(--fw-bold);
+      color: #1E293B; margin-bottom: 12px;
+    }
+    .story-block-body {
+      font-family: var(--font); font-size: var(--fs-body);
+      color: #374151; line-height: var(--lh); font-weight: var(--fw);
+      margin-bottom: 12px;
+    }
+    .story-block-image {
+      width: 100%; height: 100px; background: #E2E8F0;
+      border: var(--bw) dashed var(--subject-primary);
+      border-radius: var(--radius-md); margin: 12px 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; opacity: .3;
+    }
+    .story-block-learning {
+      font-family: var(--font); font-size: var(--fs-sm);
+      color: var(--subject-primary); font-weight: var(--fw-bold);
+      border-top: var(--bw) solid var(--subject-primary); padding-top: 8px;
+    }
+
+    /* ---- connection_web (rede de conceitos) ---- */
+    .connection-web {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 24px;
+    }
+    .web-center {
+      width: 100px; height: 100px;
+      background: var(--subject-primary); color: white;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font); font-weight: var(--fw-bold);
+      text-align: center; font-size: var(--fs-body);
+      box-shadow: var(--shadow);
+    }
+    .web-connections {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 20px; width: 100%;
+    }
+    .web-connection {
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+    .web-connection-item {
+      width: 80px; height: 80px;
+      background: var(--subject-light);
+      border: var(--bw) solid var(--subject-primary);
+      border-radius: var(--radius-lg);
+      display: flex; align-items: center; justify-content: center;
+      text-align: center;
+      font-family: var(--font); font-size: var(--fs-sm);
+      color: #374151; font-weight: var(--fw);
+      padding: 8px;
+    }
+    .web-connection-label {
+      font-family: var(--font); font-size: var(--fs-sm);
+      color: #64748B; font-weight: var(--fw-bold);
+      text-align: center;
+    }
+
+    /* ============================================================
+       A4 PAGE PREVIEW
+    ============================================================ */
+    .a4-wrap {
+      background: #475569;
+      border-radius: 12px;
+      padding: 40px;
+    }
+    .a4-page {
+      width: 794px;
+      min-height: 1122px;
+      background: white;
+      margin: 0 auto;
+      padding: 56px 56px 56px;
+      box-shadow: 0 12px 48px rgba(0,0,0,.35);
+      display: flex;
+      flex-direction: column;
+      gap: var(--gap);
+    }
+    .a4-spacer { flex: 1; }
+
+    /* ============================================================
+       GRID HELPERS
+    ============================================================ */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--gap); }
+
+    /* ============================================================
+       PHASE 1 — DECORAÇÕES LÚDICAS + BORDER STYLES
+    ============================================================ */
+    [data-phase="1"] .box, [data-phase="1"] .callout, [data-phase="1"] .story-block {
+      position: relative; overflow: visible;
+    }
+    [data-phase="1"] .box::before, [data-phase="1"] .callout::before, [data-phase="1"] .story-block::before {
+      content: '✦';
+      position: absolute;
+      top: 6px; right: 10px;
+      font-size: 28px;
+      opacity: .12;
+      color: currentColor;
+      z-index: 1;
+    }
+    [data-phase="1"] .a4-page {
+      background: white;
+      background-image: radial-gradient(circle, #E2E8F0 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    /* ---- Frame Styles: Standard ---- */
+
+    .frame {
+      position: relative;
+      background: #fff;
+      color: #111;
+      box-sizing: border-box;
+      border: 2px solid #222;
+      border-radius: 12px;
+      padding: 16px 18px;
+    }
+
+    /* ============================================================
+       SCROLL ACTIVE NAV
+    ============================================================ */
+    .nav-link.is-active {
+      background: var(--subject-light, #EFF6FF);
+      color: var(--subject-primary, #2563EB);
+      border-left-color: var(--subject-primary, #2563EB);
+      font-weight: 600;
+    }
+
+  </style>
+</head>
+
+<body data-phase="3" data-subject="sci">
+
+  <!-- ========================================================
+       TOP BAR
+  ======================================================== -->
+  <header class="topbar">
+    <span class="topbar-logo">Kader<span>nim</span></span>
+    <div class="topbar-sep"></div>
+
+    <div class="ctrl-group">
+      <span class="ctrl-label">Fase</span>
+      <div class="phase-btns" id="phase-btns">
+        <button class="phase-btn" data-p="1">1º–2º</button>
+        <button class="phase-btn" data-p="2">3º–4º</button>
+        <button class="phase-btn active" data-p="3">5º</button>
+        <button class="phase-btn" data-p="4">6º–7º</button>
+        <button class="phase-btn" data-p="5">8º–9º</button>
+      </div>
+    </div>
+
+    <div class="topbar-sep"></div>
+
+    <div class="ctrl-group">
+      <span class="ctrl-label">Disciplina</span>
+      <div class="subject-btns" id="subject-btns">
+        <button class="subject-btn" data-s="sci"  style="background:#059669;color:white">🔬 Ciências</button>
+        <button class="subject-btn" data-s="math" style="border:1.5px solid #2563EB;color:#2563EB;background:transparent">📐 Matemática</button>
+        <button class="subject-btn" data-s="pt"   style="border:1.5px solid #7C3AED;color:#7C3AED;background:transparent">📚 L. Portuguesa</button>
+        <button class="subject-btn" data-s="hist" style="border:1.5px solid #D97706;color:#D97706;background:transparent">🏛️ História</button>
+        <button class="subject-btn" data-s="geo"  style="border:1.5px solid #0891B2;color:#0891B2;background:transparent">🌍 Geografia</button>
+        <button class="subject-btn" data-s="art"  style="border:1.5px solid #DB2777;color:#DB2777;background:transparent">🎨 Arte</button>
+        <button class="subject-btn" data-s="ef"   style="border:1.5px solid #16A34A;color:#16A34A;background:transparent">⚽ Ed. Física</button>
+        <button class="subject-btn" data-s="ing"  style="border:1.5px solid #0369A1;color:#0369A1;background:transparent">🌐 Inglês</button>
+        <button class="subject-btn" data-s="er"   style="border:1.5px solid #6366F1;color:#6366F1;background:transparent">🕊️ Ens. Religioso</button>
+      </div>
+    </div>
+
+  </header>
+
+  <!-- ========================================================
+       SIDEBAR
+  ======================================================== -->
+  <aside class="sidebar">
+    <nav>
+      <div class="nav-group">
+        <div class="nav-group-title">Fundação</div>
+        <a class="nav-link" href="#bncc">Estrutura BNCC</a>
+        <a class="nav-link" href="#overview">Visão geral da fase</a>
+        <a class="nav-link" href="#colors">Paleta de cores</a>
+        <a class="nav-link" href="#typography">Tipografia</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">Estrutura</div>
+        <a class="nav-link" href="#page-header">Cabeçalho</a>
+        <a class="nav-link" href="#page-footer">Rodapé</a>
+        <a class="nav-link" href="#divider">Divisor de seção</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">Introdução</div>
+        <a class="nav-link" href="#intro">Contextualização</a>
+        <a class="nav-link" href="#concept-box">Caixa de conceito</a>
+        <a class="nav-link" href="#tip-box">Caixa de dica</a>
+        <a class="nav-link" href="#vocab-box">Caixa de vocabulário</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">Questões</div>
+        <a class="nav-link" href="#q-mc">Múltipla escolha</a>
+        <a class="nav-link" href="#q-open">Questão aberta</a>
+        <a class="nav-link" href="#q-tf">Verdadeiro / Falso</a>
+        <a class="nav-link" href="#q-fill">Complete a lacuna</a>
+        <a class="nav-link" href="#q-match">Ligar colunas</a>
+        <a class="nav-link" href="#q-order">Ordenar</a>
+        <a class="nav-link" href="#q-calc">Cálculo</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">Conteúdo e Narrativa</div>
+        <a class="nav-link" href="#prose">Texto narrativo</a>
+        <a class="nav-link" href="#callout-think">Pense comigo</a>
+        <a class="nav-link" href="#callout-didyouknow">Você sabia?</a>
+        <a class="nav-link" href="#callout-attention">Atenção</a>
+        <a class="nav-link" href="#callout-tip">Dica do mestre</a>
+        <a class="nav-link" href="#callout-quick">Desafio rápido</a>
+        <a class="nav-link" href="#callout-pause">Pausa para conversa</a>
+        <a class="nav-link" href="#story-block">Bloco narrativo</a>
+        <a class="nav-link" href="#connection-web">Rede de conexões</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">Enriquecimento</div>
+        <a class="nav-link" href="#timeline">Linha do tempo</a>
+        <a class="nav-link" href="#data-table">Tabela de dados</a>
+        <a class="nav-link" href="#image-ph">Placeholder de imagem</a>
+        <a class="nav-link" href="#graph-ph">Placeholder de gráfico</a>
+        <a class="nav-link" href="#drawing-area">Área de desenho</a>
+        <a class="nav-link" href="#challenge">Caixa de desafio</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">Específicos LP</div>
+        <a class="nav-link" href="#reading-box">Texto para leitura</a>
+        <a class="nav-link" href="#dialogue-box">Texto dialogado</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">Estrutura</div>
+        <a class="nav-link" href="#frame-styles">Moldura padrão</a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">Preview</div>
+        <a class="nav-link" href="#a4-preview">Apostila completa A4</a>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- ========================================================
+       MAIN
+  ======================================================== -->
+  <main class="main" id="main-scroll">
+
+    <!-- ESTRUTURA BNCC -->
+    <section class="ds-section" id="bncc">
+      <h2 class="ds-section-title">Estrutura BNCC</h2>
+      <p class="ds-section-desc">A BNCC não usa "disciplina" como conceito central. Ela organiza por <strong>Área → Componente curricular → Habilidade</strong>. O código da habilidade carrega tudo — o sistema não precisa que o usuário informe a disciplina separadamente.</p>
+
+      <div style="background:white;border:1px solid #E2E8F0;border-radius:10px;padding:24px;margin-bottom:24px">
+        <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#94A3B8;margin-bottom:16px">Como o parser lê o código EF05CI04</p>
+        <div style="display:flex;align-items:center;gap:0;font-family:'Inter',monospace;font-size:22px;font-weight:700;margin-bottom:20px;flex-wrap:wrap;gap:4px">
+          <span style="background:#0F172A;color:#38BDF8;padding:8px 12px;border-radius:6px 0 0 6px">EF</span>
+          <span style="background:#1E40AF;color:#BFDBFE;padding:8px 12px">05</span>
+          <span style="background:#065F46;color:#A7F3D0;padding:8px 12px">CI</span>
+          <span style="background:#374151;color:#E5E7EB;padding:8px 12px;border-radius:0 6px 6px 0">04</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;font-size:12px">
+          <div style="border-top:3px solid #38BDF8;padding-top:8px"><span style="font-weight:700;color:#0F172A">EF</span><br><span style="color:#64748B">Ensino Fundamental</span></div>
+          <div style="border-top:3px solid #BFDBFE;padding-top:8px"><span style="font-weight:700;color:#1E40AF">05</span><br><span style="color:#64748B">5º ano</span></div>
+          <div style="border-top:3px solid #A7F3D0;padding-top:8px"><span style="font-weight:700;color:#065F46">CI</span><br><span style="color:#64748B">Ciências<br><em style="color:#94A3B8">Área: Ciências da Natureza</em></span></div>
+          <div style="border-top:3px solid #E5E7EB;padding-top:8px"><span style="font-weight:700;color:#374151">04</span><br><span style="color:#64748B">Habilidade nº 4</span></div>
+        </div>
+      </div>
+
+      <div style="background:white;border:1px solid #E2E8F0;border-radius:10px;padding:24px;margin-bottom:24px">
+        <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#94A3B8;margin-bottom:14px">Hierarquia completa — Ensino Fundamental</p>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr style="border-bottom:2px solid #E2E8F0">
+            <th style="text-align:left;padding:6px 10px;color:#64748B;font-weight:600">Área do conhecimento</th>
+            <th style="text-align:left;padding:6px 10px;color:#64748B;font-weight:600">Componente curricular</th>
+            <th style="text-align:left;padding:6px 10px;color:#64748B;font-weight:600">Sigla</th>
+            <th style="text-align:left;padding:6px 10px;color:#64748B;font-weight:600">Disponível</th>
+          </tr></thead>
+          <tbody>
+            <tr style="border-bottom:1px solid #F1F5F9"><td style="padding:7px 10px;font-weight:600;color:#7C3AED" rowspan="4">Linguagens</td><td style="padding:7px 10px">Língua Portuguesa</td><td style="padding:7px 10px;font-family:monospace;font-weight:700;color:#7C3AED">LP</td><td style="padding:7px 10px;color:#64748B">F1 e F2</td></tr>
+            <tr style="border-bottom:1px solid #F1F5F9"><td style="padding:7px 10px">Arte</td><td style="padding:7px 10px;font-family:monospace;font-weight:700;color:#DB2777">AR</td><td style="padding:7px 10px;color:#64748B">F1 e F2</td></tr>
+            <tr style="border-bottom:1px solid #F1F5F9"><td style="padding:7px 10px">Educação Física</td><td style="padding:7px 10px;font-family:monospace;font-weight:700;color:#16A34A">EF</td><td style="padding:7px 10px;color:#64748B">F1 e F2</td></tr>
+            <tr style="border-bottom:1px solid #F1F5F9"><td style="padding:7px 10px">Língua Inglesa</td><td style="padding:7px 10px;font-family:monospace;font-weight:700;color:#0369A1">LI</td><td style="padding:7px 10px;color:#64748B">F2 em diante</td></tr>
+            <tr style="border-bottom:1px solid #F1F5F9"><td style="padding:7px 10px;font-weight:600;color:#2563EB">Matemática</td><td style="padding:7px 10px">Matemática</td><td style="padding:7px 10px;font-family:monospace;font-weight:700;color:#2563EB">MA</td><td style="padding:7px 10px;color:#64748B">F1 e F2</td></tr>
+            <tr style="border-bottom:1px solid #F1F5F9"><td style="padding:7px 10px;font-weight:600;color:#059669">Ciências da Natureza</td><td style="padding:7px 10px">Ciências</td><td style="padding:7px 10px;font-family:monospace;font-weight:700;color:#059669">CI</td><td style="padding:7px 10px;color:#64748B">F1 e F2</td></tr>
+            <tr style="border-bottom:1px solid #F1F5F9"><td style="padding:7px 10px;font-weight:600;color:#D97706" rowspan="2">Ciências Humanas</td><td style="padding:7px 10px">História</td><td style="padding:7px 10px;font-family:monospace;font-weight:700;color:#D97706">HI</td><td style="padding:7px 10px;color:#64748B">F1 e F2</td></tr>
+            <tr style="border-bottom:1px solid #F1F5F9"><td style="padding:7px 10px">Geografia</td><td style="padding:7px 10px;font-family:monospace;font-family:monospace;font-weight:700;color:#0891B2">GE</td><td style="padding:7px 10px;color:#64748B">F1 e F2</td></tr>
+            <tr><td style="padding:7px 10px;font-weight:600;color:#6366F1">Ensino Religioso</td><td style="padding:7px 10px">Ensino Religioso</td><td style="padding:7px 10px;font-family:monospace;font-weight:700;color:#6366F1">ER</td><td style="padding:7px 10px;color:#64748B">F1 e F2 (opcional)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:20px 24px">
+        <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#94A3B8;margin-bottom:10px">Insight do produto</p>
+        <p style="font-size:13px;color:#374151;line-height:1.6">O usuário <strong>não precisa escolher disciplina</strong>. Ele digita o código da habilidade (ex: <code style="background:#E2E8F0;padding:2px 6px;border-radius:4px;font-size:12px">EF05CI04</code>) e o sistema extrai automaticamente: nível de ensino, ano, componente curricular, área e o tema visual do design system.</p>
+      </div>
+    </section>
+
+    <!-- OVERVIEW -->
+    <section class="ds-section" id="overview">
+      <h2 class="ds-section-title">Visão geral da fase</h2>
+      <p class="ds-section-desc">Alterne a fase no topo para ver como cada token visual muda. Fases 1–3 usam Nunito (arredondada, acolhedora); fases 4–5 usam Inter (precisa, contemporânea).</p>
+
+      <div class="phase-info-card">
+        <div class="pi-item"><span class="pi-label">Fonte</span><span class="pi-value" id="pi-font">Nunito</span></div>
+        <div class="pi-item"><span class="pi-label">Corpo</span><span class="pi-value" id="pi-size">14px</span></div>
+        <div class="pi-item"><span class="pi-label">Altura de linha</span><span class="pi-value" id="pi-lh">1.6×</span></div>
+        <div class="pi-item"><span class="pi-label">Border radius</span><span class="pi-value" id="pi-radius">12px</span></div>
+        <div class="pi-item"><span class="pi-label">Borda</span><span class="pi-value" id="pi-bw">2px</span></div>
+        <div class="pi-item"><span class="pi-label">Linha de resposta</span><span class="pi-value" id="pi-al">34px</span></div>
+        <div class="pi-item"><span class="pi-label">Peso normal</span><span class="pi-value" id="pi-fw">400</span></div>
+        <div class="pi-item"><span class="pi-label">Peso destaque</span><span class="pi-value" id="pi-fwb">700</span></div>
+      </div>
+
+      <div style="background:white;border:1px solid #E2E8F0;border-radius:10px;padding:20px 24px;">
+        <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#94A3B8;margin-bottom:14px">Personalidade por fase</p>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead>
+            <tr style="border-bottom:2px solid #E2E8F0">
+              <th style="text-align:left;padding:6px 10px;color:#64748B;font-weight:600">Fase</th>
+              <th style="text-align:left;padding:6px 10px;color:#64748B;font-weight:600">Anos</th>
+              <th style="text-align:left;padding:6px 10px;color:#64748B;font-weight:600">Estilo visual</th>
+              <th style="text-align:left;padding:6px 10px;color:#64748B;font-weight:600">Tom de linguagem</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid #F1F5F9">
+              <td style="padding:8px 10px;font-weight:700;color:#0F172A">1</td>
+              <td style="padding:8px 10px;color:#374151">1º–2º</td>
+              <td style="padding:8px 10px;color:#374151">Muito arredondado, cores primárias puras, sombra colorida sólida</td>
+              <td style="padding:8px 10px;color:#374151">Lúdico: "Ligue os pontinhos", "Pinte"</td>
+            </tr>
+            <tr style="border-bottom:1px solid #F1F5F9">
+              <td style="padding:8px 10px;font-weight:700;color:#0F172A">2</td>
+              <td style="padding:8px 10px;color:#374151">3º–4º</td>
+              <td style="padding:8px 10px;color:#374151">Arredondado, cores vivas harmonizadas, sombra semi-colorida</td>
+              <td style="padding:8px 10px;color:#374151">Encorajador: "Escreva", "Marque", "Escolha"</td>
+            </tr>
+            <tr style="border-bottom:1px solid #F1F5F9">
+              <td style="padding:8px 10px;font-weight:700;color:#0F172A">3</td>
+              <td style="padding:8px 10px;color:#374151">5º</td>
+              <td style="padding:8px 10px;color:#374151">Levemente arredondado, sombra soft, sem decorações</td>
+              <td style="padding:8px 10px;color:#374151">Direto: "Responda", "Classifique"</td>
+            </tr>
+            <tr style="border-bottom:1px solid #F1F5F9">
+              <td style="padding:8px 10px;font-weight:700;color:#0F172A">4</td>
+              <td style="padding:8px 10px;color:#374151">6º–7º</td>
+              <td style="padding:8px 10px;color:#374151">Cantos quase retos, sombra mínima, densidade maior</td>
+              <td style="padding:8px 10px;color:#374151">Analítico: "Analise", "Compare"</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 10px;font-weight:700;color:#0F172A">5</td>
+              <td style="padding:8px 10px;color:#374151">8º–9º</td>
+              <td style="padding:8px 10px;color:#374151">Editorial, sem decoração, tipografia é o design</td>
+              <td style="padding:8px 10px;color:#374151">Acadêmico: "Justifique", "Explique com fundamentação"</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- COLORS -->
+    <section class="ds-section" id="colors">
+      <h2 class="ds-section-title">Paleta de cores</h2>
+      <p class="ds-section-desc">Seis disciplinas com identidade cromática própria. Cada cor existe em três variações: primária (ação, bordas, números), light (fundos) e dark (texto de destaque).</p>
+
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <div style="display:flex;gap:40px;flex-wrap:wrap">
+          <div class="swatch-group">
+            <div class="swatch-group-title">Ciências</div>
+            <div class="swatches">
+              <div class="swatch"><div class="swatch-dot" style="background:#059669"></div><span class="swatch-txt">Primary<br>#059669</span></div>
+              <div class="swatch"><div class="swatch-dot" style="background:#D1FAE5"></div><span class="swatch-txt">Light<br>#D1FAE5</span></div>
+              <div class="swatch"><div class="swatch-dot" style="background:#065F46"></div><span class="swatch-txt">Dark<br>#065F46</span></div>
+            </div>
+          </div>
+          <div class="swatch-group">
+            <div class="swatch-group-title">Matemática</div>
+            <div class="swatches">
+              <div class="swatch"><div class="swatch-dot" style="background:#2563EB"></div><span class="swatch-txt">Primary<br>#2563EB</span></div>
+              <div class="swatch"><div class="swatch-dot" style="background:#DBEAFE"></div><span class="swatch-txt">Light<br>#DBEAFE</span></div>
+              <div class="swatch"><div class="swatch-dot" style="background:#1E40AF"></div><span class="swatch-txt">Dark<br>#1E40AF</span></div>
+            </div>
+          </div>
+          <div class="swatch-group">
+            <div class="swatch-group-title">Português</div>
+            <div class="swatches">
+              <div class="swatch"><div class="swatch-dot" style="background:#7C3AED"></div><span class="swatch-txt">Primary<br>#7C3AED</span></div>
+              <div class="swatch"><div class="swatch-dot" style="background:#EDE9FE"></div><span class="swatch-txt">Light<br>#EDE9FE</span></div>
+              <div class="swatch"><div class="swatch-dot" style="background:#5B21B6"></div><span class="swatch-txt">Dark<br>#5B21B6</span></div>
+            </div>
+          </div>
+          <div class="swatch-group">
+            <div class="swatch-group-title">História</div>
+            <div class="swatches">
+              <div class="swatch"><div class="swatch-dot" style="background:#D97706"></div><span class="swatch-txt">Primary<br>#D97706</span></div>
+              <div class="swatch"><div class="swatch-dot" style="background:#FEF3C7"></div><span class="swatch-txt">Light<br>#FEF3C7</span></div>
+              <div class="swatch"><div class="swatch-dot" style="background:#92400E"></div><span class="swatch-txt">Dark<br>#92400E</span></div>
+            </div>
+          </div>
+          <div class="swatch-group">
+            <div class="swatch-group-title">Geografia</div>
+            <div class="swatches">
+              <div class="swatch"><div class="swatch-dot" style="background:#0891B2"></div><span class="swatch-txt">Primary<br>#0891B2</span></div>
+              <div class="swatch"><div class="swatch-dot" style="background:#CFFAFE"></div><span class="swatch-txt">Light<br>#CFFAFE</span></div>
+              <div class="swatch"><div class="swatch-dot" style="background:#075985"></div><span class="swatch-txt">Dark<br>#075985</span></div>
+            </div>
+          </div>
+          <div class="swatch-group">
+            <div class="swatch-group-title">Artes</div>
+            <div class="swatches">
+              <div class="swatch"><div class="swatch-dot" style="background:#DB2777"></div><span class="swatch-txt">Primary<br>#DB2777</span></div>
+              <div class="swatch"><div class="swatch-dot" style="background:#FCE7F3"></div><span class="swatch-txt">Light<br>#FCE7F3</span></div>
+              <div class="swatch"><div class="swatch-dot" style="background:#9D174D"></div><span class="swatch-txt">Dark<br>#9D174D</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="swatch-group-title" style="margin-bottom:8px">Neutras compartilhadas</div>
+          <div class="swatches">
+            <div class="swatch"><div class="swatch-dot" style="background:#F59E0B"></div><span class="swatch-txt">Destaque<br>#F59E0B</span></div>
+            <div class="swatch"><div class="swatch-dot" style="background:#FEF3C7"></div><span class="swatch-txt">Destaque light<br>#FEF3C7</span></div>
+            <div class="swatch"><div class="swatch-dot" style="background:#8B5CF6"></div><span class="swatch-txt">Vocabulário<br>#8B5CF6</span></div>
+            <div class="swatch"><div class="swatch-dot" style="background:#F5F3FF"></div><span class="swatch-txt">Vocab light<br>#F5F3FF</span></div>
+            <div class="swatch"><div class="swatch-dot" style="background:#E2E8F0"></div><span class="swatch-txt">Borda neutra<br>#E2E8F0</span></div>
+            <div class="swatch"><div class="swatch-dot" style="background:#F8FAFC"></div><span class="swatch-txt">BG neutro<br>#F8FAFC</span></div>
+            <div class="swatch"><div class="swatch-dot" style="background:#1E293B"></div><span class="swatch-txt">Texto principal<br>#1E293B</span></div>
+            <div class="swatch"><div class="swatch-dot" style="background:#64748B"></div><span class="swatch-txt">Texto secundário<br>#64748B</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TYPOGRAPHY -->
+    <section class="ds-section" id="typography">
+      <h2 class="ds-section-title">Tipografia</h2>
+      <p class="ds-section-desc">A escala adapta tamanho, peso e entrelinha por fase. Alterne a fase para ver a transformação ao vivo.</p>
+
+      <div class="ds-render">
+        <div class="type-scale">
+          <div class="type-row">
+            <span class="type-meta">--fs-title<br>Título da atividade</span>
+            <span class="type-sample" style="font-size:var(--fs-title);font-weight:var(--fw-bold);line-height:1.15;color:#0F172A">Atividade de Ciências — 5º Ano</span>
+          </div>
+          <div class="type-row">
+            <span class="type-meta">--fs-question<br>Número da questão</span>
+            <span class="type-sample" style="font-size:var(--fs-question);font-weight:var(--fw-bold);color:var(--subject-primary)">01.</span>
+          </div>
+          <div class="type-row">
+            <span class="type-meta">--fs-body<br>Enunciado / corpo</span>
+            <span class="type-sample" style="font-size:var(--fs-body);font-weight:var(--fw);color:#374151;line-height:var(--lh)">Qual das alternativas descreve corretamente o processo de fotossíntese nas plantas verdes?</span>
+          </div>
+          <div class="type-row">
+            <span class="type-meta">--fs-sm<br>Instrução / legenda</span>
+            <span class="type-sample" style="font-size:var(--fs-sm);font-weight:var(--fw);color:#64748B;font-style:italic">Marque apenas uma alternativa.</span>
+          </div>
+          <div class="type-row">
+            <span class="type-meta">--fs-meta<br>Meta / BNCC</span>
+            <span class="type-sample" style="font-size:var(--fs-meta);font-weight:600;color:var(--subject-primary)">Ciências · 5º ano · EF05CI04</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE HEADER -->
+    <section class="ds-section" id="page-header">
+      <h2 class="ds-section-title">Cabeçalho da página</h2>
+      <p class="ds-section-desc">Obrigatório. Presente em todas as páginas. Usa a paleta da disciplina selecionada.</p>
+      <div class="ds-render">
+        <div class="pg-header">
+          <div class="pg-header-top">
+            <div class="pg-header-icon">🔬</div>
+            <div>
+              <div class="pg-header-title">A Fotossíntese e a Cadeia Alimentar</div>
+              <div class="pg-header-meta">Ciências · 5º ano · EF05CI04</div>
+            </div>
+          </div>
+          <div class="pg-header-fields">
+            <div class="hf"><span class="hf-label">Prof:</span><span class="hf-line"></span></div>
+            <div class="hf"><span class="hf-label">Aluno:</span><span class="hf-line"></span></div>
+            <div class="hf"><span class="hf-label">Turma:</span><span class="hf-line"></span></div>
+            <div class="hf"><span class="hf-label">Data:</span><span class="hf-line"></span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE FOOTER -->
+    <section class="ds-section" id="page-footer">
+      <h2 class="ds-section-title">Rodapé da página</h2>
+      <p class="ds-section-desc">Obrigatório. Informações pedagógicas e numeração.</p>
+      <div class="ds-render">
+        <div class="pg-footer">
+          <span class="pg-footer-skill">Habilidade BNCC: EF05CI04 · Competência: Ciências da Natureza</span>
+          <span class="pg-footer-page">Página 1 / 2</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- DIVIDER -->
+    <section class="ds-section" id="divider">
+      <h2 class="ds-section-title">Divisor de seção</h2>
+      <p class="ds-section-desc">Separa blocos temáticos dentro da mesma página. Ocupa 1 linha no grid.</p>
+      <div class="ds-render">
+        <div class="section-divider">
+          <div class="divider-line"></div>
+          <span class="divider-label">Parte 2 · Cadeia Alimentar</span>
+          <div class="divider-line"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTRO -->
+    <section class="ds-section" id="intro">
+      <h2 class="ds-section-title">Contextualização</h2>
+      <p class="ds-section-desc">Texto introdutório que contextualiza as questões. Pode conter texto, imagem ou ambos.</p>
+      <div class="ds-render">
+        <div class="act-intro">
+          <p class="act-intro-instruction">Leia o texto abaixo e responda às questões:</p>
+          <p class="act-intro-body">As plantas são organismos que produzem seu próprio alimento por meio de um processo chamado fotossíntese. Nesse processo, a planta utiliza a luz solar, água e gás carbônico para produzir glicose e liberar oxigênio no ambiente. A clorofila, pigmento presente nas folhas, é responsável por captar a energia da luz.</p>
+          <p class="act-intro-source">Fonte: Livro didático de Ciências, 5º ano.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONCEPT BOX -->
+    <section class="ds-section" id="concept-box">
+      <h2 class="ds-section-title">Caixa de conceito</h2>
+      <p class="ds-section-desc">Destaca um conceito-chave. Usa a paleta da disciplina.</p>
+      <div class="ds-render">
+        <div class="box box-concept">
+          <div class="box-hd"><span class="box-icon">💡</span><span class="box-title">Conceito</span></div>
+          <div class="box-divider"></div>
+          <p class="box-term">Fotossíntese</p>
+          <p class="box-def">Processo pelo qual as plantas transformam energia luminosa em energia química, produzindo glicose a partir de CO₂ e H₂O.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TIP BOX -->
+    <section class="ds-section" id="tip-box">
+      <h2 class="ds-section-title">Caixa de dica</h2>
+      <p class="ds-section-desc">Orientação metodológica. Sempre âmbar, independente da disciplina.</p>
+      <div class="ds-render">
+        <div class="box box-tip">
+          <div class="box-hd"><span class="box-icon">📌</span><span class="box-title">Dica</span></div>
+          <div class="box-divider"></div>
+          <p class="box-def">Pense nas partes da planta: qual delas recebe mais luz solar? Isso vai te ajudar a responder as próximas questões.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- VOCAB BOX -->
+    <section class="ds-section" id="vocab-box">
+      <h2 class="ds-section-title">Caixa de vocabulário</h2>
+      <p class="ds-section-desc">Lista de termos com definições curtas. Sempre violeta, independente da disciplina.</p>
+      <div class="ds-render">
+        <div class="box box-vocab">
+          <div class="box-hd"><span class="box-icon">📖</span><span class="box-title">Vocabulário</span></div>
+          <div class="box-divider"></div>
+          <ul class="vocab-list">
+            <li class="vocab-item"><span class="vocab-term">Fotossíntese</span><span class="vocab-sep">–</span><span class="vocab-def">processo de produção de alimento pelas plantas usando luz solar</span></li>
+            <li class="vocab-item"><span class="vocab-term">Clorofila</span><span class="vocab-sep">–</span><span class="vocab-def">pigmento verde presente nas folhas que capta energia luminosa</span></li>
+            <li class="vocab-item"><span class="vocab-term">Estômato</span><span class="vocab-sep">–</span><span class="vocab-def">pequena abertura nas folhas por onde entram gases</span></li>
+            <li class="vocab-item"><span class="vocab-term">Glicose</span><span class="vocab-sep">–</span><span class="vocab-def">açúcar produzido pela planta durante a fotossíntese</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Q: MC -->
+    <section class="ds-section" id="q-mc">
+      <h2 class="ds-section-title">Questão — Múltipla escolha</h2>
+      <p class="ds-section-desc">A mais comum em avaliações. Alternativas A/B/C/D (ou E). O número da questão usa a cor primária da disciplina.</p>
+      <div class="ds-render">
+        <div class="question">
+          <div class="q-header">
+            <span class="q-number">01.</span>
+            <p class="q-prompt">Qual das alternativas descreve corretamente o processo de fotossíntese?</p>
+          </div>
+          <p class="q-instruction">Marque apenas uma alternativa.</p>
+          <div class="mc-opts">
+            <div class="mc-opt"><span class="mc-letter">(A)</span><span class="mc-text">As plantas absorvem luz solar para aquecer suas raízes.</span></div>
+            <div class="mc-opt"><span class="mc-letter">(B)</span><span class="mc-text">As plantas transformam luz solar, água e CO₂ em glicose e oxigênio.</span></div>
+            <div class="mc-opt"><span class="mc-letter">(C)</span><span class="mc-text">As plantas se alimentam de minerais do solo diretamente.</span></div>
+            <div class="mc-opt"><span class="mc-letter">(D)</span><span class="mc-text">As plantas produzem gás carbônico durante o dia.</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Q: OPEN -->
+    <section class="ds-section" id="q-open">
+      <h2 class="ds-section-title">Questão — Aberta / Dissertativa</h2>
+      <p class="ds-section-desc">Linhas de resposta com altura calibrada por fase — maiores nas séries iniciais para acomodar escrita em formação.</p>
+      <div class="ds-render">
+        <div class="question">
+          <div class="q-header">
+            <span class="q-number">02.</span>
+            <p class="q-prompt">Explique com suas palavras por que as plantas precisam da luz solar para sobreviver.</p>
+          </div>
+          <div class="answer-lines">
+            <div class="answer-line"></div>
+            <div class="answer-line"></div>
+            <div class="answer-line"></div>
+            <div class="answer-line"></div>
+            <div class="answer-line"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Q: TF -->
+    <section class="ds-section" id="q-tf">
+      <h2 class="ds-section-title">Questão — Verdadeiro ou Falso</h2>
+      <p class="ds-section-desc">Afirmativas com bolha circular para marcar V ou F.</p>
+      <div class="ds-render">
+        <div class="question">
+          <div class="q-header">
+            <span class="q-number">03.</span>
+            <p class="q-prompt">Marque V (verdadeiro) ou F (falso) para cada afirmativa:</p>
+          </div>
+          <div class="tf-list">
+            <div class="tf-item"><div class="tf-bubble">V/F</div><span class="tf-text">A fotossíntese ocorre principalmente nas folhas das plantas.</span></div>
+            <div class="tf-item"><div class="tf-bubble">V/F</div><span class="tf-text">As plantas produzem gás carbônico durante a fotossíntese.</span></div>
+            <div class="tf-item"><div class="tf-bubble">V/F</div><span class="tf-text">A clorofila é responsável pela cor verde das plantas.</span></div>
+            <div class="tf-item"><div class="tf-bubble">V/F</div><span class="tf-text">A fotossíntese só acontece durante a noite.</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Q: FILL -->
+    <section class="ds-section" id="q-fill">
+      <h2 class="ds-section-title">Questão — Complete a lacuna</h2>
+      <p class="ds-section-desc">Banco de palavras destacado, lacunas com underline na cor da disciplina.</p>
+      <div class="ds-render">
+        <div class="question">
+          <div class="q-header">
+            <span class="q-number">04.</span>
+            <p class="q-prompt">Complete as lacunas com as palavras do banco:</p>
+          </div>
+          <div class="fb-bank">
+            <span class="fb-word">fotossíntese</span>
+            <span class="fb-word">clorofila</span>
+            <span class="fb-word">luz solar</span>
+            <span class="fb-word">oxigênio</span>
+            <span class="fb-word">glicose</span>
+          </div>
+          <p class="fb-sent">As plantas realizam a <span class="fb-blank"></span> usando a <span class="fb-blank"></span> e a <span class="fb-blank"></span>. Nesse processo, elas produzem <span class="fb-blank"></span> e liberam <span class="fb-blank"></span> para o ambiente.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Q: MATCH -->
+    <section class="ds-section" id="q-match">
+      <h2 class="ds-section-title">Questão — Ligar colunas</h2>
+      <p class="ds-section-desc">Duas colunas com bolhas centrais para a conexão visual.</p>
+      <div class="ds-render">
+        <div class="question">
+          <div class="q-header">
+            <span class="q-number">05.</span>
+            <p class="q-prompt">Ligue cada parte da planta à sua função:</p>
+          </div>
+          <div class="match-grid">
+            <div class="match-col">
+              <div class="match-item-wrap"><span class="match-ltr">A.</span><span class="match-pill">Raiz</span></div>
+              <div class="match-item-wrap"><span class="match-ltr">B.</span><span class="match-pill">Caule</span></div>
+              <div class="match-item-wrap"><span class="match-ltr">C.</span><span class="match-pill">Folha</span></div>
+              <div class="match-item-wrap"><span class="match-ltr">D.</span><span class="match-pill">Flor</span></div>
+            </div>
+            <div class="match-dots-col">
+              <div class="match-circle"></div>
+              <div class="match-circle"></div>
+              <div class="match-circle"></div>
+              <div class="match-circle"></div>
+            </div>
+            <div class="match-col">
+              <div class="match-item-wrap"><span class="match-pill">Realiza a fotossíntese</span></div>
+              <div class="match-item-wrap"><span class="match-pill">Transporta água e nutrientes</span></div>
+              <div class="match-item-wrap"><span class="match-pill">Absorve água e sais do solo</span></div>
+              <div class="match-item-wrap"><span class="match-pill">Atrai polinizadores</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Q: ORDER -->
+    <section class="ds-section" id="q-order">
+      <h2 class="ds-section-title">Questão — Ordenar</h2>
+      <p class="ds-section-desc">Bolhas vazias para numerar os itens na ordem correta.</p>
+      <div class="ds-render">
+        <div class="question">
+          <div class="q-header">
+            <span class="q-number">06.</span>
+            <p class="q-prompt">Numere as etapas da fotossíntese na ordem correta:</p>
+          </div>
+          <div class="order-list">
+            <div class="order-item"><div class="order-bubble"></div><span class="order-text">A planta libera oxigênio pelos estômatos</span></div>
+            <div class="order-item"><div class="order-bubble"></div><span class="order-text">A clorofila absorve a energia da luz solar</span></div>
+            <div class="order-item"><div class="order-bubble"></div><span class="order-text">A planta absorve gás carbônico do ar</span></div>
+            <div class="order-item"><div class="order-bubble"></div><span class="order-text">A glicose é produzida e armazenada</span></div>
+            <div class="order-item"><div class="order-bubble"></div><span class="order-text">As raízes absorvem água do solo</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Q: CALC -->
+    <section class="ds-section" id="q-calc">
+      <h2 class="ds-section-title">Questão — Cálculo</h2>
+      <p class="ds-section-desc">Expressão destacada, área de desenvolvimento quadriculada e linha de resposta.</p>
+      <div class="ds-render">
+        <div class="question">
+          <div class="q-header">
+            <span class="q-number">07.</span>
+            <p class="q-prompt">Uma planta realiza fotossíntese durante 8 horas por dia. Quantas horas ela fotossintetiza em uma semana?</p>
+          </div>
+          <div class="calc-expr">8 × 7 = ?</div>
+          <p class="calc-dev-label">Desenvolvimento:</p>
+          <div class="calc-dev-area"></div>
+          <div class="calc-ans">
+            <span class="calc-ans-label">Resposta:</span>
+            <div class="calc-ans-line"></div>
+            <span class="calc-ans-label">horas</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROSE / TEXTO NARRATIVO -->
+    <section class="ds-section" id="prose">
+      <h2 class="ds-section-title">Texto narrativo</h2>
+      <p class="ds-section-desc">Prosa pura: conteúdo em parágrafos bem formatados. Use para contextualizar, contar histórias, explicar conceitos de forma humanizada.</p>
+      <div class="ds-render">
+        <div class="prose">
+          <p>A fotossíntese é um processo fascinante que acontece dentro das folhas das plantas. Imagine uma pequena fábrica verde: quando o sol brilha, as plantas conseguem transformar luz em energia, assim como você transforma comida em energia para brincar e estudar.</p>
+          <p>Mas as plantas não comem como a gente. Em vez disso, elas usam três ingredientes muito especiais: <strong>luz solar</strong>, <strong>água</strong> (que vem do solo através das raízes) e <strong>gás carbônico</strong> (que está no ar que respiramos). Com esses ingredientes, a planta cria seu próprio alimento — uma substância chamada glicose.</p>
+          <p>E o melhor? Como "efeito colateral" desse processo, a planta libera oxigênio de volta para o ar. Ou seja, as plantas nos ajudam a respirar! Sem a fotossíntese, não haveria vida como conhecemos.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CALLOUT: PENSE COMIGO -->
+    <section class="ds-section" id="callout-think">
+      <h2 class="ds-section-title">Pense comigo</h2>
+      <p class="ds-section-desc">Convida o aluno a refletir, questionar, dialogar. Cria espaço para pensamento crítico.</p>
+      <div class="ds-render">
+        <div class="callout callout-think">
+          <div class="callout-icon">🤔</div>
+          <div class="callout-title">Pense comigo</div>
+          <div class="callout-body">Se as plantas precisam de luz para fazer fotossíntese, o que aconteceria com uma planta colocada dentro de um armário escuro? Ela continuaria verde? Cresceria normalmente?</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CALLOUT: VOCÊ SABIA? -->
+    <section class="ds-section" id="callout-didyouknow">
+      <h2 class="ds-section-title">Você sabia?</h2>
+      <p class="ds-section-desc">Fatos curiosos, quebra-cabeças, informações surpresa. Mantém o interesse e traz contexto histórico ou científico.</p>
+      <div class="ds-render">
+        <div class="callout callout-didyouknow">
+          <div class="callout-icon">💭</div>
+          <div class="callout-title">Você sabia?</div>
+          <div class="callout-body">Uma única árvore pode produzir oxigênio suficiente para dois adultos respirarem durante um ano inteiro! As florestas do Brasil são os "pulmões do planeta".</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CALLOUT: ATENÇÃO -->
+    <section class="ds-section" id="callout-attention">
+      <h2 class="ds-section-title">Atenção</h2>
+      <p class="ds-section-desc">Alerta pedagógico. Previne confusões comuns, destaca erros, orienta para não confundir conceitos.</p>
+      <div class="ds-render">
+        <div class="callout callout-attention">
+          <div class="callout-icon">⚠️</div>
+          <div class="callout-title">Atenção</div>
+          <div class="callout-body">Não confunda fotossíntese com respiração! A fotossíntese <strong>produz</strong> oxigênio. A respiração das plantas (de noite) <strong>usa</strong> oxigênio, assim como você respira 24 horas.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CALLOUT: DICA DO MESTRE -->
+    <section class="ds-section" id="callout-tip">
+      <h2 class="ds-section-title">Dica do mestre</h2>
+      <p class="ds-section-desc">Conselho prático do professor, método de estudo, dica de memorização.</p>
+      <div class="ds-render">
+        <div class="callout callout-tip">
+          <div class="callout-icon">💬</div>
+          <div class="callout-title">Dica do mestre</div>
+          <div class="callout-body">Para lembrar a fotossíntese, pense: "LUZ + ÁGUA + AR = ALIMENTO + OXIGÊNIO". Desenhe uma árvore com setas mostrando o que entra e o que sai. Desenho ajuda a memorizar!</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CALLOUT: DESAFIO RÁPIDO -->
+    <section class="ds-section" id="callout-quick">
+      <h2 class="ds-section-title">Desafio rápido</h2>
+      <p class="ds-section-desc">Micro-atividade, puzzle visual, pergunta surpresa. Interrompe o ritmo e cria engajamento.</p>
+      <div class="ds-render">
+        <div class="callout callout-quick">
+          <div class="callout-icon">⚡</div>
+          <div class="callout-title">Desafio rápido</div>
+          <div class="callout-body">Olhe ao seu redor agora. Quantas plantas você consegue contar? Liste 5 plantas que você vê no seu bairro. Qual delas você acha que faz mais fotossíntese? Por quê?</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CALLOUT: PAUSA PARA CONVERSA -->
+    <section class="ds-section" id="callout-pause">
+      <h2 class="ds-section-title">Pausa para conversa</h2>
+      <p class="ds-section-desc">Momento para diálogo em sala de aula. Conecta conteúdo à vida dos alunos.</p>
+      <div class="ds-render">
+        <div class="callout callout-pause">
+          <div class="callout-icon">🎯</div>
+          <div class="callout-title">Pausa para conversa</div>
+          <div class="callout-body">Alguém aqui já regou uma planta? O que você notou? Ela cresceu? Ficou mais verde com o tempo? Vamos discutir: o que uma planta precisa para viver?</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STORY BLOCK -->
+    <section class="ds-section" id="story-block">
+      <h2 class="ds-section-title">Bloco narrativo</h2>
+      <p class="ds-section-desc">Narrativa infantil com personagem, imagem placeholder, e ponto de aprendizado. Ideal para Fase 1 e 2, contextualizando conceitos.</p>
+      <div class="ds-render">
+        <div class="story-block">
+          <div class="story-block-emoji">🧑‍🌾</div>
+          <div class="story-block-title">O plantio de Joana</div>
+          <div class="story-block-body">Joana estava curiosa: por que suas plantas crescem? O avó explicou que as plantas comem luz do sol, água e ar — de um jeito bem diferente da gente!</div>
+          <div class="story-block-image">🌱</div>
+          <div class="story-block-learning">💡 Aprendi: Plantas fazem seu próprio alimento!</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONNECTION WEB -->
+    <section class="ds-section" id="connection-web">
+      <h2 class="ds-section-title">Rede de conexões</h2>
+      <p class="ds-section-desc">Conceito central com 3–5 conexões radiantes. Ótimo para mostrar relações entre ideias.</p>
+      <div class="ds-render">
+        <div class="connection-web">
+          <div class="web-center">Fotossíntese</div>
+          <div class="web-connections">
+            <div class="web-connection">
+              <div class="web-connection-item">☀️<br>Luz solar</div>
+              <div class="web-connection-label">Energia</div>
+            </div>
+            <div class="web-connection">
+              <div class="web-connection-item">💧<br>Água</div>
+              <div class="web-connection-label">Do solo</div>
+            </div>
+            <div class="web-connection">
+              <div class="web-connection-item">💨<br>CO₂</div>
+              <div class="web-connection-label">Do ar</div>
+            </div>
+            <div class="web-connection">
+              <div class="web-connection-item">🍬<br>Glicose</div>
+              <div class="web-connection-label">Alimento</div>
+            </div>
+            <div class="web-connection">
+              <div class="web-connection-item">💨<br>O₂</div>
+              <div class="web-connection-label">Para o ar</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TIMELINE -->
+    <section class="ds-section" id="timeline">
+      <h2 class="ds-section-title">Linha do tempo</h2>
+      <p class="ds-section-desc">Sequência de eventos. Disponível a partir da Fase 2.</p>
+      <div class="ds-render">
+        <div style="padding:8px 0">
+          <div class="tl-track">
+            <div class="tl-event"><div class="tl-dot"></div></div>
+            <div class="tl-conn"></div>
+            <div class="tl-event"><div class="tl-dot"></div></div>
+            <div class="tl-conn"></div>
+            <div class="tl-event"><div class="tl-dot"></div></div>
+            <div class="tl-conn"></div>
+            <div class="tl-event"><div class="tl-dot"></div></div>
+            <div class="tl-conn"></div>
+            <div class="tl-event"><div class="tl-dot"></div></div>
+          </div>
+          <div class="tl-labels">
+            <div class="tl-label"><div class="tl-date">1500</div><div class="tl-text">Chegada dos portugueses</div></div>
+            <div class="tl-label"><div class="tl-date">1822</div><div class="tl-text">Independência</div></div>
+            <div class="tl-label"><div class="tl-date">1888</div><div class="tl-text">Abolição da escravidão</div></div>
+            <div class="tl-label"><div class="tl-date">1889</div><div class="tl-text">Proclamação da República</div></div>
+            <div class="tl-label"><div class="tl-date">Hoje</div><div class="tl-text">Brasil contemporâneo</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DATA TABLE -->
+    <section class="ds-section" id="data-table">
+      <h2 class="ds-section-title">Tabela de dados</h2>
+      <p class="ds-section-desc">Header na cor primária da disciplina, linhas zebradas com a cor light. Disponível a partir da Fase 3.</p>
+      <div class="ds-render">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Ser vivo</th>
+              <th>Tipo</th>
+              <th>Posição na cadeia</th>
+              <th>Alimenta-se de</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Plantas</td><td>Produtor</td><td>Base</td><td>Luz solar, água, CO₂</td></tr>
+            <tr><td>Gafanhoto</td><td>Consumidor 1°</td><td>Herbívoro</td><td>Plantas</td></tr>
+            <tr><td>Sapo</td><td>Consumidor 2°</td><td>Carnívoro</td><td>Gafanhotos</td></tr>
+            <tr><td>Cobra</td><td>Consumidor 3°</td><td>Carnívoro</td><td>Sapos</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- IMAGE PH -->
+    <section class="ds-section" id="image-ph">
+      <h2 class="ds-section-title">Placeholder de imagem</h2>
+      <p class="ds-section-desc">Reserva espaço para imagem a ser inserida pelo professor ou gerada via IA no futuro.</p>
+      <div class="ds-render">
+        <div class="img-placeholder">
+          <div class="img-ph-icon">🖼️</div>
+          <p class="img-ph-caption">Esquema da fotossíntese</p>
+          <p class="img-ph-desc">Inserir diagrama mostrando as entradas (luz, CO₂, H₂O) e saídas (O₂, glicose).</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CHALLENGE -->
+    <section class="ds-section" id="challenge">
+      <h2 class="ds-section-title">Caixa de desafio</h2>
+      <p class="ds-section-desc">Sempre âmbar/dourado — identidade visual própria, independente da disciplina. Aparece no final da apostila.</p>
+      <div class="ds-render">
+        <div class="challenge">
+          <div class="box-hd"><span class="box-icon">⭐</span><span class="box-title" style="color:#92400E">Desafio</span></div>
+          <div class="box-divider" style="background:#F59E0B"></div>
+          <p class="box-def" style="margin-bottom:12px">Se uma planta ficar 3 dias no escuro completo, o que aconteceria com a produção de glicose? Escreva uma hipótese e explique seu raciocínio.</p>
+          <div class="answer-lines">
+            <div class="answer-line" style="border-bottom-color:#F59E0B55"></div>
+            <div class="answer-line" style="border-bottom-color:#F59E0B55"></div>
+            <div class="answer-line" style="border-bottom-color:#F59E0B55"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- READING BOX -->
+    <section class="ds-section" id="reading-box">
+      <h2 class="ds-section-title">Texto para leitura</h2>
+      <p class="ds-section-desc">Bloco de texto longo para interpretação. Específico de Língua Portuguesa mas usável em outras disciplinas. Borda esquerda na cor do componente, sem fundo colorido — o texto precisa de respiração.</p>
+      <div class="ds-render">
+        <div class="reading-box">
+          <span class="reading-box-tag">Texto 1</span>
+          <p class="reading-box-title">O dia em que Joana plantou uma semente</p>
+          <p class="reading-box-body">Joana tinha seis anos quando ganhou do avô uma caixinha de madeira cheia de terra. No fundo da caixa, uma única semente dormia, esperando. Ela regou todo dia, com cuidado, com a mesma xícara azul que usava para brincar de chá. Na primeira semana, nada. Na segunda, ainda nada. Mas Joana não desistia — ela sabia que crescer leva tempo, porque o avô havia ensinado assim.</p>
+          <p class="reading-box-source">Adaptado de "Histórias do quintal", Ana Lima, 2021.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- DIALOGUE BOX -->
+    <section class="ds-section" id="dialogue-box">
+      <h2 class="ds-section-title">Texto dialogado</h2>
+      <p class="ds-section-desc">Para HQs, teatros e conversas. Útil em Língua Portuguesa e Inglês. Bolhas alternadas para distinguir personagens.</p>
+      <div class="ds-render">
+        <div class="dialogue-box">
+          <div class="box-hd"><span class="box-icon">💬</span><span class="box-title">Diálogo</span></div>
+          <div class="box-divider"></div>
+          <div class="dialogue-list">
+            <div class="dialogue-line">
+              <span class="dialogue-speaker">Ana:</span>
+              <div class="dialogue-bubble">Você sabe por que as folhas ficam amarelas no outono?</div>
+            </div>
+            <div class="dialogue-line right">
+              <span class="dialogue-speaker">Pedro:</span>
+              <div class="dialogue-bubble">Acho que tem a ver com a luz do sol... mas não tenho certeza.</div>
+            </div>
+            <div class="dialogue-line">
+              <span class="dialogue-speaker">Ana:</span>
+              <div class="dialogue-bubble">Isso mesmo! A clorofila vai embora quando os dias ficam mais curtos.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GRAPH PLACEHOLDER -->
+    <section class="ds-section" id="graph-ph">
+      <h2 class="ds-section-title">Placeholder de gráfico</h2>
+      <p class="ds-section-desc">Reserva espaço para gráfico de barras, linha ou pizza. Útil em Matemática, Ciências e Geografia. Eixos decorativos indicam o tipo esperado.</p>
+      <div class="two-col" style="gap:16px">
+        <div class="ds-render">
+          <div class="graph-placeholder">
+            <div class="graph-ph-icon">📊</div>
+            <div class="graph-axes"></div>
+            <p class="graph-ph-caption">Gráfico de barras</p>
+            <p class="graph-ph-desc">Inserir gráfico com dados de temperatura média mensal da cidade.</p>
+          </div>
+        </div>
+        <div class="ds-render">
+          <div class="graph-placeholder">
+            <div class="graph-ph-icon">🥧</div>
+            <p class="graph-ph-caption">Gráfico de setores</p>
+            <p class="graph-ph-desc">Inserir gráfico com a distribuição por bioma no Brasil.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DRAWING AREA -->
+    <section class="ds-section" id="drawing-area">
+      <h2 class="ds-section-title">Área de desenho</h2>
+      <p class="ds-section-desc">Espaço livre para o aluno desenhar, ilustrar ou criar. Prioritário em Arte e nas Fases 1–2. Borda tracejada na cor do componente.</p>
+      <div class="ds-render">
+        <div class="question">
+          <div class="q-header">
+            <span class="q-number">05.</span>
+            <p class="q-prompt">Desenhe como você imagina que é a cadeia alimentar de uma floresta tropical:</p>
+          </div>
+          <div class="drawing-area">
+            <div class="drawing-area-icon">✏️</div>
+            <span class="drawing-area-label">Espaço para desenho</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FRAME STYLES -->
+    <section class="ds-section" id="frame-styles">
+      <h2 class="ds-section-title">Moldura padrão</h2>
+      <p class="ds-section-desc">Frame simples e universal para questões, conteúdo e atividades.</p>
+
+      <div class="ds-render">
+        <div class="frame">
+          <div style="font-weight:700;margin-bottom:8px"><span style="font-weight:800;margin-right:6px">1.</span> Resolva:</div>
+          <p style="margin-bottom:12px">Quanto é 245 + 178?</p>
+          <div style="border-bottom:1px solid #111;height:18px;margin-top:6px"></div>
+          <div style="border-bottom:1px solid #111;height:18px;margin-top:6px"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- A4 PREVIEW -->
+    <section class="ds-section" id="a4-preview">
+      <h2 class="ds-section-title">Apostila completa — Preview A4</h2>
+      <p class="ds-section-desc">Página em escala real (794 × 1122px ≈ A4 a 96dpi). Margens de 56px ≈ 20mm. Alterne fase e disciplina para ver a transformação completa.</p>
+
+      <div class="a4-wrap">
+        <div class="a4-page">
+
+          <!-- Header -->
+          <div class="pg-header">
+            <div class="pg-header-top">
+              <div class="pg-header-icon">🔬</div>
+              <div>
+                <div class="pg-header-title">A Fotossíntese e a Cadeia Alimentar</div>
+                <div class="pg-header-meta">Ciências · 5º ano · EF05CI04</div>
+              </div>
+            </div>
+            <div class="pg-header-fields">
+              <div class="hf"><span class="hf-label">Prof:</span><span class="hf-line"></span></div>
+              <div class="hf"><span class="hf-label">Aluno:</span><span class="hf-line"></span></div>
+              <div class="hf"><span class="hf-label">Turma:</span><span class="hf-line"></span></div>
+              <div class="hf"><span class="hf-label">Data:</span><span class="hf-line"></span></div>
+            </div>
+          </div>
+
+          <!-- Intro -->
+          <div class="act-intro">
+            <p class="act-intro-instruction">Leia o texto abaixo e responda às questões:</p>
+            <p class="act-intro-body">As plantas produzem seu próprio alimento por meio da fotossíntese. Nesse processo, utilizam luz solar, água e CO₂ para produzir glicose e liberar oxigênio. A clorofila, presente nas folhas, é responsável por captar a energia luminosa.</p>
+          </div>
+
+          <!-- Concept + Tip lado a lado -->
+          <div class="two-col">
+            <div class="box box-concept">
+              <div class="box-hd"><span class="box-icon">💡</span><span class="box-title">Conceito</span></div>
+              <div class="box-divider"></div>
+              <p class="box-term">Fotossíntese</p>
+              <p class="box-def">Produção de alimento pelas plantas usando luz, CO₂ e água.</p>
+            </div>
+            <div class="box box-tip">
+              <div class="box-hd"><span class="box-icon">📌</span><span class="box-title">Dica</span></div>
+              <div class="box-divider"></div>
+              <p class="box-def">Pense nas partes da planta: qual delas recebe mais luz solar?</p>
+            </div>
+          </div>
+
+          <!-- Q1 -->
+          <div class="question">
+            <div class="q-header">
+              <span class="q-number">01.</span>
+              <p class="q-prompt">Qual das alternativas descreve corretamente o processo de fotossíntese?</p>
+            </div>
+            <p class="q-instruction">Marque apenas uma alternativa.</p>
+            <div class="mc-opts">
+              <div class="mc-opt"><span class="mc-letter">(A)</span><span class="mc-text">As plantas absorvem luz solar para aquecer suas raízes.</span></div>
+              <div class="mc-opt"><span class="mc-letter">(B)</span><span class="mc-text">As plantas transformam luz solar, água e CO₂ em glicose e oxigênio.</span></div>
+              <div class="mc-opt"><span class="mc-letter">(C)</span><span class="mc-text">As plantas se alimentam de minerais do solo diretamente.</span></div>
+              <div class="mc-opt"><span class="mc-letter">(D)</span><span class="mc-text">As plantas produzem gás carbônico durante o dia.</span></div>
+            </div>
+          </div>
+
+          <!-- Q2 -->
+          <div class="question">
+            <div class="q-header">
+              <span class="q-number">02.</span>
+              <p class="q-prompt">Marque V (verdadeiro) ou F (falso) para cada afirmativa:</p>
+            </div>
+            <div class="tf-list">
+              <div class="tf-item"><div class="tf-bubble">V/F</div><span class="tf-text">A fotossíntese ocorre principalmente nas folhas das plantas.</span></div>
+              <div class="tf-item"><div class="tf-bubble">V/F</div><span class="tf-text">As plantas produzem gás carbônico durante a fotossíntese.</span></div>
+              <div class="tf-item"><div class="tf-bubble">V/F</div><span class="tf-text">A clorofila é responsável pela cor verde das plantas.</span></div>
+            </div>
+          </div>
+
+          <!-- Q3 -->
+          <div class="question">
+            <div class="q-header">
+              <span class="q-number">03.</span>
+              <p class="q-prompt">Explique com suas palavras por que as plantas precisam da luz solar para sobreviver.</p>
+            </div>
+            <div class="answer-lines">
+              <div class="answer-line"></div>
+              <div class="answer-line"></div>
+              <div class="answer-line"></div>
+              <div class="answer-line"></div>
+            </div>
+          </div>
+
+          <!-- Reading box (dinâmico) -->
+          <div class="reading-box" id="a4-reading-box">
+            <span class="reading-box-tag">Texto 1</span>
+            <p class="reading-box-title">O dia em que Joana plantou uma semente</p>
+            <p class="reading-box-body">Joana tinha seis anos quando ganhou do avô uma caixinha de madeira cheia de terra. No fundo da caixa, uma única semente dormia, esperando. Ela regou todo dia, com cuidado, com a mesma xícara azul que usava para brincar de chá. Na primeira semana, nada. Na segunda, ainda nada. Mas Joana não desistia — ela sabia que crescer leva tempo, porque o avó havia ensinado assim.</p>
+            <p class="reading-box-source">Adaptado de "Histórias do quintal".</p>
+          </div>
+
+          <!-- Divider -->
+          <div class="section-divider">
+            <div class="divider-line"></div>
+            <span class="divider-label">Parte 2 · Interpretação</span>
+            <div class="divider-line"></div>
+          </div>
+
+          <!-- Graph placeholder (dinâmico) -->
+          <div class="graph-placeholder" id="a4-graph-ph">
+            <div class="graph-ph-icon">📊</div>
+            <div class="graph-axes"></div>
+            <p class="graph-ph-caption">Gráfico de barras</p>
+            <p class="graph-ph-desc">Inserir dados de temperatura média mensal.</p>
+          </div>
+
+          <!-- Q4: Dialogue (dinâmico) -->
+          <div class="dialogue-box" id="a4-dialogue-box">
+            <div class="box-hd"><span class="box-icon">💬</span><span class="box-title">Diálogo</span></div>
+            <div class="box-divider"></div>
+            <div class="dialogue-list">
+              <div class="dialogue-line">
+                <span class="dialogue-speaker">Ana:</span>
+                <div class="dialogue-bubble">Você sabe por que as folhas ficam amarelas no outono?</div>
+              </div>
+              <div class="dialogue-line right">
+                <span class="dialogue-speaker">Pedro:</span>
+                <div class="dialogue-bubble">Acho que tem a ver com a luz solar...</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Desafio -->
+          <div class="challenge">
+            <div class="box-hd"><span class="box-icon">⭐</span><span class="box-title" style="color:#92400E">Desafio</span></div>
+            <div class="box-divider" style="background:#F59E0B"></div>
+            <p class="box-def" style="margin-bottom:10px">Se uma planta ficar 3 dias no escuro, o que aconteceria com a produção de glicose? Justifique com base no que você aprendeu.</p>
+            <div class="answer-lines">
+              <div class="answer-line" style="border-bottom-color:#F59E0B55"></div>
+              <div class="answer-line" style="border-bottom-color:#F59E0B55"></div>
+              <div class="answer-line" style="border-bottom-color:#F59E0B55"></div>
+            </div>
+          </div>
+
+          <div class="a4-spacer"></div>
+
+          <!-- Footer -->
+          <div class="pg-footer">
+            <span class="pg-footer-skill">Habilidade BNCC: EF05CI04 · Competência: Ciências da Natureza</span>
+            <span class="pg-footer-page">Página 1 / 1</span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- A4 PAGE 2 — Narrativa e Call-outs -->
+      <div class="a4-wrap" style="margin-top:40px">
+        <div class="a4-page">
+
+          <!-- Page Header -->
+          <div class="pg-header">
+            <div class="pg-header-top">
+              <div class="pg-header-icon">📖</div>
+              <div>
+                <div class="pg-header-title">A Fotossíntese: Entendendo a Vida das Plantas</div>
+                <div class="pg-header-meta">Ciências · 5º ano · EF05CI04</div>
+              </div>
+            </div>
+            <div class="pg-header-fields">
+              <div class="hf"><span class="hf-label">Aluno:</span><span class="hf-line"></span></div>
+              <div class="hf"><span class="hf-label">Data:</span><span class="hf-line"></span></div>
+            </div>
+          </div>
+
+          <!-- Prose narrative -->
+          <div class="prose">
+            <p>A fotossíntese é um processo fascinante que acontece dentro das folhas das plantas. Imagine uma pequena fábrica verde: quando o sol brilha, as plantas conseguem transformar luz em energia, assim como você transforma comida em energia.</p>
+            <p>Mas as plantas não comem como a gente. Em vez disso, usam três ingredientes: <strong>luz solar</strong>, <strong>água</strong> e <strong>gás carbônico</strong>. Com esses ingredientes, criam seu próprio alimento — glicose.</p>
+          </div>
+
+          <!-- Callout: Pense comigo -->
+          <div class="callout callout-think">
+            <div class="callout-icon">🤔</div>
+            <div class="callout-title">Pense comigo</div>
+            <div class="callout-body">Se as plantas precisam de luz para fazer fotossíntese, o que aconteceria com uma planta num armário escuro? Ela continuaria verde?</div>
+          </div>
+
+          <!-- Callout: Você sabia? -->
+          <div class="callout callout-didyouknow">
+            <div class="callout-icon">💭</div>
+            <div class="callout-title">Você sabia?</div>
+            <div class="callout-body">Uma única árvore produz oxigênio suficiente para dois adultos respirarem durante um ano inteiro! As florestas do Brasil são os "pulmões do planeta".</div>
+          </div>
+
+          <!-- Callout: Atenção -->
+          <div class="callout callout-attention">
+            <div class="callout-icon">⚠️</div>
+            <div class="callout-title">Atenção</div>
+            <div class="callout-body">Não confunda fotossíntese com respiração! Fotossíntese <strong>produz</strong> oxigênio. Respiração <strong>usa</strong> oxigênio, assim como você respira 24 horas.</div>
+          </div>
+
+          <div class="a4-spacer"></div>
+
+          <!-- Footer -->
+          <div class="pg-footer">
+            <span class="pg-footer-skill">Habilidade BNCC: EF05CI04 · Competência: Ciências da Natureza</span>
+            <span class="pg-footer-page">Página 2 / 3</span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- A4 PAGE 3 — Story block e mais Call-outs -->
+      <div class="a4-wrap" style="margin-top:40px">
+        <div class="a4-page">
+
+          <!-- Page Header -->
+          <div class="pg-header">
+            <div class="pg-header-top">
+              <div class="pg-header-icon">📚</div>
+              <div>
+                <div class="pg-header-title">Continuação: Aprendendo com Joana</div>
+                <div class="pg-header-meta">Narrativa pedagógica</div>
+              </div>
+            </div>
+            <div class="pg-header-fields">
+              <div class="hf"><span class="hf-label">Data:</span><span class="hf-line"></span></div>
+            </div>
+          </div>
+
+          <!-- Story block example -->
+          <div class="story-block">
+            <div class="story-block-emoji">🧑‍🌾</div>
+            <div class="story-block-title">O plantio de Joana</div>
+            <div class="story-block-body">Joana estava curiosa: por que suas plantas crescem? O avó explicou que as plantas comem luz do sol, água e ar — de um jeito bem diferente da gente!</div>
+            <div class="story-block-image">🌱 ☀️ 💧</div>
+            <div class="story-block-learning">💡 Aprendi: Plantas fazem seu próprio alimento!</div>
+          </div>
+
+          <!-- Callout: Dica do mestre -->
+          <div class="callout callout-tip">
+            <div class="callout-icon">💬</div>
+            <div class="callout-title">Dica do mestre</div>
+            <div class="callout-body">Para lembrar a fotossíntese, pense: "LUZ + ÁGUA + AR = ALIMENTO + OXIGÊNIO". Desenhe uma árvore com setas mostrando o que entra e o que sai.</div>
+          </div>
+
+          <!-- Callout: Desafio rápido -->
+          <div class="callout callout-quick">
+            <div class="callout-icon">⚡</div>
+            <div class="callout-title">Desafio rápido</div>
+            <div class="callout-body">Olhe ao seu redor. Quantas plantas você consegue contar? Liste 5 plantas que você vê. Qual delas você acha que faz mais fotossíntese? Por quê?</div>
+          </div>
+
+          <!-- Callout: Pausa para conversa -->
+          <div class="callout callout-pause">
+            <div class="callout-icon">🎯</div>
+            <div class="callout-title">Pausa para conversa</div>
+            <div class="callout-body">Alguém aqui já regou uma planta? O que você notou? Ela cresceu? Vamos discutir: o que uma planta precisa para viver?</div>
+          </div>
+
+          <div class="a4-spacer"></div>
+
+          <!-- Footer -->
+          <div class="pg-footer">
+            <span class="pg-footer-skill">Narrativa + Call-outs pedagógicos</span>
+            <span class="pg-footer-page">Página 3 / 3</span>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    /* ============================================================
+       PHASE DATA
+    ============================================================ */
+    const phases = {
+      "1": { font:"Nunito", size:"16px", lh:"2.0×", radius:"24px", bw:"3px", al:"44px", fw:"500", fwb:"800" },
+      "2": { font:"Nunito", size:"15px", lh:"1.8×", radius:"16px", bw:"2.5px", al:"40px", fw:"500", fwb:"700" },
+      "3": { font:"Nunito", size:"14px", lh:"1.6×", radius:"12px", bw:"2px",  al:"34px", fw:"400", fwb:"700" },
+      "4": { font:"Inter",  size:"13px", lh:"1.5×", radius:"8px",  bw:"1.5px",al:"30px", fw:"400", fwb:"600" },
+      "5": { font:"Inter",  size:"13px", lh:"1.4×", radius:"4px",  bw:"1px",  al:"28px", fw:"400", fwb:"600" },
+    }
+
+    const subjects = {
+      sci:  { primary:"#059669", light:"#D1FAE5", dark:"#065F46" },
+      math: { primary:"#2563EB", light:"#DBEAFE", dark:"#1E40AF" },
+      pt:   { primary:"#7C3AED", light:"#EDE9FE", dark:"#5B21B6" },
+      hist: { primary:"#D97706", light:"#FEF3C7", dark:"#92400E" },
+      geo:  { primary:"#0891B2", light:"#CFFAFE", dark:"#075985" },
+      art:  { primary:"#DB2777", light:"#FCE7F3", dark:"#9D174D" },
+      ef:   { primary:"#16A34A", light:"#DCFCE7", dark:"#14532D" },
+      ing:  { primary:"#0369A1", light:"#E0F2FE", dark:"#0C4A6E" },
+      er:   { primary:"#6366F1", light:"#E0E7FF", dark:"#3730A3" },
+    }
+
+    function setPhase(p) {
+      document.body.setAttribute("data-phase", p)
+      const d = phases[p]
+      document.getElementById("pi-font").textContent = d.font
+      document.getElementById("pi-size").textContent = d.size
+      document.getElementById("pi-lh").textContent   = d.lh
+      document.getElementById("pi-radius").textContent = d.radius
+      document.getElementById("pi-bw").textContent   = d.bw
+      document.getElementById("pi-al").textContent   = d.al
+      document.getElementById("pi-fw").textContent   = d.fw
+      document.getElementById("pi-fwb").textContent  = d.fwb
+      document.querySelectorAll("#phase-btns .phase-btn").forEach(b => {
+        b.classList.toggle("active", b.dataset.p === p)
+      })
+    }
+
+    // Conteúdo dinâmico do preview A4 por disciplina
+    const a4Content = {
+      sci: {
+        title: "A Fotossíntese e a Cadeia Alimentar",
+        readingTitle: "O processo da fotossíntese",
+        readingBody: "As plantas produzem seu próprio alimento através da fotossíntese. Neste processo, utilizam luz solar, água e CO₂ para produzir glicose e liberar oxigênio. A clorofila, presente nas folhas, é responsável por captar a energia luminosa.",
+        graphCaption: "Gráfico de barras",
+        graphDesc: "Inserir dados de temperatura média mensal.",
+        dialogSpeaker1: "Ana",
+        dialogText1: "Você sabe por que as folhas ficam amarelas no outono?",
+        dialogSpeaker2: "Pedro",
+        dialogText2: "Acho que tem a ver com a diminuição da luz solar..."
+      },
+      math: {
+        title: "Operações Matemáticas Básicas",
+        readingTitle: "Entendendo as operações",
+        readingBody: "As quatro operações matemáticas fundamentais são: adição (juntar), subtração (tirar), multiplicação (repetir grupos) e divisão (distribuir em partes iguais). Cada uma delas tem suas próprias regras e aplicações práticas.",
+        graphCaption: "Gráfico de linhas",
+        graphDesc: "Inserir dados de crescimento de um valor ao longo dos meses.",
+        dialogSpeaker1: "Prof",
+        dialogText1: "Como resolvemos 15 ÷ 3?",
+        dialogSpeaker2: "Aluno",
+        dialogText2: "Dividindo 15 em 3 partes iguais, cada uma tem 5!"
+      },
+      pt: {
+        title: "Interpretação de Textos Literários",
+        readingTitle: "A Menina que Plantou Esperança",
+        readingBody: "Havia uma menina que todos os dias regava uma semente. Seus amigos riam, diziam que nada cresceria. Mas ela tinha fé. Após meses de paciência e cuidado, uma planta bela floresceu. A menina havia aprendido a mais importante das lições: esperança e persistência transformam mundos.",
+        graphCaption: "Mapa de palavras-chave",
+        graphDesc: "Principais termos literários do texto.",
+        dialogSpeaker1: "Menina",
+        dialogText1: "Por que vocês não acreditam que algo vai crescer?",
+        dialogSpeaker2: "Amigo",
+        dialogText2: "Porque levaria muito tempo... mas você tinha razão!"
+      },
+      hist: {
+        title: "Grandes Eventos da História Brasileira",
+        readingTitle: "A Proclamação da Independência",
+        readingBody: "Em 7 de setembro de 1822, Dom Pedro I declarou a independência do Brasil em relação a Portugal. Este momento, conhecido como Grito do Ipiranga, marcou o início de uma nova era para o país. A independência abriu caminho para a formação de uma nação autônoma e soberana.",
+        graphCaption: "Timeline histórico",
+        graphDesc: "Principais datas da história do Brasil.",
+        dialogSpeaker1: "Historiador",
+        dialogText1: "O que levou à Independência do Brasil?",
+        dialogSpeaker2: "Aluno",
+        dialogText2: "As tensões políticas e a pressão das elites coloniais, certo?"
+      },
+      geo: {
+        title: "Geografia Física do Brasil",
+        readingTitle: "Os Biomas Brasileiros",
+        readingBody: "O Brasil é um país de grande diversidade biológica. Possui vários biomas principais: a Floresta Amazônica (maior floresta tropical do mundo), o Cerrado (savana tropical), a Mata Atlântica (floresta tropical atlântica), o Pantanal (zona úmida) e a Caatinga (semiárido nordestino).",
+        graphCaption: "Distribuição dos biomas",
+        graphDesc: "Percentual da área de cada bioma no Brasil.",
+        dialogSpeaker1: "Geógrafo",
+        dialogText1: "Qual é o maior bioma do Brasil?",
+        dialogSpeaker2: "Aluno",
+        dialogText2: "A Floresta Amazônica, que cobre uma área imensa!"
+      },
+      art: {
+        title: "Expressão Artística e Cores",
+        readingTitle: "A Importância das Cores na Arte",
+        readingBody: "As cores possuem significados e podem expressar diferentes emoções e sensações. Cores quentes (vermelho, laranja, amarelo) transmitem energia e alegria. Cores frias (azul, verde, roxo) transmitem calma e tranquilidade. Artistas utilizam a paleta de cores de forma intencional para comunicar suas mensagens.",
+        graphCaption: "Círculo cromático",
+        graphDesc: "Demonstração das cores primárias, secundárias e terciárias.",
+        dialogSpeaker1: "Artista",
+        dialogText1: "Por que você escolheu cores quentes para este quadro?",
+        dialogSpeaker2: "Aluno",
+        dialogText2: "Porque queria transmitir energia e dinamismo!"
+      },
+      ef: {
+        title: "Saúde e Bem-Estar Físico",
+        readingTitle: "Importância da Atividade Física",
+        readingBody: "A atividade física regular é essencial para a saúde. Exercitar-se melhora a resistência cardiovascular, fortalece os músculos e ossos, reduz o estresse e aumenta a sensação de bem-estar. Crianças e adolescentes devem realizar pelo menos 60 minutos de atividade física por dia.",
+        graphCaption: "Dados de frequência cardíaca",
+        graphDesc: "Medições de frequência cardíaca antes e depois do exercício.",
+        dialogSpeaker1: "Prof. Ed. Física",
+        dialogText1: "Quantos minutos de atividade vocês fazem por dia?",
+        dialogSpeaker2: "Aluno",
+        dialogText2: "Eu faço esportes e caminhadas, deve dar uns 90 minutos!"
+      },
+      ing: {
+        title: "English Learning: Daily Routines",
+        readingTitle: "My Daily Routine",
+        readingBody: "I wake up at 7 AM every morning. After breakfast, I go to school by bus. At school, I have many classes. In the afternoon, I do my homework and play with friends. I have dinner with my family at 7 PM. Finally, I go to bed at 10 PM.",
+        graphCaption: "Time distribution",
+        graphDesc: "How much time I spend on different activities.",
+        dialogSpeaker1: "Student",
+        dialogText1: "What time do you usually wake up?",
+        dialogSpeaker2: "Friend",
+        dialogText2: "I usually wake up at 7 AM to go to school."
+      },
+      er: {
+        title: "Valores, Ética e Espiritualidade",
+        readingTitle: "O Significado da Compaixão",
+        readingBody: "A compaixão é a capacidade de sentir empatia pelos sofrimentos alheios e agir para ajudar. Ela está presente em várias tradições religiosas e filosóficas. Praticar a compaixão nos torna pessoas melhores e contribui para uma sociedade mais justa e solidária.",
+        graphCaption: "Valores humanos",
+        graphDesc: "Principais valores éticos e suas definições.",
+        dialogSpeaker1: "Mestre",
+        dialogText1: "O que significa realmente ser compassivo?",
+        dialogSpeaker2: "Aluno",
+        dialogText2: "É entender o sofrimento do outro e querer ajudar..."
+      }
+    }
+
+    function updateA4Preview(s) {
+      const content = a4Content[s] || a4Content.sci
+      const readingBox = document.getElementById("a4-reading-box")
+      const graphBox = document.getElementById("a4-graph-ph")
+      const dialogueBox = document.getElementById("a4-dialogue-box")
+
+      // Atualizar leitura
+      if (readingBox) {
+        readingBox.querySelector(".reading-box-title").textContent = content.readingTitle
+        readingBox.querySelector(".reading-box-body").textContent = content.readingBody
+      }
+
+      // Atualizar gráfico
+      if (graphBox) {
+        graphBox.querySelector(".graph-ph-caption").textContent = content.graphCaption
+        graphBox.querySelector(".graph-ph-desc").textContent = content.graphDesc
+      }
+
+      // Atualizar diálogo
+      if (dialogueBox) {
+        const lines = dialogueBox.querySelectorAll(".dialogue-line")
+        if (lines[0]) {
+          lines[0].querySelector(".dialogue-speaker").textContent = content.dialogSpeaker1 + ":"
+          lines[0].querySelector(".dialogue-bubble").textContent = content.dialogText1
+        }
+        if (lines[1]) {
+          lines[1].querySelector(".dialogue-speaker").textContent = content.dialogSpeaker2 + ":"
+          lines[1].querySelector(".dialogue-bubble").textContent = content.dialogText2
+        }
+      }
+    }
+
+    function setSubject(s) {
+      document.body.setAttribute("data-subject", s)
+      updateA4Preview(s)
+      const c = subjects[s]
+      document.querySelectorAll("#subject-btns .subject-btn").forEach(b => {
+        const sc = subjects[b.dataset.s]
+        if (b.dataset.s === s) {
+          b.style.background = sc.primary
+          b.style.border = `1.5px solid ${sc.primary}`
+          b.style.color = "white"
+        } else {
+          b.style.background = "transparent"
+          b.style.border = `1.5px solid ${sc.primary}`
+          b.style.color = sc.primary
+        }
+      })
+    }
+
+    document.querySelectorAll("#phase-btns .phase-btn").forEach(b => {
+      b.addEventListener("click", () => setPhase(b.dataset.p))
+    })
+
+    document.querySelectorAll("#subject-btns .subject-btn").forEach(b => {
+      b.addEventListener("click", () => setSubject(b.dataset.s))
+    })
+
+    // Smooth scroll + active nav
+    document.querySelectorAll(".nav-link").forEach(link => {
+      link.addEventListener("click", e => {
+        e.preventDefault()
+        const id = link.getAttribute("href").slice(1)
+        const el = document.getElementById(id)
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" })
+      })
+    })
+
+    const scroll = document.getElementById("main-scroll")
+    const sections = document.querySelectorAll(".ds-section")
+    const navLinks = document.querySelectorAll(".nav-link")
+
+    scroll.addEventListener("scroll", () => {
+      let current = ""
+      sections.forEach(sec => {
+        if (scroll.scrollTop >= sec.offsetTop - 120) current = sec.id
+      })
+      navLinks.forEach(l => {
+        l.classList.toggle("is-active", l.getAttribute("href") === "#" + current)
+      })
+    }, { passive: true })
+
+    // Init
+    setPhase("3")
+    setSubject("sci")
+  </script>
+</body>
+</html>

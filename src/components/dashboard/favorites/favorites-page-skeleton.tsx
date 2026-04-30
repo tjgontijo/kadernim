@@ -1,6 +1,4 @@
-'use client'
-
-import { PageScaffold } from '@/components/dashboard/shared/page-scaffold'
+import { PageScaffold, ScaffoldHeader } from '@/components/dashboard/shared/page-scaffold'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Card } from '@/components/ui/card'
 
@@ -51,7 +49,7 @@ function FavoriteCardSkeleton({ index }: { index: number }) {
 export function FavoritesPageSkeleton({ cardCount = 8 }: { cardCount?: number }) {
   return (
     <PageScaffold>
-      <PageScaffold.Header
+      <ScaffoldHeader
         title={
           <div className="flex flex-col">
             <Skeleton className="h-7 w-28 -mb-1" />

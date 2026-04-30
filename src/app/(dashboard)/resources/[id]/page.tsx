@@ -25,7 +25,6 @@ import { ResourceMetrics } from '@/components/design-system/resources/ResourceMe
 import { CreateResourceLessonPlanDialog } from '@/components/dashboard/lesson-plans/create-resource-lesson-plan-dialog'
 import { useSessionQuery } from '@/hooks/auth/use-session'
 import { useRouter } from 'next/navigation'
-import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { updateAdminResource } from '@/lib/resources/api-client'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -55,39 +54,7 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
     queryFn: () => fetchResourceDetail(id),
   })
 
-  // Mutation para publicar/despublicar com optimistic update
-  const publishMutation = useMutation({
-    mutationFn: (isPublished: boolean) => 
-      updateAdminResource(resource?.id!, { 
-        archivedAt: isPublished ? null : new Date().toISOString()
-      }),
-    onMutate: async (isPublished) => {
-      // Cancela qualquer refetch em andamento para evitar sobrescrever o optimistic update
-      await queryClient.cancelQueries({ queryKey: ['resource-detail', id] })
-      // Salva o estado anterior para rollback em caso de erro
-      const previous = queryClient.getQueryData<ResourceDetail>(['resource-detail', id])
-      // Atualiza o cache imediatamente
-      queryClient.setQueryData<ResourceDetail>(['resource-detail', id], (old) => {
-        if (!old) return old
-        return { ...old, archivedAt: isPublished ? null : new Date().toISOString() }
-      })
-      return { previous }
-    },
-    onSuccess: (_, isPublished) => {
-      toast.success(isPublished ? 'Material publicado!' : 'Material movido para rascunhos')
-    },
-    onError: (_, __, context) => {
-      // Reverte para o estado anterior se a requisição falhar
-      if (context?.previous) {
-        queryClient.setQueryData(['resource-detail', id], context.previous)
-      }
-      toast.error('Erro ao alterar status')
-    },
-    onSettled: () => {
-      // Confirma com o servidor após a mutação (sucesso ou erro)
-      queryClient.invalidateQueries({ queryKey: ['resource-detail', id] })
-    },
-  })
+
 
   // Provide the loaded resource title and sub-entities to the navigation globally
   useEffect(() => {
@@ -280,22 +247,6 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
               </div>
               
               <div className="space-y-4">
-                <div className="flex items-center justify-between px-1">
-                  <p className="text-sm font-bold text-ink">
-                    {!resource.archivedAt ? (
-                      <span className="text-sage flex items-center gap-1.5">● Publicado</span>
-                    ) : (
-                      <span className="text-ink-mute flex items-center gap-1.5">○ Rascunho</span>
-                    )}
-                  </p>
-                  <Switch 
-                    checked={!resource.archivedAt}
-                    onCheckedChange={(checked) => publishMutation.mutate(checked)}
-                    disabled={publishMutation.isPending}
-                    className="data-[state=checked]:bg-sage scale-90"
-                  />
-                </div>
-
                 <Button
                   variant="outline"
                   className="w-full bg-paper border-line text-ink hover:text-terracotta hover:border-terracotta/30 font-bold py-5 rounded-4 transition-all shadow-sm"

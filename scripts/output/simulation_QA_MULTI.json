@@ -1,0 +1,318 @@
+{
+  "title": "Cidadania, diversidade e conquista histórica de direitos",
+  "skill": {
+    "code": "EF05HI04",
+    "year": 5,
+    "component": "historia",
+    "area": "ciencias_humanas",
+    "description": "Associar a noção de cidadania com os princípios de respeito à diversidade, à pluralidade e aos direitos humanos, reconhecendo também a cidadania como conquista histórica de direitos."
+  },
+  "pages": [
+    {
+      "pageNumber": 1,
+      "components": [
+        {
+          "id": "hdr1-p1",
+          "type": "page_header",
+          "title": "Atividades de História - Cidadania e Direitos",
+          "subject": "História",
+          "year": "5º ano",
+          "bnccCode": "EF05HI04 e EF05HI05",
+          "teacherField": true,
+          "studentField": true,
+          "dateField": true,
+          "schoolField": true
+        },
+        {
+          "id": "intro1",
+          "type": "activity_intro",
+          "instructionText": "Leia com atenção cada situação e responda com base nas informações do próprio enunciado.",
+          "bodyText": "As questões tratam de cidadania, respeito à diversidade, direitos humanos e conquistas históricas de direitos. Justifique suas escolhas quando solicitado.",
+          "source": "Material autoral"
+        },
+        {
+          "id": "q1",
+          "type": "multiple_choice",
+          "number": 1,
+          "prompt": "Numa assembleia da escola, a turma discutiu regras para o recreio. Há alunos com diferentes religiões, costumes, gostos e modos de brincar. Identifique a proposta que melhor associa cidadania ao respeito à diversidade e aos direitos de todos.",
+          "options": [
+            "Criar uma regra para que só participe da brincadeira quem pensa igual à maioria.",
+            "Organizar as brincadeiras de modo que todos possam participar com respeito, sem apelidos ofensivos nem exclusão.",
+            "Permitir que cada grupo use o pátio sem combinar regras comuns.",
+            "Escolher apenas as preferências dos alunos mais velhos para evitar discussões."
+          ],
+          "assessmentTarget": "EF05HI04 - Associar cidadania a respeito à diversidade, inclusão e convivência democrática."
+        },
+        {
+          "id": "q2",
+          "type": "true_false",
+          "number": 2,
+          "prompt": "Em um campeonato da escola, uma equipe não quis aceitar uma colega porque ela usa um costume cultural diferente. A professora lembrou que os direitos humanos defendem a dignidade de todas as pessoas e",
+          "statements": [
+            "Recusar a colega por ser diferente é uma atitude contrária à cidadania.",
+            "Respeitar costumes e identidades diferentes ajuda a construir convivência democrática.",
+            "Direitos humanos só valem para adultos, por isso não se aplicam à situação da escola.",
+            "Incluir a colega com respeito mostra igualdade de direitos entre os estudantes."
+          ],
+          "assessmentTarget": "EF05HI04 - Distinguir atitudes de respeito à diversidade de comportamentos discriminatórios."
+        },
+        {
+          "id": "ftr1-p1",
+          "type": "page_footer",
+          "bnccSkill": "EF05HI04 e EF05HI05",
+          "competencyArea": "Ciências Humanas",
+          "pageNumber": 1
+        }
+      ]
+    },
+    {
+      "pageNumber": 2,
+      "components": [
+        {
+          "id": "hdr1-p2",
+          "type": "page_header",
+          "title": "Atividades de História - Cidadania e Direitos",
+          "subject": "História",
+          "year": "5º ano",
+          "bnccCode": "EF05HI04 e EF05HI05",
+          "teacherField": false,
+          "studentField": false,
+          "dateField": false,
+          "schoolField": false
+        },
+        {
+          "id": "q3",
+          "type": "open_short",
+          "number": 3,
+          "prompt": "No bairro, crianças organizaram uma campanha com o lema: 'Diferenças existem, respeito também'. A campanha defendia que ninguém fosse humilhado por sua aparência, crença ou modo de viver. Descreva como essa campanha se relaciona com cidadania e direitos humanos.",
+          "lines": 3,
+          "assessmentTarget": "EF05HI04 - Explicar a ligação entre cidadania, respeito às diferenças e direitos humanos."
+        },
+        {
+          "id": "q4",
+          "type": "matching",
+          "number": 4,
+          "prompt": "Uma escola registrou atitudes em situações de convivência. Associe cada atitude ao efeito que ela produz na cidadania, considerando respeito, inclusão e igualdade de direitos.",
+          "leftItems": [
+            "Ouvir a opinião de colegas com ideias e,",
+            "Impedir um colega de participar por sua,",
+            "Combinar regras para que todos usem os",
+            "Usar apelidos ofensivos contra um grupo"
+          ],
+          "rightItems": [
+            "Fortalece a convivência democrática",
+            "Desrespeita a igualdade de direitos",
+            "Promove participação de todos",
+            "Produz discriminação e exclusão"
+          ],
+          "assessmentTarget": "EF05HI04 - Relacionar atitudes cotidianas aos princípios de cidadania e respeito à pluralidade."
+        },
+        {
+          "id": "q5",
+          "type": "ordering",
+          "number": 5,
+          "prompt": "Leia a sequência sobre a conquista de um direito na cidade. Primeiro, muitas crianças trabalhavam e faltavam à escola. Depois, famílias e grupos da comunidade fizeram reuniões e pedidos por mais vagas",
+          "items": [
+            "A prefeitura abriu novas vagas e mais crianças passaram a estudar.",
+            "Famílias e grupos da comunidade se organizaram para reivindicar mudanças.",
+            "Muitas crianças trabalhavam e não conseguiam frequentar a escola.",
+            "A comunidade reconheceu a educação como um direito a ser garantido."
+          ],
+          "assessmentTarget": "EF05HI05 - Identificar a ideia de cidadania como conquista histórica de direitos ao longo do tempo."
+        },
+        {
+          "id": "ftr1-p2",
+          "type": "page_footer",
+          "bnccSkill": "EF05HI04 e EF05HI05",
+          "competencyArea": "Ciências Humanas",
+          "pageNumber": 2
+        }
+      ]
+    },
+    {
+      "pageNumber": 3,
+      "components": [
+        {
+          "id": "hdr1-p3",
+          "type": "page_header",
+          "title": "Atividades de História - Cidadania e Direitos",
+          "subject": "História",
+          "year": "5º ano",
+          "bnccCode": "EF05HI04 e EF05HI05",
+          "teacherField": false,
+          "studentField": false,
+          "dateField": false,
+          "schoolField": false
+        },
+        {
+          "id": "q6",
+          "type": "multiple_choice",
+          "number": 6,
+          "prompt": "Em uma cidade, moradores passaram anos pedindo água tratada para todos. Fizeram abaixo-assinados, reuniões e conversas com representantes públicos. Compare as explicações e identifique a que melhor mostra a água tratada como direito conquistado historicamente.",
+          "options": [
+            "A água tratada chegou porque foi um presente dado a alguns moradores.",
+            "A água tratada surgiu de repente, sem relação com participação das pessoas.",
+            "A água tratada foi resultado de mobilização coletiva e de uma conquista de direitos para a comunidade.",
+            "A água tratada era um favor temporário, que podia valer só para quem reclamasse mais."
+          ],
+          "assessmentTarget": "EF05HI05 - Distinguir direito conquistado de favor ou presente e reconhecer a ação coletiva."
+        },
+        {
+          "id": "q7",
+          "type": "comprehension",
+          "number": 7,
+          "prompt": "Leia o caso: 'Antes, a praça do bairro não tinha rampa e muitas pessoas com dificuldade de locomoção não conseguiam entrar. Depois de pedidos da comunidade, a prefeitura fez rampas e melhorou o acesso.' Identifique o que mudou e explique por que essa mudança expressa cidadania.",
+          "lines": 3,
+          "assessmentTarget": "EF05HI05 - Explicar a mudança entre antes e depois como ampliação de direitos e participação social."
+        },
+        {
+          "id": "q8",
+          "type": "reasoning",
+          "number": 8,
+          "prompt": "Um aluno afirmou: 'Se um direito existe hoje, então ele sempre existiu desse jeito'. Considere que muitos direitos foram ampliados depois de lutas, reivindicações e mudanças nas leis. Explique por que essa fala está incorreta.",
+          "lines": 4,
+          "assessmentTarget": "EF05HI05 - Reconhecer que direitos resultam de processos históricos e não surgem prontos."
+        },
+        {
+          "id": "ftr1-p3",
+          "type": "page_footer",
+          "bnccSkill": "EF05HI04 e EF05HI05",
+          "competencyArea": "Ciências Humanas",
+          "pageNumber": 3
+        }
+      ]
+    },
+    {
+      "pageNumber": 4,
+      "components": [
+        {
+          "id": "hdr1-p4",
+          "type": "page_header",
+          "title": "Atividades de História - Cidadania e Direitos",
+          "subject": "História",
+          "year": "5º ano",
+          "bnccCode": "EF05HI04 e EF05HI05",
+          "teacherField": false,
+          "studentField": false,
+          "dateField": false,
+          "schoolField": false
+        },
+        {
+          "id": "q9",
+          "type": "fill_blank",
+          "number": 9,
+          "prompt": "Leia a frase sobre cidadania e complete as lacunas com palavras do quadro. Use o contexto para associar participação social, direitos e história.",
+          "wordBank": [
+            "coletiva",
+            "direito",
+            "histórica",
+            "cidadania"
+          ],
+          "sentenceTemplate": "Quando uma comunidade se organiza para melhorar a vida de todos, ela exerce a ________. Muitas vezes, a conquista de um ________ acontece por participação ________ e por uma luta ________.",
+          "assessmentTarget": "EF05HI05 - Relacionar cidadania à participação coletiva e à conquista histórica de direitos."
+        },
+        {
+          "id": "q10",
+          "type": "creation",
+          "number": 10,
+          "prompt": "A turma vai escrever uma regra para a feira cultural da escola, onde haverá diferentes músicas, comidas, crenças e costumes. Produza uma proposta de regra e uma justificativa que associe cidadania ao respeito à diversidade e à igualdade de direitos.",
+          "lines": 4,
+          "assessmentTarget": "EF05HI04 - Produzir escolha fundamentada sobre atitude ou regra que melhor expressa cidadania em situação diversa."
+        },
+        {
+          "id": "ftr1-p4",
+          "type": "page_footer",
+          "bnccSkill": "EF05HI04 e EF05HI05",
+          "competencyArea": "Ciências Humanas",
+          "pageNumber": 4
+        }
+      ]
+    }
+  ],
+  "teacherGuide": {
+    "answerKey": [
+      {
+        "questionNumber": 1,
+        "expectedAnswer": "B",
+        "acceptableVariations": [
+          "Organizar as brincadeiras de modo inclusivo e respeitoso.",
+          "A alternativa que garante participação de todos sem exclusão."
+        ]
+      },
+      {
+        "questionNumber": 2,
+        "expectedAnswer": "V, V, F, V",
+        "acceptableVariations": [
+          "Verdadeiro, Verdadeiro, Falso, Verdadeiro"
+        ]
+      },
+      {
+        "questionNumber": 3,
+        "expectedAnswer": "Resposta esperada: a campanha relaciona cidadania ao respeito às diferenças, à não discriminação e à defesa da dignidade e dos direitos de todas as pessoas.",
+        "acceptableVariations": [
+          "Menciona respeito, inclusão e direitos humanos.",
+          "Explica que cidadania envolve tratar todos com igualdade e dignidade."
+        ]
+      },
+      {
+        "questionNumber": 4,
+        "expectedAnswer": "Ouvir a opinião de colegas com ideias diferentes - Fortalece a convivência democrática; Impedir um colega de participar por sua identidade ou costume - Desrespeita a igualdade de direitos; Combinar regras para que todos usem os espaços - Promove participação de todos; Usar apelidos ofensivos - Produz discriminação e exclusão.",
+        "acceptableVariations": [
+          "Associações equivalentes com o mesmo sentido."
+        ]
+      },
+      {
+        "questionNumber": 5,
+        "expectedAnswer": "Ordem correta: 3, 2, 4, 1",
+        "acceptableVariations": [
+          "Muitas crianças sem escola -> organização da comunidade -> reconhecimento da educação como direito -> abertura de vagas."
+        ]
+      },
+      {
+        "questionNumber": 6,
+        "expectedAnswer": "C",
+        "acceptableVariations": [
+          "A alternativa que destaca mobilização coletiva e conquista de direitos."
+        ]
+      },
+      {
+        "questionNumber": 7,
+        "expectedAnswer": "Resposta esperada: antes havia exclusão por falta de acesso; depois houve melhoria com rampas. Isso expressa cidadania porque a comunidade participou e houve ampliação do direito de acesso para todos.",
+        "acceptableVariations": [
+          "Menciona mudança do antes para o depois e participação social.",
+          "Relaciona acessibilidade a direito e inclusão."
+        ]
+      },
+      {
+        "questionNumber": 8,
+        "expectedAnswer": "Resposta esperada: a fala está incorreta porque muitos direitos foram conquistados ou ampliados ao longo do tempo por lutas sociais, reivindicações e mudanças nas leis; portanto, não existiram sempre da mesma forma.",
+        "acceptableVariations": [
+          "Direitos têm história.",
+          "Direitos não surgem prontos; resultam de participação social."
+        ]
+      },
+      {
+        "questionNumber": 9,
+        "expectedAnswer": "cidadania; direito; coletiva; histórica",
+        "acceptableVariations": [
+          "Mesma sequência com grafia correta."
+        ]
+      },
+      {
+        "questionNumber": 10,
+        "expectedAnswer": "Resposta pessoal, desde que proponha uma regra inclusiva e a justifique com base em respeito à diversidade, igualdade de direitos, participação ou convivência democrática.",
+        "acceptableVariations": [
+          "Regra contra discriminação com justificativa.",
+          "Regra de participação de todos com base em cidadania e respeito."
+        ]
+      }
+    ],
+    "assessmentNotes": [
+      "Verifique se o estudante identifica ações de inclusão e respeito como expressões de cidadania, evitando a ideia de que cidadania se resume a documentos ou voto.",
+      "Observe se o estudante reconhece atitudes discriminatórias como contrárias aos direitos humanos e à convivência democrática.",
+      "Nas questões sobre conquista histórica, avalie se o aluno compreende a diferença entre direito conquistado e favor.",
+      "Considere respostas que mencionem participação coletiva, mobilização social, mudança ao longo do tempo e ampliação de direitos.",
+      "Na produção final, valorize justificativas claras que articulem cidadania, diversidade, respeito e igualdade de direitos."
+    ]
+  }
+}

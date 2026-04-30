@@ -1,5 +1,5 @@
 import { Skeleton } from '@/components/ui/skeleton'
-import { PageScaffold } from '@/components/dashboard/shared/page-scaffold'
+import { PageScaffold, ScaffoldHeader, ScaffoldHighlight, ScaffoldControls } from '@/components/dashboard/shared/page-scaffold'
 import { cn } from '@/lib/utils/index'
 
 interface PageScaffoldSkeletonProps {
@@ -23,25 +23,25 @@ export function PageScaffoldSkeleton({
     return (
         <PageScaffold>
             {/* Header Skeleton */}
-            <PageScaffold.Header
+            <ScaffoldHeader
                 title={<Skeleton className="h-10 w-48 sm:w-64" />}
                 action={<Skeleton className="h-10 sm:h-12 w-32 sm:w-40 rounded-2xl" />}
             />
 
             {/* Highlight Skeleton */}
             {showHighlight && (
-                <PageScaffold.Highlight>
+                <ScaffoldHighlight>
                     <Skeleton className="h-20 sm:h-24 w-full rounded-2xl" />
-                </PageScaffold.Highlight>
+                </ScaffoldHighlight>
             )}
 
             {/* Controls Skeleton */}
-            <PageScaffold.Controls>
+            <ScaffoldControls>
                 <div className="flex-1">
                     <Skeleton className="h-12 w-full rounded-2xl" />
                 </div>
                 <Skeleton className="h-12 w-12 rounded-2xl" />
-            </PageScaffold.Controls>
+            </ScaffoldControls>
 
             {/* Content Skeleton */}
             <div className="px-0 mt-6">

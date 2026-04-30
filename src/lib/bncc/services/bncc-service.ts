@@ -154,6 +154,22 @@ export async function listBnccSkills(filters: BnccSkillFilter): Promise<ListBncc
   }
 }
 
+export async function getBnccSkillByCode(code: string) {
+  return prisma.bnccSkill.findFirst({
+    where: { code },
+    select: {
+      code: true,
+      description: true,
+      unitTheme: true,
+      knowledgeObject: true,
+      comments: true,
+      curriculumSuggestions: true,
+      grade: { select: { name: true } },
+      subject: { select: { name: true } },
+    },
+  })
+}
+
 export async function getBnccSkillById(id: string): Promise<BnccSkillDetail | null> {
   const skill = await prisma.bnccSkill.findUnique({
     where: { id },

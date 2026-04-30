@@ -11,12 +11,10 @@ export async function GET(request: NextRequest) {
         const [libraryCount, favoriteCount] = await Promise.all([
             // Conta apenas materiais ativos (não arquivados)
             prisma.resource.count({
-                where: {
-                    archivedAt: null
-                }
+                where: {}
             }),
             // Conta favoritos se houver sessão
-            session?.user?.id 
+            session?.user?.id
                 ? prisma.userResourceInteraction.count({
                     where: {
                         userId: session.user.id,
@@ -31,7 +29,8 @@ export async function GET(request: NextRequest) {
             favorites: favoriteCount
         }, {
             headers: {
-                'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=600'
+                'Cache-Control': 'private, no-cache, no-store, max-age=0, must-revalidate',
+                'Vary': 'Cookie'
             }
         })
     } catch (error) {

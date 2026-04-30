@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Design System - 15 Molduras Prontas</title>
+  <style>
+    :root {
+      --ink: #111111;
+      --bg: #efefef;
+      --paper: #ffffff;
+      --muted: #4b5563;
+      --shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Nunito", "Arial Rounded MT Bold", Arial, sans-serif;
+    }
+
+    .poster {
+      width: min(1600px, calc(100% - 36px));
+      margin: 18px auto;
+      padding: 30px 34px 26px;
+      background: #f8f8f8;
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .poster-title {
+      text-align: center;
+      margin: 0;
+      font-size: 54px;
+      line-height: 1;
+      letter-spacing: 1px;
+      font-weight: 950;
+    }
+
+    .poster-title::before,
+    .poster-title::after {
+      content: "⌁";
+      display: inline-block;
+      margin: 0 16px;
+      transform: rotate(12deg);
+    }
+
+    .subtitle {
+      text-align: center;
+      margin: 12px 0 34px;
+      color: var(--muted);
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      row-gap: 38px;
+    }
+
+    .item { min-width: 0; }
+
+    .item-head {
+      display: grid;
+      grid-template-columns: 38px 1fr;
+      column-gap: 12px;
+      align-items: start;
+      min-height: 88px;
+      margin-bottom: 6px;
+    }
+
+    .item-number {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      color: #fff;
+      background: var(--ink);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 950;
+      font-size: 22px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    }
+
+    .item-title {
+      margin: 2px 0 4px;
+      font-size: 34px;
+      font-weight: 950;
+      letter-spacing: -0.3px;
+      text-transform: uppercase;
+      line-height: 1;
+    }
+
+    .item-desc {
+      margin: 0;
+      font-size: 17px;
+      line-height: 1.35;
+      color: #1f2937;
+      font-family: Arial, sans-serif;
+    }
+
+    .moldura {
+      position: relative;
+      min-height: 265px;
+      background: var(--paper);
+      border: 4px solid var(--ink);
+      border-radius: 20px;
+      overflow: visible;
+      box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
+    }
+
+    .moldura .inner {
+      position: absolute;
+      inset: 14px;
+      border: 3px dashed var(--ink);
+      border-radius: 14px;
+      opacity: 0.9;
+    }
+
+    .moldura-rendada {
+      border-style: dashed;
+      border-width: 5px;
+      border-radius: 14px;
+    }
+
+    .lace-corner {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      border: 5px solid var(--ink);
+      border-radius: 999px;
+      background: #fff;
+    }
+
+    .lace-corner::before {
+      content: "";
+      position: absolute;
+      inset: 12px;
+      border: 3px dotted var(--ink);
+      border-radius: 999px;
+    }
+
+    .lace-tl { top: -30px; left: -30px; }
+    .lace-tr { top: -30px; right: -30px; }
+    .lace-bl { bottom: -30px; left: -30px; }
+    .lace-br { bottom: -30px; right: -30px; }
+
+    .moldura-caderno-dobra {
+      border-radius: 22px;
+      padding-left: 56px;
+    }
+
+    .moldura-caderno-dobra .inner {
+      inset: 14px 14px 14px 66px;
+      border-radius: 12px;
+    }
+
+    .rings-left {
+      position: absolute;
+      left: -18px;
+      top: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .rings-left span {
+      width: 38px;
+      height: 16px;
+      border: 5px solid var(--ink);
+      border-right: none;
+      border-radius: 999px 0 0 999px;
+      background: #fff;
+    }
+
+    .moldura-grossa {
+      border-width: 10px;
+      border-radius: 10px;
+    }
+
+    .hatch {
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      opacity: 0.9;
+    }
+
+    .hatch::before,
+    .hatch::after {
+      content: "";
+      position: absolute;
+      width: 20px;
+      border-top: 3px solid var(--ink);
+      transform-origin: left center;
+    }
+
+    .hatch::before { transform: rotate(45deg); top: 4px; left: 0; }
+    .hatch::after { transform: rotate(45deg); top: 12px; left: 3px; width: 14px; }
+
+    .hatch-tl { top: 14px; left: 14px; }
+    .hatch-tr { top: 14px; right: 14px; transform: scaleX(-1); }
+    .hatch-bl { bottom: 14px; left: 14px; transform: scaleY(-1); }
+    .hatch-br { bottom: 14px; right: 14px; transform: scale(-1); }
+
+    .moldura-pergaminho {
+      border-radius: 28px 18px 26px 18px;
+      border-width: 5px;
+    }
+
+    .moldura-pergaminho .inner { border-radius: 24px 16px 22px 18px; }
+
+    .tape {
+      position: absolute;
+      width: 66px;
+      height: 24px;
+      background: #fff;
+      border: 4px solid var(--ink);
+      clip-path: polygon(6% 0, 94% 0, 100% 18%, 92% 35%, 100% 52%, 92% 68%, 100% 84%, 94% 100%, 6% 100%, 0 82%, 8% 64%, 0 48%, 8% 32%, 0 16%);
+    }
+
+    .tape-tl { top: -12px; left: -8px; transform: rotate(-32deg); }
+    .tape-br { right: -8px; bottom: -12px; transform: rotate(-32deg); }
+
+    .moldura-etiqueta {
+      border-width: 5px;
+      border-radius: 10px;
+      clip-path: polygon(7% 0, 100% 0, 100% 100%, 7% 100%, 0 88%, 5% 74%, 0 60%, 5% 46%, 0 32%, 5% 18%);
+    }
+
+    .moldura-etiqueta .inner {
+      inset: 16px;
+      border-radius: 10px;
+    }
+
+    .moldura-etiqueta::after {
+      content: "";
+      position: absolute;
+      width: 42px;
+      height: 42px;
+      left: 22px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 5px solid var(--ink);
+      border-radius: 50%;
+      background: #fff;
+    }
+
+    .moldura-empilhada {
+      border-radius: 24px 16px 22px 26px;
+      z-index: 2;
+    }
+
+    .moldura-empilhada::before,
+    .moldura-empilhada::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border: 4px solid var(--ink);
+      border-radius: 24px 16px 22px 26px;
+      background: #fff;
+      z-index: -1;
+    }
+
+    .moldura-empilhada::before { transform: translate(16px, 10px) rotate(-1deg); }
+    .moldura-empilhada::after { transform: translate(8px, 5px) rotate(-0.5deg); }
+
+    .rings-top {
+      position: absolute;
+      top: -24px;
+      left: 30px;
+      display: flex;
+      gap: 18px;
+    }
+
+    .rings-top span {
+      width: 26px;
+      height: 38px;
+      border: 5px solid var(--ink);
+      border-bottom: none;
+      border-radius: 999px 999px 0 0;
+      background: #fff;
+    }
+
+    .moldura-caderno-wide {
+      border-radius: 24px;
+      padding-left: 54px;
+    }
+
+    .moldura-caderno-wide .inner {
+      inset: 14px 14px 14px 64px;
+      border-radius: 14px;
+    }
+
+    .moldura-dupla { border-radius: 20px; }
+
+    .moldura-dupla .inner {
+      border-style: solid;
+      border-width: 2px;
+      inset: 10px;
+      border-radius: 14px;
+    }
+
+    .moldura-carimbo {
+      border-style: dashed;
+      border-width: 5px;
+      border-radius: 20px;
+    }
+
+    .moldura-carimbo .inner { border-width: 2px; }
+
+    .moldura-carimbo::after {
+      content: "✦";
+      position: absolute;
+      right: -12px;
+      top: -26px;
+      font-size: 70px;
+      line-height: 1;
+      color: var(--ink);
+      transform: rotate(9deg);
+    }
+
+    .extra-divider {
+      margin: 8px 0 -6px;
+      padding: 12px 16px;
+      border: 2px dashed #1f2937;
+      border-radius: 12px;
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+      background: rgba(255, 255, 255, 0.75);
+    }
+
+    .extra-note {
+      margin: 6px 0 0;
+      font-size: 14px;
+      font-weight: 700;
+      color: #4b5563;
+      font-family: Arial, sans-serif;
+    }
+
+    .moldura-svg {
+      border: none;
+      background: transparent;
+      box-shadow: none;
+      min-height: 250px;
+      overflow: visible;
+    }
+
+    .moldura-svg.wide {
+      min-height: 190px;
+    }
+
+    .moldura-svg svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      pointer-events: none;
+      shape-rendering: geometricPrecision;
+    }
+
+    .moldura-svg svg * { vector-effect: non-scaling-stroke; }
+
+    .moldura-svg .inside {
+      position: relative;
+      z-index: 2;
+      min-height: inherit;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      color: #6b7280;
+      font-size: 15px;
+      letter-spacing: 0.02em;
+      padding: 52px 60px;
+      font-weight: 700;
+    }
+
+    .moldura-svg.notebook .inside,
+    .moldura-svg.binder .inside {
+      padding-left: 88px;
+    }
+
+    .moldura-svg.pad .inside { padding-top: 76px; }
+    .moldura-svg.wide .inside { padding: 38px 76px; }
+
+    .extra-model .moldura-svg {
+      width: min(820px, 100%);
+      margin-inline: auto;
+      aspect-ratio: 520 / 300;
+      min-height: auto;
+    }
+
+    .extra-model .moldura-svg.wide {
+      width: min(920px, 100%);
+      aspect-ratio: 1040 / 230;
+      min-height: auto;
+    }
+
+    .tip-footer {
+      width: 100%;
+      max-width: 980px;
+      margin: 34px auto 0;
+      background: #eee5cf;
+      border-radius: 12px;
+      padding: 13px 24px;
+      font-size: 20px;
+      color: #1f2937;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      justify-content: center;
+      font-family: Arial, sans-serif;
+    }
+
+    .tip-footer strong {
+      color: #1d4f91;
+      font-family: "Arial Rounded MT Bold", Arial, sans-serif;
+      font-size: 22px;
+    }
+
+    @media (max-width: 1200px) {
+      .poster {
+        width: min(1100px, calc(100% - 24px));
+        padding: 22px 18px 20px;
+      }
+
+      .poster-title { font-size: 42px; }
+      .item-title { font-size: 28px; }
+    }
+
+    @media (max-width: 780px) {
+      .poster-title { font-size: 34px; }
+      .subtitle { font-size: 18px; }
+      .item-title { font-size: 24px; }
+      .moldura { min-height: 220px; }
+      .moldura-svg .inside { padding: 34px 24px; }
+      .extra-model .moldura-svg,
+      .extra-model .moldura-svg.wide { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main class="poster">
+    <h1 class="poster-title">DESIGN SYSTEM - 15 MOLDURAS PRONTAS</h1>
+    <p class="subtitle">Foco total em molduras visuais. O conteúdo interno é livre.</p>
+
+    <section class="grid">
+      <article class="item">
+        <header class="item-head">
+          <span class="item-number">1</span>
+          <div>
+            <h2 class="item-title">Moldura Rendada</h2>
+            <p class="item-desc">Contorno pontilhado com cantos decorativos arredondados.</p>
+          </div>
+        </header>
+        <div class="moldura moldura-rendada">
+          <div class="inner"></div>
+          <span class="lace-corner lace-tl"></span>
+          <span class="lace-corner lace-tr"></span>
+          <span class="lace-corner lace-bl"></span>
+          <span class="lace-corner lace-br"></span>
+        </div>
+      </article>
+
+      <article class="item">
+        <header class="item-head">
+          <span class="item-number">2</span>
+          <div>
+            <h2 class="item-title">Moldura Caderno</h2>
+            <p class="item-desc">Argolas laterais com visual de caderno escolar.</p>
+          </div>
+        </header>
+        <div class="moldura moldura-caderno-dobra">
+          <div class="inner"></div>
+          <div class="rings-left" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+      </article>
+
+      <article class="item">
+        <header class="item-head">
+          <span class="item-number">3</span>
+          <div>
+            <h2 class="item-title">Moldura Grossa</h2>
+            <p class="item-desc">Traço mais forte para blocos de destaque visual.</p>
+          </div>
+        </header>
+        <div class="moldura moldura-grossa">
+          <span class="hatch hatch-tl"></span>
+          <span class="hatch hatch-tr"></span>
+          <span class="hatch hatch-bl"></span>
+          <span class="hatch hatch-br"></span>
+        </div>
+      </article>
+
+      <article class="item">
+        <header class="item-head">
+          <span class="item-number">4</span>
+          <div>
+            <h2 class="item-title">Moldura Pergaminho</h2>
+            <p class="item-desc">Formato orgânico com fitas nos cantos.</p>
+          </div>
+        </header>
+        <div class="moldura moldura-pergaminho">
+          <div class="inner"></div>
+          <span class="tape tape-tl"></span>
+          <span class="tape tape-br"></span>
+        </div>
+      </article>
+
+      <article class="item">
+        <header class="item-head">
+          <span class="item-number">5</span>
+          <div>
+            <h2 class="item-title">Moldura Etiqueta</h2>
+            <p class="item-desc">Lateral serrilhada com ilhós, lembrando tag artesanal.</p>
+          </div>
+        </header>
+        <div class="moldura moldura-etiqueta">
+          <div class="inner"></div>
+        </div>
+      </article>
+
+      <article class="item">
+        <header class="item-head">
+          <span class="item-number">6</span>
+          <div>
+            <h2 class="item-title">Moldura Empilhada</h2>
+            <p class="item-desc">Efeito de folhas sobrepostas com argolas no topo.</p>
+          </div>
+        </header>
+        <div class="moldura moldura-empilhada">
+          <div class="rings-top" aria-hidden="true">
+            <span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+      </article>
+
+      <article class="item">
+        <header class="item-head">
+          <span class="item-number">7</span>
+          <div>
+            <h2 class="item-title">Moldura Caderno Wide</h2>
+            <p class="item-desc">Versão horizontal com argolas para áreas maiores.</p>
+          </div>
+        </header>
+        <div class="moldura moldura-caderno-wide">
+          <div class="inner"></div>
+          <div class="rings-left" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+      </article>
+
+      <article class="item">
+        <header class="item-head">
+          <span class="item-number">8</span>
+          <div>
+            <h2 class="item-title">Moldura Dupla</h2>
+            <p class="item-desc">Contorno externo sólido e linha interna de reforço.</p>
+          </div>
+        </header>
+        <div class="moldura moldura-dupla">
+          <div class="inner"></div>
+        </div>
+      </article>
+
+      <article class="item">
+        <header class="item-head">
+          <span class="item-number">9</span>
+          <div>
+            <h2 class="item-title">Moldura Carimbo</h2>
+            <p class="item-desc">Tracejada com selo/estrela para fechamento.</p>
+          </div>
+        </header>
+        <div class="moldura moldura-carimbo">
+          <div class="inner"></div>
+        </div>
+      </article>
+
+      <article class="item">
+        <div class="extra-divider">
+          Modelos Extras (SVG Editorial)
+          <p class="extra-note">Base reaproveitada do estilo que você enviou, sem substituir as molduras anteriores.</p>
+        </div>
+      </article>
+
+      <article class="item extra-model">
+        <header class="item-head">
+          <span class="item-number">10</span>
+          <div>
+            <h2 class="item-title">Moldura Externa Decorada</h2>
+            <p class="item-desc">Contorno tracejado com cantos ornamentados e pontos editoriais.</p>
+          </div>
+        </header>
+        <div class="moldura moldura-svg">
+          <svg viewBox="0 0 520 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+            <path d="M52 40 H468 V260 H52 Z" fill="white" stroke="#000" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="14 18"/>
+            <path d="M52 40 V100 M52 200 V260 M468 40 V100 M468 200 V260 M52 40 H112 M408 40 H468 M52 260 H112 M408 260 H468" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round"/>
+            <g fill="white" stroke="#000" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M52 40 C26 40 18 18 36 10 C54 2 66 18 60 36"/>
+              <path d="M66 40 C66 16 94 12 98 36"/>
+              <path d="M96 40 C100 18 132 18 126 48"/>
+              <path d="M34 18 C38 30 40 34 52 40"/>
+              <circle cx="42" cy="20" r="2.6" fill="#000"/>
+              <circle cx="70" cy="26" r="2.4" fill="#000"/>
+              <circle cx="105" cy="30" r="2.4" fill="#000"/>
+            </g>
+            <g transform="translate(520 0) scale(-1 1)" fill="white" stroke="#000" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M52 40 C26 40 18 18 36 10 C54 2 66 18 60 36"/>
+              <path d="M66 40 C66 16 94 12 98 36"/>
+              <path d="M96 40 C100 18 132 18 126 48"/>
+              <path d="M34 18 C38 30 40 34 52 40"/>
+              <circle cx="42" cy="20" r="2.6" fill="#000"/>
+              <circle cx="70" cy="26" r="2.4" fill="#000"/>
+              <circle cx="105" cy="30" r="2.4" fill="#000"/>
+            </g>
+            <g transform="translate(0 300) scale(1 -1)" fill="white" stroke="#000" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M52 40 C26 40 18 18 36 10 C54 2 66 18 60 36"/>
+              <path d="M66 40 C66 16 94 12 98 36"/>
+              <path d="M96 40 C100 18 132 18 126 48"/>
+              <path d="M34 18 C38 30 40 34 52 40"/>
+              <circle cx="42" cy="20" r="2.6" fill="#000"/>
+              <circle cx="70" cy="26" r="2.4" fill="#000"/>
+              <circle cx="105" cy="30" r="2.4" fill="#000"/>
+            </g>
+            <g transform="translate(520 300) scale(-1 -1)" fill="white" stroke="#000" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M52 40 C26 40 18 18 36 10 C54 2 66 18 60 36"/>
+              <path d="M66 40 C66 16 94 12 98 36"/>
+              <path d="M96 40 C100 18 132 18 126 48"/>
+              <path d="M34 18 C38 30 40 34 52 40"/>
+              <circle cx="42" cy="20" r="2.6" fill="#000"/>
+              <circle cx="70" cy="26" r="2.4" fill="#000"/>
+              <circle cx="105" cy="30" r="2.4" fill="#000"/>
+            </g>
+            <circle cx="16" cy="10" r="2.4" fill="#000"/>
+            <circle cx="504" cy="10" r="2.4" fill="#000"/>
+            <circle cx="16" cy="290" r="2.4" fill="#000"/>
+            <circle cx="504" cy="290" r="2.4" fill="#000"/>
+          </svg>
+          <div class="inside">área livre para conteúdo</div>
+        </div>
+      </article>
+
+      <article class="item extra-model">
+        <header class="item-head">
+          <span class="item-number">11</span>
+          <div>
+            <h2 class="item-title">Moldura Folha com Argolas</h2>
+            <p class="item-desc">Formato de página escolar com espiral lateral.</p>
+          </div>
+        </header>
+        <div class="moldura moldura-svg notebook">
+          <svg viewBox="0 0 520 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+            <path d="M92 32 C182 24 332 26 462 36 Q492 38 492 70 L492 236 Q490 272 454 278 C314 288 176 286 92 278 Q58 274 56 236 L56 70 Q58 38 92 32 Z" fill="white" stroke="#000" stroke-width="6" stroke-linejoin="round"/>
+            <path d="M104 58 C206 50 330 52 454 60 L454 240 C330 252 206 252 104 242 Z" fill="none" stroke="#000" stroke-width="3.2" stroke-linecap="round" stroke-dasharray="12 16"/>
+            <path d="M86 38 C76 90 76 210 88 266" fill="none" stroke="#000" stroke-width="4"/>
+            <g fill="white" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M40 72 C60 52 94 54 98 76 C102 96 70 94 48 88 C32 84 28 80 40 72Z"/>
+              <path d="M40 118 C60 98 94 100 98 122 C102 142 70 140 48 134 C32 130 28 126 40 118Z"/>
+              <path d="M40 164 C60 144 94 146 98 168 C102 188 70 186 48 180 C32 176 28 172 40 164Z"/>
+              <path d="M40 210 C60 190 94 192 98 214 C102 234 70 232 48 226 C32 222 28 218 40 210Z"/>
+            </g>
+          </svg>
+          <div class="inside">área livre para conteúdo</div>
+        </div>
+      </article>
+
+      <article class="item extra-model">
+        <header class="item-head">
+          <span class="item-number">12</span>
+          <div>
+            <h2 class="item-title">Moldura Papel Colado</h2>
+            <p class="item-desc">Recorte orgânico com fitas aparentes nos cantos.</p>
+          </div>
+        </header>
+        <div class="moldura moldura-svg">
+          <svg viewBox="0 0 520 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+            <path d="M74 54 C124 40 174 58 226 50 C290 40 354 56 424 50 C456 48 474 68 468 100 C458 146 480 184 456 232 C408 250 342 230 288 242 C226 256 168 234 106 242 C72 246 54 224 60 192 C72 150 44 110 64 76 Q66 62 74 54Z" fill="white" stroke="#000" stroke-width="6" stroke-linejoin="round"/>
+            <path d="M96 76 C162 66 224 80 284 72 C344 66 386 76 438 72 C430 116 448 158 426 210 C334 198 230 222 94 208 C106 158 78 116 96 76Z" fill="none" stroke="#000" stroke-width="3.2" stroke-dasharray="12 16" stroke-linecap="round"/>
+            <g fill="#f8f8f8" stroke="#000" stroke-width="4" stroke-linejoin="round">
+              <path d="M72 18 L158 30 L148 66 L62 54 Z"/>
+              <path d="M362 24 L448 10 L458 46 L372 60 Z"/>
+            </g>
+            <g stroke="#000" stroke-width="2.4" stroke-linecap="round" opacity="0.65">
+              <path d="M78 26 l10 10 M96 24 l10 10 M114 22 l10 10"/>
+              <path d="M374 30 l10 10 M392 28 l10 10 M410 26 l10 10"/>
+            </g>
+          </svg>
+          <div class="inside">área livre para conteúdo</div>
+        </div>
+      </article>
+
+      <article class="item extra-model">
+        <header class="item-head">
+          <span class="item-number">13</span>
+          <div>
+            <h2 class="item-title">Moldura Tira Rasgada</h2>
+            <p class="item-desc">Faixa horizontal estilo etiqueta destacável.</p>
+          </div>
+        </header>
+        <div class="moldura moldura-svg wide">
+          <svg viewBox="0 0 1040 230" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+            <path d="M70 42 L964 42 L1002 66 L980 88 L1002 112 L980 136 L1002 162 L962 190 L70 190 L34 166 L58 142 L34 118 L58 94 L34 68 Z" fill="white" stroke="#000" stroke-width="7" stroke-linejoin="round"/>
+            <path d="M106 70 L918 70 Q948 72 950 104 L950 150 L106 160 Q76 154 78 126 L78 100 Q78 76 106 70Z" fill="none" stroke="#000" stroke-width="3.5" stroke-dasharray="14 20" stroke-linecap="round"/>
+            <circle cx="114" cy="116" r="23" fill="white" stroke="#000" stroke-width="7"/>
+          </svg>
+          <div class="inside">área livre para conteúdo</div>
+        </div>
+      </article>
+
+      <article class="item extra-model">
+        <header class="item-head">
+          <span class="item-number">14</span>
+          <div>
+            <h2 class="item-title">Moldura Fichário</h2>
+            <p class="item-desc">Variação de fichário com argolas laterais e traço dinâmico.</p>
+          </div>
+        </header>
+        <div class="moldura moldura-svg binder">
+          <svg viewBox="0 0 520 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+            <path d="M92 42 C190 30 346 36 462 48 Q488 50 490 82 L490 220 Q488 250 456 256 C306 270 172 266 92 256 Q58 252 56 220 L56 82 Q58 48 92 42Z" fill="white" stroke="#000" stroke-width="6" stroke-linejoin="round"/>
+            <g fill="white" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M38 78 C62 56 98 60 102 84 C106 104 72 102 48 94 C30 88 26 84 38 78Z"/>
+              <path d="M38 124 C62 102 98 106 102 130 C106 150 72 148 48 140 C30 134 26 130 38 124Z"/>
+              <path d="M38 170 C62 148 98 152 102 176 C106 196 72 194 48 186 C30 180 26 176 38 170Z"/>
+              <path d="M38 216 C62 194 98 198 102 222 C106 242 72 240 48 232 C30 226 26 222 38 216Z"/>
+            </g>
+            <g stroke="#000" stroke-width="3.5" stroke-linecap="round">
+              <path d="M438 72 l22 -16"/>
+              <path d="M452 86 l24 -8"/>
+              <path d="M438 228 l22 16"/>
+              <path d="M452 214 l24 8"/>
+            </g>
+          </svg>
+          <div class="inside">área livre para conteúdo</div>
+        </div>
+      </article>
+
+      <article class="item extra-model">
+        <header class="item-head">
+          <span class="item-number">15</span>
+          <div>
+            <h2 class="item-title">Moldura Bloquinho</h2>
+            <p class="item-desc">Folhas sobrepostas com espiral superior.</p>
+          </div>
+        </header>
+        <div class="moldura moldura-svg pad">
+          <svg viewBox="0 0 520 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+            <path d="M108 76 C188 62 330 70 440 82 L452 256 C308 272 168 272 70 252 Z" fill="white" stroke="#000" stroke-width="4.5" opacity=".65"/>
+            <path d="M92 64 C188 50 330 58 452 72 L460 242 C308 260 160 260 58 242 Z" fill="white" stroke="#000" stroke-width="4.5" opacity=".86"/>
+            <path d="M72 56 C168 42 330 48 464 66 L458 224 Q310 240 64 230 C74 178 50 114 72 56Z" fill="white" stroke="#000" stroke-width="6" stroke-linejoin="round"/>
+            <g fill="white" stroke="#000" stroke-width="6">
+              <path d="M120 56 C114 16 146 14 146 56"/>
+              <circle cx="133" cy="68" r="13"/>
+              <path d="M190 56 C184 16 216 14 216 56"/>
+              <circle cx="203" cy="68" r="13"/>
+              <path d="M260 56 C254 16 286 14 286 56"/>
+              <circle cx="273" cy="68" r="13"/>
+              <path d="M330 56 C324 16 356 14 356 56"/>
+              <circle cx="343" cy="68" r="13"/>
+            </g>
+            <g stroke="#000" stroke-width="3.4" stroke-linecap="round">
+              <path d="M84 206 l-18 28"/>
+              <path d="M100 210 l-12 24"/>
+              <path d="M116 212 l-8 20"/>
+            </g>
+          </svg>
+          <div class="inside">área livre para conteúdo</div>
+        </div>
+      </article>
+    </section>
+
+    <p class="tip-footer">
+      <strong>Dica de uso:</strong>
+      Misture 2 ou 3 molduras por página para manter variação sem perder unidade.
+    </p>
+  </main>
+</body>
+</html>

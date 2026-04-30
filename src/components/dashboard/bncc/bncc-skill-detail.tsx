@@ -137,9 +137,11 @@ export function BnccSkillDetailPanel({ skill, isLoading }: BnccSkillDetailProps)
         </section>
       )}
 
-      <footer className="pt-2 text-xs text-ink-mute">
-        {skill.relatedResourcesCount} {skill.relatedResourcesCount === 1 ? 'material relacionado' : 'materiais relacionados'} no catalogo.
-      </footer>
+      {skill.relatedResourcesCount > 0 && (
+        <footer className="pt-2 text-xs text-ink-mute">
+          {skill.relatedResourcesCount} {skill.relatedResourcesCount === 1 ? 'material relacionado' : 'materiais relacionados'} no catalogo.
+        </footer>
+      )}
     </article>
   )
 }

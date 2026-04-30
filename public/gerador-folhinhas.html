@@ -1,0 +1,542 @@
+
+<style>
+  :root {
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --color-text-primary: #1e293b;
+    --color-text-secondary: #64748b;
+    --color-background-primary: #ffffff;
+    --color-background-secondary: #f8fafc;
+    --color-border-secondary: #e2e8f0;
+    --color-border-tertiary: #f1f5f9;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  .app { display: flex; gap: 0; min-height: 600px; font-family: var(--font-sans); }
+
+  .sidebar {
+    width: 270px;
+    min-width: 270px;
+    background: var(--color-background-secondary);
+    border-right: 0.5px solid var(--color-border-tertiary);
+    padding: 18px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .sidebar-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+  }
+
+  .sidebar-sub {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    margin-top: 2px;
+    line-height: 1.5;
+  }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+
+  .field label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .field select, .field textarea {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    padding: 7px 9px;
+    border: 0.5px solid var(--color-border-secondary);
+    border-radius: 8px;
+    background: var(--color-background-primary);
+    color: var(--color-text-primary);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .field select:focus, .field textarea:focus { border-color: #7F77DD; }
+  .field textarea { resize: vertical; min-height: 90px; }
+
+  .btn-generate {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 11px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    background: #7F77DD;
+    color: white;
+    transition: opacity 0.2s, transform 0.1s;
+    width: 100%;
+  }
+
+  .btn-generate:hover { opacity: 0.88; }
+  .btn-generate:active { transform: scale(0.98); }
+  .btn-generate:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .btn-print {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 7px 12px;
+    border-radius: 8px;
+    border: 0.5px solid var(--color-border-secondary);
+    cursor: pointer;
+    background: var(--color-background-primary);
+    color: var(--color-text-primary);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 0.15s;
+  }
+
+  .btn-print:hover { background: var(--color-background-secondary); }
+
+  .main { flex: 1; padding: 18px; overflow-y: auto; min-height: 600px; }
+
+  .main-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+
+  .main-title { font-size: 16px; font-weight: 500; color: var(--color-text-primary); }
+
+  .sheets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 14px;
+  }
+
+  .sheet-card {
+    border-radius: 14px;
+    overflow: hidden;
+    border: 0.5px solid var(--color-border-tertiary);
+    background: var(--color-background-primary);
+  }
+
+  .sheet-header {
+    padding: 13px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .sheet-emoji { font-size: 20px; flex-shrink: 0; }
+
+  .sheet-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: white;
+    line-height: 1.3;
+    flex: 1;
+  }
+
+  .sheet-ano {
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 7px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.25);
+    color: white;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .sheet-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 4px;
+  }
+
+  .def-box {
+    background: var(--color-background-secondary);
+    border-radius: 8px;
+    padding: 9px 11px;
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--color-text-primary);
+    border-left: 3px solid;
+  }
+
+  .items-list { display: flex; flex-direction: column; gap: 4px; }
+
+  .item-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--color-text-primary);
+  }
+
+  .item-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    margin-top: 6px;
+    flex-shrink: 0;
+  }
+
+  .examples-wrap { display: flex; flex-wrap: wrap; gap: 4px; }
+
+  .ex-chip {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 500;
+  }
+
+  .tip-box {
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    line-height: 1.5;
+  }
+
+  .divider { height: 0.5px; background: var(--color-border-tertiary); }
+
+  .empty-state, .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 420px;
+    gap: 10px;
+    color: var(--color-text-secondary);
+  }
+
+  .spinner {
+    width: 32px;
+    height: 32px;
+    border: 2.5px solid var(--color-border-tertiary);
+    border-top-color: #7F77DD;
+    border-radius: 50%;
+    animation: spin 0.75s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .state-text { font-size: 14px; font-weight: 500; }
+  .state-sub { font-size: 12px; color: var(--color-text-secondary); }
+
+  .error-box {
+    background: var(--color-background-danger);
+    border: 0.5px solid var(--color-border-danger);
+    border-radius: 10px;
+    padding: 11px 13px;
+    font-size: 13px;
+    color: var(--color-text-danger);
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+
+  .hint-box {
+    font-size: 11px;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+    padding: 8px 10px;
+    background: var(--color-background-primary);
+    border-radius: 8px;
+    border: 0.5px solid var(--color-border-tertiary);
+  }
+</style>
+
+<h2 class="sr-only">Gerador de folhinhas pedagógicas com IA</h2>
+
+<div class="app">
+  <div class="sidebar">
+    <div>
+      <div class="sidebar-title">Gerador de Folhinhas</div>
+      <div class="sidebar-sub">Materiais pedagógicos gerados por IA, sem trabalho manual</div>
+    </div>
+
+    <div class="field">
+      <label>Disciplina</label>
+      <select id="disciplina">
+        <option>Português</option>
+        <option>Matemática</option>
+        <option>Ciências</option>
+        <option>História</option>
+        <option>Geografia</option>
+        <option>Inglês</option>
+        <option>Artes</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Ano Escolar</label>
+      <select id="ano">
+        <option>1º ano EF</option>
+        <option>2º ano EF</option>
+        <option>3º ano EF</option>
+        <option selected>4º ano EF</option>
+        <option>5º ano EF</option>
+        <option>6º ano EF</option>
+        <option>7º ano EF</option>
+        <option>8º ano EF</option>
+        <option>9º ano EF</option>
+        <option>Ensino Médio</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Tópicos (um por linha)</label>
+      <textarea id="topicos" placeholder="Ex:
+Frações
+Números decimais
+Porcentagem
+Potenciação"></textarea>
+    </div>
+
+    <div class="field">
+      <label>Paleta de Cores</label>
+      <select id="estilo">
+        <option value="vivo">Colorido e vibrante</option>
+        <option value="pastel">Tons pastéis</option>
+        <option value="solido">Sólido e moderno</option>
+      </select>
+    </div>
+
+    <button class="btn-generate" id="btnGerar" onclick="gerarFolhinhas()">Gerar Folhinhas</button>
+    <button class="btn-print" style="width:100%; justify-content:center; margin-top:-7px" onclick="testarLayout()">Testar Layout (Mock)</button>
+
+    <div class="hint-box">Insira de 3 a 6 tópicos para um conjunto completo de folhinhas.</div>
+  </div>
+
+  <div class="main">
+    <div class="main-header">
+      <span class="main-title" id="mainTitle">Suas folhinhas</span>
+      <button class="btn-print" id="btnPrint" onclick="window.print()" style="display:none">Imprimir</button>
+    </div>
+    <div id="errorBox" class="error-box" style="display:none"></div>
+    <div id="container"></div>
+  </div>
+</div>
+
+<script>
+const PALETTES = {
+  vivo: [
+    { hdr:'#7F77DD', dot:'#AFA9EC', chip:'#EEEDFE', chipTxt:'#3C3489', tip:'#EEEDFE', tipTxt:'#26215C', acc:'#7F77DD' },
+    { hdr:'#D4537E', dot:'#ED93B1', chip:'#FBEAF0', chipTxt:'#72243E', tip:'#FBEAF0', tipTxt:'#4B1528', acc:'#D4537E' },
+    { hdr:'#1D9E75', dot:'#5DCAA5', chip:'#E1F5EE', chipTxt:'#085041', tip:'#E1F5EE', tipTxt:'#04342C', acc:'#1D9E75' },
+    { hdr:'#D85A30', dot:'#F0997B', chip:'#FAECE7', chipTxt:'#712B13', tip:'#FAECE7', tipTxt:'#4A1B0C', acc:'#D85A30' },
+    { hdr:'#378ADD', dot:'#85B7EB', chip:'#E6F1FB', chipTxt:'#0C447C', tip:'#E6F1FB', tipTxt:'#042C53', acc:'#378ADD' },
+    { hdr:'#BA7517', dot:'#EF9F27', chip:'#FAEEDA', chipTxt:'#633806', tip:'#FAEEDA', tipTxt:'#412402', acc:'#BA7517' },
+  ],
+  pastel: [
+    { hdr:'#AFA9EC', dot:'#7F77DD', chip:'#EEEDFE', chipTxt:'#3C3489', tip:'#EEEDFE', tipTxt:'#26215C', acc:'#534AB7' },
+    { hdr:'#F4C0D1', dot:'#D4537E', chip:'#FBEAF0', chipTxt:'#72243E', tip:'#FBEAF0', tipTxt:'#4B1528', acc:'#993556' },
+    { hdr:'#9FE1CB', dot:'#1D9E75', chip:'#E1F5EE', chipTxt:'#085041', tip:'#E1F5EE', tipTxt:'#04342C', acc:'#0F6E56' },
+    { hdr:'#F5C4B3', dot:'#D85A30', chip:'#FAECE7', chipTxt:'#712B13', tip:'#FAECE7', tipTxt:'#4A1B0C', acc:'#993C1D' },
+    { hdr:'#B5D4F4', dot:'#378ADD', chip:'#E6F1FB', chipTxt:'#0C447C', tip:'#E6F1FB', tipTxt:'#042C53', acc:'#185FA5' },
+    { hdr:'#FAC775', dot:'#BA7517', chip:'#FAEEDA', chipTxt:'#633806', tip:'#FAEEDA', tipTxt:'#412402', acc:'#854F0B' },
+  ],
+  solido: [
+    { hdr:'#534AB7', dot:'#AFA9EC', chip:'#EEEDFE', chipTxt:'#3C3489', tip:'#EEEDFE', tipTxt:'#26215C', acc:'#534AB7' },
+    { hdr:'#993556', dot:'#ED93B1', chip:'#FBEAF0', chipTxt:'#72243E', tip:'#FBEAF0', tipTxt:'#4B1528', acc:'#993556' },
+    { hdr:'#0F6E56', dot:'#5DCAA5', chip:'#E1F5EE', chipTxt:'#085041', tip:'#E1F5EE', tipTxt:'#04342C', acc:'#0F6E56' },
+    { hdr:'#993C1D', dot:'#F0997B', chip:'#FAECE7', chipTxt:'#712B13', tip:'#FAECE7', tipTxt:'#4A1B0C', acc:'#993C1D' },
+    { hdr:'#185FA5', dot:'#85B7EB', chip:'#E6F1FB', chipTxt:'#0C447C', tip:'#E6F1FB', tipTxt:'#042C53', acc:'#185FA5' },
+    { hdr:'#854F0B', dot:'#EF9F27', chip:'#FAEEDA', chipTxt:'#633806', tip:'#FAEEDA', tipTxt:'#412402', acc:'#854F0B' },
+  ]
+};
+
+function setEmpty() {
+  document.getElementById('container').innerHTML = '<div class="empty-state"><div style="font-size:40px;opacity:0.3">📋</div><div class="state-text">Nenhuma folhinha gerada ainda</div><div class="state-sub">Configure os parâmetros e clique em Gerar</div></div>';
+  document.getElementById('btnPrint').style.display = 'none';
+  document.getElementById('btnGerar').disabled = false;
+}
+
+function setLoading(msg) {
+  document.getElementById('container').innerHTML = `<div class="loading-state"><div class="spinner"></div><div class="state-text">Gerando com IA...</div><div class="state-sub">${msg}</div></div>`;
+  document.getElementById('btnGerar').disabled = true;
+  document.getElementById('btnPrint').style.display = 'none';
+  document.getElementById('errorBox').style.display = 'none';
+}
+
+function setError(msg) {
+  const eb = document.getElementById('errorBox');
+  eb.textContent = msg;
+  eb.style.display = 'block';
+  document.getElementById('container').innerHTML = '';
+  document.getElementById('btnGerar').disabled = false;
+}
+
+async function gerarFolhinhas() {
+  const disciplina = document.getElementById('disciplina').value;
+  const ano = document.getElementById('ano').value;
+  const topicosRaw = document.getElementById('topicos').value.trim();
+  const estilo = document.getElementById('estilo').value;
+
+  if (!topicosRaw) { setError('Insira pelo menos um tópico.'); return; }
+
+  const topicos = topicosRaw.split('\n').map(t => t.trim()).filter(Boolean).slice(0, 6);
+  setLoading(`Criando ${topicos.length} folhinha(s) sobre ${disciplina}...`);
+
+  const prompt = `Você é especialista em materiais pedagógicos para ${ano}.
+Crie folhinhas de conceitos sobre: ${topicos.join(', ')} (disciplina: ${disciplina}).
+
+Retorne SOMENTE JSON válido, sem markdown, sem texto extra:
+{"folhinhas":[{"titulo":"string","emoji":"string","definicao":"string 1-2 frases simples","itens":["Nome: descrição"],"exemplos":["ex1","ex2","ex3"],"dica":"string dica importante"}]}
+
+- Linguagem para ${ano}
+- 2 a 5 itens por folhinha
+- 2 a 5 exemplos curtos
+- Dica prática e memorável
+- Português brasileiro`;
+
+  try {
+    const res = await fetch('/api/v1/generate-folhinhas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
+    });
+
+    const rawResponse = await res.text();
+    console.log('Resposta da API:', rawResponse);
+
+    if (!res.ok) {
+      try {
+        const e = JSON.parse(rawResponse);
+        throw new Error(e.error || `Erro HTTP ${res.status}`);
+      } catch(e) {
+        throw new Error(`Erro do Servidor (${res.status})`);
+      }
+    }
+
+    const parsed = JSON.parse(rawResponse);
+    if (!parsed.folhinhas?.length) throw new Error('Resposta vazia da IA. Tente novamente.');
+
+    renderSheets(parsed.folhinhas, estilo, ano);
+    document.getElementById('mainTitle').textContent = `${disciplina} — ${ano}`;
+    document.getElementById('btnGerar').disabled = false;
+    document.getElementById('btnPrint').style.display = 'flex';
+
+  } catch(err) {
+    setError('Erro: ' + (err.message || 'Falha desconhecida. Tente novamente.'));
+  }
+}
+
+function testarLayout() {
+  const mockData = [
+    {
+      titulo: "Substantivos Próprios",
+      emoji: "🏷️",
+      definicao: "São palavras que nomeiam seres específicos de uma mesma espécie, como pessoas, cidades e países.",
+      itens: ["Nomes próprios: Devem ser sempre escritos com letra inicial maiúscula.", "Exemplos reais: Brasil, Thiago, São Paulo, Kadernim."],
+      exemplos: ["Brasil", "Alice", "Amazonas", "Totó"],
+      dica: "Lembre-se: nomes de pessoas e lugares nunca começam com letra minúscula!"
+    },
+    {
+      titulo: "Adição e Subtração",
+      emoji: "➕",
+      definicao: "Operações matemáticas fundamentais para juntar quantidades ou descobrir a diferença entre elas.",
+      itens: ["Soma (+): Quando você ganha ou junta itens.", "Subtração (-): Quando você retira ou perde itens."],
+      exemplos: ["10 + 5 = 15", "20 - 8 = 12", "50 + 50 = 100"],
+      dica: "Na dúvida, use os dedos ou desenhos para conferir o resultado!"
+    },
+    {
+      titulo: "Ciclo da Água",
+      emoji: "💧",
+      definicao: "O movimento contínuo da água entre a superfície terrestre e a atmosfera através de mudanças de estado.",
+      itens: ["Evaporação: A água vira vapor com o calor do sol.", "Condensação: O vapor vira nuvens no céu.", "Precipitação: A água cai em forma de chuva."],
+      exemplos: ["Chuva", "Nuvens", "Rios", "Sol"],
+      dica: "A água que bebemos hoje é a mesma que circulava no tempo dos dinossauros!"
+    },
+    {
+      titulo: "Regra de Três",
+      emoji: "📐",
+      definicao: "Processo matemático para resolver problemas que envolvem quatro valores, dos quais conhecemos três.",
+      itens: ["Proporcionalidade: Relação entre as grandezas.", "Cálculo Cruzado: Multiplicar em cruz para achar o X."],
+      exemplos: ["Preço/Peso", "Velocidade/Tempo", "Escala"],
+      dica: "Sempre organize as grandezas da mesma espécie na mesma coluna!"
+    },
+    {
+      titulo: "Sistema Solar",
+      emoji: "🪐",
+      definicao: "Conjunto de planetas, asteroides e cometas que orbitam ao redor do Sol, nossa estrela central.",
+      itens: ["Planetas Rochosos: Mercúrio, Vênus, Terra e Marte.", "Planetas Gasosos: Júpiter, Saturno, Urano e Netuno."],
+      exemplos: ["Sol", "Terra", "Marte", "Saturno"],
+      dica: "Júpiter é tão grande que caberiam 1.300 Terras dentro dele!"
+    },
+    {
+      titulo: "Revolução Francesa",
+      emoji: "📜",
+      definicao: "Movimento social e político que transformou a França e espalhou ideias de liberdade por todo o mundo.",
+      itens: ["Liberdade: O direito de agir segundo a própria vontade.", "Igualdade: Todos os cidadãos têm os mesmos direitos.", "Fraternidade: O espírito de união entre as pessoas."],
+      exemplos: ["Bastilha", "Direitos Humanos", "Paris"],
+      dica: "O lema 'Liberdade, Igualdade e Fraternidade' é usado até hoje!"
+    }
+  ];
+
+  const estilo = document.getElementById('estilo').value;
+  renderSheets(mockData, estilo, '4º ano EF');
+  document.getElementById('mainTitle').textContent = `Teste de Layout — Exemplo`;
+  document.getElementById('btnPrint').style.display = 'flex';
+}
+
+function renderSheets(folhinhas, estilo, ano) {
+  const pal = PALETTES[estilo] || PALETTES.vivo;
+  const grid = document.createElement('div');
+  grid.className = 'sheets-grid';
+
+  folhinhas.forEach((f, i) => {
+    const p = pal[i % pal.length];
+    const card = document.createElement('div');
+    card.className = 'sheet-card';
+
+    const itemsHtml = (f.itens || []).map(item => {
+      const idx = item.indexOf(':');
+      const name = idx > -1 ? item.slice(0, idx).trim() : item;
+      const desc = idx > -1 ? item.slice(idx + 1).trim() : '';
+      return `<div class="item-row"><div class="item-dot" style="background:${p.dot}"></div><span>${desc ? `<strong>${name}:</strong> ${desc}` : item}</span></div>`;
+    }).join('');
+
+    const exHtml = (f.exemplos || []).map(ex =>
+      `<span class="ex-chip" style="background:${p.chip};color:${p.chipTxt}">${ex}</span>`
+    ).join('');
+
+    card.innerHTML = `
+      <div class="sheet-header" style="background:${p.hdr}">
+        <span class="sheet-emoji">${f.emoji || '📖'}</span>
+        <span class="sheet-title">${f.titulo}</span>
+        <span class="sheet-ano">${ano}</span>
+      </div>
+      <div class="sheet-body">
+        <div>
+          <div class="section-label" style="color:${p.acc}">Conceito</div>
+          <div class="def-box" style="border-left-color:${p.acc}">${f.definicao}</div>
+        </div>
+        ${f.itens?.length ? `<div><div class="section-label" style="color:${p.acc}">Classificação</div><div class="items-list">${itemsHtml}</div></div>` : ''}
+        ${f.exemplos?.length ? `<div><div class="section-label" style="color:${p.acc}">Exemplos</div><div class="examples-wrap">${exHtml}</div></div>` : ''}
+        ${f.dica ? `<div class="divider"></div><div class="tip-box" style="background:${p.tip};color:${p.tipTxt}"><span style="font-size:14px;flex-shrink:0">⭐</span><span>${f.dica}</span></div>` : ''}
+      </div>`;
+
+    grid.appendChild(card);
+  });
+
+  const c = document.getElementById('container');
+  c.innerHTML = '';
+  c.appendChild(grid);
+}
+
+setEmpty();
+</script>
