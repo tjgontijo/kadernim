@@ -310,7 +310,7 @@ export function ResourceGallery({ files = [], videos = [], title = 'Material' }:
           {/* Sidebar/Horizontal List with File Covers - Bottom on Mobile, Left on Desktop */}
           {allItems.length > 0 && (
             <div
-              className={`${isMobile ? 'order-2 w-full mt-[8px] h-[130px]' : 'order-1 w-[124px] -ml-[6px] flex-shrink-0'} relative overflow-hidden`}
+              className={`${isMobile ? 'order-2 w-full mt-[12px] h-[140px]' : 'order-1 w-[124px] -ml-[6px] flex-shrink-0'} relative overflow-hidden`}
               style={!isMobile ? { height: sidebarHeight > 0 ? `${sidebarHeight}px` : '0px' } : undefined}
             >
               <div
@@ -318,7 +318,7 @@ export function ResourceGallery({ files = [], videos = [], title = 'Material' }:
                 className={`absolute inset-0 ${isMobile ? 'overflow-x-auto overflow-y-hidden' : 'overflow-y-auto overflow-x-hidden'} scrollbar-hide native-scroll`}
                 onWheelCapture={(event) => event.stopPropagation()}
               >
-                <div ref={scrollContainerRef} className={`flex ${isMobile ? 'flex-row' : 'flex-col'} gap-[12px] sm:gap-[16px] ${isMobile ? 'pb-[4px] pt-[4px] px-[2px]' : 'pb-[56px] pt-[4px] px-[6px]'}`}>
+                <div ref={scrollContainerRef} className={`flex ${isMobile ? 'flex-row' : 'flex-col'} gap-[12px] sm:gap-[16px] ${isMobile ? 'pb-[12px] pt-[8px] px-[8px]' : 'pb-[56px] pt-[4px] px-[6px]'}`}>
                   {allItems.map((item, idx) => {
                     const isSelected = selectedItemId === item.id
 
