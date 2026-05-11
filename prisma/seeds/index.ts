@@ -10,6 +10,7 @@ import { seedResourceFiles } from './seed-resource-files';
 import { seedBilling } from './seed-billing';
 import { seedBnccSkillsFundamental } from './seed-bncc-fundamental';
 import { seedBnccSkillsInfantil } from './seed-bncc-infantil';
+import { seedQuestionBankLookupTables } from './seed-question-bank';
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg(createPrismaPgPoolConfig(process.env.DATABASE_URL)),
@@ -20,6 +21,15 @@ async function cleanDatabase() {
   // Respeita as FK e não falha se tabelas não existem
   // Ordem importa: FKs primeiro!
   try {
+    await prisma.questionBankRequestExport.deleteMany()
+    await prisma.questionBankRequestItem.deleteMany()
+    await prisma.questionBankRequest.deleteMany()
+    await prisma.questionBankFeedback.deleteMany()
+    await prisma.questionBankQuestionSkill.deleteMany()
+    await prisma.questionBankQuestion.deleteMany()
+    await prisma.questionBankContext.deleteMany()
+    await prisma.questionBankSource.deleteMany()
+    await prisma.questionBankQuestionType.deleteMany()
     await prisma.relatedResource.deleteMany()
     await prisma.userResourceInteraction.deleteMany()
     await prisma.review.deleteMany()
@@ -65,6 +75,7 @@ async function createInitialData() {
     await seedResourceFiles(prisma);
     await seedBnccSkillsFundamental(prisma);
     await seedBnccSkillsInfantil(prisma);
+    await seedQuestionBankLookupTables(prisma);
     await seedBilling(prisma);
 
     console.log('✅ População do banco de dados concluída com sucesso!');

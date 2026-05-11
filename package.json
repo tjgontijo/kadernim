@@ -14,9 +14,15 @@
     "start": "next start",
     "audit:colors": "playwright test tests/color-audit",
     "audit:colors:ui": "playwright test tests/color-audit --ui",
-    "design-audit": "node ./scripts/design-audit.mjs",
-    "backup:db": "npx tsx scripts/backup-db-to-r2.ts",
-    "restore:db": "npx tsx scripts/restore-db.ts"
+    "design-audit": "node ./scripts/maintenance/design-audit.mjs",
+    "backup:db": "npx tsx scripts/db/backup-db-to-r2.ts",
+    "restore:db": "npx tsx scripts/db/restore-db.ts",
+    "enrich:resources:batch:generate": "npx tsx src/server/db/scripts/enrichment/generate-resource-enrichment-batch.ts",
+    "enrich:resources:batch:submit": "npx tsx src/server/db/scripts/enrichment/submit-resource-enrichment-batch.ts",
+    "enrich:resources:batch:consume": "npx tsx src/server/db/scripts/enrichment/consume-resource-enrichment-batch.ts",
+    "pdf:validate:batch:generate": "npx tsx src/server/db/scripts/pdf-validation/generate-pdf-validation-batch.ts",
+    "pdf:validate:batch:submit": "npx tsx src/server/db/scripts/pdf-validation/submit-pdf-validation-batch.ts",
+    "pdf:validate:batch:consume": "npx tsx src/server/db/scripts/pdf-validation/consume-pdf-validation-batch.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",

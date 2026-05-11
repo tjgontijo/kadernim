@@ -10,6 +10,10 @@ import {
 } from '@/lib/lesson-plans/schemas'
 import { generateLessonPlanContent } from '@/lib/lesson-plans/services/generate-content-service'
 import { getResourceSnapshotForPlanner } from '@/lib/lesson-plans/services/resource-snapshot-service'
+import {
+  isResourceSnapshotMvpEligible,
+  LESSON_PLAN_MVP_BLOCK_MESSAGE,
+} from '@/lib/lesson-plans/mvp-eligibility'
 
 type LessonPlanWithRelations = Prisma.LessonPlanGetPayload<{
   include: {
@@ -163,6 +167,10 @@ export async function createLessonPlanFromResource(params: {
   params.onPhase?.({ phase: 'snapshot', status: 'started' })
   const source = await getResourceSnapshotForPlanner(params.resourceId)
   params.onPhase?.({ phase: 'snapshot', status: 'completed' })
+
+  if (!isResourceSnapshotMvpEligible(source.snapshot)) {
+    throw new Error('LESSON_PLAN_MVP_NOT_ELIGIBLE')
+  }
 
   const { content, model, metrics } = await generateLessonPlanContent({
     resourceSnapshot: source.snapshot,

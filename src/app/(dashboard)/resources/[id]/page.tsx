@@ -30,6 +30,7 @@ import { updateAdminResource } from '@/lib/resources/api-client'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { ResourceDetailPageSkeleton } from '@/components/dashboard/resources/resource-detail-page-skeleton'
+import { isLessonPlanMvpEligible } from '@/lib/lesson-plans/mvp-eligibility'
 
 export default function ResourceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -165,6 +166,11 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
     )
   }
 
+  const isLessonPlanEligible = isLessonPlanMvpEligible({
+    educationLevelName: resource.educationLevel,
+    subjectName: resource.subject,
+  })
+
   return (
     <div className="dashboard-page-container py-8 sm:py-16">
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px] gap-[48px] items-start tracking-tight">
@@ -236,7 +242,11 @@ export default function ResourceDetailPage({ params }: { params: Promise<{ id: s
               </div>
             </div>
             <div className="border-t border-dashed border-line pt-4">
-              <CreateResourceLessonPlanDialog resourceId={resource.id} />
+              <CreateResourceLessonPlanDialog
+                resourceId={resource.id}
+                disabled={!isLessonPlanEligible}
+                disabledReason="Em breve..."
+              />
             </div>
           </div>
 

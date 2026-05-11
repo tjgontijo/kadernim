@@ -21,6 +21,8 @@ import type { LessonPlanBuildPhase, LessonPlanBuildPhaseStatus, LessonPlanMode }
 
 interface CreateResourceLessonPlanDialogProps {
   resourceId: string
+  disabled?: boolean
+  disabledReason?: string
 }
 
 const PHASE_LABELS: Record<LessonPlanBuildPhase, string> = {
@@ -46,7 +48,11 @@ const MODES: Array<{ label: string; value: LessonPlanMode }> = [
   { label: 'Tarefa', value: 'HOMEWORK' },
 ]
 
-export function CreateResourceLessonPlanDialog({ resourceId }: CreateResourceLessonPlanDialogProps) {
+export function CreateResourceLessonPlanDialog({
+  resourceId,
+  disabled = false,
+  disabledReason,
+}: CreateResourceLessonPlanDialogProps) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [durationMinutes, setDurationMinutes] = useState(50)
@@ -105,7 +111,7 @@ export function CreateResourceLessonPlanDialog({ resourceId }: CreateResourceLes
       <DialogTrigger asChild>
         <Button variant="outline" className="w-full rounded-full border-line text-ink hover:bg-paper-2">
           <Calendar className="h-4 w-4" />
-          Criar plano de aula
+          {disabled ? (disabledReason ?? 'Indisponível para este recurso') : 'Criar plano de aula'}
         </Button>
       </DialogTrigger>
 

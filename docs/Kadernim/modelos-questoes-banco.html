@@ -1,0 +1,2074 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kadernim - Modelos de Questões para Banco</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      [data-phase="1"] {
+        --font: "Nunito", sans-serif;
+        --fw: 500;
+        --fw-bold: 800;
+        --fs-body: 16px;
+        --fs-sm: 13px;
+        --fs-question: 22px;
+        --fs-title: 30px;
+        --fs-meta: 14px;
+        --lh: 2;
+        --radius-xl: 24px;
+        --radius-lg: 20px;
+        --radius-md: 16px;
+        --radius-sm: 12px;
+        --bw: 3px;
+        --shadow: 4px 4px 0 var(--subject-shadow);
+        --shadow-sm: 3px 3px 0 var(--subject-shadow);
+        --pad: 20px;
+        --gap: 16px;
+        --answer-lh: 44px;
+      }
+
+      [data-phase="2"] {
+        --font: "Nunito", sans-serif;
+        --fw: 500;
+        --fw-bold: 700;
+        --fs-body: 15px;
+        --fs-sm: 12px;
+        --fs-question: 19px;
+        --fs-title: 26px;
+        --fs-meta: 13px;
+        --lh: 1.8;
+        --radius-xl: 16px;
+        --radius-lg: 14px;
+        --radius-md: 12px;
+        --radius-sm: 8px;
+        --bw: 2.5px;
+        --shadow: 3px 3px 0 var(--subject-shadow);
+        --shadow-sm: 2px 2px 0 var(--subject-shadow);
+        --pad: 18px;
+        --gap: 14px;
+        --answer-lh: 40px;
+      }
+
+      [data-phase="3"] {
+        --font: "Nunito", sans-serif;
+        --fw: 400;
+        --fw-bold: 700;
+        --fs-body: 15px;
+        --fs-sm: 12px;
+        --fs-question: 18px;
+        --fs-title: 24px;
+        --fs-meta: 12px;
+        --lh: 1.7;
+        --radius-xl: 12px;
+        --radius-lg: 10px;
+        --radius-md: 8px;
+        --radius-sm: 6px;
+        --bw: 2px;
+        --shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.07);
+        --pad: 16px;
+        --gap: 12px;
+        --answer-lh: 36px;
+      }
+
+      [data-phase="4"] {
+        --font: "Inter", sans-serif;
+        --fw: 400;
+        --fw-bold: 600;
+        --fs-body: 14px;
+        --fs-sm: 11px;
+        --fs-question: 16px;
+        --fs-title: 22px;
+        --fs-meta: 11px;
+        --lh: 1.6;
+        --radius-xl: 8px;
+        --radius-lg: 6px;
+        --radius-md: 5px;
+        --radius-sm: 4px;
+        --bw: 1.5px;
+        --shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+        --pad: 14px;
+        --gap: 10px;
+        --answer-lh: 32px;
+      }
+
+      [data-phase="5"] {
+        --font: "Inter", sans-serif;
+        --fw: 400;
+        --fw-bold: 600;
+        --fs-body: 14px;
+        --fs-sm: 11px;
+        --fs-question: 15px;
+        --fs-title: 20px;
+        --fs-meta: 11px;
+        --lh: 1.5;
+        --radius-xl: 4px;
+        --radius-lg: 4px;
+        --radius-md: 3px;
+        --radius-sm: 2px;
+        --bw: 1px;
+        --shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+        --pad: 14px;
+        --gap: 8px;
+        --answer-lh: 30px;
+      }
+
+      [data-subject="sci"] {
+        --subject-primary: #059669;
+        --subject-light: #d1fae5;
+        --subject-dark: #065f46;
+        --subject-shadow: rgba(5, 150, 105, 0.35);
+      }
+
+      [data-subject="math"] {
+        --subject-primary: #2563eb;
+        --subject-light: #dbeafe;
+        --subject-dark: #1e40af;
+        --subject-shadow: rgba(37, 99, 235, 0.35);
+      }
+
+      [data-subject="pt"] {
+        --subject-primary: #7c3aed;
+        --subject-light: #ede9fe;
+        --subject-dark: #5b21b6;
+        --subject-shadow: rgba(124, 58, 237, 0.35);
+      }
+
+      [data-subject="hist"] {
+        --subject-primary: #d97706;
+        --subject-light: #fef3c7;
+        --subject-dark: #92400e;
+        --subject-shadow: rgba(217, 119, 6, 0.35);
+      }
+
+      [data-subject="geo"] {
+        --subject-primary: #0891b2;
+        --subject-light: #cffafe;
+        --subject-dark: #075985;
+        --subject-shadow: rgba(8, 145, 178, 0.35);
+      }
+
+      [data-subject="art"] {
+        --subject-primary: #db2777;
+        --subject-light: #fce7f3;
+        --subject-dark: #9d174d;
+        --subject-shadow: rgba(219, 39, 119, 0.35);
+      }
+
+      [data-subject="ef"] {
+        --subject-primary: #16a34a;
+        --subject-light: #dcfce7;
+        --subject-dark: #14532d;
+        --subject-shadow: rgba(22, 163, 74, 0.35);
+      }
+
+      [data-subject="ing"] {
+        --subject-primary: #0369a1;
+        --subject-light: #e0f2fe;
+        --subject-dark: #0c4a6e;
+        --subject-shadow: rgba(3, 105, 161, 0.35);
+      }
+
+      [data-subject="er"] {
+        --subject-primary: #6366f1;
+        --subject-light: #e0e7ff;
+        --subject-dark: #3730a3;
+        --subject-shadow: rgba(99, 102, 241, 0.35);
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: #f1f5f9;
+        color: #1e293b;
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: 56px 1fr;
+        grid-template-columns: 240px minmax(0, 1fr);
+        grid-template-areas:
+          "topbar topbar"
+          "sidebar main";
+      }
+
+      .topbar {
+        grid-area: topbar;
+        background: #0f172a;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        overflow-x: auto;
+        padding: 0 24px;
+        position: sticky;
+        top: 0;
+        z-index: 20;
+      }
+
+      .topbar-logo {
+        color: #fff;
+        flex-shrink: 0;
+        font-size: 16px;
+        font-weight: 700;
+      }
+
+      .topbar-logo span {
+        color: #38bdf8;
+      }
+
+      .topbar-title {
+        color: #cbd5e1;
+        flex-shrink: 0;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .topbar-sep {
+        background: #334155;
+        flex-shrink: 0;
+        height: 24px;
+        width: 1px;
+      }
+
+      .ctrl-group {
+        align-items: center;
+        display: flex;
+        flex-shrink: 0;
+        gap: 8px;
+      }
+
+      .ctrl-label {
+        color: #64748b;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .phase-btns,
+      .subject-btns {
+        display: flex;
+        gap: 3px;
+      }
+
+      .phase-btn,
+      .subject-btn {
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 5px 11px;
+        transition: all 0.15s;
+        white-space: nowrap;
+      }
+
+      .phase-btn {
+        background: transparent;
+        border: 1.5px solid #334155;
+        color: #94a3b8;
+      }
+
+      .phase-btn:hover {
+        border-color: #64748b;
+        color: #cbd5e1;
+      }
+
+      .phase-btn.active {
+        background: #fff;
+        border-color: #fff;
+        color: #0f172a;
+      }
+
+      .subject-btn {
+        background: transparent;
+        border: 1.5px solid transparent;
+      }
+
+      .sidebar {
+        background: #fff;
+        border-right: 1px solid #e2e8f0;
+        grid-area: sidebar;
+        height: calc(100vh - 56px);
+        overflow-y: auto;
+        padding: 20px 0;
+        position: sticky;
+        top: 56px;
+      }
+
+      .nav-group {
+        margin-bottom: 14px;
+      }
+
+      .nav-group-title {
+        color: #94a3b8;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        padding: 10px 16px 4px;
+        text-transform: uppercase;
+      }
+
+      .nav-link {
+        border-left: 2px solid transparent;
+        color: #475569;
+        display: block;
+        font-size: 12px;
+        padding: 6px 16px;
+        text-decoration: none;
+        transition: all 0.1s;
+      }
+
+      .nav-link:hover,
+      .nav-link.is-active {
+        background: #f0f9ff;
+        border-left-color: var(--subject-primary);
+        color: var(--subject-primary);
+        font-weight: 600;
+      }
+
+      .main {
+        grid-area: main;
+        overflow-y: auto;
+        padding: 42px 56px 120px;
+      }
+
+      .doc-header {
+        margin-bottom: 44px;
+        max-width: 960px;
+      }
+
+      .doc-kicker {
+        color: var(--subject-primary);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+      }
+
+      .doc-title {
+        color: #0f172a;
+        font-size: 34px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        line-height: 1.08;
+        margin-bottom: 12px;
+      }
+
+      .doc-desc {
+        color: #64748b;
+        font-size: 14px;
+        line-height: 1.7;
+        max-width: 760px;
+      }
+
+      .phase-info-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 22px;
+        margin-top: 24px;
+        padding: 16px 18px;
+      }
+
+      .pi-item {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+
+      .pi-label {
+        color: #94a3b8;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .pi-value {
+        color: #0f172a;
+        font-family: var(--font);
+        font-size: 14px;
+        font-weight: var(--fw-bold);
+      }
+
+      .ds-section {
+        margin-bottom: 72px;
+        max-width: 980px;
+      }
+
+      .ds-section-title {
+        color: #0f172a;
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin-bottom: 8px;
+      }
+
+      .ds-section-desc {
+        color: #64748b;
+        font-size: 13px;
+        line-height: 1.6;
+        margin-bottom: 24px;
+        max-width: 760px;
+      }
+
+      .model-meta {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        margin-bottom: 14px;
+        padding: 14px;
+      }
+
+      .model-meta-item {
+        min-width: 0;
+      }
+
+      .model-meta-label {
+        color: #94a3b8;
+        display: block;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+      }
+
+      .model-meta-value {
+        color: #334155;
+        display: block;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .ds-render {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 32px;
+      }
+
+      .question {
+        background: #fff;
+        border: none;
+        border-radius: var(--radius-lg);
+        box-shadow: none;
+        padding: var(--pad);
+      }
+
+      [data-phase="1"] .question {
+        border-color: var(--subject-primary);
+        overflow: hidden;
+        position: relative;
+      }
+
+      [data-phase="1"] .question::after {
+        background: var(--subject-light);
+        border-radius: 50%;
+        content: "";
+        height: 80px;
+        position: absolute;
+        right: -20px;
+        top: -20px;
+        width: 80px;
+        z-index: 0;
+      }
+
+      .q-header {
+        align-items: flex-start;
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .q-number {
+        color: var(--subject-primary);
+        flex-shrink: 0;
+        font-family: var(--font);
+        font-size: var(--fs-question);
+        font-weight: var(--fw-bold);
+        line-height: 1;
+        min-width: 36px;
+      }
+
+      .q-prompt {
+        color: #1e293b;
+        font-family: var(--font);
+        font-size: var(--fs-body);
+        font-weight: var(--fw);
+        line-height: var(--lh);
+        position: relative;
+        z-index: 1;
+      }
+
+      .q-instruction {
+        color: #64748b;
+        font-family: var(--font);
+        font-size: var(--fs-sm);
+        font-style: italic;
+        font-weight: var(--fw);
+        margin-bottom: 10px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .mc-opts {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .mc-opt {
+        align-items: center;
+        border: none;
+        display: flex;
+        gap: 6px;
+        padding: 6px 0;
+      }
+
+      .mc-letter {
+        align-items: center;
+        color: var(--subject-dark);
+        display: flex;
+        flex-shrink: 0;
+        font-family: var(--font);
+        font-size: var(--fs-body);
+        font-weight: 800;
+        height: 32px;
+        width: 22px;
+      }
+
+      .mc-box {
+        background: #f8fafc;
+        border: var(--bw) solid #cbd5e1;
+        border-radius: 8px;
+        flex-shrink: 0;
+        height: 32px;
+        width: 32px;
+      }
+
+      [data-phase="1"] .mc-box,
+      [data-phase="1"] .mc-letter {
+        height: 42px;
+      }
+
+      [data-phase="1"] .mc-box {
+        width: 42px;
+      }
+
+      .mc-text {
+        color: #334155;
+        font-family: var(--font);
+        font-size: var(--fs-body);
+        font-weight: var(--fw);
+        line-height: 1.5;
+      }
+
+      .answer-lines {
+        display: flex;
+        flex-direction: column;
+        margin-top: 12px;
+      }
+
+      .answer-line {
+        border-bottom: 1.5px solid #cbd5e1;
+        height: var(--answer-lh);
+      }
+
+      [data-phase="1"] .answer-line {
+        border-bottom-color: var(--subject-primary);
+        border-bottom-width: 2px;
+        opacity: 0.5;
+      }
+
+      .tf-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .tf-item {
+        align-items: center;
+        border-bottom: 1px dashed #e2e8f0;
+        display: flex;
+        gap: 12px;
+        padding: 7px 0;
+      }
+
+      .tf-item:last-child {
+        border-bottom: none;
+      }
+
+      .tf-bubble {
+        align-items: center;
+        border: var(--bw) solid #cbd5e1;
+        border-radius: 8px;
+        display: flex;
+        flex-shrink: 0;
+        height: 32px;
+        justify-content: center;
+        width: 32px;
+      }
+
+      [data-phase="1"] .tf-bubble {
+        height: 42px;
+        width: 42px;
+      }
+
+      .tf-text {
+        color: #374151;
+        font-family: var(--font);
+        font-size: var(--fs-body);
+        font-weight: var(--fw);
+        line-height: var(--lh);
+      }
+
+      .fb-bank {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 14px;
+      }
+
+      .fb-word {
+        background: var(--subject-light);
+        border: var(--bw) solid var(--subject-primary);
+        border-radius: var(--radius-sm);
+        color: var(--subject-dark);
+        font-family: var(--font);
+        font-size: var(--fs-sm);
+        font-weight: var(--fw-bold);
+        padding: 4px 10px;
+      }
+
+      .fb-sent {
+        color: #1e293b;
+        font-family: var(--font);
+        font-size: var(--fs-body);
+        font-weight: var(--fw);
+        line-height: calc(var(--lh) * 1.6);
+      }
+
+      .fb-blank {
+        border-bottom: 2px solid var(--subject-primary);
+        display: inline-block;
+        margin: 0 3px;
+        vertical-align: -2px;
+        width: 100px;
+      }
+
+      .match-grid {
+        align-items: center;
+        display: grid;
+        gap: 12px 0;
+        grid-template-columns: minmax(30%, auto) 60px minmax(30%, auto);
+        justify-content: start;
+        margin: 16px 0;
+      }
+
+      .match-item-left,
+      .match-item-right {
+        align-items: center;
+        display: flex;
+        gap: 12px;
+        justify-content: flex-start;
+      }
+
+      .match-ltr {
+        color: var(--subject-primary);
+        flex-shrink: 0;
+        font-family: var(--font);
+        font-size: var(--fs-body);
+        font-weight: var(--fw-bold);
+        width: 20px;
+      }
+
+      .match-pill {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: var(--radius-sm);
+        color: #374151;
+        font-family: var(--font);
+        font-size: var(--fs-body);
+        font-weight: var(--fw);
+        padding: 6px 12px;
+      }
+
+      .match-circle {
+        background: #fff;
+        border: 2px solid #cbd5e1;
+        border-radius: 50%;
+        flex-shrink: 0;
+        height: 10px;
+        width: 10px;
+      }
+
+      .order-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .order-item {
+        align-items: center;
+        display: flex;
+        gap: 10px;
+      }
+
+      .order-bubble {
+        align-items: center;
+        border: var(--bw) solid #cbd5e1;
+        border-radius: 8px;
+        display: flex;
+        flex-shrink: 0;
+        height: 32px;
+        justify-content: center;
+        width: 32px;
+      }
+
+      [data-phase="1"] .order-bubble {
+        height: 42px;
+        width: 42px;
+      }
+
+      .order-text {
+        color: #374151;
+        font-family: var(--font);
+        font-size: var(--fs-body);
+        font-weight: var(--fw);
+      }
+
+      .calc-expr {
+        background: var(--subject-light);
+        border: var(--bw) solid var(--subject-primary);
+        border-radius: var(--radius-md);
+        color: var(--subject-dark);
+        display: inline-block;
+        font-family: var(--font);
+        font-size: 18px;
+        font-weight: var(--fw-bold);
+        margin-bottom: 12px;
+        padding: 10px 16px;
+      }
+
+      .calc-dev-label {
+        color: #64748b;
+        font-family: var(--font);
+        font-size: var(--fs-sm);
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+
+      .calc-dev-area {
+        background-color: #fafafa;
+        background-image:
+          linear-gradient(#e2e8f0 1px, transparent 1px),
+          linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
+        background-size: 18px 18px;
+        border: var(--bw) solid #e2e8f0;
+        border-radius: var(--radius-sm);
+        height: 90px;
+        margin-bottom: 10px;
+      }
+
+      .calc-ans {
+        align-items: center;
+        display: flex;
+        gap: 8px;
+      }
+
+      .calc-ans-label {
+        color: var(--subject-dark);
+        font-family: var(--font);
+        font-size: var(--fs-body);
+        font-weight: var(--fw-bold);
+        white-space: nowrap;
+      }
+
+      .calc-ans-line {
+        border-bottom: 2px solid var(--subject-primary);
+        flex: 1;
+        height: 20px;
+      }
+
+      .short-answer-row {
+        align-items: center;
+        display: flex;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .short-answer-label {
+        color: var(--subject-dark);
+        font-family: var(--font);
+        font-size: var(--fs-body);
+        font-weight: var(--fw-bold);
+        white-space: nowrap;
+      }
+
+      .short-answer-line {
+        border-bottom: 2px solid var(--subject-primary);
+        flex: 1;
+        height: 24px;
+      }
+
+      .scale-grid {
+        display: grid;
+        gap: 8px;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        margin-top: 16px;
+      }
+
+      .scale-option {
+        align-items: center;
+        border: 1px solid #e2e8f0;
+        border-radius: var(--radius-sm);
+        color: #475569;
+        display: flex;
+        flex-direction: column;
+        font-family: var(--font);
+        font-size: var(--fs-sm);
+        font-weight: var(--fw);
+        gap: 6px;
+        justify-content: center;
+        min-height: 68px;
+        padding: 10px 6px;
+        text-align: center;
+      }
+
+      .scale-bubble {
+        border: var(--bw) solid #cbd5e1;
+        border-radius: 50%;
+        height: 28px;
+        width: 28px;
+      }
+
+      .context-card {
+        border-left: 4px solid var(--subject-primary);
+        padding-left: 18px;
+      }
+
+      .context-tag {
+        color: var(--subject-primary);
+        display: block;
+        font-family: var(--font);
+        font-size: var(--fs-sm);
+        font-weight: var(--fw-bold);
+        letter-spacing: 0.08em;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+      }
+
+      .context-title {
+        color: #0f172a;
+        font-family: var(--font);
+        font-size: var(--fs-question);
+        font-weight: var(--fw-bold);
+        line-height: 1.25;
+        margin-bottom: 10px;
+      }
+
+      .context-body {
+        color: #334155;
+        font-family: var(--font);
+        font-size: var(--fs-body);
+        font-weight: var(--fw);
+        line-height: var(--lh);
+      }
+
+      .context-source {
+        color: #94a3b8;
+        font-family: var(--font);
+        font-size: var(--fs-sm);
+        font-style: italic;
+        margin-top: 10px;
+      }
+
+      .ms-box {
+        background: #f8fafc;
+        border: var(--bw) solid #cbd5e1;
+        border-radius: 6px;
+        flex-shrink: 0;
+        height: 32px;
+        width: 32px;
+      }
+
+      .classification-grid {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+        margin-top: 14px;
+      }
+
+      .classification-bank,
+      .classification-targets {
+        border: 1px solid #e2e8f0;
+        border-radius: var(--radius-sm);
+        padding: 12px;
+      }
+
+      .classification-label {
+        color: var(--subject-dark);
+        display: block;
+        font-family: var(--font);
+        font-size: var(--fs-sm);
+        font-weight: var(--fw-bold);
+        margin-bottom: 8px;
+      }
+
+      .classification-items {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .classification-chip {
+        background: var(--subject-light);
+        border: 1px solid color-mix(in srgb, var(--subject-primary) 45%, white);
+        border-radius: 999px;
+        color: var(--subject-dark);
+        font-family: var(--font);
+        font-size: var(--fs-sm);
+        font-weight: var(--fw-bold);
+        padding: 5px 10px;
+      }
+
+      .classification-targets {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .classification-box {
+        border: 1px dashed #cbd5e1;
+        border-radius: var(--radius-sm);
+        min-height: 82px;
+        padding: 10px;
+      }
+
+      .classification-box-title {
+        color: #334155;
+        font-family: var(--font);
+        font-size: var(--fs-sm);
+        font-weight: var(--fw-bold);
+      }
+
+      .data-table-wrap {
+        margin: 14px 0;
+        overflow-x: auto;
+      }
+
+      .data-table {
+        border-collapse: collapse;
+        font-family: var(--font);
+        font-size: var(--fs-sm);
+        min-width: 520px;
+        width: 100%;
+      }
+
+      .data-table caption {
+        color: var(--subject-dark);
+        font-size: var(--fs-body);
+        font-weight: var(--fw-bold);
+        margin-bottom: 8px;
+        text-align: left;
+      }
+
+      .data-table th,
+      .data-table td {
+        border: 1px solid #e2e8f0;
+        padding: 8px 10px;
+        text-align: left;
+      }
+
+      .data-table th {
+        background: var(--subject-light);
+        color: var(--subject-dark);
+        font-weight: var(--fw-bold);
+      }
+
+      .section-divider {
+        align-items: center;
+        display: flex;
+        gap: 12px;
+        margin: 24px 0;
+      }
+
+      .divider-line {
+        background: var(--subject-primary);
+        border-radius: 100px;
+        flex: 1;
+        height: 1.5px;
+        opacity: 0.35;
+      }
+
+      .divider-label {
+        color: var(--subject-primary);
+        font-family: var(--font);
+        font-size: var(--fs-sm);
+        font-weight: var(--fw-bold);
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+
+      @media (max-width: 960px) {
+        body {
+          display: block;
+        }
+
+        .topbar {
+          position: relative;
+        }
+
+        .sidebar {
+          border-bottom: 1px solid #e2e8f0;
+          border-right: none;
+          height: auto;
+          position: relative;
+          top: auto;
+        }
+
+        .main {
+          overflow: visible;
+          padding: 32px 20px 72px;
+        }
+
+        .model-meta {
+          grid-template-columns: 1fr;
+        }
+
+        .ds-render {
+          padding: 20px;
+        }
+
+        .match-grid {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+
+        .match-gap {
+          display: none;
+        }
+
+        .scale-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .classification-grid,
+        .classification-targets {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media print {
+        body {
+          background: #fff;
+          display: block;
+        }
+
+        .topbar,
+        .sidebar,
+        .model-meta,
+        .doc-header,
+        .ds-section-desc {
+          display: none;
+        }
+
+        .main {
+          padding: 0;
+        }
+
+        .ds-section {
+          break-inside: avoid;
+          margin: 0 0 28px;
+          max-width: none;
+        }
+
+        .ds-render {
+          border: none;
+          padding: 0;
+        }
+      }
+    </style>
+  </head>
+  <body data-phase="3" data-subject="sci">
+    <header class="topbar">
+      <span class="topbar-logo">Kader<span>nim</span></span>
+      <span class="topbar-title">Modelos de questões para banco</span>
+      <div class="topbar-sep"></div>
+
+      <div class="ctrl-group">
+        <span class="ctrl-label">Fase</span>
+        <div class="phase-btns" id="phase-btns">
+          <button class="phase-btn" data-p="1">1º-2º</button>
+          <button class="phase-btn" data-p="2">3º-4º</button>
+          <button class="phase-btn active" data-p="3">5º</button>
+          <button class="phase-btn" data-p="4">6º-7º</button>
+          <button class="phase-btn" data-p="5">8º-9º</button>
+        </div>
+      </div>
+
+      <div class="topbar-sep"></div>
+
+      <div class="ctrl-group">
+        <span class="ctrl-label">Disciplina</span>
+        <div class="subject-btns" id="subject-btns">
+          <button class="subject-btn" data-s="sci">Ciências</button>
+          <button class="subject-btn" data-s="math">Matemática</button>
+          <button class="subject-btn" data-s="pt">L. Portuguesa</button>
+          <button class="subject-btn" data-s="hist">História</button>
+          <button class="subject-btn" data-s="geo">Geografia</button>
+          <button class="subject-btn" data-s="art">Arte</button>
+          <button class="subject-btn" data-s="ef">Ed. Física</button>
+          <button class="subject-btn" data-s="ing">Inglês</button>
+          <button class="subject-btn" data-s="er">Ens. Religioso</button>
+        </div>
+      </div>
+    </header>
+
+    <aside class="sidebar">
+      <nav>
+        <div class="nav-group">
+          <div class="nav-group-title">Contexto</div>
+          <a class="nav-link" href="#q-context">Texto-base</a>
+          <a class="nav-link" href="#q-table">Tabela simples</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Modelos objetivos</div>
+          <a class="nav-link" href="#q-mc">Múltipla escolha</a>
+          <a class="nav-link" href="#q-ms">Múltipla seleção</a>
+          <a class="nav-link" href="#q-tf">Verdadeiro / Falso</a>
+          <a class="nav-link" href="#q-fill">Complete a lacuna</a>
+          <a class="nav-link" href="#q-match">Ligar colunas</a>
+          <a class="nav-link" href="#q-order">Ordenar</a>
+          <a class="nav-link" href="#q-classification">Classificação</a>
+          <a class="nav-link" href="#q-scale">Escala / opinião</a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Modelos discursivos</div>
+          <a class="nav-link" href="#q-open">Aberta / dissertativa</a>
+          <a class="nav-link" href="#q-short">Resposta curta</a>
+          <a class="nav-link" href="#q-calc">Cálculo</a>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="main" id="main-scroll">
+      <header class="doc-header">
+        <p class="doc-kicker">Banco de questões</p>
+        <h1 class="doc-title">Modelos visuais de questões</h1>
+        <p class="doc-desc">
+          Documento derivado do design system de apostilas, mantendo somente os
+          componentes de questão que podem virar tipos reutilizáveis no banco.
+          Use os controles acima para validar variação por fase escolar e por
+          disciplina.
+        </p>
+        <div class="phase-info-card">
+          <div class="pi-item">
+            <span class="pi-label">Fonte</span>
+            <span class="pi-value" id="pi-font">Nunito</span>
+          </div>
+          <div class="pi-item">
+            <span class="pi-label">Corpo</span>
+            <span class="pi-value" id="pi-size">15px</span>
+          </div>
+          <div class="pi-item">
+            <span class="pi-label">Linha</span>
+            <span class="pi-value" id="pi-lh">1.7x</span>
+          </div>
+          <div class="pi-item">
+            <span class="pi-label">Raio</span>
+            <span class="pi-value" id="pi-radius">12px</span>
+          </div>
+          <div class="pi-item">
+            <span class="pi-label">Linha de resposta</span>
+            <span class="pi-value" id="pi-al">36px</span>
+          </div>
+        </div>
+      </header>
+
+      <section class="ds-section" id="q-context">
+        <h2 class="ds-section-title">Bloco: Texto-base</h2>
+        <p class="ds-section-desc">
+          Modelo de contexto reutilizável para uma ou mais questões. É útil
+          para interpretação, análise de fonte, contextualização histórica,
+          conceitos de Ciências e temas de Geografia.
+        </p>
+        <div class="model-meta">
+          <div class="model-meta-item">
+            <span class="model-meta-label">Tipo</span>
+            <span class="model-meta-value">reading_context</span>
+          </div>
+          <div class="model-meta-item">
+            <span class="model-meta-label">Campos do banco</span>
+            <span class="model-meta-value"
+              >título, texto, fonteOpcional, questõesVinculadas</span
+            >
+          </div>
+          <div class="model-meta-item">
+            <span class="model-meta-label">Correção</span>
+            <span class="model-meta-value">Não se aplica</span>
+          </div>
+        </div>
+        <div class="ds-render">
+          <article class="context-card">
+            <span class="context-tag">Texto 1</span>
+            <h3 class="context-title">A cidade e seus rios</h3>
+            <p class="context-body">
+              Muitas cidades brasileiras cresceram perto de rios, pois eles
+              ajudavam no transporte, no abastecimento de água e na circulação
+              de mercadorias. Com o tempo, parte desses rios foi canalizada ou
+              poluída, modificando a paisagem e a relação da população com o
+              ambiente.
+            </p>
+            <p class="context-source">
+              Texto elaborado para fins didáticos.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="ds-section" id="q-table">
+        <h2 class="ds-section-title">Bloco: Tabela simples</h2>
+        <p class="ds-section-desc">
+          Modelo para leitura de dados tabulares pequenos. Serve para
+          Geografia, História e Ciências sem exigir gráfico ou imagem.
+        </p>
+        <div class="model-meta">
+          <div class="model-meta-item">
+            <span class="model-meta-label">Tipo</span>
+            <span class="model-meta-value">table_interpretation</span>
+          </div>
+          <div class="model-meta-item">
+            <span class="model-meta-label">Campos do banco</span>
+            <span class="model-meta-value"
+              >títuloTabela, colunas, linhas, enunciado, respostaEsperada</span
+            >
+          </div>
+          <div class="model-meta-item">
+            <span class="model-meta-label">Correção</span>
+            <span class="model-meta-value">Automática ou manual</span>
+          </div>
+        </div>
+        <div class="ds-render">
+          <div class="question">
+            <div class="data-table-wrap">
+              <table class="data-table">
+                <caption>
+                  População urbana em três municípios fictícios
+                </caption>
+                <thead>
+                  <tr>
+                    <th>Município</th>
+                    <th>1990</th>
+                    <th>2020</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Rio Claro</td>
+                    <td>42 mil</td>
+                    <td>81 mil</td>
+                  </tr>
+                  <tr>
+                    <td>Serra Azul</td>
+                    <td>28 mil</td>
+                    <td>36 mil</td>
+                  </tr>
+                  <tr>
+                    <td>Vale Verde</td>
+                    <td>15 mil</td>
+                    <td>44 mil</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="q-header">
+              <span class="q-number">01.</span>
+              <p class="q-prompt">
+                Qual município apresentou o maior crescimento de população
+                urbana entre 1990 e 2020?
+              </p>
+            </div>
+            <div class="short-answer-row">
+              <span class="short-answer-label">Resposta:</span>
+              <div class="short-answer-line"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="ds-section" id="q-mc">
+        <h2 class="ds-section-title">Questão: Múltipla escolha</h2>
+        <p class="ds-section-desc">
+          Modelo para questões objetivas com uma alternativa correta. Pode
+          aceitar quatro ou cinco alternativas.
+        </p>
+        <div class="model-meta">
+          <div class="model-meta-item">
+            <span class="model-meta-label">Tipo</span>
+            <span class="model-meta-value">multiple_choice</span>
+          </div>
+          <div class="model-meta-item">
+            <span class="model-meta-label">Campos do banco</span>
+            <span class="model-meta-value"
+              >enunciado, instrução, alternativas, alternativaCorreta</span
+            >
+          </div>
+          <div class="model-meta-item">
+            <span class="model-meta-label">Correção</span>
+            <span class="model-meta-value">Automática</span>
+          </div>
+        </div>
+        <div class="ds-render">
+          <div class="question">
+            <div class="q-header">
+              <span class="q-number">01.</span>
+              <p class="q-prompt">
+                Qual das alternativas descreve corretamente o processo de
+                fotossíntese?
+              </p>
+            </div>
+            <p class="q-instruction">Marque apenas uma alternativa.</p>
+            <div class="mc-opts">
+              <div class="mc-opt">
+                <span class="mc-letter">A.</span>
+                <div class="mc-box"></div>
+                <span class="mc-text"
+                  >As plantas absorvem luz solar para aquecer suas raízes.</span
+                >
+              </div>
+              <div class="mc-opt">
+                <span class="mc-letter">B.</span>
+                <div class="mc-box"></div>
+                <span class="mc-text"
+                  >As plantas transformam luz solar, água e CO2 em glicose e
+                  oxigênio.</span
+                >
+              </div>
+              <div class="mc-opt">
+                <span class="mc-letter">C.</span>
+                <div class="mc-box"></div>
+                <span class="mc-text"
+                  >As plantas se alimentam de minerais do solo
+                  diretamente.</span
+                >
+              </div>
+              <div class="mc-opt">
+                <span class="mc-letter">D.</span>
+                <div class="mc-box"></div>
+                <span class="mc-text"
+                  >As plantas produzem gás carbônico durante o dia.</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="ds-section" id="q-ms">
+        <h2 class="ds-section-title">Questão: Múltipla seleção</h2>
+        <p class="ds-section-desc">
+          Modelo para questões objetivas com duas ou mais alternativas corretas.
+          Mantém o mesmo padrão visual da múltipla escolha, mas usa caixas de
+          seleção.
+        </p>
+        <div class="model-meta">
+          <div class="model-meta-item">
+            <span class="model-meta-label">Tipo</span>
+            <span class="model-meta-value">multiple_select</span>
+          </div>
+          <div class="model-meta-item">
+            <span class="model-meta-label">Campos do banco</span>
+            <span class="model-meta-value"
+              >enunciado, instrução, alternativas, alternativasCorretas</span
+            >
+          </div>
+          <div class="model-meta-item">
+            <span class="model-meta-label">Correção</span>
+            <span class="model-meta-value">Automática</span>
+          </div>
+        </div>
+        <div class="ds-render">
+          <div class="question">
+            <div class="q-header">
+              <span class="q-number">02.</span>
+              <p class="q-prompt">
+                Assinale as alternativas que indicam ações capazes de reduzir
+                impactos ambientais nos rios urbanos.
+              </p>
+            </div>
+            <p class="q-instruction">Pode haver mais de uma alternativa correta.</p>
+            <div class="mc-opts">
+              <div class="mc-opt">
+                <span class="mc-letter">A.</span>
+                <div class="ms-box"></div>
+                <span class="mc-text">Tratar o esgoto antes do descarte.</span>
+              </div>
+              <div class="mc-opt">
+                <span class="mc-letter">B.</span>
+                <div class="ms-box"></div>
+                <span class="mc-text">Preservar a vegetação das margens.</span>
+              </div>
+              <div class="mc-opt">
+                <span class="mc-letter">C.</span>
+                <div class="ms-box"></div>
+                <span class="mc-text">Jogar resíduos sólidos em córregos.</span>
+              </div>
+              <div class="mc-opt">
+                <span class="mc-letter">D.</span>
+                <div class="ms-box"></div>
+                <span class="mc-text">Fiscalizar ligações irregulares de esgoto.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="ds-section" id="q-tf">
+        <h2 class="ds-section-title">Questão: Verdadeiro ou Falso</h2>
+        <p class="ds-section-desc">
+          Modelo para lista de afirmativas independentes, cada uma marcada como
+          V ou F.
+        </p>
+        <div class="model-meta">
+          <div class="model-meta-item">
+            <span class="model-meta-label">Tipo</span>
+            <span class="model-meta-value">true_false</span>
+          </div>
+          <div class="model-meta-item">
+            <span class="model-meta-label">Campos do banco</span>
+            <span class="model-meta-value"
+              >enunciado, afirmativas, respostas, justificativaOpcional</span
+            >
+          </div>
+          <div class="model-meta-item">
+            <span class="model-meta-label">Correção</span>
+            <span class="model-meta-value">Automática</span>
+          </div>
+        </div>
+        <div class="ds-render">
+          <div class="question">
+            <div class="q-header">
+              <span class="q-number">02.</span>
+              <p class="q-prompt">
+                Escreva V (verdadeiro) ou F (falso) para cada afirmativa:
+              </p>
+            </div>
+            <div class="tf-list">
+              <div class="tf-item">
+                <div class="tf-bubble"></div>
+                <span class="tf-text"
+                  >A fotossíntese ocorre principalmente nas folhas das
+                  plantas.</span
+                >
+              </div>
+              <div class="tf-item">
+                <div class="tf-bubble"></div>
+                <span class="tf-text"
+                  >As plantas produzem gás carbônico durante a
+                  fotossíntese.</span
+                >
+              </div>
+              <div class="tf-item">
+                <div class="tf-bubble"></div>
+                <span class="tf-text"
+                  >A clorofila é responsável pela cor verde das plantas.</span
+                >
+              </div>
+              <div class="tf-item">
+                <div class="tf-bubble"></div>
+                <span class="tf-text"
+                  >A fotossíntese só acontece durante a noite.</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="ds-section" id="q-fill">
+        <h2 class="ds-section-title">Questão: Complete a lacuna</h2>
+        <p class="ds-section-desc">
+          Modelo para completar frases com ou sem banco de palavras.
+        </p>
+        <div class="model-meta">
+          <div class="model-meta-item">
+            <span class="model-meta-label">Tipo</span>
+            <span class="model-meta-value">fill_blank</span>
+          </div>
+          <div class="model-meta-item">
+            <span class="model-meta-label">Campos do banco</span>
+            <span class="model-meta-value"
+              >enunciado, textoComLacunas, bancoDePalavras, respostas</span
+            >
+          </div>
+          <div class="model-meta-item">
+            <span class="model-meta-label">Correção</span>
+            <span class="model-meta-value">Automática ou manual</span>
+          </div>
+        </div>
+        <div class="ds-render">
+          <div class="question">
+            <div class="q-header">
+              <span class="q-number">03.</span>
+              <p class="q-prompt">
+                Complete as lacunas com as palavras do banco:
+              </p>
+            </div>
+            <div class="fb-bank">
+              <span class="fb-word">fotossíntese</span>
+              <span class="fb-word">clorofila</span>
+              <span class="fb-word">luz solar</span>
+              <span class="fb-word">oxigênio</span>
+              <span class="fb-word">glicose</span>
+            </div>
+            <p class="fb-sent">
+              As plantas realizam a <span class="fb-blank"></span> usando a
+              <span class="fb-blank"></span> e a <span class="fb-blank"></span>.
+              Nesse processo, elas produzem <span class="fb-blank"></span> e
+              liberam <span class="fb-blank"></span> para o ambiente.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="ds-section" id="q-match">
+        <h2 class="ds-section-title">Questão: Ligar colunas</h2>
+        <p class="ds-section-desc">
+          Modelo para pareamento de termos, conceitos, imagens ou descrições.
+        </p>
+        <div class="model-meta">
+          <div class="model-meta-item">
+            <span class="model-meta-label">Tipo</span>
+            <span class="model-meta-value">matching</span>
+          </div>
+          <div class="model-meta-item">
+            <span class="model-meta-label">Campos do banco</span>
+            <span class="model-meta-value"
+              >enunciado, colunaA, colunaB, paresCorretos</span
+            >
+          </div>
+          <div class="model-meta-item">
+            <span class="model-meta-label">Correção</span>
+            <span class="model-meta-value">Automática ou manual</span>
+          </div>
+        </div>
+        <div class="ds-render">
+          <div class="question">
+            <div class="q-header">
+              <span class="q-number">04.</span>
+              <p class="q-prompt">Ligue cada parte da planta à sua função:</p>
+            </div>
+            <div class="match-grid">
+              <div class="match-item-left">
+                <span class="match-ltr">A.</span>
+                <span class="match-pill">Raiz</span>
+                <div class="match-circle"></div>
+              </div>
+              <div class="match-gap"></div>
+              <div class="match-item-right">
+                <div class="match-circle"></div>
+                <span class="match-pill">Realiza a fotossíntese</span>
+              </div>
+
+              <div class="match-item-left">
+                <span class="match-ltr">B.</span>
+                <span class="match-pill">Caule</span>
+                <div class="match-circle"></div>
+              </div>
+              <div class="match-gap"></div>
+              <div class="match-item-right">
+                <div class="match-circle"></div>
+                <span class="match-pill">Transporta água e nutrientes</span>
+              </div>
+
+              <div class="match-item-left">
+                <span class="match-ltr">C.</span>
+                <span class="match-pill">Folha</span>
+                <div class="match-circle"></div>
+              </div>
+              <div class="match-gap"></div>
+              <div class="match-item-right">
+                <div class="match-circle"></div>
+                <span class="match-pill">Absorve água e sais do solo</span>
+              </div>
+
+              <div class="match-item-left">
+                <span class="match-ltr">D.</span>
+                <span class="match-pill">Flor</span>
+                <div class="match-circle"></div>
+              </div>
+              <div class="match-gap"></div>
+              <div class="match-item-right">
+                <div class="match-circle"></div>
+                <span class="match-pill">Atrai polinizadores</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="ds-section" id="q-order">
+        <h2 class="ds-section-title">Questão: Ordenar</h2>
+        <p class="ds-section-desc">
+          Modelo para sequência temporal, etapas de processo ou ordenação por
+          critério.
+        </p>
+        <div class="model-meta">
+          <div class="model-meta-item">
+            <span class="model-meta-label">Tipo</span>
+            <span class="model-meta-value">ordering</span>
+          </div>
+          <div class="model-meta-item">
+            <span class="model-meta-label">Campos do banco</span>
+            <span class="model-meta-value"
+              >enunciado, itens, ordemCorreta, criterio</span
+            >
+          </div>
+          <div class="model-meta-item">
+            <span class="model-meta-label">Correção</span>
+            <span class="model-meta-value">Automática</span>
+          </div>
+        </div>
+        <div class="ds-render">
+          <div class="question">
+            <div class="q-header">
+              <span class="q-number">05.</span>
+              <p class="q-prompt">
+                Numere as etapas da fotossíntese na ordem correta:
+              </p>
+            </div>
+            <div class="order-list">
+              <div class="order-item">
+                <div class="order-bubble"></div>
+                <span class="order-text"
+                  >A planta libera oxigênio pelos estômatos</span
+                >
+              </div>
+              <div class="order-item">
+                <div class="order-bubble"></div>
+                <span class="order-text"
+                  >A clorofila absorve a energia da luz solar</span
+                >
+              </div>
+              <div class="order-item">
+                <div class="order-bubble"></div>
+                <span class="order-text"
+                  >A planta absorve gás carbônico do ar</span
+                >
+              </div>
+              <div class="order-item">
+                <div class="order-bubble"></div>
+                <span class="order-text"
+                  >A glicose é produzida e armazenada</span
+                >
+              </div>
+              <div class="order-item">
+                <div class="order-bubble"></div>
+                <span class="order-text">As raízes absorvem água do solo</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="ds-section" id="q-classification">
+        <h2 class="ds-section-title">Questão: Classificação</h2>
+        <p class="ds-section-desc">
+          Modelo para organizar itens em categorias. É simples de corrigir e
+          funciona bem para conceitos, fenômenos, fontes históricas e classes
+          gramaticais.
+        </p>
+        <div class="model-meta">
+          <div class="model-meta-item">
+            <span class="model-meta-label">Tipo</span>
+            <span class="model-meta-value">classification</span>
+          </div>
+          <div class="model-meta-item">
+            <span class="model-meta-label">Campos do banco</span>
+            <span class="model-meta-value"
+              >enunciado, itens, categorias, classificaçãoCorreta</span
+            >
+          </div>
+          <div class="model-meta-item">
+            <span class="model-meta-label">Correção</span>
+            <span class="model-meta-value">Automática ou manual</span>
+          </div>
+        </div>
+        <div class="ds-render">
+          <div class="question">
+            <div class="q-header">
+              <span class="q-number">06.</span>
+              <p class="q-prompt">
+                Classifique os exemplos abaixo como recurso natural renovável
+                ou não renovável.
+              </p>
+            </div>
+            <div class="classification-grid">
+              <div class="classification-bank">
+                <span class="classification-label">Itens</span>
+                <div class="classification-items">
+                  <span class="classification-chip">Petróleo</span>
+                  <span class="classification-chip">Vento</span>
+                  <span class="classification-chip">Carvão mineral</span>
+                  <span class="classification-chip">Luz solar</span>
+                </div>
+              </div>
+              <div class="classification-targets">
+                <div class="classification-box">
+                  <span class="classification-box-title">Renováveis</span>
+                </div>
+                <div class="classification-box">
+                  <span class="classification-box-title">Não renováveis</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="ds-section" id="q-scale">
+        <h2 class="ds-section-title">Questão: Escala / opinião</h2>
+        <p class="ds-section-desc">
+          Modelo para autoavaliação, opinião, frequência ou níveis de
+          concordância.
+        </p>
+        <div class="model-meta">
+          <div class="model-meta-item">
+            <span class="model-meta-label">Tipo</span>
+            <span class="model-meta-value">scale</span>
+          </div>
+          <div class="model-meta-item">
+            <span class="model-meta-label">Campos do banco</span>
+            <span class="model-meta-value"
+              >enunciado, escala, rótulos, valorEsperadoOpcional</span
+            >
+          </div>
+          <div class="model-meta-item">
+            <span class="model-meta-label">Correção</span>
+            <span class="model-meta-value">Manual ou diagnóstica</span>
+          </div>
+        </div>
+        <div class="ds-render">
+          <div class="question">
+            <div class="q-header">
+              <span class="q-number">06.</span>
+              <p class="q-prompt">
+                Quanto você considera importante preservar áreas verdes no seu
+                bairro?
+              </p>
+            </div>
+            <p class="q-instruction">Marque uma opção.</p>
+            <div class="scale-grid">
+              <div class="scale-option">
+                <div class="scale-bubble"></div>
+                1<br />Nada importante
+              </div>
+              <div class="scale-option">
+                <div class="scale-bubble"></div>
+                2<br />Pouco importante
+              </div>
+              <div class="scale-option">
+                <div class="scale-bubble"></div>
+                3<br />Importante
+              </div>
+              <div class="scale-option">
+                <div class="scale-bubble"></div>
+                4<br />Muito importante
+              </div>
+              <div class="scale-option">
+                <div class="scale-bubble"></div>
+                5<br />Essencial
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider">
+        <div class="divider-line"></div>
+        <span class="divider-label">Discursivas</span>
+        <div class="divider-line"></div>
+      </div>
+
+      <section class="ds-section" id="q-open">
+        <h2 class="ds-section-title">Questão: Aberta / Dissertativa</h2>
+        <p class="ds-section-desc">
+          Modelo para respostas longas, com quantidade de linhas ajustável por
+          fase ou por complexidade da questão.
+        </p>
+        <div class="model-meta">
+          <div class="model-meta-item">
+            <span class="model-meta-label">Tipo</span>
+            <span class="model-meta-value">open_text</span>
+          </div>
+          <div class="model-meta-item">
+            <span class="model-meta-label">Campos do banco</span>
+            <span class="model-meta-value"
+              >enunciado, instruçãoOpcional, linhasResposta, rubrica</span
+            >
+          </div>
+          <div class="model-meta-item">
+            <span class="model-meta-label">Correção</span>
+            <span class="model-meta-value">Manual ou por rubrica</span>
+          </div>
+        </div>
+        <div class="ds-render">
+          <div class="question">
+            <div class="q-header">
+              <span class="q-number">07.</span>
+              <p class="q-prompt">
+                Explique com suas palavras por que as plantas precisam da luz
+                solar para sobreviver.
+              </p>
+            </div>
+            <div class="answer-lines">
+              <div class="answer-line"></div>
+              <div class="answer-line"></div>
+              <div class="answer-line"></div>
+              <div class="answer-line"></div>
+              <div class="answer-line"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="ds-section" id="q-short">
+        <h2 class="ds-section-title">Questão: Resposta curta</h2>
+        <p class="ds-section-desc">
+          Modelo para resposta objetiva escrita: termo, número, expressão curta
+          ou frase breve.
+        </p>
+        <div class="model-meta">
+          <div class="model-meta-item">
+            <span class="model-meta-label">Tipo</span>
+            <span class="model-meta-value">short_answer</span>
+          </div>
+          <div class="model-meta-item">
+            <span class="model-meta-label">Campos do banco</span>
+            <span class="model-meta-value"
+              >enunciado, respostaEsperada, aliases, caseSensitive</span
+            >
+          </div>
+          <div class="model-meta-item">
+            <span class="model-meta-label">Correção</span>
+            <span class="model-meta-value">Automática ou manual</span>
+          </div>
+        </div>
+        <div class="ds-render">
+          <div class="question">
+            <div class="q-header">
+              <span class="q-number">08.</span>
+              <p class="q-prompt">
+                Qual é o pigmento presente nas folhas responsável pela cor
+                verde das plantas?
+              </p>
+            </div>
+            <div class="short-answer-row">
+              <span class="short-answer-label">Resposta:</span>
+              <div class="short-answer-line"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="ds-section" id="q-calc">
+        <h2 class="ds-section-title">Questão: Cálculo</h2>
+        <p class="ds-section-desc">
+          Modelo para problemas matemáticos com expressão destacada,
+          desenvolvimento e resposta final.
+        </p>
+        <div class="model-meta">
+          <div class="model-meta-item">
+            <span class="model-meta-label">Tipo</span>
+            <span class="model-meta-value">calculation</span>
+          </div>
+          <div class="model-meta-item">
+            <span class="model-meta-label">Campos do banco</span>
+            <span class="model-meta-value"
+              >enunciado, expressão, resposta, unidade, passosEsperados</span
+            >
+          </div>
+          <div class="model-meta-item">
+            <span class="model-meta-label">Correção</span>
+            <span class="model-meta-value">Automática ou por desenvolvimento</span>
+          </div>
+        </div>
+        <div class="ds-render">
+          <div class="question">
+            <div class="q-header">
+              <span class="q-number">09.</span>
+              <p class="q-prompt">
+                Uma planta realiza fotossíntese durante 8 horas por dia. Quantas
+                horas ela fotossintetiza em uma semana?
+              </p>
+            </div>
+            <div class="calc-expr">8 x 7 = ?</div>
+            <p class="calc-dev-label">Desenvolvimento:</p>
+            <div class="calc-dev-area"></div>
+            <div class="calc-ans">
+              <span class="calc-ans-label">Resposta:</span>
+              <div class="calc-ans-line"></div>
+              <span class="calc-ans-label">horas</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const phases = {
+        1: {
+          font: "Nunito",
+          size: "16px",
+          lh: "2.0x",
+          radius: "24px",
+          al: "44px",
+        },
+        2: {
+          font: "Nunito",
+          size: "15px",
+          lh: "1.8x",
+          radius: "16px",
+          al: "40px",
+        },
+        3: {
+          font: "Nunito",
+          size: "15px",
+          lh: "1.7x",
+          radius: "12px",
+          al: "36px",
+        },
+        4: {
+          font: "Inter",
+          size: "14px",
+          lh: "1.6x",
+          radius: "8px",
+          al: "32px",
+        },
+        5: {
+          font: "Inter",
+          size: "14px",
+          lh: "1.5x",
+          radius: "4px",
+          al: "30px",
+        },
+      };
+
+      const subjects = {
+        sci: { primary: "#059669" },
+        math: { primary: "#2563EB" },
+        pt: { primary: "#7C3AED" },
+        hist: { primary: "#D97706" },
+        geo: { primary: "#0891B2" },
+        art: { primary: "#DB2777" },
+        ef: { primary: "#16A34A" },
+        ing: { primary: "#0369A1" },
+        er: { primary: "#6366F1" },
+      };
+
+      function setPhase(phase) {
+        document.body.setAttribute("data-phase", phase);
+        const data = phases[phase];
+        document.getElementById("pi-font").textContent = data.font;
+        document.getElementById("pi-size").textContent = data.size;
+        document.getElementById("pi-lh").textContent = data.lh;
+        document.getElementById("pi-radius").textContent = data.radius;
+        document.getElementById("pi-al").textContent = data.al;
+        document.querySelectorAll("#phase-btns .phase-btn").forEach((button) => {
+          button.classList.toggle("active", button.dataset.p === phase);
+        });
+      }
+
+      function setSubject(subject) {
+        document.body.setAttribute("data-subject", subject);
+        document
+          .querySelectorAll("#subject-btns .subject-btn")
+          .forEach((button) => {
+            const color = subjects[button.dataset.s].primary;
+            if (button.dataset.s === subject) {
+              button.style.background = color;
+              button.style.borderColor = color;
+              button.style.color = "#fff";
+            } else {
+              button.style.background = "transparent";
+              button.style.borderColor = color;
+              button.style.color = color;
+            }
+          });
+      }
+
+      document.querySelectorAll("#phase-btns .phase-btn").forEach((button) => {
+        button.addEventListener("click", () => setPhase(button.dataset.p));
+      });
+
+      document.querySelectorAll("#subject-btns .subject-btn").forEach((button) => {
+        button.addEventListener("click", () => setSubject(button.dataset.s));
+      });
+
+      document.querySelectorAll(".nav-link").forEach((link) => {
+        link.addEventListener("click", (event) => {
+          event.preventDefault();
+          const id = link.getAttribute("href").slice(1);
+          const element = document.getElementById(id);
+          if (element) element.scrollIntoView({ behavior: "smooth" });
+        });
+      });
+
+      const scrollRoot = document.getElementById("main-scroll");
+      const sections = document.querySelectorAll(".ds-section");
+      const navLinks = document.querySelectorAll(".nav-link");
+
+      scrollRoot.addEventListener(
+        "scroll",
+        () => {
+          let current = "";
+          sections.forEach((section) => {
+            if (scrollRoot.scrollTop >= section.offsetTop - 120) {
+              current = section.id;
+            }
+          });
+          navLinks.forEach((link) => {
+            link.classList.toggle(
+              "is-active",
+              link.getAttribute("href") === "#" + current,
+            );
+          });
+        },
+        { passive: true },
+      );
+
+      setPhase("3");
+      setSubject("sci");
+    </script>
+  </body>
+</html>

@@ -16,6 +16,7 @@ import {
   Brain,
   BookMarked,
   Wand2,
+  ListChecks,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -85,6 +86,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
         { title: 'Biblioteca', href: '/resources', icon: BookOpen, count: counts?.library?.toString() },
         { title: 'Meus favoritos', href: '/favorites', icon: Heart, count: counts?.favorites?.toString() },
         { title: 'Planos de Aula', href: '/planner', icon: Calendar, count: plannerCounts?.plans?.toString() },
+        { title: 'Banco de Questoes', href: '/question-bank', icon: ListChecks },
         { title: 'BNCC', href: '/bncc', icon: BookMarked },
       ],
     },

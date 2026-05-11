@@ -44,6 +44,7 @@
   ],
   "exclude": [
     "node_modules",
-    "modelo"
+    "modelo",
+    "scripts/archive"
   ]
 }

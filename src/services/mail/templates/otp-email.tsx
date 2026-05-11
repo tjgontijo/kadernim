@@ -2,9 +2,7 @@ import {
   Body,
   Container,
   Head,
-  Hr,
   Html,
-  Link,
   Preview,
   Section,
   Text,
@@ -26,7 +24,7 @@ export const OtpEmail = ({
 }: OtpEmailProps) => (
   <Html>
     <Head />
-    <Preview>🔐 Seu código de segurança - Kadernim</Preview>
+    <Preview>Seu código de acesso - Kadernim</Preview>
     <Body style={main}>
       <Container style={container}>
         {/* Header */}
@@ -56,8 +54,6 @@ export const OtpEmail = ({
             Este código expira em <strong>{expiresIn} minutos</strong>.
           </Text>
 
-          <Hr style={hr} />
-
           {/* Warning */}
           <Section style={warningBox}>
             <Text style={warningText}>
@@ -65,22 +61,9 @@ export const OtpEmail = ({
             </Text>
           </Section>
 
-          {/* Support */}
-          <Section style={supportBox}>
-            <Text style={supportTitle}>Suporte</Text>
-            <Text style={supportText}>
-              WhatsApp: <Link href="https://wa.me/556198698704" style={linkStyleSupport}>(61) 9869-8704</Link>
-            </Text>
-            <Text style={supportText}>
-              E-mail: <Link href="mailto:contato@kadernim.com.br" style={linkStyleSupport}>contato@kadernim.com.br</Link>
-            </Text>
-          </Section>
-
-          <Hr style={hr} />
-
           {/* Footer */}
           <Text style={footer}>
-            © {new Date().getFullYear()} Kadernim. Brasília - DF.
+            Dúvidas? Fale conosco: contato@kadernim.com.br
           </Text>
         </Section>
       </Container>
@@ -95,7 +78,7 @@ export async function generateOtpEmail({
   otp,
   expiresIn = 5,
 }: OtpEmailProps) {
-  const subject = `🔐 ${otp} é seu código de segurança - Kadernim`
+  const subject = `Seu codigo de acesso: ${otp} - Kadernim`
 
   const text = [
     `Olá, ${name}!`,
@@ -104,9 +87,9 @@ export async function generateOtpEmail({
     '',
     `Este código é válido por ${expiresIn} minutos.`,
     '',
-    'Suporte:',
-    'WhatsApp: (61) 99869-8704',
-    'E-mail: contato@kadernim.com.br',
+    'Se você não solicitou este código, ignore este e-mail.',
+    '',
+    'Dúvidas? contato@kadernim.com.br',
   ].join('\n')
 
   const htmlRaw = await render(
@@ -199,11 +182,6 @@ const expirationMessage = {
   textAlign: 'center' as const,
 }
 
-const hr = {
-    borderColor: emailColors.border.light,
-    margin: '32px 0',
-}
-
 const warningBox = {
     background: emailColors.status.warning.background,
     border: `1px solid ${emailColors.status.warning.border}`,
@@ -216,32 +194,6 @@ const warningText = {
     fontSize: '13px',
     color: emailColors.status.warning.text,
     margin: '0',
-}
-
-const supportBox = {
-    background: emailColors.background.muted,
-    borderRadius: '8px',
-    padding: '20px',
-    margin: '24px 0',
-}
-
-const supportTitle = {
-    fontSize: '15px',
-    color: emailColors.text.primary,
-    fontWeight: 'bold' as const,
-    margin: '0 0 8px 0',
-}
-
-const supportText = {
-    fontSize: '13px',
-    color: emailColors.text.secondary,
-    margin: '4px 0',
-}
-
-const linkStyleSupport = {
-    color: emailColors.primary.main,
-    fontWeight: 'bold' as const,
-    textDecoration: 'none',
 }
 
 const footer = {

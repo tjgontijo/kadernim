@@ -5,6 +5,7 @@ import {
   getPlannerAccess,
   hasPlannerAccess,
 } from '@/lib/lesson-plans/services'
+import { LESSON_PLAN_MVP_BLOCK_MESSAGE } from '@/lib/lesson-plans/mvp-eligibility'
 
 type StreamEvent =
   | { type: 'phase'; phase: LessonPlanBuildPhase; status: LessonPlanBuildPhaseStatus; details?: string }
@@ -103,6 +104,9 @@ export async function POST(
   } catch (error) {
     if (error instanceof Error && error.message === 'RESOURCE_NOT_FOUND') {
       return NextResponse.json({ error: 'Recurso não encontrado' }, { status: 404 })
+    }
+    if (error instanceof Error && error.message === 'LESSON_PLAN_MVP_NOT_ELIGIBLE') {
+      return NextResponse.json({ error: LESSON_PLAN_MVP_BLOCK_MESSAGE }, { status: 403 })
     }
 
     console.error('Create lesson plan error:', error)

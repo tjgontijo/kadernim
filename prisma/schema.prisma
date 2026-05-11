@@ -13,18 +13,6 @@ enum EducationLevelType {
   EM
 }
 
-enum SubjectComponentType {
-  LINGUA_PORTUGUESA
-  ARTE
-  EDUCACAO_FISICA
-  LINGUA_INGLESA
-  MATEMATICA
-  CIENCIAS
-  HISTORIA
-  GEOGRAFIA
-  ENSINO_RELIGIOSO
-}
-
 model KnowledgeArea {
   id    String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   code  String @unique
@@ -32,41 +20,47 @@ model KnowledgeArea {
   order Int    @default(0)
 
   subjects  Subject[]
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
   @@index([code])
   @@map("knowledge_area")
 }
 
 model EducationLevel {
-  id    String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  type  EducationLevelType?   @unique
-  name  String                @unique
-  slug  String                @unique
-  order Int                   @default(0)
+  id    String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type  EducationLevelType? @unique
+  name  String              @unique
+  slug  String              @unique
+  order Int                 @default(0)
 
-  grades         Grade[]
-  resources      Resource[]
-  resourceLevels ResourceEducationLevel[]
-  bnccSkills     BnccSkill[]
-  lessonPlans    LessonPlan[]
+  grades                Grade[]
+  resources             Resource[]
+  resourceLevels        ResourceEducationLevel[]
+  bnccSkills            BnccSkill[]
+  lessonPlans           LessonPlan[]
+  questionBankQuestions QuestionBankQuestion[]
+  questionBankContexts  QuestionBankContext[]
+  questionBankRequests  QuestionBankRequest[]
 
   @@map("education_level")
 }
 
 model Grade {
-  id               String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id               String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name             String
-  slug             String          @unique
+  slug             String         @unique
   year             Int?
-  order            Int             @default(0)
-  educationLevelId String          @db.Uuid
-  educationLevel   EducationLevel  @relation(fields: [educationLevelId], references: [id])
+  order            Int            @default(0)
+  educationLevelId String         @db.Uuid
+  educationLevel   EducationLevel @relation(fields: [educationLevelId], references: [id])
 
-  subjects    GradeSubject[]
-  resources   ResourceGrade[]
-  bnccSkills  BnccSkill[]
-  lessonPlans LessonPlan[]
+  subjects              GradeSubject[]
+  resources             ResourceGrade[]
+  bnccSkills            BnccSkill[]
+  lessonPlans           LessonPlan[]
+  questionBankQuestions QuestionBankQuestion[]
+  questionBankContexts  QuestionBankContext[]
+  questionBankRequests  QuestionBankRequest[]
 
   @@unique([year, educationLevelId])
   @@index([educationLevelId])
@@ -75,22 +69,24 @@ model Grade {
 }
 
 model Subject {
-  id              String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  type            SubjectComponentType?   @unique
-  name            String                  @unique
-  slug            String                  @unique
-  componentCode   String?                 @unique
-  knowledgeAreaId String?                 @db.Uuid
+  id              String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String                @unique
+  slug            String                @unique
+  componentCode   String?               @unique
+  knowledgeAreaId String?               @db.Uuid
   color           String?
   textColor       String?
 
-  knowledgeArea   KnowledgeArea?          @relation(fields: [knowledgeAreaId], references: [id], onDelete: Restrict)
+  knowledgeArea KnowledgeArea? @relation(fields: [knowledgeAreaId], references: [id], onDelete: Restrict)
 
-  grades           GradeSubject[]
-  resources        Resource[]
-  resourceSubjects ResourceSubject[]
-  bnccSkills       BnccSkill[]
-  lessonPlans      LessonPlan[]
+  grades                GradeSubject[]
+  resources             Resource[]
+  resourceSubjects      ResourceSubject[]
+  bnccSkills            BnccSkill[]
+  lessonPlans           LessonPlan[]
+  questionBankQuestions QuestionBankQuestion[]
+  questionBankContexts  QuestionBankContext[]
+  questionBankRequests  QuestionBankRequest[]
 
   @@index([knowledgeAreaId])
   @@index([componentCode])
@@ -111,32 +107,37 @@ model GradeSubject {
 }
 
 model User {
-  id                  String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                String
-  email               String                    @unique
-  phone               String?
-  emailVerified       Boolean                   @default(false)
-  image               String?
-  createdAt           DateTime                  @default(now())
-  updatedAt           DateTime                  @updatedAt
-  role                UserRole                  @default(user)
-  banned              Boolean                   @default(false)
-  asaasCustomerId     String?                   @unique
-  asaasWalletId       String?
-  accounts            Account[]
-  auditLogs           BillingAuditLog[]
-  invoices            Invoice[]
-  sessions            Session[]
-  subscription        Subscription?
-  roleTitle           String?
-  location            String?
-  author              Author?
-  curatedResources    Resource[]                @relation("ResourceCurator")
-  reviews             Review[]
-  reviewsAsModeration Review[]                  @relation("ReviewModerator")
-  userInteractions    UserResourceInteraction[]
-  relationsCreated    RelatedResource[]
-  lessonPlans         LessonPlan[]
+  id                            String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                          String
+  email                         String                      @unique
+  phone                         String?
+  emailVerified                 Boolean                     @default(false)
+  image                         String?
+  createdAt                     DateTime                    @default(now())
+  updatedAt                     DateTime                    @updatedAt
+  role                          UserRole                    @default(user)
+  banned                        Boolean                     @default(false)
+  asaasCustomerId               String?                     @unique
+  asaasWalletId                 String?
+  accounts                      Account[]
+  auditLogs                     BillingAuditLog[]
+  invoices                      Invoice[]
+  sessions                      Session[]
+  subscription                  Subscription?
+  roleTitle                     String?
+  location                      String?
+  author                        Author?
+  curatedResources              Resource[]                  @relation("ResourceCurator")
+  reviews                       Review[]
+  reviewsAsModeration           Review[]                    @relation("ReviewModerator")
+  userInteractions              UserResourceInteraction[]
+  relationsCreated              RelatedResource[]
+  lessonPlans                   LessonPlan[]
+  questionBankCreatedQuestions  QuestionBankQuestion[]      @relation("QuestionBankCreatedBy")
+  questionBankApprovedQuestions QuestionBankQuestion[]      @relation("QuestionBankApprovedBy")
+  questionBankFeedback          QuestionBankFeedback[]
+  questionBankRequests          QuestionBankRequest[]
+  questionBankRequestExports    QuestionBankRequestExport[]
 
   @@map("user")
 }
@@ -568,7 +569,8 @@ model BnccSkill {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  resources ResourceBnccSkill[]
+  resources             ResourceBnccSkill[]
+  questionBankQuestions QuestionBankQuestionSkill[]
 
   @@unique([code, gradeId])
   @@index([educationLevelId])
@@ -824,6 +826,278 @@ enum LessonPlanMode {
 enum PdfKnowledgeSourceType {
   LOCAL_FILE
   RESOURCE_FILE
+}
+
+enum QuestionBankDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum QuestionBankStatus {
+  DRAFT_AI
+  APPROVED_AI
+  APPROVED_TEACHER
+  FLAGGED
+  REJECTED
+  ARCHIVED
+}
+
+enum QuestionBankFeedbackRating {
+  POSITIVE
+  NEGATIVE
+}
+
+enum QuestionBankFeedbackReason {
+  TOO_EASY
+  TOO_HARD
+  UNCLEAR
+  CONCEPTUAL_ERROR
+  OUT_OF_BNCC
+  BAD_ANSWER_KEY
+  GRADE_MISMATCH
+  LANGUAGE_PROBLEM
+  OTHER
+}
+
+enum QuestionBankRequestStatus {
+  COMPLETED
+  PARTIAL
+  FAILED
+}
+
+enum QuestionBankExportFormat {
+  DOCX
+  GOOGLE_DOCS
+}
+
+enum QuestionBankExportStatus {
+  COMPLETED
+  FAILED
+}
+
+model QuestionBankQuestionType {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code        String   @unique
+  name        String
+  description String?  @db.Text
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  questions QuestionBankQuestion[]
+
+  @@index([isActive, sortOrder])
+  @@map("question_bank_question_type")
+}
+
+model QuestionBankSource {
+  id                    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code                  String   @unique
+  name                  String
+  description           String?  @db.Text
+  isActive              Boolean  @default(true)
+  sortOrder             Int      @default(0)
+  appliesToQuestions    Boolean  @default(true)
+  appliesToRequestItems Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  questions    QuestionBankQuestion[]
+  requestItems QuestionBankRequestItem[]
+
+  @@index([isActive, sortOrder])
+  @@map("question_bank_source")
+}
+
+model QuestionBankContext {
+  id               String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  educationLevelId String @db.Uuid
+  gradeId          String @db.Uuid
+  subjectId        String @db.Uuid
+
+  title       String
+  body        String  @db.Text
+  source      String?
+  payload     Json?
+  fingerprint String  @unique
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  archivedAt DateTime?
+
+  educationLevel EducationLevel         @relation(fields: [educationLevelId], references: [id], onDelete: Restrict)
+  grade          Grade                  @relation(fields: [gradeId], references: [id], onDelete: Restrict)
+  subject        Subject                @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  questions      QuestionBankQuestion[]
+
+  @@index([educationLevelId, gradeId, subjectId])
+  @@map("question_bank_context")
+}
+
+model QuestionBankQuestion {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  educationLevelId String @db.Uuid
+  gradeId          String @db.Uuid
+  subjectId        String @db.Uuid
+
+  questionTypeId   String                 @db.Uuid
+  difficulty       QuestionBankDifficulty
+  status           QuestionBankStatus     @default(DRAFT_AI)
+  questionSourceId String                 @db.Uuid
+
+  prompt      String  @db.Text
+  instruction String? @db.Text
+  payload     Json
+  answerKey   Json
+  explanation String? @db.Text
+  rubric      Json?
+
+  contextId String? @db.Uuid
+
+  fingerprint      String  @unique
+  generatorVersion String?
+  modelName        String?
+  reviewMeta       Json?
+
+  usageCount    Int @default(0)
+  positiveCount Int @default(0)
+  negativeCount Int @default(0)
+  flaggedCount  Int @default(0)
+
+  createdById  String?   @db.Uuid
+  approvedById String?   @db.Uuid
+  approvedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  archivedAt   DateTime?
+
+  educationLevel EducationLevel           @relation(fields: [educationLevelId], references: [id], onDelete: Restrict)
+  grade          Grade                    @relation(fields: [gradeId], references: [id], onDelete: Restrict)
+  subject        Subject                  @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  questionType   QuestionBankQuestionType @relation(fields: [questionTypeId], references: [id], onDelete: Restrict)
+  questionSource QuestionBankSource       @relation(fields: [questionSourceId], references: [id], onDelete: Restrict)
+  context        QuestionBankContext?     @relation(fields: [contextId], references: [id], onDelete: SetNull)
+  createdBy      User?                    @relation("QuestionBankCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  approvedBy     User?                    @relation("QuestionBankApprovedBy", fields: [approvedById], references: [id], onDelete: SetNull)
+
+  skills       QuestionBankQuestionSkill[]
+  feedback     QuestionBankFeedback[]
+  requestItems QuestionBankRequestItem[]
+
+  @@index([educationLevelId, gradeId, subjectId, status])
+  @@index([subjectId, gradeId, difficulty, status])
+  @@index([questionTypeId, status])
+  @@index([questionSourceId, status])
+  @@index([status, createdAt])
+  @@index([contextId])
+  @@map("question_bank_question")
+}
+
+model QuestionBankQuestionSkill {
+  id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  questionId  String @db.Uuid
+  bnccSkillId String @db.Uuid
+
+  question  QuestionBankQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  bnccSkill BnccSkill            @relation(fields: [bnccSkillId], references: [id], onDelete: Cascade)
+
+  @@unique([questionId, bnccSkillId])
+  @@index([bnccSkillId])
+  @@map("question_bank_question_skill")
+}
+
+model QuestionBankFeedback {
+  id         String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  questionId String @db.Uuid
+  userId     String @db.Uuid
+
+  rating  QuestionBankFeedbackRating
+  reason  QuestionBankFeedbackReason?
+  comment String?                     @db.Text
+
+  createdAt DateTime @default(now())
+
+  question QuestionBankQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user     User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([questionId, createdAt])
+  @@index([userId, createdAt])
+  @@map("question_bank_feedback")
+}
+
+model QuestionBankRequest {
+  id               String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId           String @db.Uuid
+  educationLevelId String @db.Uuid
+  gradeId          String @db.Uuid
+  subjectId        String @db.Uuid
+
+  requestedCount Int
+  reusedCount    Int @default(0)
+  generatedCount Int @default(0)
+  returnedCount  Int @default(0)
+
+  difficultyMix Json?
+  typeMix       Json?
+  filters       Json
+  paramsHash    String
+  status        QuestionBankRequestStatus
+  errorMessage  String?
+
+  createdAt DateTime @default(now())
+
+  user           User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  educationLevel EducationLevel              @relation(fields: [educationLevelId], references: [id], onDelete: Restrict)
+  grade          Grade                       @relation(fields: [gradeId], references: [id], onDelete: Restrict)
+  subject        Subject                     @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  items          QuestionBankRequestItem[]
+  exports        QuestionBankRequestExport[]
+
+  @@index([userId, createdAt])
+  @@index([educationLevelId, gradeId, subjectId, createdAt])
+  @@index([paramsHash])
+  @@map("question_bank_request")
+}
+
+model QuestionBankRequestItem {
+  id         String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  requestId  String @db.Uuid
+  questionId String @db.Uuid
+  sourceId   String @db.Uuid
+  order      Int
+
+  request  QuestionBankRequest  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  question QuestionBankQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  source   QuestionBankSource   @relation(fields: [sourceId], references: [id], onDelete: Restrict)
+
+  @@unique([requestId, questionId])
+  @@index([questionId])
+  @@index([sourceId])
+  @@map("question_bank_request_item")
+}
+
+model QuestionBankRequestExport {
+  id           String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  requestId    String                   @db.Uuid
+  format       QuestionBankExportFormat
+  status       QuestionBankExportStatus
+  fileUrl      String?
+  fileName     String?
+  googleDocId  String?
+  googleDocUrl String?
+  errorMessage String?
+  createdById  String?                  @db.Uuid
+  createdAt    DateTime                 @default(now())
+
+  request   QuestionBankRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  createdBy User?               @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([requestId, createdAt])
+  @@index([format, status])
+  @@map("question_bank_request_export")
 }
 
 model PdfKnowledgeDocument {
