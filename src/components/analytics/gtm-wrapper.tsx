@@ -7,10 +7,19 @@ export function GTMWrapper() {
   const pathname = usePathname()
   const gtmId = process.env.NEXT_PUBLIC_GTM_ID
 
-  if (!gtmId || pathname?.startsWith('/dashboard')) {
+  const isLoggedArea =
+    pathname?.startsWith('/admin') ||
+    pathname?.startsWith('/account') ||
+    pathname?.startsWith('/billing') ||
+    pathname?.startsWith('/favorites') ||
+    pathname?.startsWith('/planner') ||
+    pathname?.startsWith('/question-bank') ||
+    pathname?.startsWith('/resources/create') ||
+    (pathname?.startsWith('/resources/') && pathname?.endsWith('/edit'))
+
+  if (!gtmId || isLoggedArea) {
     return null
   }
 
   return <GoogleTagManager gtmId={gtmId} />
 }
-
