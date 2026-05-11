@@ -37,6 +37,7 @@
     "@mastra/loggers": "^1.1.1",
     "@mastra/memory": "^1.15.1",
     "@mastra/observability": "^1.9.1",
+    "@next/third-parties": "^16.2.6",
     "@prisma/adapter-pg": "^7.2.0",
     "@prisma/client": "^7.7.0",
     "@react-email/components": "0.5.7",

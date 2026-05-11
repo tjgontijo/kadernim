@@ -5,6 +5,7 @@ import "./globals.css";
 import { ReactQueryProvider } from "@/providers/react-query-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { GTMWrapper } from "@/components/analytics/gtm-wrapper";
 
 const fraunces = Fraunces({
   variable: "--font-display-custom",
@@ -118,6 +119,7 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
+          <GTMWrapper />
           <ReactQueryProvider>
             {children}
             <Toaster />
