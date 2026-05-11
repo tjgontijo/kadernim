@@ -20,6 +20,25 @@ function formatStrikeLabel(value: number) {
   return `R$ ${Math.round(value)}`
 }
 
+function getAnnualSavingsBadge(monthlyAmount: number, annualAmount: number) {
+  if (monthlyAmount <= 0 || annualAmount <= 0) {
+    return undefined
+  }
+
+  const equivalentMonths = annualAmount / monthlyAmount
+  const freeMonths = 12 - equivalentMonths
+
+  if (freeMonths < 1) {
+    return undefined
+  }
+
+  if (freeMonths >= 4.5) {
+    return 'QUASE 5 MESES GRÁTIS'
+  }
+
+  return `${Math.round(freeMonths)} MESES GRÁTIS`
+}
+
 function resolvePixCheckoutDescription(paymentMethod: PaymentMethod, cycle: 'MONTHLY' | 'YEARLY') {
   if (paymentMethod === PaymentMethod.PIX_AUTOMATIC) {
     return cycle === 'MONTHLY'
@@ -37,6 +56,7 @@ function buildPlan(input: {
   name: string
   cycle: 'MONTHLY' | 'YEARLY'
   accessDays: number
+  monthlyReferenceAmount?: number
   offers: Array<{
     id: string
     code: string
@@ -96,7 +116,9 @@ function buildPlan(input: {
     label: 'Anual',
     description: `${formatCheckoutCurrency(pixAmount)} à vista ou parcelado no cartão`,
     cycle: input.cycle,
-    badge: '2 MESES GRÁTIS',
+    badge: input.monthlyReferenceAmount
+      ? getAnnualSavingsBadge(input.monthlyReferenceAmount, creditCardAmount)
+      : undefined,
     accessDays: input.accessDays,
     pixOfferId: pixOffer.id,
     pixPaymentMethod: PaymentMethod.PIX,
@@ -186,6 +208,9 @@ export class BillingCatalogService {
         name: annual.name,
         cycle: annual.cycle,
         accessDays: annual.accessDays,
+        monthlyReferenceAmount: Number(
+          offers.find((offer) => offer.planId === monthly.id && offer.paymentMethod === PaymentMethod.CREDIT_CARD)?.amount ?? 0
+        ),
         offers: offers.filter((offer) => offer.planId === annual.id),
       }),
     } satisfies CheckoutPlanCatalog
