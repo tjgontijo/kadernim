@@ -33,6 +33,7 @@ export const CheckoutRequestSchema = z.object({
   creditCardToken: z.string().optional(),
   planId: CheckoutPlanIdSchema.default(DEFAULT_CHECKOUT_PLAN_ID),
   installments: z.number().int().min(1).max(MAX_ANNUAL_CARD_INSTALLMENTS).default(1),
+  hpVariant: z.string().trim().min(1).max(32).optional(),
 }).superRefine((data, ctx) => {
   if (data.paymentMethod === PaymentMethod.CREDIT_CARD) {
     const hasRawData = Boolean(

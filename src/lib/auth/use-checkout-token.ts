@@ -8,7 +8,11 @@ export function useCheckoutToken() {
   const [isProcessing, setIsProcessing] = useState(false)
 
   useEffect(() => {
-    const token = searchParams.get('token')
+    const tokenFromUrl = searchParams.get('token')
+    const tokenFromStorage = typeof window !== 'undefined'
+      ? window.sessionStorage.getItem('checkout_auth_token')
+      : null
+    const token = tokenFromStorage ?? tokenFromUrl
     if (!token) return
 
     setIsProcessing(true)
@@ -22,6 +26,7 @@ export function useCheckoutToken() {
         })
 
         if (response.ok) {
+          window.sessionStorage.removeItem('checkout_auth_token')
           // Token was verified and session created
           // Remove token from URL
           const newUrl = window.location.pathname + window.location.search.replace(/[?&]token=[^&]*/, '').replace(/\?$/, '')

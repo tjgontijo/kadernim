@@ -19,7 +19,7 @@ interface PixQrCodeProps {
   invoiceId?: string
   statusToken?: string
   isAutomatic?: boolean
-  onSuccess: () => void
+  onSuccess: (authToken?: string) => void
 }
 
 export function PixQrCode({
@@ -65,18 +65,18 @@ export function PixQrCode({
     return () => { if (timeoutId) clearTimeout(timeoutId) }
   }, [expirationDate])
 
-  const { data: paymentStatus } = useQuery<string | null>({
+  const { data: paymentStatus } = useQuery<{ status: string | null; authToken?: string }>({
     queryKey: ['billing-pix-status', statusId, isAutomatic, statusToken],
     queryFn: async () => {
       try {
         const data = await fetchBillingPixStatus({ statusId, isAutomatic, statusToken })
-        return data.status ?? null
+        return { status: data.status ?? null, authToken: data.checkoutAuthToken }
       } catch {
-        return null
+        return { status: null }
       }
     },
     refetchInterval: (query) => {
-      const status = query.state.data
+      const status = query.state.data?.status
       return status === InvoiceStatus.RECEIVED || status === InvoiceStatus.CONFIRMED || status === 'ACTIVE'
         ? false
         : 3000
@@ -84,9 +84,9 @@ export function PixQrCode({
   })
 
   useEffect(() => {
-    if (paymentStatus === InvoiceStatus.RECEIVED || paymentStatus === InvoiceStatus.CONFIRMED || paymentStatus === 'ACTIVE') {
+    if (paymentStatus?.status === InvoiceStatus.RECEIVED || paymentStatus?.status === InvoiceStatus.CONFIRMED || paymentStatus?.status === 'ACTIVE') {
       toast.success('Pagamento confirmado com sucesso!')
-      onSuccess()
+      onSuccess(paymentStatus.authToken)
     }
   }, [onSuccess, paymentStatus])
 

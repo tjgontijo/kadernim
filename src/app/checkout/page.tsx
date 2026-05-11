@@ -1,9 +1,11 @@
 import { Metadata } from 'next'
 import { headers } from 'next/headers'
+import { cookies } from 'next/headers'
 import { getBillingCheckoutCatalog } from '@/lib/billing/queries'
 import { auth } from '@/server/auth/auth'
 import { GuestCheckoutForm } from '@/components/dashboard/billing/checkout-form'
 import { Lock } from 'lucide-react'
+import { AB_TEST_CONFIG, type MarketingVariant } from '@/config/ab-tests'
 
 export const metadata: Metadata = {
   title: 'Checkout | Kadernim Pro',
@@ -15,6 +17,8 @@ export default async function CheckoutPage(props: {
 }) {
   const searchParams = await props.searchParams
   const planId = searchParams.plan as any
+  const cookieStore = await cookies()
+  const hpVariant = cookieStore.get(AB_TEST_CONFIG.cookieName)?.value as MarketingVariant | undefined
   
   let prefilledUser: { id: string; name: string; email: string } | null = null
   const catalog = await getBillingCheckoutCatalog()
@@ -56,7 +60,7 @@ export default async function CheckoutPage(props: {
           <h1 className="font-display text-3xl sm:text-4xl text-ink mt-2 tracking-tight">Finalize sua assinatura</h1>
           <p className="font-hand text-2xl text-terracotta mt-1">acesso imediato apos o pagamento</p>
         </div>
-        <GuestCheckoutForm prefilledUser={prefilledUser} catalog={catalog} initialPlan={planId} />
+        <GuestCheckoutForm prefilledUser={prefilledUser} catalog={catalog} initialPlan={planId} hpVariant={hpVariant} />
       </main>
     </div>
   )

@@ -10,6 +10,8 @@ import { useSession } from '@/lib/auth/auth-client'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
+import { useEffect } from 'react'
 
 interface Filters {
   q?: string
@@ -20,12 +22,14 @@ interface Filters {
 
 export default function ResourcesPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { data: session } = useSession()
   const isAdmin = session?.user?.role === 'admin'
 
   const PAGE_SIZE = 20
 
   const [filters, setFilters] = useState<Filters>({})
+  const [checkoutBanner, setCheckoutBanner] = useState<null | 'success' | 'processing'>(null)
 
   const {
     items,
@@ -41,6 +45,32 @@ export default function ResourcesPage() {
       return next
     })
   }, [])
+
+  useEffect(() => {
+    const checkout = searchParams.get('checkout')
+    if (checkout !== 'success') return
+
+    let active = true
+    const run = async () => {
+      try {
+        const res = await fetch('/api/v1/billing/subscription/status', { cache: 'no-store' })
+        const data = await res.json()
+        const isActiveSub = Boolean(data?.subscription?.isActive)
+        if (active) {
+          setCheckoutBanner(isActiveSub ? 'success' : 'processing')
+          const params = new URLSearchParams(searchParams.toString())
+          params.delete('checkout')
+          params.delete('token')
+          const next = params.toString()
+          router.replace(next ? `/resources?${next}` : '/resources')
+        }
+      } catch {
+        if (active) setCheckoutBanner('processing')
+      }
+    }
+    run()
+    return () => { active = false }
+  }, [router, searchParams])
 
   // Skeleton completo na primeira carga para evitar layout parcial antes dos dados
   if (isLoading && items.length === 0) {
@@ -63,6 +93,16 @@ export default function ResourcesPage() {
 
       {/* Listagem de Grid ou Skeleton */}
       <section className="px-0 min-h-[400px]">
+        {checkoutBanner === 'success' ? (
+          <div className="mb-4 rounded-3 border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            Compra confirmada. Seu acesso Pro foi ativado.
+          </div>
+        ) : null}
+        {checkoutBanner === 'processing' ? (
+          <div className="mb-4 rounded-3 border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            Pagamento em processamento. O acesso será liberado após confirmação.
+          </div>
+        ) : null}
         <ResourceGrid
           items={items}
           fetchNextPage={fetchNextPage}

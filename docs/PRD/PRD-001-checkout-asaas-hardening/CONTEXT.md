@@ -204,3 +204,13 @@ O checkout deve separar três estados:
 - acesso Pro liberado.
 
 O sistema só deve apresentar compra concluída quando o estado local ou webhook indicar pagamento confirmado.
+
+## Decisão T0 (registrada em 2026-05-11)
+
+Estratégia temporária aprovada: manter checkout próprio com cartão cru por prazo curto, com hardening obrigatório já iniciado (bloqueio GTM no checkout, redução de vazamento de erro, proteção de fluxo de sucesso, token fora da URL).
+
+Prazo máximo para migração: até 2026-06-30 para uma abordagem que retire PAN/CVV do backend da aplicação (checkout hospedado Asaas ou tokenização/campos seguros).
+
+Risco aceito temporariamente: escopo PCI ampliado enquanto houver tráfego de PAN/CVV no app e backend.
+
+Condição de continuidade: não escalar investimento de tráfego pago para checkout de cartão sem concluir migração ou controles equivalentes aprovados.

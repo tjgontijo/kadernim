@@ -21,6 +21,7 @@ export interface BillingWalletConfig {
 export interface BillingPixStatusResponse {
   id: string
   status: string
+  checkoutAuthToken?: string
 }
 
 export interface BillingCheckoutResponse {

@@ -1,10 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { CheckoutAuthTokenService } from '@/lib/billing/services/checkout-auth-token.service'
 import { prisma } from '@/lib/db'
-import { headers } from 'next/headers'
+import { checkDistributedRateLimit } from '@/server/utils/rate-limit'
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      ?? request.headers.get('x-real-ip')
+      ?? 'unknown'
+    const rl = await checkDistributedRateLimit(`verify-checkout-token:${ip}`, { windowMs: 60_000, limit: 10 })
+    if (!rl.allowed) {
+      return NextResponse.json({ error: 'Muitas tentativas. Tente novamente em instantes.' }, {
+        status: 429,
+        headers: { 'Retry-After': String(rl.retryAfter) },
+      })
+    }
+
     const { token } = await request.json()
 
     if (!token || typeof token !== 'string') {

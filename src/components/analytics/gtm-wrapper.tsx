@@ -11,6 +11,7 @@ export function GTMWrapper() {
     pathname?.startsWith('/admin') ||
     pathname?.startsWith('/account') ||
     pathname?.startsWith('/billing') ||
+    pathname?.startsWith('/checkout') ||
     pathname?.startsWith('/favorites') ||
     pathname?.startsWith('/planner') ||
     pathname?.startsWith('/question-bank') ||

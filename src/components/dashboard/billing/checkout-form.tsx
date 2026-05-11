@@ -65,6 +65,12 @@ interface PixData {
   checkoutAuthToken?: string
 }
 
+type CardPaymentState = {
+  status: string
+  invoiceId?: string
+  message: string
+}
+
 function Field({
   label,
   id,
@@ -237,10 +243,12 @@ export function GuestCheckoutForm({
   prefilledUser,
   catalog,
   initialPlan,
+  hpVariant,
 }: {
   prefilledUser?: PrefilledUser | null
   catalog: CheckoutPlanCatalog
   initialPlan?: CheckoutPlanId
+  hpVariant?: string
 }) {
   const [plan, setPlan] = useState<CheckoutPlanId>(initialPlan ?? DEFAULT_CHECKOUT_PLAN_ID)
   const [method, setMethod] = useState<Method>('CREDIT_CARD')
@@ -256,6 +264,7 @@ export function GuestCheckoutForm({
   const [ccv, setCcv] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [pixData, setPixData] = useState<PixData | null>(null)
+  const [cardPaymentState, setCardPaymentState] = useState<CardPaymentState | null>(null)
 
   const isLoggedIn = Boolean(prefilledUser)
   const selectedPlan = catalog[plan]
@@ -270,7 +279,8 @@ export function GuestCheckoutForm({
     }
 
     if (token) {
-      return `${checkoutSuccessUrl}&token=${encodeURIComponent(token)}`
+      sessionStorage.setItem('checkout_auth_token', token)
+      return checkoutSuccessUrl
     }
 
     const checkoutEmail = (prefilledUser?.email ?? email).trim().toLowerCase()
@@ -317,6 +327,7 @@ export function GuestCheckoutForm({
         paymentMethod: selectedPaymentMethod,
         planId: plan,
         installments: plan === 'annual' && method === 'CREDIT_CARD' ? annualInstallments : 1,
+        hpVariant,
         ...(!isLoggedIn ? {
           name: name.trim(),
           phone: phone.replace(/\D/g, ''),
@@ -362,11 +373,19 @@ export function GuestCheckoutForm({
         return
       }
 
-      if (data.status === 'RECEIVED' || data.status === 'CONFIRMED') {
+      if (data.status === 'RECEIVED' || data.status === 'CONFIRMED' || data.status === 'ACTIVE') {
         toast.success('Pagamento aprovado!')
+        window.location.href = getPostCheckoutUrl(data.checkoutAuthToken)
+        return
       }
 
-      window.location.href = getPostCheckoutUrl(data.checkoutAuthToken)
+      const status = data.status ?? 'UNKNOWN'
+      const statusMessage = status === 'AWAITING_RISK_ANALYSIS'
+        ? 'Pagamento em análise de risco. Você receberá confirmação assim que for aprovado.'
+        : status === 'PENDING'
+          ? 'Pagamento pendente. Aguarde a confirmação para liberar seu acesso.'
+          : 'Pagamento não confirmado. Revise os dados e tente novamente.'
+      setCardPaymentState({ status, invoiceId: data.invoiceId, message: statusMessage })
     },
     onError: (error: Error) => {
       if (error.message === '_validation') {
@@ -374,8 +393,30 @@ export function GuestCheckoutForm({
       }
 
       toast.error(error.message)
+      setCardPaymentState({
+        status: 'ERROR',
+        message: 'Não foi possível processar o pagamento. Tente novamente.',
+      })
     },
   })
+
+  if (cardPaymentState) {
+    return (
+      <div className="max-w-lg mx-auto">
+        <div className="bg-white rounded-2xl border border-gray-200 p-8 space-y-4">
+          <p className="text-sm font-bold text-ink">Status do pagamento: {cardPaymentState.status}</p>
+          <p className="text-sm text-ink-soft">{cardPaymentState.message}</p>
+          <button
+            type="button"
+            onClick={() => setCardPaymentState(null)}
+            className="inline-flex h-10 items-center rounded-3 border border-line px-4 text-sm font-semibold hover:border-terracotta/40"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   if (pixData) {
     return (
@@ -390,8 +431,8 @@ export function GuestCheckoutForm({
             invoiceId={pixData.invoiceId}
             statusToken={pixData.statusToken}
             isAutomatic={pixData.isAutomatic}
-            onSuccess={() => {
-              window.location.href = getPostCheckoutUrl(pixData.checkoutAuthToken)
+            onSuccess={(authToken) => {
+              window.location.href = getPostCheckoutUrl(authToken ?? pixData.checkoutAuthToken)
             }}
           />
         </div>
